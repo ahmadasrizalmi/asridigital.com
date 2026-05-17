@@ -1,0 +1,16 @@
+# Redirects for Asri Digital
+
+# Redirect www to non-www
+https://www.asridigital.com/* https://asridigital.com/:splat 301
+
+# Redirect old paths
+/dashboard.html /dashboard/ 301
+/blog.html /blog/ 301
+
+# Security: Block access to sensitive files
+/.env /404.html 404
+/.env.* /404.html 404
+/wrangler.toml /404.html 404
+/package.json /404.html 404
+/package-lock.json /404.html 404
+/node_modules/* /404.html 404

@@ -11,6 +11,41 @@ interface Env {
   APP_URL: string;
 }
 
+// Rate limiting store (in-memory for simplicity, use KV in production)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Rate limiting helper
+function checkRateLimit(ip: string, limit: number = 60, windowMs: number = 60000): boolean {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+  
+  if (record.count >= limit) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// Input sanitization helper
+function sanitizeInput(input: string): string {
+  return input
+    .replace(/[<>]/g, '') // Remove < and >
+    .trim()
+    .substring(0, 1000); // Limit length
+}
+
+// Email validation
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 // Helper: Generate UUID
 function generateId(): string {
   return crypto.randomUUID();
@@ -175,6 +210,9 @@ export async function onRequest(context: any): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
+  
+  // Get client IP for rate limiting
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
 
   // Handle CORS preflight
   if (method === 'OPTIONS') {
@@ -185,6 +223,25 @@ export async function onRequest(context: any): Promise<Response> {
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       }
     });
+  }
+
+  // Rate limiting for auth endpoints
+  if (path.includes('/auth/login') || path.includes('/auth/register') || path.includes('/auth/forgot-password')) {
+    if (!checkRateLimit(clientIp, 10, 60000)) { // 10 requests per minute
+      return jsonResponse({ error: 'Terlalu banyak percobaan. Silakan tunggu beberapa saat.' }, 429);
+    }
+  }
+
+  // Rate limiting for checkout
+  if (path.includes('/checkout')) {
+    if (!checkRateLimit(clientIp, 20, 60000)) { // 20 requests per minute
+      return jsonResponse({ error: 'Terlalu banyak percobaan checkout.' }, 429);
+    }
+  }
+
+  // General rate limiting
+  if (!checkRateLimit(clientIp, 100, 60000)) { // 100 requests per minute
+    return jsonResponse({ error: 'Terlalu banyak request. Silakan tunggu.' }, 429);
   }
 
   // Remove /api prefix for routing
@@ -269,6 +326,25 @@ export async function onRequest(context: any): Promise<Response> {
 
       if (!email || !password || !name) {
         return jsonResponse({ error: 'Email, password, dan name wajib diisi' }, 400);
+      }
+
+      // Sanitize inputs
+      const sanitizedName = sanitizeInput(name);
+      const sanitizedEmail = sanitizeInput(email).toLowerCase();
+
+      // Validate email format
+      if (!isValidEmail(sanitizedEmail)) {
+        return jsonResponse({ error: 'Format email tidak valid' }, 400);
+      }
+
+      // Validate password length
+      if (password.length < 6) {
+        return jsonResponse({ error: 'Password minimal 6 karakter' }, 400);
+      }
+
+      // Validate name length
+      if (sanitizedName.length < 2) {
+        return jsonResponse({ error: 'Nama minimal 2 karakter' }, 400);
       }
 
       // Check if email exists
