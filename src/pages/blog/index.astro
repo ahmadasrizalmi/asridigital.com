@@ -3,75 +3,199 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
-
-const blogPosts = [
-  {
-    category: 'AI',
-    categoryColor: 'badge-primary',
-    date: '17 Mei 2026',
-    title: 'Cara Memaksimalkan Custom GPT untuk Bisnis',
-    excerpt: 'Pelajari bagaimana Custom GPT dapat meningkatkan produktivitas bisnis Anda hingga 10x lipat...',
-    slug: '#',
-  },
-  {
-    category: 'Productivity',
-    categoryColor: 'badge-warning',
-    date: '15 Mei 2026',
-    title: '5 Tips Menggunakan AI untuk Content Creation',
-    excerpt: 'Content creation bisa lebih mudah dengan bantuan AI. Berikut 5 tips yang bisa Anda terapkan...',
-    slug: '#',
-  },
-  {
-    category: 'Tutorial',
-    categoryColor: 'badge-success',
-    date: '12 Mei 2026',
-    title: 'Panduan Lengkap Menggunakan All-Access Pass',
-    excerpt: 'Dapatkan manfaat maksimal dari All-Access Pass dengan panduan lengkap ini...',
-    slug: '#',
-  },
-];
 ---
 
 <BaseLayout title="Blog - Asri Digital">
   <Header />
   
-  <main class="flex-1 py-20">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
-          <Icon name="file-text" size={16} class="text-primary" />
-          <span class="text-sm text-primary font-medium">Blog</span>
-        </div>
-        <h1 class="text-4xl font-extrabold mb-4 text-text-primary">
-          Tips & <span class="text-primary">Insight</span>
+  <main class="flex-1 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Hero Section -->
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">
+          Blog & Tips AI 📚
         </h1>
-        <p class="text-text-secondary text-lg">
-          Artikel seputar AI, productivity, dan digital marketing.
+        <p class="text-lg text-text-secondary max-w-2xl mx-auto">
+          Artikel, tutorial, dan tips tentang cara menggunakan Custom GPT untuk meningkatkan produktivitas dan bisnis Anda.
         </p>
       </div>
       
-      <!-- Blog posts -->
-      <div class="space-y-8">
-        {blogPosts.map((post) => (
-          <article class="card-hover p-6">
-            <div class="flex items-center gap-3 mb-4">
-              <span class={post.categoryColor}>{post.category}</span>
-              <span class="text-sm text-text-muted">{post.date}</span>
+      <!-- Category Filter -->
+      <div class="flex flex-wrap justify-center gap-2 mb-8">
+        <button class="px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
+          Semua
+        </button>
+        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+          Tips & Trik
+        </button>
+        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+          Tutorial
+        </button>
+        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+          Studi Kasus
+        </button>
+        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+          Berita
+        </button>
+      </div>
+      
+      <!-- Blog Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="blog-grid">
+        <!-- Blog Post 1 -->
+        <article class="card-hover overflow-hidden group">
+          <div class="relative overflow-hidden">
+            <div class="w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Icon name="sparkles" size={48} class="text-primary" />
             </div>
-            <h2 class="text-2xl font-bold mb-3 text-text-primary hover:text-primary transition-colors">
-              <a href={post.slug}>{post.title}</a>
+            <div class="absolute top-3 left-3">
+              <span class="px-3 py-1 bg-primary text-white text-xs font-medium rounded-full">
+                Tips & Trik
+              </span>
+            </div>
+          </div>
+          
+          <div class="p-5">
+            <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
+              <span class="flex items-center gap-1">
+                <Icon name="user" size={14} />
+                Admin
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <Icon name="calendar" size={14} />
+                14 Mei 2026
+              </span>
+            </div>
+            
+            <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
+              5 Cara Custom GPT Meningkatkan Produktivitas Bisnis Anda
             </h2>
-            <p class="text-text-secondary mb-4">
-              {post.excerpt}
+            
+            <p class="text-sm text-text-secondary mb-4 line-clamp-3">
+              Custom GPT bukan hanya chatbot biasa. Dengan instruksi yang tepat, ia bisa menjadi asisten virtual yang memahami kebutuhan spesifik bisnis Anda.
             </p>
-            <a href={post.slug} class="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all">
-              Baca selengkapnya <Icon name="arrow-right" size={16} />
+            
+            <a href="/blog/custom-gpt-untuk-bisnis/" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
+              Baca Selengkapnya
+              <Icon name="arrow-right" size={16} />
             </a>
-          </article>
-        ))}
+          </div>
+        </article>
+        
+        <!-- Blog Post 2 -->
+        <article class="card-hover overflow-hidden group">
+          <div class="relative overflow-hidden">
+            <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
+              <Icon name="code" size={48} class="text-blue-500" />
+            </div>
+            <div class="absolute top-3 left-3">
+              <span class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
+                Tutorial
+              </span>
+            </div>
+          </div>
+          
+          <div class="p-5">
+            <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
+              <span class="flex items-center gap-1">
+                <Icon name="user" size={14} />
+                Admin
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <Icon name="calendar" size={14} />
+                12 Mei 2026
+              </span>
+            </div>
+            
+            <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
+              Panduan Lengkap Menggunakan ChatGPT untuk Pemula
+            </h2>
+            
+            <p class="text-sm text-text-secondary mb-4 line-clamp-3">
+              Baru menggunakan ChatGPT? Artikel ini akan membantu Anda memahami dasar-dasar dan cara memaksimalkan penggunaannya.
+            </p>
+            
+            <a href="/blog/cara-menggunakan-chatgpt/" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
+              Baca Selengkapnya
+              <Icon name="arrow-right" size={16} />
+            </a>
+          </div>
+        </article>
+        
+        <!-- Blog Post 3 -->
+        <article class="card-hover overflow-hidden group">
+          <div class="relative overflow-hidden">
+            <div class="w-full h-48 bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+              <Icon name="video" size={48} class="text-amber-500" />
+            </div>
+            <div class="absolute top-3 left-3">
+              <span class="px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-full">
+                Studi Kasus
+              </span>
+            </div>
+          </div>
+          
+          <div class="p-5">
+            <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
+              <span class="flex items-center gap-1">
+                <Icon name="user" size={14} />
+                Admin
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <Icon name="calendar" size={14} />
+                10 Mei 2026
+              </span>
+            </div>
+            
+            <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
+              Case Study: Membuat Konten YouTube 10x Lebih Cepat dengan AI
+            </h2>
+            
+            <p class="text-sm text-text-secondary mb-4 line-clamp-3">
+              Lihat bagaimana seorang content creator bisa menghasilkan 30 video per bulan menggunakan bantuan Custom GPT.
+            </p>
+            
+            <a href="#" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
+              Baca Selengkapnya
+              <Icon name="arrow-right" size={16} />
+            </a>
+          </div>
+        </article>
+      </div>
+      
+      <!-- Load More -->
+      <div class="text-center mt-12">
+        <button id="load-more" class="btn-tertiary">
+          <Icon name="refresh-cw" size={18} />
+          Muat Lebih Banyak
+        </button>
       </div>
     </div>
   </main>
   
   <Footer />
 </BaseLayout>
+
+<script>
+  // Blog filtering
+  document.querySelectorAll('.flex.flex-wrap button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active state
+      document.querySelectorAll('.flex.flex-wrap button').forEach(b => {
+        b.classList.remove('bg-primary', 'text-white');
+        b.classList.add('bg-surface', 'border', 'border-border', 'text-text-secondary');
+      });
+      btn.classList.remove('bg-surface', 'border', 'border-border', 'text-text-secondary');
+      btn.classList.add('bg-primary', 'text-white');
+      
+      // Filter logic would go here
+    });
+  });
+
+  // Load more
+  document.getElementById('load-more')?.addEventListener('click', () => {
+    alert('Semua artikel sudah ditampilkan.');
+  });
+</script>

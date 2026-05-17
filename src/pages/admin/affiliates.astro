@@ -1,30 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
-import { formatIDR } from '../../lib/utils';
-
-const affiliates = [
-  { id: 'aff-1', name: 'Ahmad', email: 'ahmad@gmail.com', code: 'AHMAD10', clicks: 1250, conversions: 45, earnings: 1345000, status: 'active' },
-  { id: 'aff-2', name: 'Budi', email: 'budi@yahoo.com', code: 'BUDI10', clicks: 890, conversions: 32, earnings: 958000, status: 'active' },
-  { id: 'aff-3', name: 'Citra', email: 'citra@outlook.com', code: 'CITRA10', clicks: 560, conversions: 18, earnings: 538000, status: 'active' },
-  { id: 'aff-4', name: 'Dewi', email: 'dewi@gmail.com', code: 'DEWI10', clicks: 230, conversions: 8, earnings: 239000, status: 'pending' },
-];
-
-const sidebarLinks = [
-  { icon: 'bar-chart', label: 'Dashboard', href: '/admin', active: false },
-  { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: false },
-  { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: false },
-  { icon: 'users', label: 'Pengguna', href: '/admin/users', active: false },
-  { icon: 'tag', label: 'Kupon', href: '/admin/coupons', active: false },
-  { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: true },
-  { icon: 'file-text', label: 'Blog', href: '/admin/blog', active: false },
-  { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: false },
-];
 ---
 
-<BaseLayout title="Affiliate - Admin">
+<BaseLayout title="Kelola Affiliate - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <!-- Sidebar -->
     <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
@@ -38,8 +18,23 @@ const sidebarLinks = [
         </a>
         
         <nav class="space-y-1">
-          {sidebarLinks.map((link) => (
-            <a href={link.href} class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-background'}`}>
+          {[
+            { icon: 'bar-chart', label: 'Dashboard', href: '/admin' },
+            { icon: 'sparkles', label: 'Produk', href: '/admin/products' },
+            { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders' },
+            { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: true },
+            { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
+          ].map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
               <Icon name={link.icon} size={18} />
               {link.label}
             </a>
@@ -55,18 +50,18 @@ const sidebarLinks = [
       </div>
     </aside>
     
-    <!-- Main Content -->
     <main class="flex-1 bg-background">
       <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <button class="lg:hidden p-2 hover:bg-background rounded-lg">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
               <Icon name="menu" size={24} class="text-text-secondary" />
             </button>
-            <h1 class="text-xl font-bold text-text-primary">Affiliate</h1>
+            <h1 class="text-xl font-bold text-text-primary">Kelola Affiliate</h1>
           </div>
-          <button class="btn-primary text-sm">
-            <Icon name="plus" size={16} />
+          
+          <button onclick="openModal()" class="btn-primary">
+            <Icon name="plus" size={18} />
             Tambah Affiliate
           </button>
         </div>
@@ -74,72 +69,134 @@ const sidebarLinks = [
       
       <div class="p-6">
         <!-- Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Total Affiliate</p>
-            <p class="text-2xl font-bold text-text-primary">{affiliates.length}</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Icon name="users" size={20} class="text-blue-600" />
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Total Affiliate</p>
+                <p id="stat-affiliates" class="text-xl font-bold text-text-primary">3</p>
+              </div>
+            </div>
           </div>
           <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Total Klik</p>
-            <p class="text-2xl font-bold text-text-primary">{affiliates.reduce((a, b) => a + b.clicks, 0).toLocaleString()}</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Icon name="dollar-sign" size={20} class="text-green-600" />
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Total Komisi</p>
+                <p id="stat-commission" class="text-xl font-bold text-text-primary">Rp 0</p>
+              </div>
+            </div>
           </div>
           <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Total Konversi</p>
-            <p class="text-2xl font-bold text-text-primary">{affiliates.reduce((a, b) => a + b.conversions, 0)}</p>
-          </div>
-          <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Total Komisi</p>
-            <p class="text-2xl font-bold text-primary">{formatIDR(affiliates.reduce((a, b) => a + b.earnings, 0))}</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Icon name="link" size={20} class="text-amber-600" />
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Total Referral</p>
+                <p id="stat-referrals" class="text-xl font-bold text-text-primary">12</p>
+              </div>
+            </div>
           </div>
         </div>
         
         <!-- Affiliates Table -->
-        <div class="card overflow-hidden">
+        <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-background">
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Affiliate</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Kode</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Klik</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Konversi</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Komisi</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase">Aksi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Affiliate</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Kode</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Komisi (%)</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Total Referral</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Total Komisi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-border">
-                {affiliates.map((aff) => (
-                  <tr>
-                    <td class="px-4 py-4">
-                      <div>
-                        <div class="font-medium text-text-primary">{aff.name}</div>
-                        <div class="text-xs text-text-muted">{aff.email}</div>
-                      </div>
-                    </td>
-                    <td class="px-4 py-4">
-                      <span class="font-mono text-primary bg-primary/10 px-2 py-1 rounded text-sm">{aff.code}</span>
-                    </td>
-                    <td class="px-4 py-4 text-text-main">{aff.clicks.toLocaleString()}</td>
-                    <td class="px-4 py-4 text-text-main">{aff.conversions}</td>
-                    <td class="px-4 py-4 font-medium text-primary">{formatIDR(aff.earnings)}</td>
-                    <td class="px-4 py-4">
-                      <span class={aff.status === 'active' ? 'badge-success' : 'badge-warning'}>
-                        {aff.status === 'active' ? 'Aktif' : 'Pending'}
-                      </span>
-                    </td>
-                    <td class="px-4 py-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <button class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary">
-                          <Icon name="eye" size={16} />
-                        </button>
-                        <button class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary">
-                          <Icon name="edit" size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+              <tbody id="affiliates-table" class="divide-y divide-border">
+                <!-- Mock data - replace with API call -->
+                <tr class="hover:bg-background/50">
+                  <td class="px-6 py-4">
+                    <div>
+                      <p class="font-medium text-text-primary">Ahmad Rizalmi</p>
+                      <p class="text-xs text-text-muted">ahmad@example.com</p>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">AHMAD20</span>
+                  </td>
+                  <td class="px-6 py-4 font-medium text-text-primary">20%</td>
+                  <td class="px-6 py-4 text-text-main">5</td>
+                  <td class="px-6 py-4 font-medium text-green-600">Rp 149.500</td>
+                  <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                        <Icon name="eye" size={16} />
+                      </button>
+                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                        <Icon name="edit" size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-background/50">
+                  <td class="px-6 py-4">
+                    <div>
+                      <p class="font-medium text-text-primary">Siti Nurhaliza</p>
+                      <p class="text-xs text-text-muted">siti@example.com</p>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">SITI15</span>
+                  </td>
+                  <td class="px-6 py-4 font-medium text-text-primary">15%</td>
+                  <td class="px-6 py-4 text-text-main">3</td>
+                  <td class="px-6 py-4 font-medium text-green-600">Rp 59.700</td>
+                  <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                        <Icon name="eye" size={16} />
+                      </button>
+                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                        <Icon name="edit" size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-background/50">
+                  <td class="px-6 py-4">
+                    <div>
+                      <p class="font-medium text-text-primary">Budi Santoso</p>
+                      <p class="text-xs text-text-muted">budi@example.com</p>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">BUDI10</span>
+                  </td>
+                  <td class="px-6 py-4 font-medium text-text-primary">10%</td>
+                  <td class="px-6 py-4 text-text-main">4</td>
+                  <td class="px-6 py-4 font-medium text-green-600">Rp 39.600</td>
+                  <td class="px-6 py-4"><span class="badge-warning">Pending</span></td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                        <Icon name="eye" size={16} />
+                      </button>
+                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                        <Icon name="edit" size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -147,4 +204,61 @@ const sidebarLinks = [
       </div>
     </main>
   </div>
+
+  <!-- Add Affiliate Modal -->
+  <div id="affiliate-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-lg w-full">
+        <div class="p-6 border-b border-border">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-text-primary">Tambah Affiliate</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-background rounded-lg">
+              <Icon name="x" size={20} class="text-text-secondary" />
+            </button>
+          </div>
+        </div>
+        
+        <form id="affiliate-form" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Pilih User</label>
+            <select class="input" id="affiliate-user">
+              <option value="">Pilih user...</option>
+              <!-- Will be populated from API -->
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Kode Affiliate</label>
+            <input type="text" class="input" id="affiliate-code" placeholder="Contoh: AHMAD20" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Komisi (%)</label>
+            <input type="number" class="input" id="affiliate-commission" value="15" min="5" max="50" />
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-4 border-t border-border">
+            <button type="button" onclick="closeModal()" class="btn-tertiary">Batal</button>
+            <button type="submit" class="btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </BaseLayout>
+
+<script>
+  function openModal() {
+    document.getElementById('affiliate-modal')!.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('affiliate-modal')!.classList.add('hidden');
+  }
+
+  document.getElementById('affiliate-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alert('Fitur tambah affiliate akan segera tersedia.');
+    closeModal();
+  });
+</script>
