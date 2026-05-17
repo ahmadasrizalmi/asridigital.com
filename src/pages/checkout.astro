@@ -1,0 +1,420 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Icon from '../components/ui/Icon.astro';
+import { formatIDR } from '../lib/utils';
+
+// Mock product data (will be fetched from DB later)
+const products: Record<string, any> = {
+  'lifetime-all-access-pass': {
+    id: 'ALL-ACCESS',
+    title: 'Lifetime All-Access Pass',
+    price: 299000,
+    description: 'Akses seluruh Custom GPT yang ada saat ini dan semua update di masa depan.',
+  },
+  'animasi-muslim-kids-studio': {
+    id: 'gpt-animasi-muslim',
+    title: 'Animasi Muslim Kids Studio',
+    price: 99000,
+    description: 'GPT khusus untuk membuat konten animasi Islami untuk anak-anak.',
+  },
+  'sahabat-guru-paud-islami': {
+    id: 'gpt-sahabat-guru',
+    title: 'Sahabat Guru PAUD Islami',
+    price: 79000,
+    description: 'GPT asisten untuk guru PAUD Islami.',
+  },
+  'content-creator-pro': {
+    id: 'gpt-content-creator',
+    title: 'Content Creator Pro',
+    price: 89000,
+    description: 'GPT untuk membuat konten marketing yang engaging.',
+  },
+};
+
+// Get product from URL
+const url = new URL(Astro.request.url);
+const productSlug = url.searchParams.get('product') || 'lifetime-all-access-pass';
+const product = products[productSlug] || products['lifetime-all-access-pass'];
+---
+
+<BaseLayout title={`Checkout - ${product.title}`}>
+  <Header />
+  
+  <main class="flex-1 py-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-sm text-text-muted mb-8">
+        <a href="/" class="hover:text-primary transition-colors">Beranda</a>
+        <Icon name="chevron-right" size={14} />
+        <a href="/#produk" class="hover:text-primary transition-colors">Produk</a>
+        <Icon name="chevron-right" size={14} />
+        <span class="text-text-main">Checkout</span>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Checkout Form -->
+        <div class="lg:col-span-2">
+          <div class="card p-6 md:p-8">
+            <h1 class="text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+              <Icon name="shopping-cart" size={28} class="text-primary" />
+              Checkout
+            </h1>
+            
+            <form id="checkout-form" class="space-y-6">
+              <!-- Personal Info -->
+              <div>
+                <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                  <Icon name="user" size={20} class="text-text-muted" />
+                  Informasi Pembeli
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-text-main mb-2">
+                      Nama Lengkap <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      id="name" 
+                      name="name" 
+                      required
+                      class="input"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label for="email" class="block text-sm font-medium text-text-main mb-2">
+                      Email <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                      type="email" 
+                      id="email" 
+                      name="email" 
+                      required
+                      class="input"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  
+                  <div class="md:col-span-2">
+                    <label for="phone" class="block text-sm font-medium text-text-main mb-2">
+                      No. WhatsApp <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                      type="tel" 
+                      id="phone" 
+                      name="phone" 
+                      required
+                      class="input"
+                      placeholder="08123456789"
+                    />
+                    <p class="text-xs text-text-muted mt-1">Untuk pengiriman link produk & support</p>
+                  </div>
+                </div>
+              </div>
+              
+              <hr class="border-border" />
+              
+              <!-- Coupon -->
+              <div>
+                <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                  <Icon name="tag" size={20} class="text-text-muted" />
+                  Kode Kupon
+                  <span class="text-sm font-normal text-text-muted">(Opsional)</span>
+                </h2>
+                
+                <div class="flex gap-3">
+                  <input 
+                    type="text" 
+                    id="coupon" 
+                    name="coupon" 
+                    class="input flex-1"
+                    placeholder="Masukkan kode kupon"
+                  />
+                  <button 
+                    type="button" 
+                    id="apply-coupon"
+                    class="btn-tertiary whitespace-nowrap"
+                  >
+                    Gunakan
+                  </button>
+                </div>
+                
+                <div id="coupon-message" class="mt-2 text-sm hidden"></div>
+              </div>
+              
+              <hr class="border-border" />
+              
+              <!-- Payment Method -->
+              <div>
+                <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                  <Icon name="credit-card" size={20} class="text-text-muted" />
+                  Metode Pembayaran
+                </h2>
+                
+                <div class="space-y-3">
+                  <!-- QRIS -->
+                  <label class="flex items-center gap-4 p-4 border-2 border-primary rounded-xl cursor-pointer bg-primary/5">
+                    <input type="radio" name="payment_method" value="qris" checked class="text-primary focus:ring-primary" />
+                    <div class="flex items-center gap-3 flex-1">
+                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border">
+                        <span class="text-xs font-bold text-primary">QRIS</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-text-primary">QRIS</div>
+                        <div class="text-xs text-text-muted">Scan QR untuk bayar</div>
+                      </div>
+                    </div>
+                    <Icon name="check-circle" size={20} class="text-primary" />
+                  </label>
+                  
+                  <!-- Transfer Bank -->
+                  <label class="flex items-center gap-4 p-4 border-2 border-border rounded-xl cursor-pointer hover:border-text-muted transition-colors">
+                    <input type="radio" name="payment_method" value="bank_transfer" class="text-primary focus:ring-primary" />
+                    <div class="flex items-center gap-3 flex-1">
+                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border">
+                        <span class="text-xs font-bold text-text-main">Bank</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-text-primary">Transfer Bank</div>
+                        <div class="text-xs text-text-muted">BCA, Mandiri, BNI, BRI</div>
+                      </div>
+                    </div>
+                  </label>
+                  
+                  <!-- E-Wallet -->
+                  <label class="flex items-center gap-4 p-4 border-2 border-border rounded-xl cursor-pointer hover:border-text-muted transition-colors">
+                    <input type="radio" name="payment_method" value="ewallet" class="text-primary focus:ring-primary" />
+                    <div class="flex items-center gap-3 flex-1">
+                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border">
+                        <span class="text-xs font-bold text-text-main">eWallet</span>
+                      </div>
+                      <div>
+                        <div class="font-medium text-text-primary">E-Wallet</div>
+                        <div class="text-xs text-text-muted">GoPay, OVO, DANA, ShopeePay</div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Submit Button -->
+              <button 
+                type="submit" 
+                id="submit-btn"
+                class="btn-primary w-full py-4 text-lg"
+              >
+                <Icon name="lock" size={20} />
+                Bayar Sekarang - {formatIDR(product.price)}
+              </button>
+              
+              <p class="text-xs text-text-muted text-center">
+                Dengan melanjutkan, Anda menyetujui <a href="/terms" class="text-primary hover:underline">Syarat & Ketentuan</a> kami.
+              </p>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+          <div class="card p-6 sticky top-24">
+            <h2 class="text-lg font-semibold text-text-primary mb-4">Ringkasan Pesanan</h2>
+            
+            <div class="space-y-4">
+              <!-- Product -->
+              <div class="flex items-start gap-4">
+                <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                  <Icon name="sparkles" size={24} class="text-primary" />
+                </div>
+                <div>
+                  <h3 class="font-medium text-text-primary">{product.title}</h3>
+                  <p class="text-sm text-text-muted mt-1">{product.description}</p>
+                </div>
+              </div>
+              
+              <hr class="border-border" />
+              
+              <!-- Price Breakdown -->
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                  <span class="text-text-secondary">Harga</span>
+                  <span class="text-text-main">{formatIDR(product.price)}</span>
+                </div>
+                <div id="discount-row" class="flex justify-between text-sm hidden">
+                  <span class="text-green-600">Diskon</span>
+                  <span class="text-green-600">-{formatIDR(0)}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-text-secondary">Biaya Admin</span>
+                  <span class="text-green-600">Gratis</span>
+                </div>
+              </div>
+              
+              <hr class="border-border" />
+              
+              <!-- Total -->
+              <div class="flex justify-between">
+                <span class="font-semibold text-text-primary">Total</span>
+                <span id="total-price" class="text-2xl font-bold text-primary">{formatIDR(product.price)}</span>
+              </div>
+            </div>
+            
+            <!-- Security Badges -->
+            <div class="mt-6 pt-6 border-t border-border space-y-3">
+              <div class="flex items-center gap-2 text-sm text-text-muted">
+                <Icon name="shield" size={16} class="text-primary" />
+                <span>Pembayaran 100% aman</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-text-muted">
+                <Icon name="lock" size={16} class="text-primary" />
+                <span>SSL Encrypted</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-text-muted">
+                <Icon name="refresh-cw" size={16} class="text-primary" />
+                <span>Garansi 7 hari uang kembali</span>
+              </div>
+            </div>
+            
+            <!-- Payment Logos -->
+            <div class="mt-6 pt-6 border-t border-border">
+              <p class="text-xs text-text-muted text-center mb-3">Metode pembayaran yang tersedia</p>
+              <div class="flex items-center justify-center gap-4 flex-wrap">
+                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">QRIS</div>
+                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">BCA</div>
+                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">Mandiri</div>
+                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">GoPay</div>
+                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">OVO</div>
+                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">DANA</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script define:vars={{ product }}>
+  // Checkout Form Handler
+  const form = document.getElementById('checkout-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const couponInput = document.getElementById('coupon') as HTMLInputElement;
+  const applyCouponBtn = document.getElementById('apply-coupon') as HTMLButtonElement;
+  const couponMessage = document.getElementById('coupon-message') as HTMLDivElement;
+  const discountRow = document.getElementById('discount-row') as HTMLDivElement;
+  const totalPrice = document.getElementById('total-price') as HTMLSpanElement;
+
+  let discount = 0;
+  let couponApplied = false;
+
+  // Apply Coupon
+  applyCouponBtn?.addEventListener('click', async () => {
+    const code = couponInput?.value.trim();
+    if (!code) return;
+
+    applyCouponBtn.disabled = true;
+    applyCouponBtn.textContent = 'Memeriksa...';
+
+    try {
+      // TODO: Call API to validate coupon
+      // const response = await fetch('/api/coupon', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ code, productId: product.id }),
+      // });
+      // const data = await response.json();
+
+      // Mock response for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (code.toUpperCase() === 'LAUNCH50') {
+        discount = Math.round(product.price * 0.5);
+        couponApplied = true;
+        
+        couponMessage.className = 'mt-2 text-sm text-green-600';
+        couponMessage.textContent = '✓ Kupon berhasil digunakan! Diskon 50%';
+        couponMessage.classList.remove('hidden');
+        
+        discountRow.classList.remove('hidden');
+        discountRow.querySelector('span:last-child')!.textContent = `-${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(discount)}`;
+        
+        const newTotal = product.price - discount;
+        totalPrice.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(newTotal);
+        submitBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"></path></svg> Bayar Sekarang - ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(newTotal)}`;
+      } else {
+        couponMessage.className = 'mt-2 text-sm text-red-600';
+        couponMessage.textContent = '✗ Kupon tidak valid atau sudah kedaluwarsa';
+        couponMessage.classList.remove('hidden');
+      }
+    } catch (error) {
+      couponMessage.className = 'mt-2 text-sm text-red-600';
+      couponMessage.textContent = 'Terjadi kesalahan. Coba lagi.';
+      couponMessage.classList.remove('hidden');
+    } finally {
+      applyCouponBtn.disabled = false;
+      applyCouponBtn.textContent = 'Gunakan';
+    }
+  });
+
+  // Form Submit
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      productSlug: product.id === 'ALL-ACCESS' ? 'all-access' : product.id,
+      paymentMethod: formData.get('payment_method'),
+      couponCode: couponApplied ? couponInput?.value : null,
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="animate-spin">⏳</span> Memproses...';
+
+    try {
+      // TODO: Call checkout API
+      // const response = await fetch('/api/checkout', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(data),
+      // });
+      // const result = await response.json();
+      // 
+      // if (result.success) {
+      //   window.location.href = result.paymentUrl;
+      // }
+
+      // Mock: Redirect to success page after 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      window.location.href = `/success?order=INV-${Date.now()}`;
+      
+    } catch (error) {
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"></path></svg> Bayar Sekarang';
+    }
+  });
+
+  // Payment method selection
+  document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      document.querySelectorAll('input[name="payment_method"]').forEach(r => {
+        const label = r.closest('label');
+        if (label) {
+          label.classList.remove('border-primary', 'bg-primary/5');
+          label.classList.add('border-border');
+        }
+      });
+      
+      const selected = (e.target as HTMLInputElement).closest('label');
+      if (selected) {
+        selected.classList.remove('border-border');
+        selected.classList.add('border-primary', 'bg-primary/5');
+      }
+    });
+  });
+</script>

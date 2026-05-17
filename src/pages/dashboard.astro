@@ -1,0 +1,258 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Icon from '../components/ui/Icon.astro';
+import { formatIDR } from '../lib/utils';
+
+// Mock user data (will be fetched from DB later)
+const user = {
+  name: 'Ahmad',
+  email: 'ahmad@example.com',
+  isAllAccess: true,
+  joinedAt: '2026-05-01',
+};
+
+// Mock purchased products
+const purchasedProducts = [
+  {
+    id: 'ALL-ACCESS',
+    title: 'Lifetime All-Access Pass',
+    gptUrl: null,
+    purchasedAt: '2026-05-01',
+    status: 'active',
+  },
+  {
+    id: 'gpt-animasi-muslim',
+    title: 'Animasi Muslim Kids Studio',
+    gptUrl: 'https://chatgpt.com/g/g-6a06bc1c2e5481918d9767aa00048789-animasi-muslim-kids-studio',
+    purchasedAt: '2026-05-01',
+    status: 'active',
+  },
+  {
+    id: 'gpt-sahabat-guru',
+    title: 'Sahabat Guru PAUD Islami',
+    gptUrl: 'https://chatgpt.com/g/g-6a06d28370f4819189acb6d1815a5df6-sahabat-guru-paud-islami',
+    purchasedAt: '2026-05-01',
+    status: 'active',
+  },
+];
+
+// Mock all products for all-access users
+const allProducts = [
+  { id: 'gpt-animasi-muslim', title: 'Animasi Muslim Kids Studio', gptUrl: 'https://chatgpt.com/g/g-6a06bc1c2e5481918d9767aa00048789-animasi-muslim-kids-studio', category: 'kreatif' },
+  { id: 'gpt-sahabat-guru', title: 'Sahabat Guru PAUD Islami', gptUrl: 'https://chatgpt.com/g/g-6a06d28370f4819189acb6d1815a5df6-sahabat-guru-paud-islami', category: 'pendidikan' },
+  { id: 'gpt-content-creator', title: 'Content Creator Pro', gptUrl: '#', category: 'marketing' },
+  { id: 'gpt-code-helper', title: 'Code Helper Pro', gptUrl: '#', category: 'coding' },
+  { id: 'gpt-copywriter', title: 'Copywriter AI', gptUrl: '#', category: 'marketing' },
+];
+
+const sidebarLinks = [
+  { icon: 'home', label: 'Dashboard', href: '/dashboard', active: true },
+  { icon: 'sparkles', label: 'Produk Saya', href: '/dashboard/products', active: false },
+  { icon: 'download', label: 'Riwayat Pembelian', href: '/dashboard/orders', active: false },
+  { icon: 'user', label: 'Profil', href: '/dashboard/profile', active: false },
+  { icon: 'settings', label: 'Pengaturan', href: '/dashboard/settings', active: false },
+];
+---
+
+<BaseLayout title="Dashboard - Asri Digital">
+  <Header />
+  
+  <main class="flex-1 bg-background">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col md:flex-row gap-8">
+        <!-- Sidebar -->
+        <aside class="w-full md:w-64 shrink-0">
+          <div class="card p-4 sticky top-24">
+            <!-- User Info -->
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-border">
+              <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <span class="text-xl font-bold text-primary">{user.name.charAt(0)}</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-text-primary">{user.name}</h3>
+                <p class="text-xs text-text-muted">{user.email}</p>
+              </div>
+            </div>
+            
+            <!-- All-Access Badge -->
+            {user.isAllAccess && (
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+                <div class="flex items-center gap-2">
+                  <Icon name="crown" size={18} class="text-amber-600" />
+                  <span class="text-sm font-semibold text-amber-800">All-Access Member</span>
+                </div>
+              </div>
+            )}
+            
+            <!-- Navigation -->
+            <nav class="space-y-1">
+              {sidebarLinks.map((link) => (
+                <a
+                  href={link.href}
+                  class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    link.active
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-background'
+                  }`}
+                >
+                  <Icon name={link.icon} size={18} />
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+            
+            <!-- Logout -->
+            <div class="mt-6 pt-4 border-t border-border">
+              <a href="/api/auth/logout" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                <Icon name="log-out" size={18} />
+                Logout
+              </a>
+            </div>
+          </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="flex-1">
+          <!-- Welcome Banner -->
+          <div class="card p-6 mb-8 bg-gradient-to-r from-primary/5 to-primary/10">
+            <h1 class="text-2xl font-bold text-text-primary mb-2">
+              Selamat Datang, {user.name}! 👋
+            </h1>
+            <p class="text-text-secondary">
+              {user.isAllAccess
+                ? 'Anda memiliki akses ke semua produk. Mulai jelajahi sekarang!'
+                : 'Kelola produk dan lihat riwayat pembelian Anda.'}
+            </p>
+          </div>
+          
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="card p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Icon name="sparkles" size={20} class="text-primary" />
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-text-primary">{purchasedProducts.length}</p>
+                  <p class="text-xs text-text-muted">Produk Aktif</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Icon name="crown" size={20} class="text-amber-600" />
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-text-primary">{user.isAllAccess ? 'VIP' : 'Basic'}</p>
+                  <p class="text-xs text-text-muted">Status Member</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Icon name="calendar" size={20} class="text-green-600" />
+                </div>
+                <div>
+                  <p class="text-2xl font-bold text-text-primary">{new Date(user.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</p>
+                  <p class="text-xs text-text-muted">Bergabung</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* All-Access Products */}
+          {user.isAllAccess && (
+            <div class="mb-8">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-text-primary flex items-center gap-2">
+                  <Icon name="crown" size={24} class="text-amber-500" />
+                  Semua Produk (All-Access)
+                </h2>
+                <span class="badge-primary">{allProducts.length} Produk</span>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {allProducts.map((product) => (
+                  <div class="card-hover p-4">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <span class="badge-muted mb-2">{product.category}</span>
+                        <h3 class="font-semibold text-text-primary">{product.title}</h3>
+                      </div>
+                      <a
+                        href={product.gptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn-primary text-sm px-3 py-1.5"
+                      >
+                        <Icon name="external-link" size={14} />
+                        Buka
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Recent Orders */}
+          <div>
+            <h2 class="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+              <Icon name="clock" size={24} class="text-text-muted" />
+              Pembelian Terakhir
+            </h2>
+            
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-border bg-background">
+                      <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                      <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-border">
+                    {purchasedProducts.map((product) => (
+                      <tr>
+                        <td class="px-4 py-4">
+                          <div class="font-medium text-text-primary">{product.title}</div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-text-secondary">
+                          {new Date(product.purchasedAt).toLocaleDateString('id-ID')}
+                        </td>
+                        <td class="px-4 py-4">
+                          <span class="badge-success">Aktif</span>
+                        </td>
+                        <td class="px-4 py-4 text-right">
+                          {product.gptUrl ? (
+                            <a
+                              href={product.gptUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-primary hover:underline text-sm font-medium"
+                            >
+                              Buka GPT
+                            </a>
+                          ) : (
+                            <span class="text-text-muted text-sm">All-Access</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>

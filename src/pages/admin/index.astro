@@ -1,0 +1,194 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { formatIDR } from '../../lib/utils';
+
+// Mock admin data
+const stats = {
+  totalRevenue: 15450000,
+  totalOrders: 52,
+  totalUsers: 128,
+  totalProducts: 5,
+};
+
+const recentOrders = [
+  { id: 'INV-001', customer: 'S***', product: 'All-Access Pass', amount: 299000, status: 'PAID', date: '2026-05-17' },
+  { id: 'INV-002', customer: 'B***', product: 'Animasi Muslim', amount: 99000, status: 'PAID', date: '2026-05-17' },
+  { id: 'INV-003', customer: 'A***', product: 'Sahabat Guru', amount: 79000, status: 'PENDING', date: '2026-05-16' },
+  { id: 'INV-004', customer: 'R***', product: 'All-Access Pass', amount: 299000, status: 'PAID', date: '2026-05-16' },
+  { id: 'INV-005', customer: 'M***', product: 'Content Creator', amount: 89000, status: 'PAID', date: '2026-05-15' },
+];
+
+const sidebarLinks = [
+  { icon: 'bar-chart', label: 'Dashboard', href: '/admin', active: true },
+  { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: false },
+  { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: false },
+  { icon: 'users', label: 'Pengguna', href: '/admin/users', active: false },
+  { icon: 'tag', label: 'Kupon', href: '/admin/coupons', active: false },
+  { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: false },
+  { icon: 'file-text', label: 'Blog', href: '/admin/blog', active: false },
+  { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: false },
+];
+---
+
+<BaseLayout title="Admin Dashboard - Asri Digital">
+  <div class="flex min-h-screen">
+    <!-- Admin Sidebar -->
+    <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
+      <div class="sticky top-0 h-screen overflow-y-auto p-4">
+        <!-- Logo -->
+        <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
+          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <Icon name="sparkles" size={18} class="text-white" />
+          </div>
+          <div>
+            <span class="font-bold text-text-primary block">Asri Digital</span>
+            <span class="text-xs text-text-muted">Admin Panel</span>
+          </div>
+        </a>
+        
+        <!-- Navigation -->
+        <nav class="space-y-1">
+          {sidebarLinks.map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
+              <Icon name={link.icon} size={18} />
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        
+        <!-- Back to Site -->
+        <div class="mt-8 pt-4 border-t border-border">
+          <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-background transition-colors">
+            <Icon name="external-link" size={18} />
+            Lihat Website
+          </a>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="flex-1 bg-background">
+      <!-- Top Header -->
+      <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button class="lg:hidden p-2 hover:bg-background rounded-lg">
+              <Icon name="menu" size={24} class="text-text-secondary" />
+            </button>
+            <h1 class="text-xl font-bold text-text-primary">Dashboard</h1>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <button class="p-2 hover:bg-background rounded-lg relative">
+              <Icon name="bell" size={20} class="text-text-secondary" />
+              <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <span class="text-sm font-bold text-primary">A</span>
+              </div>
+              <span class="text-sm font-medium text-text-primary hidden sm:block">Admin</span>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <div class="p-6">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-text-muted">Total Revenue</span>
+              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <Icon name="dollar-sign" size={16} class="text-green-600" />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-text-primary">{formatIDR(stats.totalRevenue)}</p>
+            <p class="text-xs text-green-600 mt-1">+12% dari bulan lalu</p>
+          </div>
+          
+          <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-text-muted">Total Pesanan</span>
+              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Icon name="shopping-cart" size={16} class="text-blue-600" />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-text-primary">{stats.totalOrders}</p>
+            <p class="text-xs text-green-600 mt-1">+8 hari ini</p>
+          </div>
+          
+          <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-text-muted">Total Pengguna</span>
+              <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Icon name="users" size={16} class="text-purple-600" />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-text-primary">{stats.totalUsers}</p>
+            <p class="text-xs text-green-600 mt-1">+15 minggu ini</p>
+          </div>
+          
+          <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm text-text-muted">Total Produk</span>
+              <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Icon name="sparkles" size={16} class="text-amber-600" />
+              </div>
+            </div>
+            <p class="text-2xl font-bold text-text-primary">{stats.totalProducts}</p>
+            <p class="text-xs text-text-muted mt-1">GPT Aktif</p>
+          </div>
+        </div>
+        
+        <!-- Recent Orders -->
+        <div class="card">
+          <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h2 class="font-semibold text-text-primary">Pesanan Terakhir</h2>
+            <a href="/admin/orders" class="text-sm text-primary hover:underline">Lihat Semua</a>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-background">
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Invoice</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Pelanggan</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Jumlah</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                {recentOrders.map((order) => (
+                  <tr>
+                    <td class="px-4 py-3 font-mono text-sm text-text-primary">{order.id}</td>
+                    <td class="px-4 py-3 text-sm text-text-main">{order.customer}</td>
+                    <td class="px-4 py-3 text-sm text-text-main">{order.product}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-text-primary">{formatIDR(order.amount)}</td>
+                    <td class="px-4 py-3">
+                      <span class={order.status === 'PAID' ? 'badge-success' : 'badge-warning'}>
+                        {order.status === 'PAID' ? 'Lunas' : 'Pending'}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-text-muted">{order.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</BaseLayout>

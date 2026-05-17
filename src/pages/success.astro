@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Icon from '../components/ui/Icon.astro';
+
+// Get order ID from URL
+const url = new URL(Astro.request.url);
+const orderId = url.searchParams.get('order') || 'INV-UNKNOWN';
+---
+
+<BaseLayout title="Pembayaran Berhasil - Asri Digital">
+  <Header />
+  
+  <main class="flex-1 py-20">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <!-- Success Icon -->
+      <div class="w-24 h-24 mx-auto mb-8 bg-green-100 rounded-full flex items-center justify-center animate-fade-in">
+        <Icon name="check-circle" size={48} class="text-green-600" />
+      </div>
+      
+      <!-- Success Message -->
+      <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4 animate-slide-up">
+        Pembayaran Berhasil! 🎉
+      </h1>
+      
+      <p class="text-lg text-text-secondary mb-8 animate-slide-up" style="animation-delay: 0.1s">
+        Terima kasih atas pembelian Anda. Link akses produk telah dikirim ke email Anda.
+      </p>
+      
+      <!-- Order Details -->
+      <div class="card p-6 mb-8 text-left animate-slide-up" style="animation-delay: 0.2s">
+        <h2 class="font-semibold text-text-primary mb-4">Detail Pesanan</h2>
+        
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-text-secondary">No. Invoice</span>
+            <span class="font-mono text-text-primary">{orderId}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-text-secondary">Status</span>
+            <span class="badge-success">Lunas</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-text-secondary">Waktu</span>
+            <span class="text-text-primary">{new Date().toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- What's Next -->
+      <div class="card p-6 mb-8 text-left animate-slide-up" style="animation-delay: 0.3s">
+        <h2 class="font-semibold text-text-primary mb-4 flex items-center gap-2">
+          <Icon name="info" size={20} class="text-primary" />
+          Langkah Selanjutnya
+        </h2>
+        
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span class="text-sm font-bold text-primary">1</span>
+            </div>
+            <div>
+              <h3 class="font-medium text-text-primary">Cek Email Anda</h3>
+              <p class="text-sm text-text-secondary">Link akses produk sudah dikirim ke email yang didaftarkan.</p>
+            </div>
+          </div>
+          
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span class="text-sm font-bold text-primary">2</span>
+            </div>
+            <div>
+              <h3 class="font-medium text-text-primary">Buka Link GPT</h3>
+              <p class="text-sm text-text-secondary">Klik link yang ada di email untuk langsung menggunakan GPT.</p>
+            </div>
+          </div>
+          
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+              <span class="text-sm font-bold text-primary">3</span>
+            </div>
+            <div>
+              <h3 class="font-medium text-text-primary">Simpan di Dashboard</h3>
+              <p class="text-sm text-text-secondary">Daftar untuk menyimpan semua akses GPT di satu tempat.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style="animation-delay: 0.4s">
+        <a href="/dashboard" class="btn-primary w-full sm:w-auto">
+          <Icon name="user" size={18} />
+          Buka Dashboard
+        </a>
+        <a href="/" class="btn-secondary w-full sm:w-auto">
+          <Icon name="home" size={18} />
+          Kembali ke Beranda
+        </a>
+      </div>
+      
+      <!-- Support -->
+      <div class="mt-12 pt-8 border-t border-border animate-slide-up" style="animation-delay: 0.5s">
+        <p class="text-sm text-text-muted mb-2">Butuh bantuan?</p>
+        <a href="mailto:support@asridigital.com" class="text-primary hover:underline font-medium">
+          Hubungi Support
+        </a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
