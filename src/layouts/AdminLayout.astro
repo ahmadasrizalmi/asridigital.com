@@ -8,15 +8,51 @@ interface Props {
   activePage?: string;
 }
 
-const { 
+const {
   title = 'Admin - Asri Digital',
   activePage = 'dashboard',
 } = Astro.props;
 
-// Check auth
+// Get token from cookie
 const token = Astro.cookies.get('token')?.value;
-if (!token) {
-  return Astro.redirect('/api/auth/login');
+
+// Helper function to verify JWT
+async function verifyJWT(token: string): Promise<any> {
+  try {
+    const [headerB64, payloadB64, signatureB64] = token.split('.');
+
+    // Decode header
+    const header = JSON.parse(atob(headerB64.replace(/-/g, '+').replace(/_/g, '/')));
+
+    // Decode payload
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+
+    // Check expiration
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      return null;
+    }
+
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Verify token and get user info
+let user: any = null;
+let isValid = false;
+
+if (token) {
+  const payload = await verifyJWT(token);
+  if (payload && payload.userId) {
+    isValid = true;
+    user = payload;
+  }
+}
+
+// Redirect to login if not authenticated
+if (!isValid) {
+  return Astro.redirect('/dashboard?redirect=/admin');
 }
 ---
 
@@ -27,6 +63,12 @@ if (!token) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <title>{title}</title>
+  <style is:global>
+    @import '../styles/global.css';
+  </style>
+  <script define:vars={{ user }}>
+    window.__ADMIN_USER__ = JSON.stringify({ userId: user?.userId, email: user?.email, name: user?.name });
+  </script>
 </head>
 <body class="h-screen overflow-hidden bg-background text-text-primary">
   <div class="flex h-full">
@@ -37,9 +79,9 @@ if (!token) {
     <div class="flex flex-1 flex-col overflow-hidden">
       <!-- Top Header -->
       <AdminHeader />
-      
+
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6">
         <slot />
       </main>
     </div>
@@ -51,13 +93,13 @@ if (!token) {
       const toggle = document.getElementById('sidebar-toggle');
       const sidebar = document.getElementById('admin-sidebar');
       const overlay = document.getElementById('sidebar-overlay');
-      
+
       if (toggle && sidebar && overlay) {
         toggle.addEventListener('click', () => {
           sidebar.classList.toggle('-translate-x-full');
           overlay.classList.toggle('hidden');
         });
-        
+
         overlay.addEventListener('click', () => {
           sidebar.classList.add('-translate-x-full');
           overlay.classList.add('hidden');
