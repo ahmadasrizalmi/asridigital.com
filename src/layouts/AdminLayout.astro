@@ -1,0 +1,84 @@
+---
+import '../styles/global.css';
+import AdminSidebar from '../components/layout/AdminSidebar.astro';
+import AdminHeader from '../components/layout/AdminHeader.astro';
+
+interface Props {
+  title?: string;
+  activePage?: string;
+}
+
+const { 
+  title = 'Admin - Asri Digital',
+  activePage = 'dashboard',
+} = Astro.props;
+
+// Check auth
+const token = Astro.cookies.get('token')?.value;
+if (!token) {
+  return Astro.redirect('/api/auth/login');
+}
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>{title}</title>
+</head>
+<body class="h-screen overflow-hidden bg-background text-text-primary">
+  <div class="flex h-full">
+    <!-- SIDEBAR - Fixed left, collapsible on mobile -->
+    <AdminSidebar activePage={activePage} />
+
+    <!-- MAIN CONTENT -->
+    <div class="flex flex-1 flex-col overflow-hidden">
+      <!-- Top Header -->
+      <AdminHeader />
+      
+      <!-- Page Content -->
+      <main class="flex-1 overflow-y-auto p-6">
+        <slot />
+      </main>
+    </div>
+  </div>
+
+  <!-- Sidebar toggle script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('admin-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      
+      if (toggle && sidebar && overlay) {
+        toggle.addEventListener('click', () => {
+          sidebar.classList.toggle('-translate-x-full');
+          overlay.classList.toggle('hidden');
+        });
+        
+        overlay.addEventListener('click', () => {
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+        });
+      }
+
+      // Collapsible menu groups
+      document.querySelectorAll('[data-collapse-trigger]').forEach(trigger => {
+        trigger.addEventListener('click', () => {
+          const targetId = trigger.getAttribute('data-collapse-trigger');
+          const target = document.getElementById(targetId || '');
+          if (target) {
+            target.classList.toggle('hidden');
+            const icon = trigger.querySelector('[data-collapse-icon]');
+            if (icon) {
+              icon.classList.toggle('rotate-180');
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

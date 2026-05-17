@@ -1,0 +1,64 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-surface border-t border-border mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Brand -->
+      <div class="space-y-4">
+        <a href="/" class="flex items-center gap-2">
+          <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+          <span class="font-bold">Asri Digital</span>
+        </a>
+        <p class="text-sm text-text-muted">
+          Custom GPT untuk Profesional Indonesia. Akses instant, bayar sekali, pakai selamanya.
+        </p>
+      </div>
+
+      <!-- Produk -->
+      <div>
+        <h4 class="font-semibold mb-4">Produk</h4>
+        <ul class="space-y-2 text-sm text-text-muted">
+          <li><a href="/" class="hover:text-primary transition-colors">Semua Produk</a></li>
+          <li><a href="/#all-access" class="hover:text-primary transition-colors">All-Access Pass</a></li>
+          <li><a href="/#harga" class="hover:text-primary transition-colors">Harga</a></li>
+        </ul>
+      </div>
+
+      <!-- Resources -->
+      <div>
+        <h4 class="font-semibold mb-4">Resources</h4>
+        <ul class="space-y-2 text-sm text-text-muted">
+          <li><a href="/blog" class="hover:text-primary transition-colors">Blog</a></li>
+          <li><a href="/affiliate" class="hover:text-primary transition-colors">Program Affiliate</a></li>
+          <li><a href="/support" class="hover:text-primary transition-colors">Support</a></li>
+        </ul>
+      </div>
+
+      <!-- Legal -->
+      <div>
+        <h4 class="font-semibold mb-4">Legal</h4>
+        <ul class="space-y-2 text-sm text-text-muted">
+          <li><a href="/terms" class="hover:text-primary transition-colors">Syarat & Ketentuan</a></li>
+          <li><a href="/privacy" class="hover:text-primary transition-colors">Kebijakan Privasi</a></li>
+          <li><a href="/refund" class="hover:text-primary transition-colors">Kebijakan Refund</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-sm text-text-muted">© {currentYear} Asri Digital. All rights reserved.</p>
+      <div class="flex items-center gap-4">
+        <span class="text-xs text-text-muted flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          Pembayaran aman via DompetX
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>

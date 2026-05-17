@@ -1,0 +1,127 @@
+---
+// FOMO Social Proof Popup
+// Shows recent purchases to create urgency
+---
+
+<div id="fomo-container" class="fixed bottom-4 left-4 z-50 max-w-sm hidden">
+  <div class="bg-surface border border-border rounded-xl shadow-2xl p-4 flex items-start gap-3 animate-slide-in-left">
+    <!-- Avatar -->
+    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+      <span id="fomo-avatar" class="text-primary font-bold text-sm">S</span>
+    </div>
+    
+    <!-- Content -->
+    <div class="flex-1 min-w-0">
+      <p id="fomo-text" class="text-sm text-text-primary">
+        <span id="fomo-name" class="font-semibold">S***</span> baru saja membeli <span id="fomo-product" class="font-semibold text-primary">All-Access Pass</span>
+      </p>
+      <p id="fomo-time" class="text-xs text-text-muted mt-1">5 menit yang lalu</p>
+    </div>
+    
+    <!-- Close -->
+    <button id="fomo-close" class="text-text-muted hover:text-text-primary p-1">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    
+    <!-- Progress bar -->
+    <div id="fomo-progress" class="absolute bottom-0 left-0 h-0.5 bg-primary rounded-b-xl transition-all duration-[4000ms]" style="width: 100%"></div>
+  </div>
+</div>
+
+<script>
+  interface RecentSale {
+    firstName: string;
+    productName: string;
+    timeAgo: string;
+  }
+
+  const fallbackSales: RecentSale[] = [
+    { firstName: 'S***', productName: 'All-Access Pass', timeAgo: '5 menit yang lalu' },
+    { firstName: 'B***', productName: 'Animasi Muslim Kids Studio', timeAgo: '12 menit yang lalu' },
+    { firstName: 'A***', productName: 'Sahabat Guru PAUD Islami', timeAgo: '1 jam yang lalu' },
+  ];
+
+  let salesData: RecentSale[] = fallbackSales;
+  let currentIndex = 0;
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  async function fetchRecentSales() {
+    try {
+      const response = await fetch('/api/recent-sales');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.sales && data.sales.length > 0) {
+          salesData = data.sales;
+        }
+      }
+    } catch {
+      // Use fallback data
+    }
+  }
+
+  function showFOMO() {
+    const container = document.getElementById('fomo-container');
+    const nameEl = document.getElementById('fomo-name');
+    const productEl = document.getElementById('fomo-product');
+    const timeEl = document.getElementById('fomo-time');
+    const avatarEl = document.getElementById('fomo-avatar');
+    const progressEl = document.getElementById('fomo-progress');
+
+    if (!container || !nameEl || !productEl || !timeEl || !avatarEl || !progressEl) return;
+
+    const sale = salesData[currentIndex % salesData.length];
+    
+    nameEl.textContent = sale.firstName;
+    productEl.textContent = sale.productName;
+    timeEl.textContent = sale.timeAgo;
+    avatarEl.textContent = sale.firstName.charAt(0);
+
+    container.classList.remove('hidden');
+    
+    // Reset and animate progress bar
+    progressEl.style.transition = 'none';
+    progressEl.style.width = '100%';
+    
+    requestAnimationFrame(() => {
+      progressEl.style.transition = 'width 4s linear';
+      progressEl.style.width = '0%';
+    });
+
+    // Hide after 4 seconds
+    timeoutId = setTimeout(() => {
+      container.classList.add('hidden');
+      currentIndex++;
+      
+      // Show next after delay
+      setTimeout(showFOMO, 5000);
+    }, 4000);
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchRecentSales();
+    
+    // Start showing FOMO after 3 seconds
+    setTimeout(showFOMO, 3000);
+    
+    // Close button
+    document.getElementById('fomo-close')?.addEventListener('click', () => {
+      clearTimeout(timeoutId);
+      document.getElementById('fomo-container')?.classList.add('hidden');
+    });
+  });
+</script>
+
+<style>
+  /* Mobile positioning */
+  @media (max-width: 640px) {
+    #fomo-container {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 1rem;
+      max-width: calc(100vw - 2rem);
+    }
+  }
+</style>

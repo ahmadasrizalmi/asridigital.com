@@ -1,0 +1,75 @@
+---
+import '../styles/global.css';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import FOMOPopup from '../components/marketing/FOMOPopup.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  noFOMO?: boolean;
+}
+
+const { 
+  title = 'Asri Digital - Custom GPT untuk Profesional Indonesia',
+  description = 'Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. Bayar sekali, akses seumur hidup.',
+  ogImage = '/images/og-default.jpg',
+  noFOMO = false,
+} = Astro.props;
+
+const appUrl = import.meta.env.APP_URL || 'https://asridigital.com';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={`${appUrl}${ogImage}`} />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="id_ID" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={`${appUrl}${ogImage}`} />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  
+  <title>{title}</title>
+</head>
+<body class="min-h-screen flex flex-col">
+  <Header />
+  
+  <main class="flex-1">
+    <slot />
+  </main>
+  
+  <Footer />
+  
+  {!noFOMO && <FOMOPopup />}
+  
+  <!-- Affiliate Referral Tracker -->
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        document.cookie = `asri_ref=${ref};max-age=${30*24*60*60};path=/;SameSite=Lax`;
+        // Clean URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('ref');
+        window.history.replaceState({}, '', url.toString());
+      }
+    })();
+  </script>
+</body>
+</html>

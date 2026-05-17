@@ -1,0 +1,38 @@
+{
+  "name": "asri-digital",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:studio": "drizzle-kit studio",
+    "pages:build": "astro build",
+    "pages:deploy": "astro build && wrangler pages deploy dist",
+    "d1:create": "wrangler d1 create asri-digital-db",
+    "d1:migrate": "wrangler d1 execute asri-digital-db --remote --file drizzle/migrations/*.sql"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.5.1",
+    "astro": "^6.3.3",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "^0.44.0",
+    "nanoid": "^5.1.5",
+    "resend": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250515.0",
+    "@tailwindcss/vite": "^4.1.7",
+    "@types/bcryptjs": "^2.4.6",
+    "drizzle-kit": "^0.31.0",
+    "tailwindcss": "^4.1.7",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "wrangler": "^4.16.0"
+  }
+}

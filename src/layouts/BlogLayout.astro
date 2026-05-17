@@ -1,0 +1,80 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  coverImage?: string;
+  publishedAt?: Date;
+  authorName?: string;
+  category?: string;
+  readingTime?: number;
+}
+
+const { title, description, coverImage, publishedAt, authorName, category, readingTime } = Astro.props;
+
+const formattedDate = publishedAt 
+  ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(publishedAt)
+  : null;
+---
+
+<BaseLayout title={`${title} - Blog Asri Digital`} description={description}>
+  <article class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-text-muted mb-8">
+      <a href="/" class="hover:text-primary transition-colors">Home</a>
+      <span>/</span>
+      <a href="/blog" class="hover:text-primary transition-colors">Blog</a>
+      {category && (
+        <>
+          <span>/</span>
+          <span class="text-text-secondary">{category}</span>
+        </>
+      )}
+    </nav>
+
+    <!-- Cover Image -->
+    {coverImage && (
+      <div class="mb-8 rounded-xl overflow-hidden">
+        <img src={coverImage} alt={title} class="w-full h-64 md:h-96 object-cover" loading="lazy" />
+      </div>
+    )}
+
+    <!-- Meta -->
+    <div class="flex flex-wrap items-center gap-4 mb-6 text-sm text-text-muted">
+      {category && (
+        <span class="px-3 py-1 bg-primary/20 text-primary rounded-full">{category}</span>
+      )}
+      {formattedDate && <span>📅 {formattedDate}</span>}
+      {readingTime && <span>⏱️ {readingTime} menit baca</span>}
+      {authorName && <span>✍️ {authorName}</span>}
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-3xl md:text-4xl font-bold mb-8 leading-tight">{title}</h1>
+
+    <!-- Share buttons -->
+    <div class="flex items-center gap-3 mb-8 pb-8 border-b border-border">
+      <span class="text-sm text-text-muted">Bagikan:</span>
+      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(Astro.url.href)}`} 
+         target="_blank" rel="noopener" 
+         class="px-3 py-1 bg-surface rounded-lg text-sm hover:bg-border transition-colors">
+        Twitter
+      </a>
+      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`} 
+         target="_blank" rel="noopener"
+         class="px-3 py-1 bg-surface rounded-lg text-sm hover:bg-border transition-colors">
+        Facebook
+      </a>
+      <button onclick={`navigator.clipboard.writeText('${Astro.url.href}')`} 
+              class="px-3 py-1 bg-surface rounded-lg text-sm hover:bg-border transition-colors">
+        📋 Copy Link
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="prose prose-invert prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-primary prose-strong:text-text-primary prose-code:text-primary prose-pre:bg-surface prose-pre:border prose-pre:border-border">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>
