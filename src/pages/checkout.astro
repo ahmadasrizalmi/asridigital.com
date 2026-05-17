@@ -318,23 +318,24 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
     applyCouponBtn.textContent = 'Memeriksa...';
 
     try {
-      // TODO: Call API to validate coupon
-      // const response = await fetch('/api/coupon', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ code, productId: product.id }),
-      // });
-      // const data = await response.json();
+      // Call API to validate coupon
+      const response = await fetch('/api/coupon/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, productSlug: product.id }),
+      });
+      const data = await response.json() as any;
 
-      // Mock response for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (code.toUpperCase() === 'LAUNCH50') {
-        discount = Math.round(product.price * 0.5);
+      if (data.valid) {
+        if (data.coupon.type === 'PERCENTAGE') {
+          discount = Math.round(product.price * (data.coupon.value / 100));
+        } else if (data.coupon.type === 'FIXED') {
+          discount = data.coupon.value;
+        }
         couponApplied = true;
         
         couponMessage.className = 'mt-2 text-sm text-green-600';
-        couponMessage.textContent = '✓ Kupon berhasil digunakan! Diskon 50%';
+        couponMessage.textContent = '✓ Kupon berhasil digunakan!';
         couponMessage.classList.remove('hidden');
         
         discountRow.classList.remove('hidden');
@@ -345,7 +346,7 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
         submitBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"></path></svg> Bayar Sekarang - ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(newTotal)}`;
       } else {
         couponMessage.className = 'mt-2 text-sm text-red-600';
-        couponMessage.textContent = '✗ Kupon tidak valid atau sudah kedaluwarsa';
+        couponMessage.textContent = data.message || 'Kupon tidak valid';
         couponMessage.classList.remove('hidden');
       }
     } catch (error) {
@@ -367,7 +368,7 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
       name: formData.get('name'),
       email: formData.get('email'),
       phone: formData.get('phone'),
-      productSlug: product.id === 'ALL-ACCESS' ? 'all-access' : product.id,
+      productSlug: product.id === 'ALL-ACCESS' ? 'lifetime-all-access-pass' : product.id,
       paymentMethod: formData.get('payment_method'),
       couponCode: couponApplied ? couponInput?.value : null,
     };
@@ -376,24 +377,26 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
     submitBtn.innerHTML = '<span class="animate-spin">⏳</span> Memproses...';
 
     try {
-      // TODO: Call checkout API
-      // const response = await fetch('/api/checkout', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
-      // const result = await response.json();
-      // 
-      // if (result.success) {
-      //   window.location.href = result.paymentUrl;
-      // }
-
-      // Mock: Redirect to success page after 2 seconds
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      window.location.href = `/success?order=INV-${Date.now()}`;
+      // Call checkout API
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json() as any;
       
+      if (result.success) {
+        if (result.paymentUrl) {
+          window.location.href = result.paymentUrl;
+        } else {
+          window.location.href = `/success?order=${result.orderId}`;
+        }
+      } else {
+        alert(result.error || 'Terjadi kesalahan');
+      }
     } catch (error) {
       alert('Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"></path></svg> Bayar Sekarang';
     }

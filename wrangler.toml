@@ -1,8 +1,14 @@
-name = "asri-digital"
-compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat"]
+# Cloudflare Pages configuration
+name = "asridigital-com"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "./dist"
 
+# D1 Database binding
 [[d1_databases]]
 binding = "DB"
-database_name = "asri-digital-db"
-database_id = "20495966-0e22-435e-b01b-bc3db9457312"
+database_name = "asridigital-db"
+database_id = "YOUR_DATABASE_ID"  # Will be set by setup script
+
+# Environment variables (set these in Cloudflare Dashboard)
+[vars]
+DOMPETX_API_URL = "https://api.dompetx.com/v1"
