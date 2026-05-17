@@ -1235,6 +1235,31 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ post, relatedPosts: relatedPosts.results });
     }
 
+    // ==================== ADMIN MIDDLEWARE ====================
+    // All admin routes require authentication and admin role
+    if (route.startsWith('/admin')) {
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return jsonResponse({ error: 'Unauthorized - Login required' }, 401);
+      }
+      
+      const token = authHeader.replace('Bearer ', '');
+      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      
+      if (!payload) {
+        return jsonResponse({ error: 'Invalid token' }, 401);
+      }
+      
+      // Check if user is admin
+      const user = await env.DB.prepare(
+        'SELECT role FROM users WHERE id = ?'
+      ).bind(payload.userId).first();
+      
+      if (!user || user.role !== 'admin') {
+        return jsonResponse({ error: 'Forbidden - Admin access required' }, 403);
+      }
+    }
+
     // ==================== ADMIN STATS ====================
     if (route === '/admin/stats' && method === 'GET') {
       const totalOrders = await env.DB.prepare(
