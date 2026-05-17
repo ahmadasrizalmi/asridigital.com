@@ -1,0 +1,491 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Icon from '../components/ui/Icon.astro';
+import ProductCard from '../components/marketing/ProductCard.astro';
+import { formatIDR, parseTags } from '../lib/utils';
+
+interface Feature {
+  icon?: string;
+  title: string;
+  description: string;
+}
+
+const url = new URL(Astro.request.url);
+const productSlug = url.pathname.split('/').pop() || '';
+
+let product: any = null;
+let relatedProducts: any[] = [];
+let notFound = false;
+
+// Fetch product from database/API
+try {
+  const apiResponse = await fetch(`${Astro.url.origin}/api/products/${productSlug}`);
+  if (apiResponse.ok) {
+    const data = await apiResponse.json();
+    product = data.product;
+
+    // Fetch related products (same category, excluding current)
+    if (product?.category) {
+      const relatedResponse = await fetch(`${Astro.url.origin}/api/products?category=${product.category}&limit=4`);
+      if (relatedResponse.ok) {
+        const relatedData = await relatedResponse.json();
+        relatedProducts = (relatedData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
+      }
+    }
+  } else {
+    notFound = true;
+  }
+} catch (e) {
+  console.error('Error fetching product:', e);
+  notFound = true;
+}
+
+if (!product && notFound) {
+  return Astro.redirect('/#produk');
+}
+
+// Parse product data
+const galleryImages: string[] = product?.gallery_images
+  ? typeof product.gallery_images === 'string'
+    ? JSON.parse(product.gallery_images)
+    : product.gallery_images
+  : (product?.image_icon ? [product.image_icon] : []);
+
+const galleryVideos: string[] = product?.gallery_videos
+  ? typeof product.gallery_videos === 'string'
+    ? JSON.parse(product.gallery_videos)
+    : product.gallery_videos
+  : [];
+
+const features: Feature[] = product?.features
+  ? typeof product.features === 'string'
+    ? JSON.parse(product.features)
+    : product.features
+  : [];
+
+const specs: Record<string, string> = product?.specs
+  ? typeof product.specs === 'string'
+    ? JSON.parse(product.specs)
+    : product.specs
+  : {};
+
+const faqs: Array<{question: string; answer: string}> = product?.faq
+  ? typeof product.faq === 'string'
+    ? JSON.parse(product.faq)
+    : product.faq
+  : [];
+
+const hasDiscount = product?.compare_at_price && product.compare_at_price > product.price;
+const discount = hasDiscount
+  ? Math.round((1 - product.price / product.compare_at_price) * 100)
+  : 0;
+
+const tags = parseTags(product?.tags);
+---
+
+<BaseLayout title={`${product?.title || 'Produk'} - Asri Digital`}>
+  <Header />
+
+  <main class="flex-1 py-8 sm:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-sm text-text-muted mb-6 sm:mb-8 flex-wrap" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-primary transition-colors">Beranda</a>
+        <Icon name="chevron-right" size={14} />
+        <a href="/#produk" class="hover:text-primary transition-colors">Produk</a>
+        <Icon name="chevron-right" size={14} />
+        <span class="text-text-primary font-medium truncate max-w-[200px]">{product?.title}</span>
+      </nav>
+
+      <!-- Product Header -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
+        <!-- Product Gallery -->
+        <div class="space-y-4">
+          <!-- Main Image/Video -->
+          <div class="relative aspect-square rounded-2xl overflow-hidden bg-background">
+            {product?.video_embed_url ? (
+              <div class="w-full h-full">
+                <iframe
+                  src={product.video_embed_url}
+                  class="w-full h-full"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            ) : (
+              <img
+                id="main-image"
+                src={galleryImages[0] || '/images/placeholder.jpg'}
+                alt={product?.title}
+                class="w-full h-full object-cover cursor-pointer transition-transform duration-300 hover:scale-105"
+              />
+            )}
+
+            {/* Badges */}
+            <div class="absolute top-4 left-4 flex flex-wrap gap-2">
+              {hasDiscount && (
+                <span class="badge-danger">
+                  HEMAT {discount}%
+                </span>
+              )}
+              {product?.is_featured && (
+                <span class="badge-warning">
+                  <Icon name="star" size={12} />
+                  POPULER
+                </span>
+              )}
+            </div>
+
+            <!-- Image Counter -->
+            {galleryImages.length > 1 && (
+              <div class="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm">
+                <span id="image-counter">1</span> / {galleryImages.length}
+              </div>
+            )}
+          </div>
+
+          <!-- Thumbnail Gallery -->
+          {galleryImages.length > 1 && (
+            <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
+              {galleryImages.map((img: string, index: number) => (
+                <button
+                  class={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                    index === 0 ? 'border-primary' : 'border-border hover:border-primary/50'
+                  }`}
+                  onclick={`changeMainImage('${img}', ${index})`}
+                >
+                  <img
+                    src={img}
+                    alt={`Gallery ${index + 1}`}
+                    class="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <!-- Video Thumbnails -->
+          {galleryVideos.length > 0 && (
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
+              {galleryVideos.map((video: string, index: number) => (
+                <button
+                  class="aspect-video rounded-lg overflow-hidden border-2 border-border hover:border-primary/50 transition-all relative group"
+                  onclick="openVideoModal('{video}')"
+                >
+                  <video
+                    src={video}
+                    class="w-full h-full object-cover"
+                    muted
+                  ></video>
+                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                      <Icon name="play" size={20} class="text-primary ml-1" />
+                    </div>
+                  </div>
+                  <span class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                    Video {index + 1}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <!-- Product Info -->
+        <div class="space-y-6">
+          <!-- Category -->
+          <div>
+            <a
+              href={`/#produk?category=${product?.category}`}
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <Icon name="folder" size={14} />
+              {product?.category}
+            </a>
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
+            {product?.title}
+          </h1>
+
+          <!-- Tags -->
+          {tags.length > 0 && (
+            <div class="flex flex-wrap gap-2">
+              {tags.map((tag: string) => (
+                <span class="px-3 py-1 bg-background border border-border rounded-full text-sm text-text-muted">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <!-- Price -->
+          <div class="space-y-2">
+            <div class="flex items-baseline gap-3">
+              <span class="text-3xl sm:text-4xl font-bold text-primary">
+                {formatIDR(product?.price)}
+              </span>
+              {hasDiscount && (
+                <span class="text-xl text-text-muted line-through">
+                  {formatIDR(product?.compare_at_price)}
+                </span>
+              )}
+            </div>
+            {hasDiscount && (
+              <p class="text-green-600 text-sm font-medium">
+                Hemat {formatIDR(product?.compare_at_price - product?.price)} ({discount}%)
+              </p>
+            )}
+          </div>
+
+          <!-- Description -->
+          <div class="prose prose-sm max-w-none text-text-secondary">
+            <p>{product?.description}</p>
+          </div>
+
+          <!-- GPT URL Preview -->
+          {product?.gpt_url && product.gpt_url !== '#' && (
+            <a
+              href={product.gpt_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            >
+              <Icon name="sparkles" size={16} />
+              Preview GPT
+              <Icon name="external-link" size={14} />
+            </a>
+          )}
+
+          <!-- CTA Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-4">
+            <a
+              href={`/checkout?product=${product?.slug}`}
+              class="btn-primary justify-center text-lg py-4"
+            >
+              <Icon name="shopping-cart" size={20} />
+              Beli Sekarang
+            </a>
+            {product?.gpt_url && product.gpt_url !== '#' && (
+              <a
+                href={product.gpt_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-tertiary justify-center text-lg py-4"
+              >
+                <Icon name="play-circle" size={20} />
+                Coba Demo
+              </a>
+            )}
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="grid grid-cols-2 gap-3 pt-4">
+            <div class="flex items-center gap-2 text-sm text-text-muted">
+              <Icon name="shield" size={16} class="text-green-600" />
+              <span>Garansi 7 hari</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-text-muted">
+              <Icon name="download" size={16} class="text-blue-600" />
+              <span>Akses instan</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-text-muted">
+              <Icon name="refresh-cw" size={16} class="text-purple-600" />
+              <span>Update gratis</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-text-muted">
+              <Icon name="message-circle" size={16} class="text-amber-600" />
+              <span>Support premium</span>
+            </div>
+          </div>
+
+          <!-- All-Access Badge -->
+          <div class="flex items-center gap-2 p-4 bg-primary/5 rounded-xl border border-primary/20">
+            <Icon name="crown" size={20} class="text-amber-500" />
+            <div>
+              <p class="text-sm font-medium text-text-primary">Tersedia di All-Access Pass</p>
+              <p class="text-xs text-text-muted">Bayar sekali, akses semua produk seumur hidup</p>
+            </div>
+            <a href="/checkout?product=lifetime-all-access-pass" class="ml-auto text-primary text-sm font-medium hover:underline">
+              Lihat →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      {features.length > 0 && (
+        <section class="mb-12">
+          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+            <Icon name="star" size={24} class="text-primary" />
+            Fitur Utama
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {features.map((feature: Feature) => (
+              <div class="card p-5 hover:border-primary/30 transition-colors">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                    {feature.icon ? (
+                      <Icon name={feature.icon} size={20} class="text-primary" />
+                    ) : (
+                      <Icon name="check-circle" size={20} class="text-primary" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-text-primary mb-1">{feature.title}</h3>
+                    <p class="text-sm text-text-secondary">{feature.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Specifications Section -->
+      {Object.keys(specs).length > 0 && (
+        <section class="mb-12">
+          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+            <Icon name="list" size={24} class="text-primary" />
+            Spesifikasi
+          </h2>
+          <div class="card overflow-hidden">
+            <table class="w-full">
+              <tbody class="divide-y divide-border">
+                {Object.entries(specs).map(([key, value]) => (
+                  <tr>
+                    <td class="px-6 py-4 bg-background font-medium text-text-primary w-1/3">
+                      {key}
+                    </td>
+                    <td class="px-6 py-4 text-text-secondary">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      <!-- FAQ Section -->
+      {faqs.length > 0 && (
+        <section class="mb-12">
+          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+            <Icon name="help-circle" size={24} class="text-primary" />
+            Pertanyaan yang Sering Diajukan
+          </h2>
+          <div class="space-y-3">
+            {faqs.map((faq: {question: string; answer: string}, index: number) => (
+              <div class="card overflow-hidden">
+                <button
+                  onclick={`toggleFaq(${index})`}
+                  class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-background/50 transition-colors"
+                >
+                  <span class="font-medium text-text-primary">{faq.question}</span>
+                  <Icon id={`faq-icon-${index}`} name="chevron-down" size={20} class="text-text-muted transition-transform" />
+                </button>
+                <div id={`faq-content-${index}`} class="hidden px-6 pb-4">
+                  <p class="text-text-secondary">{faq.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Related Products -->
+      {relatedProducts.length > 0 && (
+        <section>
+          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+            <Icon name="sparkles" size={24} class="text-primary" />
+            Produk Lainnya
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedProducts.map((relatedProduct: any) => (
+              <ProductCard product={relatedProduct} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </main>
+
+  <!-- Video Modal -->
+  <div id="video-modal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
+    <button
+      onclick="closeVideoModal()"
+      class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+    >
+      <Icon name="x" size={32} />
+    </button>
+    <video id="modal-video" controls class="max-w-full max-h-[80vh] rounded-lg"></video>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ galleryImages, galleryVideos }}>
+  let currentImageIndex = 0;
+
+  function changeMainImage(src: string, index: number) {
+    const mainImage = document.getElementById('main-image') as HTMLImageElement;
+    const counter = document.getElementById('image-counter')!;
+
+    mainImage.src = src;
+    currentImageIndex = index;
+    counter.textContent = (index + 1).toString();
+
+    // Update thumbnail borders
+    const thumbnails = document.querySelectorAll('button[onclick^="changeMainImage"]');
+    thumbnails.forEach((thumb, i) => {
+      if (i === index) {
+        thumb.classList.remove('border-border');
+        thumb.classList.add('border-primary');
+      } else {
+        thumb.classList.remove('border-primary');
+        thumb.classList.add('border-border');
+      }
+    });
+  }
+
+  function openVideoModal(videoSrc: string) {
+    const modal = document.getElementById('video-modal')!;
+    const video = document.getElementById('modal-video') as HTMLVideoElement;
+
+    video.src = videoSrc;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    video.play();
+  }
+
+  function closeVideoModal() {
+    const modal = document.getElementById('video-modal')!;
+    const video = document.getElementById('modal-video') as HTMLVideoElement;
+
+    video.pause();
+    video.src = '';
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function toggleFaq(index: number) {
+    const content = document.getElementById(`faq-content-${index}`)!;
+    const icon = document.getElementById(`faq-icon-${index}`)!;
+
+    content.classList.toggle('hidden');
+    icon.classList.toggle('rotate-180');
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeVideoModal();
+    }
+  });
+
+  // Make functions globally available
+  (window as any).changeMainImage = changeMainImage;
+  (window as any).openVideoModal = openVideoModal;
+  (window as any).closeVideoModal = closeVideoModal;
+  (window as any).toggleFaq = toggleFaq;
+</script>

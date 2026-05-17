@@ -8,9 +8,17 @@ export interface Product {
   compareAtPrice: number | null;
   gptUrl: string | null;
   imageIcon: string | null;
+  galleryImages: string[] | null;
+  galleryVideos: string[] | null;
+  videoEmbedUrl: string | null;
+  features: string[] | null;
+  specs: Record<string, string> | null;
+  faq: Array<{question: string; answer: string}> | null;
   category: string;
   tags: string[];
   isActive: boolean;
   isFeatured: boolean;
   sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

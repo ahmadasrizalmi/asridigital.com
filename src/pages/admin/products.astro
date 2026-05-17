@@ -287,16 +287,35 @@ import Icon from '../../components/ui/Icon.astro';
   async function deleteProduct(id: string) {
     if (!confirm('Yakin ingin menghapus produk ini?')) return;
     
-    // This would need a DELETE endpoint
-    alert('Fitur hapus produk akan segera tersedia.');
+    try {
+      const response = await fetch(`${API_BASE}/admin/products/${id}`, {
+        method: 'DELETE'
+      });
+      
+      const result = await response.json() as any;
+      
+      if (response.ok) {
+        alert('Produk berhasil dihapus');
+        loadProducts();
+      } else {
+        alert(result.error || 'Terjadi kesalahan');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    }
   }
 
   // Form submission
   document.getElementById('product-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const productId = (document.getElementById('product-id') as HTMLInputElement).value;
+    const method = productId ? 'PUT' : 'POST';
+    const url = productId ? `${API_BASE}/admin/products/${productId}` : `${API_BASE}/admin/products`;
+    
     const productData = {
-      id: (document.getElementById('product-id') as HTMLInputElement).value,
+      id: productId || null,
       title: (document.getElementById('product-title') as HTMLInputElement).value,
       slug: (document.getElementById('product-slug') as HTMLInputElement).value,
       description: (document.getElementById('product-description') as HTMLTextAreaElement).value,
@@ -311,9 +330,33 @@ import Icon from '../../components/ui/Icon.astro';
       is_featured: (document.getElementById('product-featured') as HTMLInputElement).checked,
     };
 
-    // This would need POST/PUT endpoints for products
-    alert('Fitur simpan produk akan segera tersedia. Untuk sementara, edit langsung di database.');
-    closeModal();
+    const submitBtn = e.target.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Menyimpan...';
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      
+      const result = await response.json() as any;
+      
+      if (response.ok) {
+        alert('Produk berhasil ' + (productId ? 'diupdate' : 'ditambahkan'));
+        closeModal();
+        loadProducts();
+      } else {
+        alert(result.error || 'Terjadi kesalahan');
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan Produk';
+    }
   });
 
   // Auto-generate slug from title
