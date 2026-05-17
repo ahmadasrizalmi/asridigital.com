@@ -1,36 +1,64 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/marketing/ProductCard.astro';
-import { getDB } from '../db';
-import { products, siteSettings } from '../db/schema';
-import { eq, asc } from 'drizzle-orm';
-import { formatIDR, parseTags } from '../lib/utils';
+import { formatIDR } from '../lib/utils';
+import type { Product } from '../types';
 
-// Get runtime env
-const env = Astro.locals?.runtime?.env || {};
+// Static build - products will be fetched client-side
+// Seed data for static generation
+const staticProducts: Product[] = [
+  {
+    id: 'ALL-ACCESS',
+    title: 'Lifetime All-Access Pass',
+    slug: 'lifetime-all-access-pass',
+    description: 'Akses seluruh Custom GPT yang ada saat ini dan semua update di masa depan.',
+    shortDescription: 'Akses unlimited ke semua Custom GPT. Sekali bayar, seumur hidup.',
+    price: 299000,
+    compareAtPrice: 599000,
+    gptUrl: null,
+    imageIcon: '/images/all-access-banner.jpg',
+    category: 'membership',
+    tags: ['all-access', 'premium', 'best-value'],
+    isActive: true,
+    isFeatured: true,
+    sortOrder: 0,
+  },
+  {
+    id: 'gpt-animasi-muslim',
+    title: 'Animasi Muslim Kids Studio',
+    slug: 'animasi-muslim-kids-studio',
+    description: 'GPT khusus untuk membuat konten animasi Islami untuk anak-anak.',
+    shortDescription: 'Buat konten animasi Islami untuk anak-anak dengan AI',
+    price: 99000,
+    compareAtPrice: 149000,
+    gptUrl: 'https://chatgpt.com/g/g-6a06bc1c2e5481918d9767aa00048789-animasi-muslim-kids-studio',
+    imageIcon: '/images/animasi-muslim.jpg',
+    category: 'kreatif',
+    tags: ['animasi', 'islami', 'anak'],
+    isActive: true,
+    isFeatured: true,
+    sortOrder: 1,
+  },
+  {
+    id: 'gpt-sahabat-guru',
+    title: 'Sahabat Guru PAUD Islami',
+    slug: 'sahabat-guru-paud-islami',
+    description: 'GPT asisten untuk guru PAUD Islami.',
+    shortDescription: 'Asisten AI untuk guru PAUD Islami',
+    price: 79000,
+    compareAtPrice: null,
+    gptUrl: 'https://chatgpt.com/g/g-6a06d28370f4819189acb6d1815a5df6-sahabat-guru-paud-islami',
+    imageIcon: '/images/sahabat-guru.jpg',
+    category: 'pendidikan',
+    tags: ['guru', 'paud', 'islami', 'pendidikan'],
+    isActive: true,
+    isFeatured: false,
+    sortOrder: 2,
+  },
+];
 
-let dbProducts: any[] = [];
-let settings: any = null;
-
-try {
-  const db = getDB(env);
-  dbProducts = await db.select()
-    .from(products)
-    .where(eq(products.isActive, true))
-    .orderBy(asc(products.sortOrder));
-  
-  const settingsResult = await db.select().from(siteSettings).limit(1);
-  settings = settingsResult[0] || null;
-} catch (e) {
-  console.error('DB error:', e);
-}
-
-// Separate all-access from regular products
-const allAccessProduct = dbProducts.find(p => p.id === 'ALL-ACCESS');
-const regularProducts = dbProducts.filter(p => p.id !== 'ALL-ACCESS');
-
-const siteName = settings?.siteName || 'Asri Digital';
-const siteTagline = settings?.siteTagline || 'Custom GPT untuk Profesional Indonesia';
+const allAccessProduct = staticProducts.find(p => p.id === 'ALL-ACCESS')!;
+const regularProducts = staticProducts.filter(p => p.id !== 'ALL-ACCESS');
 ---
 
 <BaseLayout>
@@ -49,11 +77,11 @@ const siteTagline = settings?.siteTagline || 'Custom GPT untuk Profesional Indon
         </div>
         
         <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 animate-fade-in" style="animation-delay: 0.1s">
-          🚀 {siteName}
+          🚀 Asri Digital
         </h1>
         
         <p class="text-lg md:text-xl text-text-secondary mb-8 animate-fade-in" style="animation-delay: 0.2s">
-          {siteTagline}. Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi.
+          Custom GPT untuk Profesional Indonesia. Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi.
         </p>
         
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 animate-fade-in" style="animation-delay: 0.3s">
@@ -61,7 +89,7 @@ const siteTagline = settings?.siteTagline || 'Custom GPT untuk Profesional Indon
             href="#all-access" 
             class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity pulse-glow"
           >
-            🛒 Beli All-Access Pass - {allAccessProduct ? formatIDR(allAccessProduct.price) : 'Rp 299.000'}
+            🛒 Beli All-Access Pass - {formatIDR(allAccessProduct.price)}
           </a>
         </div>
         
@@ -112,83 +140,80 @@ const siteTagline = settings?.siteTagline || 'Custom GPT untuk Profesional Indon
   </section>
 
   {/* All-Access Banner */}
-  {allAccessProduct && (
-    <section id="all-access" class="py-16 scroll-mt-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="relative rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-secondary/10 overflow-hidden">
-          {/* Decorative */}
-          <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-          
-          <div class="relative p-8 md:p-12">
-            <div class="flex flex-col md:flex-row items-start md:items-center gap-8">
-              <div class="flex-1">
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-bold mb-4">
-                  🏆 BEST VALUE
-                </div>
-                
-                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">
-                  Lifetime All-Access Pass
-                </h2>
-                
-                <div class="flex items-baseline gap-3 mb-6">
-                  <span class="text-4xl font-extrabold text-primary">{formatIDR(allAccessProduct.price)}</span>
-                  {allAccessProduct.compareAtPrice && (
-                    <>
-                      <span class="text-xl text-text-muted line-through">{formatIDR(allAccessProduct.compareAtPrice)}</span>
-                      <span class="px-2 py-1 bg-danger/20 text-danger rounded-lg text-sm font-bold">
-                        HEMAT {Math.round((1 - allAccessProduct.price / allAccessProduct.compareAtPrice) * 100)}%
-                      </span>
-                    </>
-                  )}
-                </div>
-                
-                <ul class="space-y-3 mb-8">
-                  <li class="flex items-center gap-3 text-text-secondary">
-                    <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Akses SEMUA GPT yang ada & akan datang
-                  </li>
-                  <li class="flex items-center gap-3 text-text-secondary">
-                    <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Update lifetime gratis
-                  </li>
-                  <li class="flex items-center gap-3 text-text-secondary">
-                    <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Prioritas support
-                  </li>
-                  <li class="flex items-center gap-3 text-text-secondary">
-                    <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Komunitas eksklusif
-                  </li>
-                </ul>
-                
-                <a 
-                  href={`/checkout?product=${allAccessProduct.slug}`}
-                  class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity shimmer-button"
-                >
-                  🚀 Dapatkan All-Access Sekarang
-                </a>
+  <section id="all-access" class="py-16 scroll-mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="relative rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-secondary/10 overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        
+        <div class="relative p-8 md:p-12">
+          <div class="flex flex-col md:flex-row items-start md:items-center gap-8">
+            <div class="flex-1">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-bold mb-4">
+                🏆 BEST VALUE
               </div>
+              
+              <h2 class="text-3xl md:text-4xl font-extrabold mb-4">
+                Lifetime All-Access Pass
+              </h2>
+              
+              <div class="flex items-baseline gap-3 mb-6">
+                <span class="text-4xl font-extrabold text-primary">{formatIDR(allAccessProduct.price)}</span>
+                {allAccessProduct.compareAtPrice && (
+                  <>
+                    <span class="text-xl text-text-muted line-through">{formatIDR(allAccessProduct.compareAtPrice)}</span>
+                    <span class="px-2 py-1 bg-danger/20 text-danger rounded-lg text-sm font-bold">
+                      HEMAT {Math.round((1 - allAccessProduct.price / allAccessProduct.compareAtPrice) * 100)}%
+                    </span>
+                  </>
+                )}
+              </div>
+              
+              <ul class="space-y-3 mb-8">
+                <li class="flex items-center gap-3 text-text-secondary">
+                  <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Akses SEMUA GPT yang ada & akan datang
+                </li>
+                <li class="flex items-center gap-3 text-text-secondary">
+                  <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Update lifetime gratis
+                </li>
+                <li class="flex items-center gap-3 text-text-secondary">
+                  <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Prioritas support
+                </li>
+                <li class="flex items-center gap-3 text-text-secondary">
+                  <svg class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Komunitas eksklusif
+                </li>
+              </ul>
+              
+              <a 
+                href={`/checkout?product=${allAccessProduct.slug}`}
+                class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity shimmer-button"
+              >
+                🚀 Dapatkan All-Access Sekarang
+              </a>
             </div>
-            
-            <p class="flex items-center gap-2 text-sm text-text-muted mt-6">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              Garansi 7 hari uang kembali • Sekali bayar, akses seumur hidup
-            </p>
           </div>
+          
+          <p class="flex items-center gap-2 text-sm text-text-muted mt-6">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Garansi 7 hari uang kembali • Sekali bayar, akses seumur hidup
+          </p>
         </div>
       </div>
-    </section>
-  )}
+    </div>
+  </section>
 
   {/* Product Grid */}
   <section id="produk" class="py-16 scroll-mt-20">
@@ -196,29 +221,17 @@ const siteTagline = settings?.siteTagline || 'Custom GPT untuk Profesional Indon
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold mb-4">Pilih GPT Sesuai Kebutuhan</h2>
         <p class="text-text-secondary max-w-2xl mx-auto">
-          Setiap Custom GPT dirancang khusus untuk membantu produktivitas Anda. Beli satuan atau dapatkan semua dengan All-Access Pass.
+          Setiap Custom GPT dirancang khusus untuk membantu produktivitas Anda.
         </p>
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {regularProducts.map((product, i) => (
           <div class="animate-fade-in" style={`animation-delay: ${i * 0.1}s`}>
-            <ProductCard product={{
-              ...product,
-              tags: parseTags(product.tags),
-            }} />
+            <ProductCard product={product} />
           </div>
         ))}
       </div>
-      
-      {regularProducts.length === 0 && (
-        <div class="text-center py-16 border border-dashed border-border rounded-xl">
-          <svg class="w-16 h-16 mx-auto text-text-muted mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <p class="text-text-muted">Produk akan segera tersedia</p>
-        </div>
-      )}
     </div>
   </section>
 
@@ -263,24 +276,6 @@ const siteTagline = settings?.siteTagline || 'Custom GPT untuk Profesional Indon
           <p class="text-sm text-text-muted">Dapat update terbaru otomatis</p>
         </div>
       </div>
-    </div>
-  </section>
-
-  {/* CTA Section */}
-  <section class="py-20">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="text-3xl md:text-4xl font-bold mb-6">
-        Siap Meningkatkan Produktivitas dengan AI?
-      </h2>
-      <p class="text-lg text-text-secondary mb-8 max-w-2xl mx-auto">
-        Bergabung dengan ribuan profesional Indonesia yang sudah menggunakan Custom GPT kami untuk pekerjaan sehari-hari.
-      </p>
-      <a 
-        href="#all-access" 
-        class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-bold text-lg hover:opacity-90 transition-opacity"
-      >
-        🚀 Mulai Sekarang
-      </a>
     </div>
   </section>
 </BaseLayout>

@@ -18,18 +18,18 @@
     "d1:migrate": "wrangler d1 execute asri-digital-db --remote --file drizzle/migrations/*.sql"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.5.1",
     "@astrojs/prism": "^4.0.2",
     "astro": "^6.3.3",
+    "autoprefixer": "^10.5.0",
     "drizzle-orm": "^0.44.0",
     "nanoid": "^5.1.5",
+    "postcss": "^8.5.14",
     "prismjs": "^1.30.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250515.0",
-    "@tailwindcss/vite": "^4.1.7",
     "drizzle-kit": "^0.31.0",
-    "tailwindcss": "^4.1.7",
+    "tailwindcss": "^3.4.19",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0",
     "wrangler": "^4.16.0"
