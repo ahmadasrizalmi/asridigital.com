@@ -374,3 +374,28 @@ const stats = [
   <Footer />
   <FOMOPopup />
 </BaseLayout>
+
+<script>
+  // Track affiliate click if ref parameter exists
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get('ref');
+  
+  if (ref) {
+    // Set cookie
+    document.cookie = `asri_ref=${ref};max-age=${30*24*60*60};path=/;SameSite=Lax`;
+    
+    // Track click
+    fetch('/api/affiliate/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        referralCode: ref,
+        page: window.location.pathname
+      })
+    }).catch(err => console.log('Click tracking failed:', err));
+    
+    // Clean URL
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+</script>

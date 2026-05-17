@@ -372,6 +372,23 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
   const refParam = urlParams.get('ref');
   if (refParam) {
     document.cookie = `asri_ref=${refParam};max-age=${30*24*60*60};path=/;SameSite=Lax`;
+    
+    // Track affiliate click
+    fetch('/api/affiliate/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referralCode: refParam, page: '/checkout' })
+    }).catch(() => {});
+  }
+
+  // Get CSRF token
+  let csrfToken = '';
+  try {
+    const csrfResponse = await fetch('/api/csrf-token');
+    const csrfData = await csrfResponse.json();
+    csrfToken = csrfData.token;
+  } catch (e) {
+    console.log('CSRF token fetch failed');
   }
 
   // Form Submit
@@ -388,6 +405,7 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
       paymentMethod: formData.get('payment_method'),
       couponCode: couponApplied ? couponInput?.value : null,
       referredBy: referredBy || null,
+      csrfToken: csrfToken,
     };
 
     submitBtn.disabled = true;

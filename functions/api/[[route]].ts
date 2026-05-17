@@ -14,6 +14,9 @@ interface Env {
 // Rate limiting store (in-memory for simplicity, use KV in production)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
+// CSRF token store (in-memory, use KV in production)
+const csrfTokenStore = new Map<string, { token: string; expires: number }>();
+
 // Rate limiting helper
 function checkRateLimit(ip: string, limit: number = 60, windowMs: number = 60000): boolean {
   const now = Date.now();
@@ -32,10 +35,31 @@ function checkRateLimit(ip: string, limit: number = 60, windowMs: number = 60000
   return true;
 }
 
+// CSRF token generation
+function generateCSRFToken(sessionId: string): string {
+  const token = crypto.randomUUID();
+  const expires = Date.now() + (60 * 60 * 1000); // 1 hour
+  csrfTokenStore.set(sessionId, { token, expires });
+  return token;
+}
+
+// CSRF token validation
+function validateCSRFToken(sessionId: string, token: string): boolean {
+  const stored = csrfTokenStore.get(sessionId);
+  if (!stored) return false;
+  if (Date.now() > stored.expires) {
+    csrfTokenStore.delete(sessionId);
+    return false;
+  }
+  return stored.token === token;
+}
+
 // Input sanitization helper
 function sanitizeInput(input: string): string {
   return input
     .replace(/[<>]/g, '') // Remove < and >
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
     .trim()
     .substring(0, 1000); // Limit length
 }
@@ -51,20 +75,71 @@ function generateId(): string {
   return crypto.randomUUID();
 }
 
-// Helper: Hash password using SHA-256
+// Helper: Hash password using PBKDF2 (more secure than SHA-256)
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  
+  const hash = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    key,
+    256
+  );
+  
+  const hashArray = Array.from(new Uint8Array(hash));
+  const saltArray = Array.from(salt);
+  
+  // Combine salt and hash
+  const combined = [...saltArray, ...hashArray];
+  return combined.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Helper: Verify password
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const hashedInput = await hashPassword(password);
-  return hashedInput === hash;
+async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  
+  // Extract salt (first 32 chars = 16 bytes)
+  const saltHex = storedHash.substring(0, 32);
+  const salt = new Uint8Array(
+    saltHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16))
+  );
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  
+  const hash = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    key,
+    256
+  );
+  
+  const hashArray = Array.from(new Uint8Array(hash));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return storedHash.substring(32) === hashHex;
 }
 
 // Helper: Create JWT token
@@ -251,6 +326,42 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== HEALTH CHECK ====================
     if (route === '/health' && method === 'GET') {
       return jsonResponse({ status: 'ok', timestamp: new Date().toISOString() });
+    }
+
+    // ==================== CSRF TOKEN ====================
+    if (route === '/csrf-token' && method === 'GET') {
+      const sessionId = url.searchParams.get('session') || crypto.randomUUID();
+      const token = generateCSRFToken(sessionId);
+      return jsonResponse({ token, sessionId });
+    }
+
+    // ==================== AFFILIATE CLICK TRACKING ====================
+    if (route === '/affiliate/click' && method === 'POST') {
+      const { referralCode, page } = await request.json();
+      
+      if (!referralCode) {
+        return jsonResponse({ error: 'Missing referral code' }, 400);
+      }
+      
+      // Log click to database
+      try {
+        await env.DB.prepare(
+          `INSERT INTO affiliate_clicks (id, referral_code, page, ip_address, user_agent, created_at)
+           VALUES (?, ?, ?, ?, ?, datetime('now'))`
+        ).bind(
+          generateId(),
+          referralCode,
+          page || '/',
+          request.headers.get('CF-Connecting-IP') || 'unknown',
+          request.headers.get('User-Agent') || 'unknown'
+        ).run();
+        
+        return jsonResponse({ success: true });
+      } catch (dbError) {
+        // Table might not exist yet, just log
+        console.log('Click tracking table not ready:', dbError);
+        return jsonResponse({ success: true });
+      }
     }
 
     // ==================== PRODUCTS ====================
@@ -1522,6 +1633,18 @@ export async function onRequest(context: any): Promise<Response> {
         "SELECT COALESCE(SUM(commission_amount), 0) as total FROM affiliate_transactions WHERE referrer_user_id = ? AND status = 'PENDING'"
       ).bind(userId).first();
 
+      // Get click count
+      let totalClicks = 0;
+      try {
+        const clickCount = await env.DB.prepare(
+          "SELECT COUNT(*) as count FROM affiliate_clicks WHERE referral_code = ?"
+        ).bind(userId).first();
+        totalClicks = clickCount?.count || 0;
+      } catch (e) {
+        // Table might not exist yet
+        console.log('Click tracking not available:', e);
+      }
+
       // Get recent conversions
       const conversions = await env.DB.prepare(
         `SELECT at.*, o.product_title, o.amount as order_amount 
@@ -1534,7 +1657,7 @@ export async function onRequest(context: any): Promise<Response> {
 
       return jsonResponse({
         referralLink: `${env.APP_URL || 'https://asridigital.com'}?ref=${userId}`,
-        totalClicks: 0, // TODO: Implement click tracking
+        totalClicks: totalClicks,
         totalConversions: totalConversions?.count || 0,
         totalCommission: totalCommission?.total || 0,
         availableCommission: availableCommission?.total || 0,
