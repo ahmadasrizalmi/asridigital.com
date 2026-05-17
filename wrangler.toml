@@ -6,8 +6,8 @@ pages_build_output_dir = "./dist"
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
-database_name = "asridigital-db"
-database_id = "YOUR_DATABASE_ID"  # Will be set by setup script
+database_name = "asri-digital-db"
+database_id = "20495966-0e22-435e-b01b-bc3db9457312"
 
 # Environment variables (set these in Cloudflare Dashboard)
 [vars]
