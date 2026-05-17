@@ -1,4 +1,5 @@
-import { Resend } from 'resend';
+// Use fetch directly instead of Resend SDK for edge compatibility
+const RESEND_API = 'https://api.resend.com';
 
 interface EmailConfig {
   apiKey: string;
@@ -13,12 +14,10 @@ interface SendEmailParams {
 }
 
 export class EmailClient {
-  private resend: Resend;
   private config: EmailConfig;
 
   constructor(config: EmailConfig) {
     this.config = config;
-    this.resend = new Resend(config.apiKey);
   }
 
   /**
@@ -26,18 +25,27 @@ export class EmailClient {
    */
   async send(params: SendEmailParams): Promise<{ success: boolean; id?: string; error?: string }> {
     try {
-      const { data, error } = await this.resend.emails.send({
-        from: `${this.config.fromName} <${this.config.fromEmail}>`,
-        to: params.to,
-        subject: params.subject,
-        html: params.html,
+      const response = await fetch(`${RESEND_API}/emails`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${this.config.fromName} <${this.config.fromEmail}>`,
+          to: [params.to],
+          subject: params.subject,
+          html: params.html,
+        }),
       });
 
-      if (error) {
-        return { success: false, error: error.message };
+      const data = await response.json() as any;
+
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Failed to send' };
       }
 
-      return { success: true, id: data?.id };
+      return { success: true, id: data.id };
     } catch (error) {
       return {
         success: false,

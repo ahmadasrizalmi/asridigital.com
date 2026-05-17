@@ -23,8 +23,7 @@
     "astro": "^6.3.3",
     "drizzle-orm": "^0.44.0",
     "nanoid": "^5.1.5",
-    "prismjs": "^1.30.0",
-    "resend": "^4.0.0"
+    "prismjs": "^1.30.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250515.0",
