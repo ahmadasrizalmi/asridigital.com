@@ -1,11 +1,11 @@
 # Robots.txt for Asri Digital
-# https://asridigital-com.pages.dev
+# https://asridigital.com
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://asridigital-com.pages.dev/sitemap.xml
+Sitemap: https://asridigital.com/sitemap.xml
 
 # Disallow admin pages
 Disallow: /admin/

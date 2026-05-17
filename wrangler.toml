@@ -11,4 +11,5 @@ database_id = "20495966-0e22-435e-b01b-bc3db9457312"
 
 # Environment variables (set these in Cloudflare Dashboard)
 [vars]
+APP_URL = "https://asridigital.com"
 DOMPETX_API_URL = "https://api.dompetx.com/v1"

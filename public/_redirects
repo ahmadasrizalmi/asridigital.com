@@ -3,6 +3,9 @@
 # Redirect www to non-www
 https://www.asridigital.com/* https://asridigital.com/:splat 301
 
+# Redirect pages.dev to custom domain
+https://asridigital-com.pages.dev/* https://asridigital.com/:splat 301
+
 # Redirect old paths
 /dashboard.html /dashboard/ 301
 /blog.html /blog/ 301
