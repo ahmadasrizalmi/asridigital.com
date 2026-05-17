@@ -361,6 +361,167 @@ export async function onRequest(context: any): Promise<Response> {
       });
     }
 
+    // ==================== AUTH: FORGOT PASSWORD ====================
+    if (route === '/auth/forgot-password' && method === 'POST') {
+      const { email } = await request.json();
+
+      if (!email) {
+        return jsonResponse({ error: 'Email wajib diisi' }, 400);
+      }
+
+      // Check if user exists
+      const user = await env.DB.prepare(
+        'SELECT id, email, name FROM users WHERE email = ?'
+      )
+        .bind(email)
+        .first();
+
+      // Always return success to prevent email enumeration
+      if (!user) {
+        return jsonResponse({ success: true, message: 'Jika email terdaftar, Anda akan menerima link reset password.' });
+      }
+
+      // Generate reset token
+      const resetToken = generateId();
+      const resetExpiry = new Date(Date.now() + 3600000).toISOString(); // 1 hour
+
+      // Store reset token
+      await env.DB.prepare(
+        'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?'
+      )
+        .bind(resetToken, resetExpiry, user.id)
+        .run();
+
+      // Send reset email
+      try {
+        if (env.RESEND_API_KEY && !env.RESEND_API_KEY.startsWith('re_your_')) {
+          const resetUrl = `${env.APP_URL}/reset-password?token=${resetToken}`;
+          
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${env.RESEND_API_KEY}`
+            },
+            body: JSON.stringify({
+              from: 'Asri Digital <noreply@asridigital.com>',
+              to: email,
+              subject: '🔐 Reset Password - Asri Digital',
+              html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                  <div style="background: #5C7A36; padding: 24px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">Reset Password</h1>
+                  </div>
+                  <div style="padding: 24px;">
+                    <p>Halo <strong>${user.name}</strong>,</p>
+                    <p>Kami menerima permintaan untuk reset password akun Anda.</p>
+                    <p>Klik tombol di bawah untuk reset password:</p>
+                    <div style="text-align: center; margin: 32px 0;">
+                      <a href="${resetUrl}" style="background: #5C7A36; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                        Reset Password
+                      </a>
+                    </div>
+                    <p style="color: #737373; font-size: 14px;">Link ini akan kedaluwarsa dalam 1 jam.</p>
+                    <p style="color: #737373; font-size: 14px;">Jika Anda tidak meminta reset password, abaikan email ini.</p>
+                  </div>
+                </div>
+              `
+            })
+          });
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+      }
+
+      return jsonResponse({ success: true, message: 'Jika email terdaftar, Anda akan menerima link reset password.' });
+    }
+
+    // ==================== AUTH: RESET PASSWORD ====================
+    if (route === '/auth/reset-password' && method === 'POST') {
+      const { token, password } = await request.json();
+
+      if (!token || !password) {
+        return jsonResponse({ error: 'Token dan password wajib diisi' }, 400);
+      }
+
+      if (password.length < 6) {
+        return jsonResponse({ error: 'Password minimal 6 karakter' }, 400);
+      }
+
+      // Find user with valid reset token
+      const user = await env.DB.prepare(
+        'SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > datetime("now")'
+      )
+        .bind(token)
+        .first();
+
+      if (!user) {
+        return jsonResponse({ error: 'Token tidak valid atau sudah kedaluwarsa' }, 400);
+      }
+
+      // Update password
+      const passwordHash = await hashPassword(password);
+      await env.DB.prepare(
+        'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL, updated_at = datetime("now") WHERE id = ?'
+      )
+        .bind(passwordHash, user.id)
+        .run();
+
+      return jsonResponse({ success: true, message: 'Password berhasil direset. Silakan login dengan password baru.' });
+    }
+
+    // ==================== AUTH: UPDATE PROFILE ====================
+    if (route === '/auth/profile' && method === 'PATCH') {
+      const currentUser = await getUser(request, env);
+      if (!currentUser) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const { name, phone } = await request.json();
+
+      await env.DB.prepare(
+        'UPDATE users SET name = ?, phone = ?, updated_at = datetime("now") WHERE id = ?'
+      )
+        .bind(name || currentUser.name, phone || currentUser.phone, currentUser.id)
+        .run();
+
+      return jsonResponse({ success: true, message: 'Profil berhasil diupdate.' });
+    }
+
+    // ==================== AUTH: CHANGE PASSWORD ====================
+    if (route === '/auth/change-password' && method === 'POST') {
+      const currentUser = await getUser(request, env);
+      if (!currentUser) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const { current_password, new_password } = await request.json();
+
+      if (!current_password || !new_password) {
+        return jsonResponse({ error: 'Password lama dan baru wajib diisi' }, 400);
+      }
+
+      if (new_password.length < 6) {
+        return jsonResponse({ error: 'Password baru minimal 6 karakter' }, 400);
+      }
+
+      // Verify current password
+      const valid = await verifyPassword(current_password, currentUser.password as string);
+      if (!valid) {
+        return jsonResponse({ error: 'Password lama salah' }, 401);
+      }
+
+      // Update password
+      const passwordHash = await hashPassword(new_password);
+      await env.DB.prepare(
+        'UPDATE users SET password = ?, updated_at = datetime("now") WHERE id = ?'
+      )
+        .bind(passwordHash, currentUser.id)
+        .run();
+
+      return jsonResponse({ success: true, message: 'Password berhasil diubah.' });
+    }
+
     // ==================== CHECKOUT ====================
     if (route === '/checkout' && method === 'POST') {
       const body = await request.json();

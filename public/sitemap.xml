@@ -39,11 +39,34 @@
     <priority>0.7</priority>
   </url>
   
+  <url>
+    <loc>https://asridigital-com.pages.dev/blog/case-study-konten-youtube/</loc>
+    <lastmod>2026-05-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
   <!-- Dashboard -->
   <url>
     <loc>https://asridigital-com.pages.dev/dashboard/</loc>
     <lastmod>2026-05-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
+  </url>
+  
+  <!-- Profile -->
+  <url>
+    <loc>https://asridigital-com.pages.dev/profile/</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Auth Pages -->
+  <url>
+    <loc>https://asridigital-com.pages.dev/forgot-password/</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

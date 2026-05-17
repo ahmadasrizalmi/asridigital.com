@@ -1,22 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
-
-const sidebarLinks = [
-  { icon: 'bar-chart', label: 'Dashboard', href: '/admin', active: false },
-  { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: false },
-  { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: false },
-  { icon: 'users', label: 'Pengguna', href: '/admin/users', active: false },
-  { icon: 'tag', label: 'Kupon', href: '/admin/coupons', active: false },
-  { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: false },
-  { icon: 'file-text', label: 'Blog', href: '/admin/blog', active: false },
-  { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: true },
-];
 ---
 
-<BaseLayout title="Pengaturan - Admin">
+<BaseLayout title="Pengaturan - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <!-- Sidebar -->
     <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
@@ -30,8 +18,23 @@ const sidebarLinks = [
         </a>
         
         <nav class="space-y-1">
-          {sidebarLinks.map((link) => (
-            <a href={link.href} class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-background'}`}>
+          {[
+            { icon: 'bar-chart', label: 'Dashboard', href: '/admin' },
+            { icon: 'sparkles', label: 'Produk', href: '/admin/products' },
+            { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders' },
+            { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
+            { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: true },
+          ].map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
               <Icon name={link.icon} size={18} />
               {link.label}
             </a>
@@ -47,160 +50,260 @@ const sidebarLinks = [
       </div>
     </aside>
     
-    <!-- Main Content -->
     <main class="flex-1 bg-background">
       <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
-        <div class="flex items-center gap-4">
-          <button class="lg:hidden p-2 hover:bg-background rounded-lg">
-            <Icon name="menu" size={24} class="text-text-secondary" />
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
+              <Icon name="menu" size={24} class="text-text-secondary" />
+            </button>
+            <h1 class="text-xl font-bold text-text-primary">Pengaturan</h1>
+          </div>
+          
+          <button onclick="saveSettings()" class="btn-primary">
+            <Icon name="save" size={18} />
+            Simpan Semua
           </button>
-          <h1 class="text-xl font-bold text-text-primary">Pengaturan</h1>
         </div>
       </header>
       
       <div class="p-6 max-w-4xl">
         <!-- General Settings -->
         <div class="card p-6 mb-6">
-          <h2 class="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
-            <Icon name="settings" size={20} class="text-text-muted" />
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="globe" size={20} class="text-primary" />
             Pengaturan Umum
           </h2>
           
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Nama Website</label>
-              <input type="text" value="Asri Digital" class="input" />
+              <label class="block text-sm font-medium text-text-main mb-2">Nama Situs</label>
+              <input type="text" id="setting-site-name" class="input" value="Asri Digital" />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Deskripsi</label>
-              <textarea class="input" rows="3">Custom GPT untuk Profesional Indonesia</textarea>
+              <label class="block text-sm font-medium text-text-main mb-2">Deskripsi Situs</label>
+              <textarea id="setting-site-description" class="input" rows="2">Custom GPT Marketplace untuk Profesional Indonesia</textarea>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">URL Website</label>
-              <input type="url" value="https://asridigital-com.pages.dev" class="input" />
+              <label class="block text-sm font-medium text-text-main mb-2">URL Situs</label>
+              <input type="url" id="setting-site-url" class="input" value="https://asridigital-com.pages.dev" />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Email Kontak</label>
-              <input type="email" value="support@asridigital.com" class="input" />
+              <label class="block text-sm font-medium text-text-main mb-2">Logo URL</label>
+              <input type="text" id="setting-logo-url" class="input" placeholder="/images/logo.svg" />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contact Settings -->
+        <div class="card p-6 mb-6">
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="phone" size={20} class="text-primary" />
+            Kontak
+          </h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Email Support</label>
+              <input type="email" id="setting-email" class="input" value="support@asridigital.com" />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">WhatsApp</label>
-              <input type="tel" value="628123456789" class="input" />
+              <label class="block text-sm font-medium text-text-main mb-2">WhatsApp Number</label>
+              <input type="tel" id="setting-whatsapp" class="input" placeholder="628123456789" />
             </div>
           </div>
         </div>
         
         <!-- Payment Settings -->
         <div class="card p-6 mb-6">
-          <h2 class="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
-            <Icon name="credit-card" size={20} class="text-text-muted" />
-            Pengaturan Pembayaran
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="credit-card" size={20} class="text-primary" />
+            Pembayaran
           </h2>
           
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">DompetX API Key</label>
-              <input type="password" value="••••••••" class="input" />
-              <p class="text-xs text-text-muted mt-1">Digunakan untuk integrasi pembayaran</p>
+              <input type="password" id="setting-dompetx-key" class="input" placeholder="Masukkan API Key" />
+              <p class="text-xs text-text-muted mt-1">Dapatkan dari dashboard DompetX</p>
             </div>
             
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">DompetX Webhook Secret</label>
-              <input type="password" value="••••••••" class="input" />
+              <input type="password" id="setting-dompetx-webhook" class="input" placeholder="Masukkan Webhook Secret" />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Mata Uang</label>
-              <select class="input">
-                <option value="IDR" selected>IDR - Rupiah Indonesia</option>
-                <option value="USD">USD - US Dollar</option>
-              </select>
+              <label class="block text-sm font-medium text-text-main mb-2">Komisi Affiliate (%)</label>
+              <input type="number" id="setting-commission" class="input" value="15" min="5" max="50" />
             </div>
           </div>
         </div>
         
         <!-- Email Settings -->
         <div class="card p-6 mb-6">
-          <h2 class="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
-            <Icon name="mail" size={20} class="text-text-muted" />
-            Pengaturan Email
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="mail" size={20} class="text-primary" />
+            Email
           </h2>
           
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Resend API Key</label>
-              <input type="password" value="••••••••" class="input" />
+              <input type="password" id="setting-resend-key" class="input" placeholder="re_xxxxxxxxxxxx" />
+              <p class="text-xs text-text-muted mt-1">Dapatkan dari resend.com</p>
             </div>
             
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Email Pengirim</label>
-              <input type="email" value="noreply@asridigital.com" class="input" />
+              <input type="email" id="setting-from-email" class="input" value="noreply@asridigital.com" />
             </div>
             
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Nama Pengirim</label>
-              <input type="text" value="Asri Digital" class="input" />
-            </div>
-          </div>
-        </div>
-        
-        <!-- Affiliate Settings -->
-        <div class="card p-6 mb-6">
-          <h2 class="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
-            <Icon name="link" size={20} class="text-text-muted" />
-            Pengaturan Affiliate
-          </h2>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Komisi Default (%)</label>
-              <input type="number" value="10" min="1" max="50" class="input" />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Minimal Withdrawal (IDR)</label>
-              <input type="number" value="50000" class="input" />
-            </div>
-            
-            <div class="flex items-center gap-3">
-              <input type="checkbox" id="affiliate-enabled" checked class="w-4 h-4 text-primary focus:ring-primary border-border rounded" />
-              <label for="affiliate-enabled" class="text-sm text-text-main">Aktifkan sistem affiliate</label>
+              <input type="text" id="setting-from-name" class="input" value="Asri Digital" />
             </div>
           </div>
         </div>
         
         <!-- FOMO Settings -->
         <div class="card p-6 mb-6">
-          <h2 class="text-lg font-semibold text-text-primary mb-6 flex items-center gap-2">
-            <Icon name="bell" size={20} class="text-text-muted" />
-            FOMO Popup Settings
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="bell" size={20} class="text-primary" />
+            FOMO & Notifikasi
           </h2>
           
           <div class="space-y-4">
-            <div class="flex items-center gap-3">
-              <input type="checkbox" id="fomo-enabled" checked class="w-4 h-4 text-primary focus:ring-primary border-border rounded" />
-              <label for="fomo-enabled" class="text-sm text-text-main">Aktifkan FOMO popup</label>
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium text-text-primary">FOMO Popup</p>
+                <p class="text-sm text-text-muted">Tampilkan notifikasi penjualan terbaru</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="setting-fomo-enabled" class="sr-only peer" checked />
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium text-text-primary">Auto Email Konfirmasi</p>
+                <p class="text-sm text-text-muted">Kirim email otomatis setelah pembayaran</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="setting-auto-email" class="sr-only peer" checked />
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Social Media -->
+        <div class="card p-6 mb-6">
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="share-2" size={20} class="text-primary" />
+            Social Media
+          </h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Instagram</label>
+              <input type="url" id="setting-instagram" class="input" placeholder="https://instagram.com/asridigital" />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">Interval (detik)</label>
-              <input type="number" value="30" min="10" max="120" class="input" />
+              <label class="block text-sm font-medium text-text-main mb-2">TikTok</label>
+              <input type="url" id="setting-tiktok" class="input" placeholder="https://tiktok.com/@asridigital" />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">YouTube</label>
+              <input type="url" id="setting-youtube" class="input" placeholder="https://youtube.com/@asridigital" />
             </div>
           </div>
         </div>
         
         <!-- Save Button -->
-        <div class="flex justify-end">
-          <button class="btn-primary">
-            <Icon name="check" size={16} />
-            Simpan Pengaturan
+        <div class="flex justify-end gap-3">
+          <button onclick="resetSettings()" class="btn-tertiary">
+            <Icon name="refresh-cw" size={18} />
+            Reset
+          </button>
+          <button onclick="saveSettings()" class="btn-primary">
+            <Icon name="save" size={18} />
+            Simpan Semua Pengaturan
           </button>
         </div>
       </div>
     </main>
   </div>
 </BaseLayout>
+
+<script>
+  const API_BASE = '/api';
+  
+  async function loadSettings() {
+    try {
+      const response = await fetch(`${API_BASE}/admin/settings`);
+      const data = await response.json();
+      
+      if (data.settings) {
+        const s = data.settings;
+        if (s.site_name) document.getElementById('setting-site-name').value = s.site_name;
+        if (s.site_description) document.getElementById('setting-site-description').value = s.site_description;
+        if (s.site_url) document.getElementById('setting-site-url').value = s.site_url;
+        if (s.whatsapp_number) document.getElementById('setting-whatsapp').value = s.whatsapp_number;
+        if (s.email) document.getElementById('setting-email').value = s.email;
+        if (s.commission_percent) document.getElementById('setting-commission').value = s.commission_percent;
+        if (s.fomo_enabled) document.getElementById('setting-fomo-enabled').checked = s.fomo_enabled === 'true';
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  }
+  
+  async function saveSettings() {
+    const settings = {
+      site_name: document.getElementById('setting-site-name').value,
+      site_description: document.getElementById('setting-site-description').value,
+      site_url: document.getElementById('setting-site-url').value,
+      whatsapp_number: document.getElementById('setting-whatsapp').value,
+      email: document.getElementById('setting-email').value,
+      commission_percent: document.getElementById('setting-commission').value,
+      fomo_enabled: document.getElementById('setting-fomo-enabled').checked.toString(),
+      auto_email: document.getElementById('setting-auto-email').checked.toString(),
+    };
+    
+    try {
+      const response = await fetch(`${API_BASE}/admin/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Pengaturan berhasil disimpan!');
+      } else {
+        alert('Gagal menyimpan pengaturan.');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Terjadi kesalahan.');
+    }
+  }
+  
+  function resetSettings() {
+    if (confirm('Reset semua pengaturan ke default?')) {
+      loadSettings();
+    }
+  }
+  
+  // Load on page load
+  loadSettings();
+</script>

@@ -1,0 +1,234 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Icon from '../components/ui/Icon.astro';
+---
+
+<BaseLayout title="Profil Saya - Asri Digital">
+  <Header />
+  
+  <main class="flex-1 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-text-primary">Profil Saya</h1>
+        <p class="text-text-secondary mt-1">Kelola informasi akun Anda</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+          <div class="card p-6">
+            <div class="text-center">
+              <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="user" size={32} class="text-primary" />
+              </div>
+              <h2 id="profile-name" class="font-semibold text-text-primary text-lg">-</h2>
+              <p id="profile-email" class="text-sm text-text-muted">-</p>
+              <div id="all-access-badge" class="hidden mt-3">
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                  <Icon name="crown" size={14} />
+                  All-Access Member
+                </span>
+              </div>
+            </div>
+            
+            <nav class="mt-6 pt-6 border-t border-border space-y-1">
+              <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-primary hover:bg-primary/5">
+                <Icon name="layout" size={18} />
+                Dashboard
+              </a>
+              <a href="#profile" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-primary bg-primary/10 font-medium">
+                <Icon name="user" size={18} />
+                Profil
+              </a>
+              <a href="#orders" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-primary hover:bg-primary/5">
+                <Icon name="shopping-bag" size={18} />
+                Pesanan
+              </a>
+              <a href="#security" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-primary hover:bg-primary/5">
+                <Icon name="shield" size={18} />
+                Keamanan
+              </a>
+            </nav>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Profile Section -->
+          <div id="section-profile" class="card p-6">
+            <h3 class="text-lg font-semibold text-text-primary mb-4">Informasi Profil</h3>
+            
+            <form id="profile-form" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-text-main mb-2">Nama Lengkap</label>
+                  <input type="text" id="input-name" class="input" placeholder="Nama Anda" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-text-main mb-2">Email</label>
+                  <input type="email" id="input-email" class="input bg-background" disabled />
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-2">Nomor Telepon</label>
+                <input type="tel" id="input-phone" class="input" placeholder="08xxxxxxxxxx" />
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" class="btn-primary">
+                  <Icon name="check" size={18} />
+                  Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Security Section -->
+          <div id="section-security" class="card p-6">
+            <h3 class="text-lg font-semibold text-text-primary mb-4">Ubah Password</h3>
+            
+            <form id="password-form" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-2">Password Lama</label>
+                <input type="password" id="current-password" class="input" placeholder="Masukkan password lama" />
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-text-main mb-2">Password Baru</label>
+                  <input type="password" id="new-password" class="input" placeholder="Minimal 6 karakter" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-text-main mb-2">Konfirmasi Password Baru</label>
+                  <input type="password" id="confirm-password" class="input" placeholder="Ulangi password baru" />
+                </div>
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" class="btn-primary">
+                  <Icon name="lock" size={18} />
+                  Ubah Password
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Danger Zone -->
+          <div class="card p-6 border-red-200">
+            <h3 class="text-lg font-semibold text-red-600 mb-4">Danger Zone</h3>
+            <p class="text-sm text-text-secondary mb-4">Tindakan di bawah ini tidak dapat dibatalkan.</p>
+            <button onclick="confirmDeleteAccount()" class="btn-danger">
+              <Icon name="trash-2" size={18} />
+              Hapus Akun
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  const API_BASE = '/api';
+  
+  function getToken() {
+    return localStorage.getItem('auth_token');
+  }
+  
+  function getUser() {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+  
+  async function apiRequest(endpoint, options = {}) {
+    const token = getToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers
+    });
+    
+    return response.json();
+  }
+  
+  // Load profile
+  async function loadProfile() {
+    const user = getUser();
+    if (!user) {
+      window.location.href = '/dashboard';
+      return;
+    }
+    
+    try {
+      const data = await apiRequest('/auth/me');
+      if (data.user) {
+        document.getElementById('profile-name').textContent = data.user.name;
+        document.getElementById('profile-email').textContent = data.user.email;
+        document.getElementById('input-name').value = data.user.name;
+        document.getElementById('input-email').value = data.user.email;
+        
+        if (data.user.is_all_access) {
+          document.getElementById('all-access-badge').classList.remove('hidden');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  }
+  
+  // Update profile
+  document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById('input-name').value;
+    const phone = document.getElementById('input-phone').value;
+    
+    // This would need a PATCH /api/auth/profile endpoint
+    alert('Fitur update profil akan segera tersedia.');
+  });
+  
+  // Change password
+  document.getElementById('password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    if (newPassword !== confirmPassword) {
+      alert('Password baru tidak cocok!');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      alert('Password baru minimal 6 karakter!');
+      return;
+    }
+    
+    // This would need a PATCH /api/auth/password endpoint
+    alert('Fitur ubah password akan segera tersedia.');
+  });
+  
+  // Delete account
+  function confirmDeleteAccount() {
+    if (confirm('Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.')) {
+      if (confirm('Konfirmasi sekali lagi: Semua data Anda akan dihapus permanen.')) {
+        alert('Fitur hapus akun akan segera tersedia.');
+      }
+    }
+  }
+  
+  // Load on page load
+  loadProfile();
+</script>

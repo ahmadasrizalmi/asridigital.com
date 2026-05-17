@@ -1,0 +1,309 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/layout/Header.astro';
+import Footer from '../../components/layout/Footer.astro';
+import Icon from '../../components/ui/Icon.astro';
+
+// For static build with dynamic routes, we need getStaticPaths
+export async function getStaticPaths() {
+  // Return known slugs - these will be pre-rendered at build time
+  // Other slugs will be handled by client-side JS
+  return [
+    { params: { slug: 'custom-gpt-untuk-bisnis' } },
+    { params: { slug: 'cara-menggunakan-chatgpt' } },
+    { params: { slug: 'case-study-konten-youtube' } },
+  ];
+}
+
+const { slug } = Astro.params;
+---
+
+<BaseLayout title="Blog - Asri Digital">
+  <Header />
+  
+  <main class="flex-1 py-12">
+    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Loading State -->
+      <div id="loading-state" class="text-center py-20">
+        <div class="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p class="text-text-muted">Memuat artikel...</p>
+      </div>
+      
+      <!-- Article Content -->
+      <div id="article-content" class="hidden">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm text-text-muted mb-8">
+          <a href="/" class="hover:text-primary">Beranda</a>
+          <Icon name="chevron-right" size={16} />
+          <a href="/blog" class="hover:text-primary">Blog</a>
+          <Icon name="chevron-right" size={16} />
+          <span id="breadcrumb-title" class="text-text-main"></span>
+        </nav>
+        
+        <!-- Header -->
+        <header class="mb-8">
+          <div class="flex items-center gap-3 mb-4">
+            <span id="post-category" class="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"></span>
+            <span id="post-date" class="text-sm text-text-muted"></span>
+          </div>
+          
+          <h1 id="post-title" class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4"></h1>
+          
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <Icon name="user" size={18} class="text-primary" />
+              </div>
+              <div>
+                <p id="post-author" class="font-medium text-text-primary">Admin</p>
+                <p class="text-sm text-text-muted">Author</p>
+              </div>
+            </div>
+          </div>
+        </header>
+        
+        <!-- Featured Image -->
+        <div id="post-image-container" class="mb-8 rounded-xl overflow-hidden hidden">
+          <img id="post-image" class="w-full h-auto" alt="" />
+        </div>
+        
+        <!-- Content -->
+        <div id="post-content" class="prose prose-lg max-w-none mb-12"></div>
+        
+        <!-- Tags -->
+        <div id="post-tags" class="flex flex-wrap gap-2 mb-8"></div>
+        
+        <!-- Share -->
+        <div class="flex items-center gap-4 py-6 border-t border-border">
+          <span class="text-sm font-medium text-text-main">Share:</span>
+          <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+            <Icon name="twitter" size={20} />
+          </a>
+          <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+            <Icon name="facebook" size={20} />
+          </a>
+          <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+            <Icon name="message-circle" size={20} />
+          </a>
+        </div>
+        
+        <!-- Related Posts -->
+        <div id="related-posts" class="mt-12 hidden">
+          <h2 class="text-2xl font-bold text-text-primary mb-6">Artikel Terkait</h2>
+          <div id="related-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+      </div>
+      
+      <!-- Error State -->
+      <div id="error-state" class="text-center py-20 hidden">
+        <Icon name="alert-circle" size={48} class="text-red-500 mx-auto mb-4" />
+        <h2 class="text-xl font-bold text-text-primary mb-2">Artikel Tidak Ditemukan</h2>
+        <p class="text-text-secondary mb-6">Maaf, artikel yang Anda cari tidak tersedia.</p>
+        <a href="/blog" class="btn-primary">
+          <Icon name="arrow-left" size={18} />
+          Kembali ke Blog
+        </a>
+      </div>
+    </article>
+  </main>
+  
+  <Footer />
+</BaseLayout>
+
+<script define:vars={{ slug }}>
+  const API_BASE = '/api';
+  
+  function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+  
+  const categoryColors = {
+    'tips': 'bg-primary/10 text-primary',
+    'tutorial': 'bg-blue-100 text-blue-600',
+    'studi-kasus': 'bg-amber-100 text-amber-600',
+    'berita': 'bg-purple-100 text-purple-600',
+    'general': 'bg-gray-100 text-gray-600',
+  };
+  
+  const categoryLabels = {
+    'tips': 'Tips & Trik',
+    'tutorial': 'Tutorial',
+    'studi-kasus': 'Studi Kasus',
+    'berita': 'Berita',
+    'general': 'Umum',
+  };
+  
+  async function loadBlogPost() {
+    try {
+      const response = await fetch(`${API_BASE}/blog/${slug}`);
+      const data = await response.json();
+      
+      if (!data.post) {
+        throw new Error('Post not found');
+      }
+      
+      const post = data.post;
+      const relatedPosts = data.relatedPosts || [];
+      
+      // Update page title
+      document.title = `${post.title} - Blog Asri Digital`;
+      
+      // Update breadcrumb
+      document.getElementById('breadcrumb-title').textContent = post.title;
+      
+      // Update category
+      const categoryEl = document.getElementById('post-category');
+      categoryEl.textContent = categoryLabels[post.category] || post.category;
+      categoryEl.className = `px-3 py-1 rounded-full text-xs font-medium ${categoryColors[post.category] || categoryColors.general}`;
+      
+      // Update date
+      document.getElementById('post-date').textContent = formatDate(post.published_at);
+      
+      // Update title
+      document.getElementById('post-title').textContent = post.title;
+      
+      // Update author
+      document.getElementById('post-author').textContent = post.author_name || 'Admin';
+      
+      // Update image
+      if (post.image_url) {
+        const imageContainer = document.getElementById('post-image-container');
+        const imageEl = document.getElementById('post-image');
+        imageEl.src = post.image_url;
+        imageEl.alt = post.title;
+        imageContainer.classList.remove('hidden');
+      }
+      
+      // Update content
+      document.getElementById('post-content').innerHTML = post.content;
+      
+      // Update tags
+      if (post.tags) {
+        const tagsContainer = document.getElementById('post-tags');
+        const tags = JSON.parse(post.tags);
+        tagsContainer.innerHTML = tags.map(tag => `
+          <span class="px-3 py-1 bg-background rounded-full text-sm text-text-secondary">#${tag}</span>
+        `).join('');
+      }
+      
+      // Update share links
+      const postUrl = window.location.href;
+      const postTitle = encodeURIComponent(post.title);
+      document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${postTitle}&url=${encodeURIComponent(postUrl)}`;
+      document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
+      document.getElementById('share-whatsapp').href = `https://api.whatsapp.com/send?text=${postTitle} ${encodeURIComponent(postUrl)}`;
+      
+      // Update related posts
+      if (relatedPosts.length > 0) {
+        const relatedGrid = document.getElementById('related-grid');
+        relatedGrid.innerHTML = relatedPosts.map(related => `
+          <a href="/blog/${related.slug}" class="card-hover overflow-hidden group">
+            <div class="w-full h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-text-primary group-hover:text-primary transition-colors line-clamp-2">${related.title}</h3>
+              <p class="text-sm text-text-muted mt-2 line-clamp-2">${related.excerpt || ''}</p>
+            </div>
+          </a>
+        `).join('');
+        document.getElementById('related-posts').classList.remove('hidden');
+      }
+      
+      // Show content, hide loading
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('article-content').classList.remove('hidden');
+      
+    } catch (error) {
+      console.error('Error loading blog post:', error);
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+    }
+  }
+  
+  // Load on page load
+  loadBlogPost();
+</script>
+
+<style>
+  .prose {
+    color: #262626;
+    line-height: 1.75;
+  }
+  
+  .prose h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #171717;
+  }
+  
+  .prose h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #171717;
+  }
+  
+  .prose p {
+    margin-bottom: 1rem;
+  }
+  
+  .prose ul, .prose ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .prose code {
+    background-color: #f5f5f5;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+  
+  .prose pre {
+    background-color: #171717;
+    color: #e5e5e5;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+  
+  .prose pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+  }
+  
+  .prose a {
+    color: #5C7A36;
+    text-decoration: underline;
+  }
+  
+  .prose a:hover {
+    color: #4A6628;
+  }
+  
+  .prose blockquote {
+    border-left: 4px solid #5C7A36;
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-bottom: 1rem;
+    color: #525252;
+    font-style: italic;
+  }
+</style>
