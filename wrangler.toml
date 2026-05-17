@@ -5,4 +5,4 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "asri-digital-db"
-database_id = "placeholder-will-be-replaced"
+database_id = "20495966-0e22-435e-b01b-bc3db9457312"
