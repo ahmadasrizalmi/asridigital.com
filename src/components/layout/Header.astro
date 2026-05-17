@@ -12,20 +12,20 @@ const navLinks = [
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-2.5 group">
-        <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center shadow-btn-primary">
-          <Icon name="sparkles" size={18} class="text-white" />
+      <a href="/" class="flex items-center gap-2 sm:gap-2.5 group">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 bg-primary rounded-lg flex items-center justify-center shadow-btn-primary">
+          <Icon name="sparkles" size={16} class="sm:w-[18px] text-white" />
         </div>
-        <span class="text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
+        <span class="text-lg sm:text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
           Asri Digital
         </span>
       </a>
 
       <!-- Desktop Nav -->
-      <nav class="hidden md:flex items-center gap-8">
+      <nav class="hidden md:flex items-center gap-6 lg:gap-8">
         {navLinks.map((link) => (
-          <a 
-            href={link.href} 
+          <a
+            href={link.href}
             class="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors relative group"
           >
             {link.label}
@@ -34,7 +34,7 @@ const navLinks = [
         ))}
       </nav>
 
-      <!-- Auth Buttons -->
+      <!-- Auth Buttons - Desktop -->
       <div class="hidden md:flex items-center gap-3">
         <a href="/dashboard" class="btn-tertiary text-sm px-4 py-2">
           <Icon name="user" size={16} />
@@ -52,34 +52,34 @@ const navLinks = [
     </div>
   </div>
 
-  <!-- Mobile Menu -->
+  <!-- Mobile Menu - Responsive width -->
   <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-50">
     <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="mobile-menu-overlay"></div>
-    <div class="absolute right-0 top-0 h-full w-80 bg-surface border-l border-border p-6 shadow-xl">
-      <div class="flex justify-between items-center mb-10">
+    <div class="absolute right-0 top-0 h-full w-72 sm:w-80 bg-surface border-l border-border p-4 sm:p-6 shadow-xl">
+      <div class="flex justify-between items-center mb-8 sm:mb-10">
         <span class="font-bold text-xl text-text-primary">Menu</span>
         <button id="mobile-menu-close" class="p-2 hover:bg-background rounded-lg transition-colors text-text-secondary">
           <Icon name="x" size={24} />
         </button>
       </div>
-      
+
       <nav class="flex flex-col gap-2">
         {navLinks.map((link) => (
-          <a 
-            href={link.href} 
-            class="px-4 py-3 text-text-main hover:text-primary hover:bg-primary/5 rounded-lg transition-colors font-medium"
+          <a
+            href={link.href}
+            class="px-4 py-3 text-text-main hover:text-primary hover:bg-primary/5 rounded-lg transition-colors font-medium text-base"
           >
             {link.label}
           </a>
         ))}
-        
+
         <hr class="border-border my-4" />
-        
-        <a href="/dashboard" class="btn-tertiary justify-center">
+
+        <a href="/dashboard" class="btn-tertiary justify-center w-full">
           <Icon name="user" size={18} />
           Login
         </a>
-        <a href="/#produk" class="btn-primary justify-center">
+        <a href="/#produk" class="btn-primary justify-center w-full">
           Mulai Gratis
         </a>
       </nav>
@@ -95,9 +95,25 @@ const navLinks = [
 
   function closeMenu() {
     menu?.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
-  toggle?.addEventListener('click', () => menu?.classList.remove('hidden'));
+  function openMenu() {
+    menu?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  toggle?.addEventListener('click', () => openMenu());
   overlay?.addEventListener('click', closeMenu);
   close?.addEventListener('click', closeMenu);
+
+  // Close menu when clicking on links
+  menu?.querySelectorAll('a[href]').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+
+  // Close on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
 </script>

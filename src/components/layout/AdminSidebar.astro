@@ -58,7 +58,8 @@ const menuItems = [
 <aside 
   id="admin-sidebar"
   class:list={[
-    "fixed lg:static inset-y-0 left-0 z-40 w-64 bg-surface border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 -translate-x-full",
+    "fixed inset-y-0 left-0 z-40 bg-surface border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 -translate-x-full lg:relative",
+    "w-full sm:w-64",
   ]}
 >
   <!-- Logo -->
@@ -82,16 +83,16 @@ const menuItems = [
       <a 
         href={item.href}
         class:list={[
-          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+          "flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
           activePage === item.id 
             ? "bg-primary/20 text-primary" 
             : "text-text-secondary hover:bg-background hover:text-text-primary"
         ]}
       >
         <Fragment set:html={item.icon} />
-        <span>{item.label}</span>
+        <span class="flex-1 text-left">{item.label}</span>
         {activePage === item.id && (
-          <div class="ml-auto w-1.5 h-1.5 rounded-full bg-primary"></div>
+          <div class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></div>
         )}
       </a>
     ))}
