@@ -2,13 +2,11 @@
 import Icon from '../ui/Icon.astro';
 ---
 
-<!-- FOMO Toast Container - PRD Section 7.4 -->
+<!-- FOMO Toast Container -->
 <div id="fomo-container" class="fixed bottom-4 left-4 z-50 space-y-3 max-w-sm">
-  <!-- Toasts will be injected here by JS -->
 </div>
 
 <script>
-  // FOMO Social Proof Implementation - PRD Section 7.4
   interface RecentSale {
     firstName: string;
     productName: string;
@@ -22,29 +20,28 @@ import Icon from '../ui/Icon.astro';
   ];
 
   const container = document.getElementById('fomo-container');
-  let currentToast = 0;
 
   function createToast(sale: RecentSale): HTMLElement {
     const toast = document.createElement('div');
-    toast.className = 'card p-4 flex items-start gap-3 transform transition-all duration-500 translate-x-[-100%] opacity-0';
+    toast.className = 'bg-white border border-gray-200 rounded-xl shadow-lg p-4 flex items-start gap-3 transform transition-all duration-500 translate-x-[-100%] opacity-0';
     toast.innerHTML = `
-      <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 shrink-0">
         ${sale.firstName.charAt(0)}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-sm text-text-primary">
+        <p class="text-sm text-gray-900">
           <span class="font-semibold">${sale.firstName}</span> baru saja membeli
         </p>
-        <p class="text-sm text-primary font-medium truncate">${sale.productName}</p>
-        <p class="text-xs text-text-muted mt-1">${sale.timeAgo} yang lalu</p>
+        <p class="text-sm text-green-700 font-medium truncate">${sale.productName}</p>
+        <p class="text-xs text-gray-500 mt-1">${sale.timeAgo} yang lalu</p>
       </div>
-      <button onclick="this.parentElement.remove()" class="text-text-muted hover:text-text-primary">
+      <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>
       </button>
-      <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/20">
-        <div class="h-full bg-primary toast-progress" style="animation: shrink 4s linear forwards"></div>
+      <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100 rounded-b-xl overflow-hidden">
+        <div class="h-full bg-green-500 toast-progress" style="animation: shrink 4s linear forwards"></div>
       </div>
     `;
     return toast;
@@ -55,13 +52,11 @@ import Icon from '../ui/Icon.astro';
       const toast = createToast(sale);
       container?.appendChild(toast);
       
-      // Animate in
       requestAnimationFrame(() => {
         toast.classList.remove('translate-x-[-100%]', 'opacity-0');
         toast.classList.add('translate-x-0', 'opacity-100');
       });
 
-      // Auto hide after 4s
       setTimeout(() => {
         toast.classList.remove('translate-x-0', 'opacity-100');
         toast.classList.add('translate-x-[-100%]', 'opacity-0');
@@ -70,14 +65,12 @@ import Icon from '../ui/Icon.astro';
     }, delay);
   }
 
-  // Show sequence: 3s, 8s, 15s
   function startSequence() {
     if (!container) return;
     showToast(mockSales[0], 3000);
     showToast(mockSales[1], 8000);
     showToast(mockSales[2], 15000);
     
-    // Loop every 30s
     setInterval(() => {
       showToast(mockSales[0], 0);
       showToast(mockSales[1], 5000);
@@ -85,7 +78,6 @@ import Icon from '../ui/Icon.astro';
     }, 30000);
   }
 
-  // Start on page load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', startSequence);
   } else {

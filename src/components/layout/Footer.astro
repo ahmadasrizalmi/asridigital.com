@@ -36,12 +36,12 @@ const footerLinks = [
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
       <!-- Brand Section -->
       <div class="lg:col-span-2 space-y-6">
-        <a href="/" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-            <Icon name="sparkles" size={20} class="text-white" />
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <Icon name="sparkles" size={18} class="text-white" />
           </div>
-          <span class="text-2xl font-bold group-hover:text-primary transition-colors">
-            Asri <span class="text-gradient">Digital</span>
+          <span class="text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
+            Asri Digital
           </span>
         </a>
         
@@ -57,10 +57,10 @@ const footerLinks = [
         <!-- Social Proof -->
         <div class="flex items-center gap-4 pt-2">
           <div class="flex -space-x-2">
-            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">S</div>
-            <div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-bold text-secondary">A</div>
-            <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-xs font-bold text-accent">B</div>
-            <div class="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center text-xs font-bold text-success">R</div>
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">S</div>
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">A</div>
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">B</div>
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">R</div>
           </div>
           <div class="text-xs text-text-muted">
             <span class="text-text-primary font-bold">500+</span> pengguna aktif
@@ -77,9 +77,8 @@ const footerLinks = [
               <li>
                 <a 
                   href={link.href} 
-                  class="text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-2 group"
+                  class="text-sm text-text-secondary hover:text-primary transition-colors"
                 >
-                  <span class="w-0 group-hover:w-2 h-0.5 bg-primary transition-all"></span>
                   {link.label}
                 </a>
               </li>
@@ -97,14 +96,14 @@ const footerLinks = [
         </p>
         
         <div class="flex items-center gap-6 text-sm text-text-muted">
-          <a href="/privacy" class="hover:text-text-primary transition-colors">Privacy Policy</a>
-          <a href="/terms" class="hover:text-text-primary transition-colors">Terms of Service</a>
+          <a href="/privacy" class="hover:text-primary transition-colors">Privacy Policy</a>
+          <a href="/terms" class="hover:text-primary transition-colors">Terms of Service</a>
         </div>
         
         <!-- Payment Methods -->
         <div class="flex items-center gap-2">
           <span class="text-xs text-text-muted">Powered by</span>
-          <span class="text-sm font-semibold text-accent">DompetX</span>
+          <span class="text-sm font-semibold text-primary">DompetX</span>
         </div>
       </div>
     </div>

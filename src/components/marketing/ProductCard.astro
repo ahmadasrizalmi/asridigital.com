@@ -17,36 +17,32 @@ const discount = hasDiscount
 
 <div class="card-hover group">
   {/* Product Image */}
-  <div class="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10">
+  <div class="relative h-48 overflow-hidden bg-background">
     <img 
       src={product.imageIcon || '/images/placeholder.jpg'} 
       alt={product.title}
-      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       loading="lazy"
     />
     
-    {/* Featured Badge */}
-    {product.isFeatured && (
-      <div class="absolute top-3 right-3">
-        <span class="badge-accent">
+    {/* Badges */}
+    <div class="absolute top-3 left-3 flex gap-2">
+      {hasDiscount && (
+        <span class="badge-danger">
+          HEMAT {discount}%
+        </span>
+      )}
+      {product.isFeatured && (
+        <span class="badge-warning">
           <Icon name="star" size={12} />
           POPULER
         </span>
-      </div>
-    )}
-    
-    {/* Discount Badge */}
-    {hasDiscount && (
-      <div class="absolute top-3 left-3">
-        <span class="badge bg-danger/20 text-danger">
-          HEMAT {discount}%
-        </span>
-      </div>
-    )}
+      )}
+    </div>
     
     {/* Category Badge */}
     <div class="absolute bottom-3 left-3">
-      <span class="badge bg-background/80 text-text-secondary backdrop-blur-sm">
+      <span class="badge-muted">
         {product.category}
       </span>
     </div>
@@ -58,27 +54,27 @@ const discount = hasDiscount
     {tags.length > 0 && (
       <div class="flex flex-wrap gap-1.5 mb-3">
         {tags.slice(0, 3).map((tag) => (
-          <span class="px-2 py-0.5 text-xs bg-background/50 text-text-muted rounded-full">
-            {tag}
+          <span class="text-xs text-text-muted">
+            #{tag}
           </span>
         ))}
       </div>
     )}
     
     {/* Title */}
-    <h3 class="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+    <h3 class="font-semibold text-lg mb-2 text-text-primary group-hover:text-primary transition-colors line-clamp-2">
       {product.title}
     </h3>
     
     {/* Description */}
-    <p class="text-sm text-text-muted mb-4 line-clamp-2">
+    <p class="text-sm text-text-secondary mb-4 line-clamp-2">
       {product.shortDescription || product.description}
     </p>
     
     {/* Price & Actions */}
-    <div class="mt-auto">
+    <div class="mt-auto pt-4 border-t border-border">
       <div class="flex items-baseline gap-2 mb-4">
-        <span class="text-2xl font-bold text-primary">
+        <span class="text-2xl font-bold text-text-primary">
           {formatIDR(product.price)}
         </span>
         {hasDiscount && (
@@ -91,7 +87,7 @@ const discount = hasDiscount
       <div class="flex gap-2">
         <a 
           href={`/checkout?product=${product.slug}`}
-          class="btn-primary flex-1 justify-center"
+          class="btn-primary flex-1 justify-center text-sm"
         >
           <Icon name="shopping-cart" size={16} />
           Beli Sekarang
@@ -102,7 +98,7 @@ const discount = hasDiscount
             href={product.gptUrl}
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-secondary px-3"
+            class="btn-tertiary px-3"
             title="Preview GPT"
           >
             <Icon name="external-link" size={16} />
@@ -112,7 +108,7 @@ const discount = hasDiscount
       
       {/* All-Access Badge */}
       <div class="mt-3 flex items-center gap-1.5 text-xs text-text-muted">
-        <Icon name="crown" size={14} class="text-accent" />
+        <Icon name="crown" size={14} class="text-amber-500" />
         <span>Tersedia di All-Access Pass</span>
       </div>
     </div>

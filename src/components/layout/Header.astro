@@ -8,16 +8,16 @@ const navLinks = [
 ];
 ---
 
-<header class="sticky top-0 z-50 glass">
+<header class="navbar sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-2 group">
-        <div class="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+      <a href="/" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center shadow-btn-primary">
           <Icon name="sparkles" size={18} class="text-white" />
         </div>
-        <span class="text-xl font-bold group-hover:text-primary transition-colors">
-          Asri <span class="text-gradient">Digital</span>
+        <span class="text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
+          Asri Digital
         </span>
       </a>
 
@@ -36,17 +36,17 @@ const navLinks = [
 
       <!-- Auth Buttons -->
       <div class="hidden md:flex items-center gap-3">
-        <a href="/api/auth/login" class="btn-secondary text-sm">
+        <a href="/api/auth/login" class="btn-tertiary text-sm px-4 py-2">
           <Icon name="user" size={16} />
           Login
         </a>
-        <a href="/api/auth/register" class="btn-primary text-sm">
-          Daftar
+        <a href="/api/auth/register" class="btn-primary text-sm px-4 py-2">
+          Mulai Gratis
         </a>
       </div>
 
       <!-- Mobile Menu Button -->
-      <button id="mobile-menu-toggle" class="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors">
+      <button id="mobile-menu-toggle" class="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-background">
         <Icon name="menu" size={24} />
       </button>
     </div>
@@ -54,11 +54,11 @@ const navLinks = [
 
   <!-- Mobile Menu -->
   <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-50">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="mobile-menu-overlay"></div>
-    <div class="absolute right-0 top-0 h-full w-80 bg-surface border-l border-border p-6 transform transition-transform">
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="mobile-menu-overlay"></div>
+    <div class="absolute right-0 top-0 h-full w-80 bg-surface border-l border-border p-6 shadow-xl">
       <div class="flex justify-between items-center mb-10">
-        <span class="font-bold text-xl">Menu</span>
-        <button id="mobile-menu-close" class="p-2 hover:bg-background rounded-lg transition-colors">
+        <span class="font-bold text-xl text-text-primary">Menu</span>
+        <button id="mobile-menu-close" class="p-2 hover:bg-background rounded-lg transition-colors text-text-secondary">
           <Icon name="x" size={24} />
         </button>
       </div>
@@ -67,21 +67,20 @@ const navLinks = [
         {navLinks.map((link) => (
           <a 
             href={link.href} 
-            class="px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-background rounded-xl transition-colors flex items-center gap-3"
+            class="px-4 py-3 text-text-main hover:text-primary hover:bg-primary/5 rounded-lg transition-colors font-medium"
           >
-            <Icon name="chevron-right" size={16} />
             {link.label}
           </a>
         ))}
         
         <hr class="border-border my-4" />
         
-        <a href="/api/auth/login" class="btn-secondary justify-center">
+        <a href="/api/auth/login" class="btn-tertiary justify-center">
           <Icon name="user" size={18} />
           Login
         </a>
         <a href="/api/auth/register" class="btn-primary justify-center">
-          Daftar Sekarang
+          Mulai Gratis
         </a>
       </nav>
     </div>

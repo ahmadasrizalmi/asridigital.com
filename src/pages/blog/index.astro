@@ -3,6 +3,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
+
+const blogPosts = [
+  {
+    category: 'AI',
+    categoryColor: 'badge-primary',
+    date: '17 Mei 2026',
+    title: 'Cara Memaksimalkan Custom GPT untuk Bisnis',
+    excerpt: 'Pelajari bagaimana Custom GPT dapat meningkatkan produktivitas bisnis Anda hingga 10x lipat...',
+    slug: '#',
+  },
+  {
+    category: 'Productivity',
+    categoryColor: 'badge-warning',
+    date: '15 Mei 2026',
+    title: '5 Tips Menggunakan AI untuk Content Creation',
+    excerpt: 'Content creation bisa lebih mudah dengan bantuan AI. Berikut 5 tips yang bisa Anda terapkan...',
+    slug: '#',
+  },
+  {
+    category: 'Tutorial',
+    categoryColor: 'badge-success',
+    date: '12 Mei 2026',
+    title: 'Panduan Lengkap Menggunakan All-Access Pass',
+    excerpt: 'Dapatkan manfaat maksimal dari All-Access Pass dengan panduan lengkap ini...',
+    slug: '#',
+  },
+];
 ---
 
 <BaseLayout title="Blog - Asri Digital">
@@ -15,47 +42,33 @@ import Icon from '../../components/ui/Icon.astro';
           <Icon name="file-text" size={16} class="text-primary" />
           <span class="text-sm text-primary font-medium">Blog</span>
         </div>
-        <h1 class="text-4xl font-extrabold mb-4">
-          Tips & <span class="text-gradient">Insight</span>
+        <h1 class="text-4xl font-extrabold mb-4 text-text-primary">
+          Tips & <span class="text-primary">Insight</span>
         </h1>
         <p class="text-text-secondary text-lg">
           Artikel seputar AI, productivity, dan digital marketing.
         </p>
       </div>
       
-      <!-- Blog posts will be loaded here -->
+      <!-- Blog posts -->
       <div class="space-y-8">
-        <article class="card-hover p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="badge-primary">AI</span>
-            <span class="text-sm text-text-muted">17 Mei 2026</span>
-          </div>
-          <h2 class="text-2xl font-bold mb-3 hover:text-primary transition-colors">
-            <a href="#">Cara Memaksimalkan Custom GPT untuk Bisnis</a>
-          </h2>
-          <p class="text-text-secondary mb-4">
-            Pelajari bagaimana Custom GPT dapat meningkatkan produktivitas bisnis Anda hingga 10x lipat...
-          </p>
-          <a href="#" class="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all">
-            Baca selengkapnya <Icon name="arrow-right" size={16} />
-          </a>
-        </article>
-        
-        <article class="card-hover p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="badge-accent">Productivity</span>
-            <span class="text-sm text-text-muted">15 Mei 2026</span>
-          </div>
-          <h2 class="text-2xl font-bold mb-3 hover:text-primary transition-colors">
-            <a href="#">5 Tips Menggunakan AI untuk Content Creation</a>
-          </h2>
-          <p class="text-text-secondary mb-4">
-            Content creation bisa lebih mudah dengan bantuan AI. Berikut 5 tips yang bisa Anda terapkan...
-          </p>
-          <a href="#" class="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all">
-            Baca selengkapnya <Icon name="arrow-right" size={16} />
-          </a>
-        </article>
+        {blogPosts.map((post) => (
+          <article class="card-hover p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class={post.categoryColor}>{post.category}</span>
+              <span class="text-sm text-text-muted">{post.date}</span>
+            </div>
+            <h2 class="text-2xl font-bold mb-3 text-text-primary hover:text-primary transition-colors">
+              <a href={post.slug}>{post.title}</a>
+            </h2>
+            <p class="text-text-secondary mb-4">
+              {post.excerpt}
+            </p>
+            <a href={post.slug} class="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all">
+              Baca selengkapnya <Icon name="arrow-right" size={16} />
+            </a>
+          </article>
+        ))}
       </div>
     </div>
   </main>

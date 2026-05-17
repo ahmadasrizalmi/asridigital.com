@@ -4,38 +4,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // PRD Color Palette - Section 11.A
+        // 1. Warna Dasar (Base Colors)
+        background: '#FAFAFA',    // Off-White
+        surface: '#FFFFFF',        // Pure White
+        
+        // 2. Warna Teks & Kontras
+        'text-primary': '#171717',   // Hampir Hitam (Neutral 900)
+        'text-main': '#262626',      // Abu-abu Tua (Neutral 800)
+        'text-secondary': '#737373', // Abu-abu Sedang (Neutral 500)
+        'text-muted': '#9CA3AF',     // Gray 400
+        
+        // 3. Warna Garis & Pemisah
+        border: '#E5E5E5',        // Neutral 200
+        
+        // 4. Warna Aksen & Tombol
         primary: {
-          DEFAULT: '#4F46E5', // Indigo 600
-          hover: '#4338CA', // Indigo 700
-          light: '#6366F1', // Indigo 500 for subtle bg
+          DEFAULT: '#5C7A36',     // Sage Green
+          hover: '#4A6628',       // Sage Green Darker
         },
-        secondary: {
-          DEFAULT: '#7C3AED', // Violet 600
-        },
-        accent: {
-          DEFAULT: '#F59E0B', // Amber 500
-        },
-        success: '#10B981', // Emerald 500
-        danger: '#EF4444', // Red 500
-        warning: '#F59E0B', // Amber 500
-        info: '#3B82F6', // Blue 500
         
-        // Dark mode backgrounds
-        background: '#0F172A', // Slate 900
-        surface: '#1E293B', // Slate 800
-        border: '#334155', // Slate 700
-        
-        // Text colors
-        'text-primary': '#F8FAFC', // Slate 50
-        'text-secondary': '#94A3B8', // Slate 400
-        'text-muted': '#64748B', // Slate 500
+        // Legacy support (diganti ke versi light)
+        secondary: '#5C7A36',
+        accent: '#5C7A36',
+        success: '#5C7A36',
+        danger: '#DC2626',
+        warning: '#F59E0B',
+        info: '#3B82F6',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       fontSize: {
-        // PRD Typography - Section 11.B
         'h1': ['3rem', { lineHeight: '1.1', fontWeight: '800' }],
         'h2': ['2.25rem', { lineHeight: '1.2', fontWeight: '700' }],
         'h3': ['1.5rem', { lineHeight: '1.3', fontWeight: '600' }],
@@ -49,13 +48,14 @@ export default {
         '3xl': '1.5rem',
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(79, 70, 229, 0.3)',
-        'glow-lg': '0 0 40px rgba(79, 70, 229, 0.4)',
+        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+        'btn-primary': '0 4px 14px rgba(92, 122, 54, 0.25)',
+        'nav': '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
-        'pulse-glow': 'pulseGlow 2s infinite',
         'float': 'float 3s ease-in-out infinite',
       },
       keyframes: {
@@ -66,10 +66,6 @@ export default {
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(79, 70, 229, 0.3)' },
-          '50%': { boxShadow: '0 0 40px rgba(79, 70, 229, 0.5)' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
