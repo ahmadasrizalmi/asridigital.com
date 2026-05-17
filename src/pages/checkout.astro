@@ -359,18 +359,35 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
     }
   });
 
+  // Read affiliate referral from cookie
+  function getCookie(name: string) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return null;
+  }
+
+  // Check for affiliate referral in URL and set cookie
+  const urlParams = new URLSearchParams(window.location.search);
+  const refParam = urlParams.get('ref');
+  if (refParam) {
+    document.cookie = `asri_ref=${refParam};max-age=${30*24*60*60};path=/;SameSite=Lax`;
+  }
+
   // Form Submit
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const formData = new FormData(form);
+    const referredBy = getCookie('asri_ref');
     const data = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
+      customerName: formData.get('name'),
+      customerEmail: formData.get('email'),
+      customerPhone: formData.get('phone'),
       productSlug: product.id === 'ALL-ACCESS' ? 'lifetime-all-access-pass' : product.id,
       paymentMethod: formData.get('payment_method'),
       couponCode: couponApplied ? couponInput?.value : null,
+      referredBy: referredBy || null,
     };
 
     submitBtn.disabled = true;

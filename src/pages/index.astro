@@ -92,7 +92,20 @@ const stats = [
 ];
 ---
 
-<BaseLayout>
+<BaseLayout structuredData={
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Asri Digital",
+    "url": "https://asridigital.com",
+    "description": "Custom GPT Marketplace untuk Profesional Indonesia",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://asridigital.com/blog?search={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+}>
   <Header />
   
   <main class="flex-1">

@@ -601,10 +601,19 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== CHECKOUT ====================
     if (route === '/checkout' && method === 'POST') {
       const body = await request.json();
-      const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod } = body;
+      const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod, referredBy } = body;
 
       if (!productSlug || !customerEmail || !customerName || !paymentMethod) {
         return jsonResponse({ error: 'Data tidak lengkap' }, 400);
+      }
+
+      // Sanitize inputs
+      const sanitizedName = sanitizeInput(customerName);
+      const sanitizedEmail = sanitizeInput(customerEmail).toLowerCase();
+
+      // Validate email
+      if (!isValidEmail(sanitizedEmail)) {
+        return jsonResponse({ error: 'Format email tidak valid' }, 400);
       }
 
       // Get product
@@ -650,22 +659,37 @@ export async function onRequest(context: any): Promise<Response> {
       const orderId = generateId();
       const orderCode = `INV-${Date.now().toString(36).toUpperCase()}`;
 
+      // Get affiliate referral from cookie or request body
+      let affiliateReferral = referredBy || null;
+      
+      // Validate affiliate referral exists
+      if (affiliateReferral) {
+        const referrer = await env.DB.prepare(
+          'SELECT id FROM users WHERE id = ?'
+        ).bind(affiliateReferral).first();
+        
+        if (!referrer) {
+          affiliateReferral = null; // Invalid referrer, ignore
+        }
+      }
+
       // Create order
       await env.DB.prepare(
-        `INSERT INTO orders (id, user_id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'))`
+        `INSERT INTO orders (id, user_id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, referred_by, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, datetime('now'), datetime('now'))`
       )
         .bind(
           orderId,
           null, // user_id null for guest checkout
-          customerEmail,
-          customerName,
+          sanitizedEmail,
+          sanitizedName,
           customerPhone || null,
           product.id,
           product.title,
           finalAmount,
           paymentMethod,
-          couponId
+          couponId,
+          affiliateReferral
         )
         .run();
 
@@ -860,12 +884,46 @@ export async function onRequest(context: any): Promise<Response> {
 
     // ==================== WEBHOOK DOMPETX ====================
     if (route === '/webhook/dompetx' && method === 'POST') {
-      const body = await request.json() as any;
+      const rawBody = await request.text();
+      let body: any;
+      
+      try {
+        body = JSON.parse(rawBody);
+      } catch (e) {
+        return jsonResponse({ error: 'Invalid JSON' }, 400);
+      }
       
       // Verify webhook signature if secret is set
       if (env.DOMPETX_WEBHOOK_SECRET && env.DOMPETX_WEBHOOK_SECRET !== 'placeholder-set-after-dompetx-config') {
         const signature = request.headers.get('X-DompetX-Signature');
-        // TODO: Implement proper signature verification
+        
+        if (!signature) {
+          return jsonResponse({ error: 'Missing signature' }, 401);
+        }
+        
+        // Verify HMAC-SHA256 signature
+        try {
+          const encoder = new TextEncoder();
+          const key = await crypto.subtle.importKey(
+            'raw',
+            encoder.encode(env.DOMPETX_WEBHOOK_SECRET),
+            { name: 'HMAC', hash: 'SHA-256' },
+            false,
+            ['sign']
+          );
+          
+          const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody));
+          const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+          
+          if (signature !== expectedSignature) {
+            return jsonResponse({ error: 'Invalid signature' }, 401);
+          }
+        } catch (verifyError) {
+          console.error('Signature verification error:', verifyError);
+          return jsonResponse({ error: 'Signature verification failed' }, 401);
+        }
       }
 
       const { ref_id, status, amount, payment_method, paid_at } = body;
@@ -913,6 +971,40 @@ export async function onRequest(context: any): Promise<Response> {
             )
               .bind(user.id)
               .run();
+          }
+        }
+
+        // Process affiliate commission if order has referral
+        if (order.referred_by) {
+          try {
+            // Get commission percent from settings (default 10%)
+            const settings = await env.DB.prepare(
+              "SELECT value FROM site_settings WHERE key = 'commission_percent'"
+            ).first();
+            const commissionPercent = settings ? parseInt(settings.value) : 10;
+            const commissionAmount = Math.round(order.amount * (commissionPercent / 100));
+            
+            // Calculate available date (7 days holding period)
+            const availableAt = new Date();
+            availableAt.setDate(availableAt.getDate() + 7);
+            
+            // Create affiliate transaction
+            await env.DB.prepare(
+              `INSERT INTO affiliate_transactions (id, order_id, referrer_user_id, referred_user_id, commission_amount, commission_percent, status, available_at, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, datetime('now'))`
+            ).bind(
+              generateId(),
+              order.id,
+              order.referred_by,
+              null, // Guest user, no user_id
+              commissionAmount,
+              commissionPercent,
+              availableAt.toISOString()
+            ).run();
+            
+            console.log(`Affiliate commission created: ${commissionAmount} IDR for referrer ${order.referred_by}`);
+          } catch (affiliateError) {
+            console.error('Affiliate commission error:', affiliateError);
           }
         }
 
@@ -1388,6 +1480,151 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       return jsonResponse({ success: true });
+    }
+
+    // ==================== AUTH: LOGOUT ====================
+    if (route === '/auth/logout' && method === 'POST') {
+      // For JWT, logout is handled client-side by removing token
+      // We can add token blacklist here if needed
+      return jsonResponse({ success: true, message: 'Logged out successfully' });
+    }
+
+    // ==================== AFFILIATE: STATS ====================
+    if (route === '/affiliate/stats' && method === 'GET') {
+      // Get user from auth header
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      if (!payload) {
+        return jsonResponse({ error: 'Invalid token' }, 401);
+      }
+
+      const userId = payload.userId;
+
+      // Get affiliate stats
+      const totalConversions = await env.DB.prepare(
+        "SELECT COUNT(*) as count FROM affiliate_transactions WHERE referrer_user_id = ? AND status != 'CANCELLED'"
+      ).bind(userId).first();
+
+      const totalCommission = await env.DB.prepare(
+        "SELECT COALESCE(SUM(commission_amount), 0) as total FROM affiliate_transactions WHERE referrer_user_id = ? AND status != 'CANCELLED'"
+      ).bind(userId).first();
+
+      const availableCommission = await env.DB.prepare(
+        "SELECT COALESCE(SUM(commission_amount), 0) as total FROM affiliate_transactions WHERE referrer_user_id = ? AND status = 'AVAILABLE'"
+      ).bind(userId).first();
+
+      const pendingCommission = await env.DB.prepare(
+        "SELECT COALESCE(SUM(commission_amount), 0) as total FROM affiliate_transactions WHERE referrer_user_id = ? AND status = 'PENDING'"
+      ).bind(userId).first();
+
+      // Get recent conversions
+      const conversions = await env.DB.prepare(
+        `SELECT at.*, o.product_title, o.amount as order_amount 
+         FROM affiliate_transactions at 
+         JOIN orders o ON at.order_id = o.id 
+         WHERE at.referrer_user_id = ? 
+         ORDER BY at.created_at DESC 
+         LIMIT 10`
+      ).bind(userId).all();
+
+      return jsonResponse({
+        referralLink: `${env.APP_URL || 'https://asridigital.com'}?ref=${userId}`,
+        totalClicks: 0, // TODO: Implement click tracking
+        totalConversions: totalConversions?.count || 0,
+        totalCommission: totalCommission?.total || 0,
+        availableCommission: availableCommission?.total || 0,
+        pendingCommission: pendingCommission?.total || 0,
+        conversions: conversions.results || []
+      });
+    }
+
+    // ==================== AFFILIATE: WITHDRAW ====================
+    if (route === '/affiliate/withdraw' && method === 'POST') {
+      // Get user from auth header
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      if (!payload) {
+        return jsonResponse({ error: 'Invalid token' }, 401);
+      }
+
+      const userId = payload.userId;
+      const { amount, bankName, accountNumber, accountName } = await request.json();
+
+      // Validate minimum withdrawal
+      if (amount < 100000) {
+        return jsonResponse({ error: 'Minimum withdraw Rp 100.000' }, 400);
+      }
+
+      // Check available balance
+      const available = await env.DB.prepare(
+        "SELECT COALESCE(SUM(commission_amount), 0) as total FROM affiliate_transactions WHERE referrer_user_id = ? AND status = 'AVAILABLE'"
+      ).bind(userId).first();
+
+      if (!available || available.total < amount) {
+        return jsonResponse({ error: 'Saldo tidak mencukupi' }, 400);
+      }
+
+      // Create withdrawal request (mark transactions as processing)
+      const withdrawId = generateId();
+      
+      // Update affiliate transactions status to PROCESSING
+      await env.DB.prepare(
+        `UPDATE affiliate_transactions 
+         SET status = 'PROCESSING', paid_out_at = datetime('now'), payout_method = 'BANK_TRANSFER', payout_details = ?
+         WHERE referrer_user_id = ? AND status = 'AVAILABLE'`
+      ).bind(
+        JSON.stringify({ bank: bankName, account_number: accountNumber, account_name: accountName }),
+        userId
+      ).run();
+
+      return jsonResponse({ 
+        success: true, 
+        withdrawalId,
+        message: 'Permintaan withdraw sedang diproses' 
+      });
+    }
+
+    // ==================== COUPON VALIDATE (GET) ====================
+    if (route === '/coupon' && method === 'GET') {
+      const code = url.searchParams.get('code');
+      if (!code) {
+        return jsonResponse({ error: 'Code parameter required' }, 400);
+      }
+
+      const coupon = await env.DB.prepare(
+        'SELECT * FROM coupons WHERE code = ? AND is_active = 1'
+      ).bind(code.toUpperCase()).first();
+
+      if (!coupon) {
+        return jsonResponse({ valid: false, message: 'Kupon tidak ditemukan' });
+      }
+
+      const now = new Date().toISOString();
+      if (coupon.expires_at && coupon.expires_at < now) {
+        return jsonResponse({ valid: false, message: 'Kupon sudah kedaluwarsa' });
+      }
+
+      if (coupon.current_uses >= coupon.max_uses) {
+        return jsonResponse({ valid: false, message: 'Kupon sudah habis' });
+      }
+
+      return jsonResponse({
+        valid: true,
+        code: coupon.code,
+        discountPercent: coupon.type === 'PERCENTAGE' ? coupon.value : null,
+        discountAmount: coupon.type === 'FIXED' ? coupon.value : null,
+        message: 'Kupon valid'
+      });
     }
 
     // ==================== DEFAULT 404 ====================

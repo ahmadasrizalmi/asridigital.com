@@ -2,12 +2,21 @@
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  structuredData?: object;
 }
 
 const {
   title = 'Asri Digital - Custom GPT untuk Profesional Indonesia',
   description = 'Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. Bayar sekali, akses seumur hidup.',
+  ogImage,
+  canonicalUrl,
+  structuredData,
 } = Astro.props;
+
+const siteUrl = 'https://asridigital.com';
+const defaultOgImage = `${siteUrl}/og-default.jpg`;
 ---
 
 <!DOCTYPE html>
@@ -17,11 +26,23 @@ const {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={description} />
   
+  <!-- Canonical URL -->
+  {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+  
   <!-- Open Graph -->
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="id_ID" />
+  <meta property="og:url" content={canonicalUrl || siteUrl} />
+  <meta property="og:image" content={ogImage || defaultOgImage} />
+  <meta property="og:site_name" content="Asri Digital" />
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage || defaultOgImage} />
   
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -32,6 +53,11 @@ const {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <title>{title}</title>
+  
+  <!-- Structured Data -->
+  {structuredData && (
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  )}
   
   <style is:global>
     @import '../styles/global.css';
