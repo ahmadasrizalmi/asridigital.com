@@ -141,37 +141,37 @@ const stats = [
           </p>
           
           {/* CTA Buttons */}
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-slide-up" style="animation-delay: 0.2s">
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-12 animate-slide-up" style="animation-delay: 0.2s">
             <a 
               href="#all-access" 
-              class="btn-primary text-lg px-8 py-4 w-full sm:w-auto"
+              class="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto justify-center"
             >
-              <Icon name="crown" size={20} />
-              Beli All-Access Pass - {formatIDR(allAccessProduct.price)}
+              <Icon name="crown" size={18} class="sm:w-5" />
+              <span>Beli All-Access Pass</span>
             </a>
             <a 
               href="#produk" 
-              class="btn-secondary text-lg px-8 py-4 w-full sm:w-auto"
+              class="btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto justify-center"
             >
-              <Icon name="eye" size={20} />
-              Lihat Produk
+              <Icon name="eye" size={18} class="sm:w-5" />
+              <span>Lihat Produk</span>
             </a>
           </div>
           
           {/* Price Preview */}
-          <div class="inline-flex items-center gap-3 text-text-muted animate-slide-up" style="animation-delay: 0.3s">
+          <div class="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-text-muted animate-slide-up text-xs sm:text-sm" style="animation-delay: 0.3s">
             <span class="flex items-center gap-1.5">
-              <Icon name="shield" size={16} class="text-primary" />
+              <Icon name="shield" size={14} class="text-primary" />
               Garansi 7 hari
             </span>
-            <span>•</span>
+            <span class="hidden sm:inline">•</span>
             <span class="flex items-center gap-1.5">
-              <Icon name="lock" size={16} class="text-primary" />
+              <Icon name="lock" size={14} class="text-primary" />
               Pembayaran aman
             </span>
-            <span>•</span>
+            <span class="hidden sm:inline">•</span>
             <span class="flex items-center gap-1.5">
-              <Icon name="zap" size={16} class="text-primary" />
+              <Icon name="zap" size={14} class="text-primary" />
               Akses instant
             </span>
           </div>
@@ -205,55 +205,62 @@ const stats = [
           {/* Subtle Gradient */}
           <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5"></div>
           
-          <div class="relative p-8 md:p-12 lg:p-16">
-            <div class="flex flex-col lg:flex-row items-start gap-12">
+          <div class="relative p-6 sm:p-8 md:p-12 lg:p-16">
+            <div class="flex flex-col lg:flex-row items-start gap-6 sm:gap-8 lg:gap-12">
               {/* Left Content */}
-              <div class="flex-1">
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-full font-semibold mb-6">
-                  <Icon name="crown" size={16} />
-                  BEST VALUE
+              <div class="flex-1 min-w-0">
+                <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 text-amber-700 rounded-full font-semibold mb-4 sm:mb-6 text-xs sm:text-sm">
+                  <Icon name="crown" size={14} class="sm:w-4" />
+                  <span>BEST VALUE</span>
                 </div>
-                
-                <h2 class="text-4xl md:text-5xl font-extrabold mb-6 text-text-primary">
+
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-text-primary leading-tight">
                   Lifetime
-                  <span class="text-primary">All-Access Pass</span>
+                  <span class="text-primary block sm:inline"> All-Access Pass</span>
                 </h2>
-                
-                <div class="flex items-baseline gap-4 mb-8">
-                  <span class="text-5xl font-extrabold text-text-primary">{formatIDR(allAccessProduct.price)}</span>
-                  <span class="text-2xl text-text-muted line-through">{formatIDR(allAccessProduct.compareAtPrice!)}</span>
-                  <span class="badge-danger text-lg px-3 py-1.5">
+
+                <div class="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-6 sm:mb-8">
+                  <span class="text-4xl sm:text-5xl font-extrabold text-text-primary">{formatIDR(allAccessProduct.price)}</span>
+                  <span class="text-xl sm:text-2xl text-text-muted line-through">{formatIDR(allAccessProduct.compareAtPrice!)}</span>
+                  <span class="badge-danger text-sm sm:text-lg px-2 sm:px-3 py-1 sm:py-1.5 inline-flex items-center whitespace-nowrap">
                     HEMAT 50%
                   </span>
                 </div>
                 
-                <ul class="space-y-4 mb-10">
+                <ul class="space-y-3 sm:space-y-4 mb-6 sm:mb-10">
                   {[
                     'Akses SEMUA GPT yang ada & akan datang',
                     'Update lifetime gratis',
                     'Prioritas support',
                     'Komunitas eksklusif',
                   ].map((feature) => (
-                    <li class="flex items-center gap-3 text-text-main text-lg">
-                      <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <Icon name="check" size={14} class="text-primary" />
+                    <li class="flex items-start gap-2 sm:gap-3 text-text-main text-sm sm:text-base">
+                      <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <Icon name="check" size={10} class="sm:w-3.5 text-primary" />
                       </div>
-                      {feature}
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
                 
                 <a 
                   href={`/checkout?product=${allAccessProduct.slug}`}
-                  class="btn-primary text-lg px-10 py-4 inline-flex"
+                  class="btn-primary text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 inline-flex w-full sm:w-auto justify-center"
                 >
-                  <Icon name="zap" size={20} />
-                  Dapatkan All-Access Sekarang
+                  <Icon name="zap" size={18} class="sm:w-5" />
+                  <span class="whitespace-nowrap">Dapatkan All-Access Sekarang</span>
                 </a>
                 
-                <div class="flex items-center gap-2 mt-6 text-sm text-text-muted">
-                  <Icon name="shield" size={16} class="text-primary" />
-                  Garansi 7 hari uang kembali • Sekali bayar, akses seumur hidup
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-4 sm:mt-6 text-xs sm:text-sm text-text-muted text-center sm:text-left">
+                  <div class="flex items-center gap-1.5 sm:gap-2 justify-center">
+                    <Icon name="shield" size={14} class="text-primary" />
+                    <span>Garansi 7 hari</span>
+                  </div>
+                  <span class="hidden sm:inline">•</span>
+                  <div class="flex items-center gap-1.5 sm:gap-2 justify-center">
+                    <Icon name="lock" size={14} class="text-primary" />
+                    <span>Sekali bayar, akses seumur hidup</span>
+                  </div>
                 </div>
               </div>
               
