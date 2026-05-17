@@ -1775,6 +1775,69 @@ export async function onRequest(context: any): Promise<Response> {
       });
     }
 
+    // ==================== ADMIN: UPDATE ADMIN CREDENTIALS ====================
+    if (route === '/admin/update-credentials' && method === 'POST') {
+      // Check for special authorization (one-time use)
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.includes('UPDATE_ADMIN_NOW')) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      try {
+        const encoder = new TextEncoder();
+        const password = 'Masajidallah13!';
+
+        // Generate salt
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+
+        // Import password as key
+        const key = await crypto.subtle.importKey(
+          'raw',
+          encoder.encode(password),
+          { name: 'PBKDF2' },
+          false,
+          ['deriveBits']
+        );
+
+        // Derive hash
+        const hash = await crypto.subtle.deriveBits(
+          {
+            name: 'PBKDF2',
+            salt: salt,
+            iterations: 100000,
+            hash: 'SHA-256'
+          },
+          key,
+          256
+        );
+
+        // Convert to hex
+        const hashArray = Array.from(new Uint8Array(hash));
+        const saltArray = Array.from(salt);
+        const combined = [...saltArray, ...hashArray];
+        const passwordHash = combined.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Update user
+        const result = await env.DB.prepare(
+          `UPDATE users
+           SET email = ?, password = ?, updated_at = datetime('now')
+           WHERE id = 'user-admin' OR email = 'admin@asridigital.com' OR email = 'ahmadasrizalmi@gmail.com'`
+        )
+          .bind('ahmadasrizalmi@gmail.com', passwordHash)
+          .run();
+
+        return jsonResponse({
+          success: true,
+          message: 'Admin user updated successfully',
+          newEmail: 'ahmadasrizalmi@gmail.com',
+          changes: result.meta.changes
+        });
+      } catch (error: any) {
+        console.error('Error updating admin:', error);
+        return jsonResponse({ error: error.message || 'Update failed' }, 500);
+      }
+    }
+
     // ==================== DEFAULT 404 ====================
     return jsonResponse({ error: 'Endpoint not found' }, 404);
 
