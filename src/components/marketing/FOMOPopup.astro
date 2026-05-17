@@ -32,7 +32,7 @@ import Icon from '../ui/Icon.astro';
         <p class="text-sm text-gray-900">
           <span class="font-semibold">${sale.firstName}</span> baru saja membeli
         </p>
-        <p class="text-sm text-green-700 font-medium truncate">${sale.productName}</p>
+        <a href="/#produk" class="text-sm text-green-700 font-medium truncate hover:underline block">${sale.productName}</a>
         <p class="text-xs text-gray-500 mt-1">${sale.timeAgo} yang lalu</p>
       </div>
       <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
