@@ -159,8 +159,8 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
                   <label class="flex items-center gap-4 p-4 border-2 border-primary rounded-xl cursor-pointer bg-primary/5">
                     <input type="radio" name="payment_method" value="qris" checked class="text-primary focus:ring-primary" />
                     <div class="flex items-center gap-3 flex-1">
-                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border">
-                        <span class="text-xs font-bold text-primary">QRIS</span>
+                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border p-1">
+                        <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/qris.png" alt="QRIS" class="h-full w-auto object-contain" />
                       </div>
                       <div>
                         <div class="font-medium text-text-primary">QRIS</div>
@@ -174,8 +174,19 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
                   <label class="flex items-center gap-4 p-4 border-2 border-border rounded-xl cursor-pointer hover:border-text-muted transition-colors">
                     <input type="radio" name="payment_method" value="bank_transfer" class="text-primary focus:ring-primary" />
                     <div class="flex items-center gap-3 flex-1">
-                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border">
-                        <span class="text-xs font-bold text-text-main">Bank</span>
+                      <div class="flex items-center gap-2">
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/bca.png" alt="BCA" class="h-full w-auto object-contain" />
+                        </div>
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/mandiri.png" alt="Mandiri" class="h-full w-auto object-contain" />
+                        </div>
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/bni.png" alt="BNI" class="h-full w-auto object-contain" />
+                        </div>
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/bri.png" alt="BRI" class="h-full w-auto object-contain" />
+                        </div>
                       </div>
                       <div>
                         <div class="font-medium text-text-primary">Transfer Bank</div>
@@ -188,8 +199,19 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
                   <label class="flex items-center gap-4 p-4 border-2 border-border rounded-xl cursor-pointer hover:border-text-muted transition-colors">
                     <input type="radio" name="payment_method" value="ewallet" class="text-primary focus:ring-primary" />
                     <div class="flex items-center gap-3 flex-1">
-                      <div class="w-12 h-8 bg-white rounded flex items-center justify-center border border-border">
-                        <span class="text-xs font-bold text-text-main">eWallet</span>
+                      <div class="flex items-center gap-2">
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/gopay.png" alt="GoPay" class="h-full w-auto object-contain" />
+                        </div>
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/ovo.png" alt="OVO" class="h-full w-auto object-contain" />
+                        </div>
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/dana.png" alt="DANA" class="h-full w-auto object-contain" />
+                        </div>
+                        <div class="w-10 h-7 bg-white rounded flex items-center justify-center border border-border p-0.5">
+                          <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/shopeepay.png" alt="ShopeePay" class="h-full w-auto object-contain" />
+                        </div>
                       </div>
                       <div>
                         <div class="font-medium text-text-primary">E-Wallet</div>
@@ -280,13 +302,25 @@ const product = products[productSlug] || products['lifetime-all-access-pass'];
             <!-- Payment Logos -->
             <div class="mt-6 pt-6 border-t border-border">
               <p class="text-xs text-text-muted text-center mb-3">Metode pembayaran yang tersedia</p>
-              <div class="flex items-center justify-center gap-4 flex-wrap">
-                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">QRIS</div>
-                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">BCA</div>
-                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">Mandiri</div>
-                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">GoPay</div>
-                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">OVO</div>
-                <div class="px-3 py-1.5 bg-background rounded border border-border text-xs font-medium">DANA</div>
+              <div class="flex items-center justify-center gap-3 flex-wrap">
+                <div class="w-14 h-10 bg-white rounded-lg border border-border p-1.5 flex items-center justify-center">
+                  <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/qris.png" alt="QRIS" class="h-full w-auto object-contain" />
+                </div>
+                <div class="w-14 h-10 bg-white rounded-lg border border-border p-1.5 flex items-center justify-center">
+                  <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/bca.png" alt="BCA" class="h-full w-auto object-contain" />
+                </div>
+                <div class="w-14 h-10 bg-white rounded-lg border border-border p-1.5 flex items-center justify-center">
+                  <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/mandiri.png" alt="Mandiri" class="h-full w-auto object-contain" />
+                </div>
+                <div class="w-14 h-10 bg-white rounded-lg border border-border p-1.5 flex items-center justify-center">
+                  <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/gopay.png" alt="GoPay" class="h-full w-auto object-contain" />
+                </div>
+                <div class="w-14 h-10 bg-white rounded-lg border border-border p-1.5 flex items-center justify-center">
+                  <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/ovo.png" alt="OVO" class="h-full w-auto object-contain" />
+                </div>
+                <div class="w-14 h-10 bg-white rounded-lg border border-border p-1.5 flex items-center justify-center">
+                  <img src="https://cdn.jsdelivr.net/gh/aalfiann/indonesia-bank-logos@master/dana.png" alt="DANA" class="h-full w-auto object-contain" />
+                </div>
               </div>
             </div>
           </div>
