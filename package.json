@@ -19,10 +19,12 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.5.1",
+    "@astrojs/prism": "^4.0.2",
     "astro": "^6.3.3",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.44.0",
     "nanoid": "^5.1.5",
+    "prismjs": "^1.30.0",
     "resend": "^4.0.0"
   },
   "devDependencies": {
