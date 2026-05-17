@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+
+const posts = [
+  { id: 'blog-1', title: 'Cara Memaksimalkan Custom GPT untuk Bisnis', slug: 'cara-memaksimalkan-custom-gpt-untuk-bisnis', category: 'AI', status: 'published', views: 1250, date: '2026-05-17' },
+  { id: 'blog-2', title: '5 Tips Menggunakan AI untuk Content Creation', slug: '5-tips-menggunakan-ai-untuk-content-creation', category: 'Productivity', status: 'published', views: 890, date: '2026-05-15' },
+  { id: 'blog-3', title: 'Panduan Lengkap All-Access Pass', slug: 'panduan-lengkap-all-access-pass', category: 'Tutorial', status: 'draft', views: 0, date: '2026-05-14' },
+];
+
+const sidebarLinks = [
+  { icon: 'bar-chart', label: 'Dashboard', href: '/admin', active: false },
+  { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: false },
+  { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: false },
+  { icon: 'users', label: 'Pengguna', href: '/admin/users', active: false },
+  { icon: 'tag', label: 'Kupon', href: '/admin/coupons', active: false },
+  { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: false },
+  { icon: 'file-text', label: 'Blog', href: '/admin/blog', active: true },
+  { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: false },
+];
+---
+
+<BaseLayout title="Blog - Admin">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
+      <div class="sticky top-0 h-screen overflow-y-auto p-4">
+        <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
+          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <Icon name="sparkles" size={18} class="text-white" />
+          </div>
+          <div>
+            <span class="font-bold text-text-primary block">Asri Digital</span>
+            <span class="text-xs text-text-muted">Admin Panel</span>
+          </div>
+        </a>
+        
+        <nav class="space-y-1">
+          {sidebarLinks.map((link) => (
+            <a href={link.href} class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-background'}`}>
+              <Icon name={link.icon} size={18} />
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        
+        <div class="mt-8 pt-4 border-t border-border">
+          <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-background transition-colors">
+            <Icon name="external-link" size={18} />
+            Lihat Website
+          </a>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="flex-1 bg-background">
+      <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button class="lg:hidden p-2 hover:bg-background rounded-lg">
+              <Icon name="menu" size={24} class="text-text-secondary" />
+            </button>
+            <h1 class="text-xl font-bold text-text-primary">Blog</h1>
+          </div>
+          <button class="btn-primary text-sm">
+            <Icon name="plus" size={16} />
+            Tulis Artikel
+          </button>
+        </div>
+      </header>
+      
+      <div class="p-6">
+        <!-- Posts Table -->
+        <div class="card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-background">
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Judul</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Kategori</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Views</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                {posts.map((post) => (
+                  <tr>
+                    <td class="px-4 py-4">
+                      <div class="font-medium text-text-primary">{post.title}</div>
+                      <div class="text-xs text-text-muted">/{post.slug}</div>
+                    </td>
+                    <td class="px-4 py-4">
+                      <span class="badge-muted">{post.category}</span>
+                    </td>
+                    <td class="px-4 py-4">
+                      <span class={post.status === 'published' ? 'badge-success' : 'badge-warning'}>
+                        {post.status === 'published' ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
+                    <td class="px-4 py-4 text-text-main">{post.views.toLocaleString()}</td>
+                    <td class="px-4 py-4 text-sm text-text-muted">{post.date}</td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <a href={`/blog/${post.slug}`} class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary">
+                          <Icon name="eye" size={16} />
+                        </a>
+                        <button class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary">
+                          <Icon name="edit" size={16} />
+                        </button>
+                        <button class="p-2 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
+                          <Icon name="trash" size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</BaseLayout>
