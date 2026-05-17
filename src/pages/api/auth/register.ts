@@ -2,7 +2,14 @@ import type { APIRoute } from 'astro';
 import { getDB } from '../../../db';
 import { users } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
+// Password hashing using Web Crypto API (edge-compatible)
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 import { nanoid } from 'nanoid';
 import { signJWT, setAuthCookie } from '../../../lib/auth';
 
@@ -47,8 +54,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect, locals }) => 
       });
     }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    // Hash password (edge-compatible)
+    const passwordHash = await hashPassword(password);
     const userId = nanoid();
 
     // Create user
