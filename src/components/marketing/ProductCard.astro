@@ -1,163 +1,120 @@
 ---
-import { formatIDR, parseTags } from '../../lib/utils';
+import Icon from '../ui/Icon.astro';
 import type { Product } from '../../types';
+import { formatIDR, parseTags } from '../../lib/utils';
 
 interface Props {
   product: Product;
-  showBuyButton?: boolean;
-  isOwned?: boolean;
 }
 
-const { product, showBuyButton = true, isOwned = false } = Astro.props;
+const { product } = Astro.props;
 const tags = parseTags(product.tags);
-const isAllAccess = product.id === 'ALL-ACCESS';
+const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+const discount = hasDiscount 
+  ? Math.round((1 - product.price / product.compareAtPrice!) * 100) 
+  : 0;
 ---
 
-<div class:list={[
-  "group relative flex flex-col rounded-xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10",
-  isAllAccess ? "border-primary/50 bg-gradient-to-br from-primary/10 to-secondary/10" : "border-border bg-surface"
-]}>
-  {/* Featured Badge */}
-  {product.isFeatured && (
-    <div class="absolute top-3 right-3 z-10">
-      <span class:list={[
-        "px-2.5 py-1 text-xs font-bold rounded-full",
-        isAllAccess ? "bg-accent text-background" : "bg-primary text-white"
-      ]}>
-        {isAllAccess ? '🏆 BEST VALUE' : '⭐ POPULER'}
-      </span>
-    </div>
-  )}
-
-  {/* Image */}
-  <div class:list={[
-    "relative h-48 overflow-hidden",
-    isAllAccess ? "bg-gradient-to-br from-primary/20 to-secondary/20" : "bg-background"
-  ]}>
-    {product.imageIcon ? (
-      <img 
-        src={product.imageIcon} 
-        alt={product.title}
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        loading="lazy"
-      />
-    ) : (
-      <div class="w-full h-full flex items-center justify-center">
-        <svg class="w-16 h-16 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
+<div class="card-hover group">
+  {/* Product Image */}
+  <div class="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10">
+    <img 
+      src={product.imageIcon || '/images/placeholder.jpg'} 
+      alt={product.title}
+      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+      loading="lazy"
+    />
+    
+    {/* Featured Badge */}
+    {product.isFeatured && (
+      <div class="absolute top-3 right-3">
+        <span class="badge-accent">
+          <Icon name="star" size={12} />
+          POPULER
+        </span>
       </div>
     )}
+    
+    {/* Discount Badge */}
+    {hasDiscount && (
+      <div class="absolute top-3 left-3">
+        <span class="badge bg-danger/20 text-danger">
+          HEMAT {discount}%
+        </span>
+      </div>
+    )}
+    
+    {/* Category Badge */}
+    <div class="absolute bottom-3 left-3">
+      <span class="badge bg-background/80 text-text-secondary backdrop-blur-sm">
+        {product.category}
+      </span>
+    </div>
   </div>
-
-  {/* Content */}
-  <div class="flex flex-col flex-1 p-5">
+  
+  {/* Product Info */}
+  <div class="p-5">
     {/* Tags */}
     {tags.length > 0 && (
       <div class="flex flex-wrap gap-1.5 mb-3">
-        {tags.map(tag => (
+        {tags.slice(0, 3).map((tag) => (
           <span class="px-2 py-0.5 text-xs bg-background/50 text-text-muted rounded-full">
             {tag}
           </span>
         ))}
       </div>
     )}
-
+    
     {/* Title */}
-    <h3 class="font-semibold text-lg mb-2 line-clamp-2">
+    <h3 class="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
       {product.title}
     </h3>
-
+    
     {/* Description */}
-    <p class="text-sm text-text-muted mb-4 line-clamp-2 flex-1">
-      {product.shortDescription}
+    <p class="text-sm text-text-muted mb-4 line-clamp-2">
+      {product.shortDescription || product.description}
     </p>
-
-    {/* Features (for All-Access) */}
-    {isAllAccess && (
-      <ul class="space-y-2 mb-4">
-        <li class="flex items-center gap-2 text-sm text-text-secondary">
-          <svg class="w-4 h-4 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Akses SEMUA GPT yang ada & akan datang
-        </li>
-        <li class="flex items-center gap-2 text-sm text-text-secondary">
-          <svg class="w-4 h-4 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Update lifetime gratis
-        </li>
-        <li class="flex items-center gap-2 text-sm text-text-secondary">
-          <svg class="w-4 h-4 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Prioritas support
-        </li>
-      </ul>
-    )}
-
-    {/* Price */}
+    
+    {/* Price & Actions */}
     <div class="mt-auto">
       <div class="flex items-baseline gap-2 mb-4">
         <span class="text-2xl font-bold text-primary">
           {formatIDR(product.price)}
         </span>
-        {product.compareAtPrice && (
+        {hasDiscount && (
           <span class="text-sm text-text-muted line-through">
-            {formatIDR(product.compareAtPrice)}
-          </span>
-        )}
-        {product.compareAtPrice && (
-          <span class="px-1.5 py-0.5 text-xs font-bold bg-danger/20 text-danger rounded">
-            HEMAT {Math.round((1 - product.price / product.compareAtPrice) * 100)}%
+            {formatIDR(product.compareAtPrice!)}
           </span>
         )}
       </div>
-
-      {/* Buttons */}
-      {showBuyButton && (
-        <div class="flex gap-2">
-          {isOwned ? (
-            <a 
-              href={product.gptUrl || '#'} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-success hover:bg-success/90 text-white rounded-lg font-medium transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Buka GPT
-            </a>
-          ) : (
-            <a 
-              href={`/checkout?product=${product.slug}`}
-              class:list={[
-                "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all",
-                isAllAccess 
-                  ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white pulse-glow" 
-                  : "bg-primary hover:bg-primary-hover text-white"
-              ]}
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-              </svg>
-              Beli Sekarang
-            </a>
-          )}
-        </div>
-      )}
-
-      {/* Guarantee */}
-      {isAllAccess && (
-        <p class="text-xs text-text-muted text-center mt-3 flex items-center justify-center gap-1">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-          Garansi 7 hari uang kembali
-        </p>
-      )}
+      
+      <div class="flex gap-2">
+        <a 
+          href={`/checkout?product=${product.slug}`}
+          class="btn-primary flex-1 justify-center"
+        >
+          <Icon name="shopping-cart" size={16} />
+          Beli Sekarang
+        </a>
+        
+        {product.gptUrl && (
+          <a 
+            href={product.gptUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-secondary px-3"
+            title="Preview GPT"
+          >
+            <Icon name="external-link" size={16} />
+          </a>
+        )}
+      </div>
+      
+      {/* All-Access Badge */}
+      <div class="mt-3 flex items-center gap-1.5 text-xs text-text-muted">
+        <Icon name="crown" size={14} class="text-accent" />
+        <span>Tersedia di All-Access Pass</span>
+      </div>
     </div>
   </div>
 </div>
