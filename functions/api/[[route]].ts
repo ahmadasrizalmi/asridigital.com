@@ -1,560 +1,956 @@
-// Cloudflare Pages Functions - Catch-all API handler
-import type { PagesFunction } from '@cloudflare/workers-types';
+// Cloudflare Pages Functions - API Handler
+// This handles all /api/* routes
 
 interface Env {
   DB: D1Database;
   DOMPETX_API_KEY: string;
-  DOMPETX_API_URL: string;
+  DOMPETX_WEBHOOK_SECRET: string;
+  DOMPETX_BASE_URL: string;
   RESEND_API_KEY: string;
   JWT_SECRET: string;
+  APP_URL: string;
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+// Helper: Generate UUID
+function generateId(): string {
+  return crypto.randomUUID();
+}
+
+// Helper: Hash password using SHA-256
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// Helper: Verify password
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const hashedInput = await hashPassword(password);
+  return hashedInput === hash;
+}
+
+// Helper: Create JWT token
+async function createJWT(payload: any, secret: string, expiresIn: string = '24h'): Promise<string> {
+  // Ensure secret is not empty
+  const secretKey = secret || 'asri-digital-default-jwt-secret-key-2026';
+  
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const exp = expiresIn === '24h' ? now + 86400 : now + 3600;
+  
+  const tokenPayload = {
+    ...payload,
+    iat: now,
+    exp: exp
+  };
+
+  const encoder = new TextEncoder();
+  const headerBase64 = btoa(JSON.stringify(header)).replace(/=/g, '');
+  const payloadBase64 = btoa(JSON.stringify(tokenPayload)).replace(/=/g, '');
+  
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secretKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(`${headerBase64}.${payloadBase64}`)
+  );
+  
+  const signatureArray = new Uint8Array(signature);
+  let signatureBase64 = '';
+  for (let i = 0; i < signatureArray.length; i++) {
+    signatureBase64 += String.fromCharCode(signatureArray[i]);
+  }
+  signatureBase64 = btoa(signatureBase64)
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+  
+  return `${headerBase64}.${payloadBase64}.${signatureBase64}`;
+}
+
+// Helper: Verify JWT token
+async function verifyJWT(token: string, secret: string): Promise<any> {
+  try {
+    const secretKey = secret || 'asri-digital-default-jwt-secret-key-2026';
+    
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secretKey),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    
+    // Decode signature from base64url
+    const signatureStr = parts[2].replace(/-/g, '+').replace(/_/g, '/');
+    const signatureBytes = atob(signatureStr);
+    const signature = new Uint8Array(signatureBytes.length);
+    for (let i = 0; i < signatureBytes.length; i++) {
+      signature[i] = signatureBytes.charCodeAt(i);
+    }
+    
+    const valid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signature,
+      encoder.encode(`${parts[0]}.${parts[1]}`)
+    );
+    
+    if (!valid) return null;
+    
+    const payload = JSON.parse(atob(parts[1]));
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      return null;
+    }
+    
+    return payload;
+  } catch (e) {
+    console.error('JWT verify error:', e);
+    return null;
+  }
+}
+
+// Helper: Get user from request
+async function getUser(request: Request, env: Env): Promise<any> {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  
+  const token = authHeader.substring(7);
+  const payload = await verifyJWT(token, env.JWT_SECRET);
+  if (!payload || !payload.userId) {
+    return null;
+  }
+  
+  const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?')
+    .bind(payload.userId)
+    .first();
+  
+  return user;
+}
+
+// Helper: JSON response
+function jsonResponse(data: any, status: number = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+  });
+}
+
+// Helper: Calculate time ago
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return 'baru saja';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} menit`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} jam`;
+  return `${Math.floor(seconds / 86400)} hari`;
+}
+
+// Main request handler
+export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
 
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-
   // Handle CORS preflight
   if (method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    // Route matching
-    if (path === '/api/health') {
-      return Response.json({ status: 'ok', timestamp: new Date().toISOString() }, { headers: corsHeaders });
-    }
-
-    if (path === '/api/products' && method === 'GET') {
-      return handleGetProducts(env.DB, corsHeaders);
-    }
-
-    if (path === '/api/products/featured' && method === 'GET') {
-      return handleGetFeaturedProducts(env.DB, corsHeaders);
-    }
-
-    if (path.startsWith('/api/products/') && method === 'GET') {
-      const slug = path.split('/api/products/')[1];
-      return handleGetProduct(env.DB, slug, corsHeaders);
-    }
-
-    if (path === '/api/checkout' && method === 'POST') {
-      return handleCheckout(request, env, corsHeaders);
-    }
-
-    if (path === '/api/coupon/validate' && method === 'POST') {
-      return handleValidateCoupon(request, env.DB, corsHeaders);
-    }
-
-    if (path === '/api/orders' && method === 'GET') {
-      return handleGetOrders(request, env.DB, corsHeaders);
-    }
-
-    if (path.startsWith('/api/orders/') && method === 'GET') {
-      const orderId = path.split('/api/orders/')[1];
-      return handleGetOrder(env.DB, orderId, corsHeaders);
-    }
-
-    if (path === '/api/auth/register' && method === 'POST') {
-      return handleRegister(request, env, corsHeaders);
-    }
-
-    if (path === '/api/auth/login' && method === 'POST') {
-      return handleLogin(request, env, corsHeaders);
-    }
-
-    if (path === '/api/auth/me' && method === 'GET') {
-      return handleGetCurrentUser(request, env.DB, corsHeaders);
-    }
-
-    if (path === '/api/recent-sales' && method === 'GET') {
-      return handleGetRecentSales(env.DB, corsHeaders);
-    }
-
-    if (path === '/api/webhook/dompetx' && method === 'POST') {
-      return handleDompetxWebhook(request, env, corsHeaders);
-    }
-
-    if (path === '/api/settings' && method === 'GET') {
-      return handleGetSettings(env.DB, corsHeaders);
-    }
-
-    // 404
-    return Response.json({ error: 'Not Found' }, { status: 404, headers: corsHeaders });
-
-  } catch (error) {
-    console.error('API Error:', error);
-    return Response.json(
-      { error: 'Internal Server Error' },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-};
-
-// ============ PRODUCTS ============
-
-async function handleGetProducts(db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  const { results } = await db.prepare(
-    'SELECT * FROM products WHERE is_active = 1 ORDER BY sort_order ASC'
-  ).all();
-
-  return Response.json({ products: results }, { headers: corsHeaders });
-}
-
-async function handleGetFeaturedProducts(db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  const { results } = await db.prepare(
-    'SELECT * FROM products WHERE is_active = 1 AND is_featured = 1 ORDER BY sort_order ASC LIMIT 6'
-  ).all();
-
-  return Response.json({ products: results }, { headers: corsHeaders });
-}
-
-async function handleGetProduct(db: D1Database, slug: string, corsHeaders: HeadersInit): Promise<Response> {
-  const product = await db.prepare(
-    'SELECT * FROM products WHERE slug = ? AND is_active = 1'
-  ).bind(slug).first();
-
-  if (!product) {
-    return Response.json({ error: 'Product not found' }, { status: 404, headers: corsHeaders });
-  }
-
-  return Response.json({ product }, { headers: corsHeaders });
-}
-
-// ============ CHECKOUT ============
-
-async function handleCheckout(request: Request, env: Env, corsHeaders: HeadersInit): Promise<Response> {
-  const { name, email, phone, productSlug, paymentMethod, couponCode } = await request.json() as any;
-
-  // Get product
-  const product = await env.DB.prepare(
-    'SELECT * FROM products WHERE slug = ? AND is_active = 1'
-  ).bind(productSlug).first();
-
-  if (!product) {
-    return Response.json({ error: 'Product not found' }, { status: 404, headers: corsHeaders });
-  }
-
-  // Calculate price with coupon
-  let finalPrice = product.price;
-  let couponId = null;
-
-  if (couponCode) {
-    const coupon = await env.DB.prepare(
-      'SELECT * FROM coupons WHERE code = ? AND is_active = 1 AND (expires_at IS NULL OR expires_at > datetime(\'now\'))'
-    ).bind(couponCode.toUpperCase()).first();
-
-    if (coupon && coupon.current_uses < coupon.max_uses) {
-      if (coupon.type === 'PERCENTAGE') {
-        finalPrice = Math.round(product.price * (1 - coupon.value / 100));
-      } else if (coupon.type === 'FIXED') {
-        finalPrice = Math.max(0, product.price - coupon.value);
-      }
-      couponId = coupon.id;
-    }
-  }
-
-  // Create order in database
-  const orderId = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-  
-  await env.DB.prepare(
-    `INSERT INTO orders (id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, created_at) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'))`
-  ).bind(orderId, email, name, phone, product.id, product.title, finalPrice, paymentMethod, couponId).run();
-
-  // Update coupon usage if applicable
-  if (couponId) {
-    await env.DB.prepare(
-      'UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ?'
-    ).bind(couponId).run();
-  }
-
-  // Initiate DompetX payment
-  try {
-    const dompetxResponse = await fetch(`${env.DOMPETX_API_URL}/payments`, {
-      method: 'POST',
+    return new Response(null, {
       headers: {
-        'Authorization': `Bearer ${env.DOMPETX_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        external_id: orderId,
-        amount: finalPrice,
-        description: `Pembelian ${product.title} - Asri Digital`,
-        payment_method: paymentMethod,
-        customer: { name, email, phone },
-        callback_url: `https://asridigital-com.pages.dev/api/webhook/dompetx`,
-        success_url: `https://asridigital-com.pages.dev/success?order=${orderId}`,
-        failure_url: `https://asridigital-com.pages.dev/checkout?error=payment_failed`,
-      }),
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
     });
+  }
 
-    const dompetxData = await dompetxResponse.json() as any;
+  // Remove /api prefix for routing
+  const route = path.replace('/api', '') || '/';
 
-    if (dompetxData.payment_url) {
-      // Update order with payment URL
+  try {
+    // ==================== HEALTH CHECK ====================
+    if (route === '/health' && method === 'GET') {
+      return jsonResponse({ status: 'ok', timestamp: new Date().toISOString() });
+    }
+
+    // ==================== PRODUCTS ====================
+    if (route === '/products' && method === 'GET') {
+      const category = url.searchParams.get('category');
+      const search = url.searchParams.get('search');
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const offset = (page - 1) * limit;
+
+      let query = 'SELECT * FROM products WHERE is_active = 1';
+      let countQuery = 'SELECT COUNT(*) as total FROM products WHERE is_active = 1';
+      const params: any[] = [];
+
+      if (category && category !== 'all') {
+        query += ' AND category = ?';
+        countQuery += ' AND category = ?';
+        params.push(category);
+      }
+
+      if (search) {
+        query += ' AND (title LIKE ? OR description LIKE ?)';
+        countQuery += ' AND (title LIKE ? OR description LIKE ?)';
+        params.push(`%${search}%`, `%${search}%`);
+      }
+
+      query += ' ORDER BY sort_order ASC LIMIT ? OFFSET ?';
+
+      const products = await env.DB.prepare(query)
+        .bind(...params, limit, offset)
+        .all();
+
+      const countResult = await env.DB.prepare(countQuery)
+        .bind(...params)
+        .first();
+
+      return jsonResponse({
+        products: products.results,
+        total: countResult?.total || 0,
+        page,
+        totalPages: Math.ceil((countResult?.total || 0) / limit)
+      });
+    }
+
+    if (route === '/products/featured' && method === 'GET') {
+      const products = await env.DB.prepare(
+        'SELECT * FROM products WHERE is_active = 1 AND (is_featured = 1 OR id = ?) ORDER BY sort_order ASC'
+      )
+        .bind('ALL-ACCESS')
+        .all();
+
+      return jsonResponse({ products: products.results });
+    }
+
+    if (route.startsWith('/products/') && method === 'GET') {
+      const slug = route.split('/')[2];
+      const product = await env.DB.prepare(
+        'SELECT * FROM products WHERE slug = ? AND is_active = 1'
+      )
+        .bind(slug)
+        .first();
+
+      if (!product) {
+        return jsonResponse({ error: 'Product not found' }, 404);
+      }
+
+      return jsonResponse({ product });
+    }
+
+    // ==================== AUTH ====================
+    if (route === '/auth/register' && method === 'POST') {
+      const { email, password, name } = await request.json();
+
+      if (!email || !password || !name) {
+        return jsonResponse({ error: 'Email, password, dan name wajib diisi' }, 400);
+      }
+
+      // Check if email exists
+      const existingUser = await env.DB.prepare(
+        'SELECT id FROM users WHERE email = ?'
+      )
+        .bind(email)
+        .first();
+
+      if (existingUser) {
+        return jsonResponse({ error: 'Email sudah terdaftar' }, 400);
+      }
+
+      // Hash password
+      const passwordHash = await hashPassword(password);
+      const userId = generateId();
+
+      // Insert user
       await env.DB.prepare(
-        'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
-      ).bind(dompetxData.payment_url, dompetxData.id, orderId).run();
+        'INSERT INTO users (id, email, name, password, is_all_access, created_at, updated_at) VALUES (?, ?, ?, ?, 0, datetime("now"), datetime("now"))'
+      )
+        .bind(userId, email, name, passwordHash)
+        .run();
 
-      return Response.json({
+      // Create JWT token
+      const token = await createJWT({ userId, email, name }, env.JWT_SECRET);
+
+      return jsonResponse({
         success: true,
-        orderId,
-        paymentUrl: dompetxData.payment_url,
-      }, { headers: corsHeaders });
-    } else {
-      throw new Error('Failed to create payment');
-    }
-  } catch (error) {
-    console.error('DompetX Error:', error);
-    
-    // Still return success with mock payment for testing
-    return Response.json({
-      success: true,
-      orderId,
-      paymentUrl: `/success?order=${orderId}`,
-      message: 'Payment initiated (test mode)',
-    }, { headers: corsHeaders });
-  }
-}
-
-// ============ COUPONS ============
-
-async function handleValidateCoupon(request: Request, db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  const { code, productSlug } = await request.json() as any;
-
-  const coupon = await db.prepare(
-    'SELECT * FROM coupons WHERE code = ? AND is_active = 1 AND (expires_at IS NULL OR expires_at > datetime(\'now\'))'
-  ).bind(code.toUpperCase()).first();
-
-  if (!coupon) {
-    return Response.json({ valid: false, message: 'Kupon tidak ditemukan' }, { headers: corsHeaders });
-  }
-
-  if (coupon.current_uses >= coupon.max_uses) {
-    return Response.json({ valid: false, message: 'Kupon sudah habis' }, { headers: corsHeaders });
-  }
-
-  if (coupon.min_purchase) {
-    const product = await db.prepare(
-      'SELECT price FROM products WHERE slug = ?'
-    ).bind(productSlug).first();
-
-    if (product && product.price < coupon.min_purchase) {
-      return Response.json({ 
-        valid: false, 
-        message: `Minimal pembelian ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(coupon.min_purchase)}` 
-      }, { headers: corsHeaders });
-    }
-  }
-
-  return Response.json({
-    valid: true,
-    coupon: {
-      id: coupon.id,
-      code: coupon.code,
-      type: coupon.type,
-      value: coupon.value,
-    },
-  }, { headers: corsHeaders });
-}
-
-// ============ ORDERS ============
-
-async function handleGetOrders(request: Request, db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  // Get user from JWT token
-  const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-  
-  if (!token) {
-    // Return all orders for admin (for now, without auth)
-    const { results } = await db.prepare(
-      'SELECT * FROM orders ORDER BY created_at DESC LIMIT 50'
-    ).all();
-    return Response.json({ orders: results }, { headers: corsHeaders });
-  }
-
-  // Validate JWT and get user email
-  try {
-    const payload = await validateJWT(token, 'secret'); // TODO: Use env.JWT_SECRET
-    const { results } = await db.prepare(
-      'SELECT * FROM orders WHERE user_email = ? ORDER BY created_at DESC'
-    ).bind(payload.email).all();
-    return Response.json({ orders: results }, { headers: corsHeaders });
-  } catch {
-    return Response.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders });
-  }
-}
-
-async function handleGetOrder(db: D1Database, orderId: string, corsHeaders: HeadersInit): Promise<Response> {
-  const order = await db.prepare(
-    'SELECT * FROM orders WHERE id = ?'
-  ).bind(orderId).first();
-
-  if (!order) {
-    return Response.json({ error: 'Order not found' }, { status: 404, headers: corsHeaders });
-  }
-
-  return Response.json({ order }, { headers: corsHeaders });
-}
-
-// ============ AUTH ============
-
-async function handleRegister(request: Request, env: Env, corsHeaders: HeadersInit): Promise<Response> {
-  const { name, email, password } = await request.json() as any;
-
-  // Check if email exists
-  const existing = await env.DB.prepare(
-    'SELECT id FROM users WHERE email = ?'
-  ).bind(email).first();
-
-  if (existing) {
-    return Response.json({ error: 'Email sudah terdaftar' }, { status: 400, headers: corsHeaders });
-  }
-
-  // Hash password
-  const hashedPassword = await hashPassword(password);
-
-  // Create user
-  const userId = `user-${Date.now()}`;
-  await env.DB.prepare(
-    'INSERT INTO users (id, name, email, password, is_all_access, created_at) VALUES (?, ?, ?, ?, 0, datetime(\'now\'))'
-  ).bind(userId, name, email, hashedPassword).run();
-
-  // Generate JWT
-  const token = await createJWT({ id: userId, email, name }, env.JWT_SECRET);
-
-  return Response.json({
-    success: true,
-    token,
-    user: { id: userId, name, email },
-  }, { headers: corsHeaders });
-}
-
-async function handleLogin(request: Request, env: Env, corsHeaders: HeadersInit): Promise<Response> {
-  const { email, password } = await request.json() as any;
-
-  const user = await env.DB.prepare(
-    'SELECT * FROM users WHERE email = ?'
-  ).bind(email).first();
-
-  if (!user) {
-    return Response.json({ error: 'Email tidak ditemukan' }, { status: 400, headers: corsHeaders });
-  }
-
-  const validPassword = await verifyPassword(password, user.password as string);
-  if (!validPassword) {
-    return Response.json({ error: 'Password salah' }, { status: 400, headers: corsHeaders });
-  }
-
-  const token = await createJWT({ id: user.id, email: user.email, name: user.name }, env.JWT_SECRET);
-
-  return Response.json({
-    success: true,
-    token,
-    user: { id: user.id, name: user.name, email: user.email },
-  }, { headers: corsHeaders });
-}
-
-async function handleGetCurrentUser(request: Request, db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-  
-  if (!token) {
-    return Response.json({ error: 'No token provided' }, { status: 401, headers: corsHeaders });
-  }
-
-  try {
-    const payload = await validateJWT(token, 'secret'); // TODO: Use env.JWT_SECRET
-    const user = await db.prepare(
-      'SELECT id, name, email, is_all_access, created_at FROM users WHERE id = ?'
-    ).bind(payload.id).first();
-
-    if (!user) {
-      return Response.json({ error: 'User not found' }, { status: 404, headers: corsHeaders });
+        token,
+        user: { id: userId, email, name, is_all_access: false }
+      });
     }
 
-    return Response.json({ user }, { headers: corsHeaders });
-  } catch {
-    return Response.json({ error: 'Invalid token' }, { status: 401, headers: corsHeaders });
-  }
-}
+    if (route === '/auth/login' && method === 'POST') {
+      const { email, password } = await request.json();
 
-// ============ RECENT SALES ============
+      if (!email || !password) {
+        return jsonResponse({ error: 'Email dan password wajib diisi' }, 400);
+      }
 
-async function handleGetRecentSales(db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  const { results } = await db.prepare(
-    `SELECT 
-      SUBSTR(user_name, 1, 1) || '***' as firstName,
-      product_title as productName,
-      created_at
-    FROM orders 
-    WHERE status = 'PAID'
-    ORDER BY created_at DESC
-    LIMIT 3`
-  ).all();
+      // Find user
+      const user = await env.DB.prepare(
+        'SELECT * FROM users WHERE email = ?'
+      )
+        .bind(email)
+        .first();
 
-  // Calculate time ago
-  const sales = results.map((sale: any) => {
-    const now = new Date();
-    const orderDate = new Date(sale.created_at);
-    const diffMs = now.getTime() - orderDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+      if (!user) {
+        return jsonResponse({ error: 'Email atau password salah' }, 401);
+      }
 
-    let timeAgo;
-    if (diffMins < 1) timeAgo = 'Baru saja';
-    else if (diffMins < 60) timeAgo = `${diffMins} menit`;
-    else if (diffHours < 24) timeAgo = `${diffHours} jam`;
-    else timeAgo = `${diffDays} hari`;
+      // Verify password
+      const valid = await verifyPassword(password, user.password as string);
+      if (!valid) {
+        return jsonResponse({ error: 'Email atau password salah' }, 401);
+      }
 
-    return {
-      firstName: sale.firstName,
-      productName: sale.productName,
-      timeAgo,
-    };
-  });
+      // Create JWT token
+      const token = await createJWT(
+        { userId: user.id, email: user.email, name: user.name },
+        env.JWT_SECRET
+      );
 
-  return Response.json({ sales }, { headers: corsHeaders });
-}
+      return jsonResponse({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          is_all_access: user.is_all_access
+        }
+      });
+    }
 
-// ============ WEBHOOK ============
+    if (route === '/auth/me' && method === 'GET') {
+      const user = await getUser(request, env);
+      if (!user) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
 
-async function handleDompetxWebhook(request: Request, env: Env, corsHeaders: HeadersInit): Promise<Response> {
-  const body = await request.json() as any;
+      return jsonResponse({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          is_all_access: user.is_all_access
+        }
+      });
+    }
 
-  // Verify webhook signature (implement proper verification)
-  const signature = request.headers.get('X-Dompetx-Signature');
-  // TODO: Verify signature with env.DOMPETX_WEBHOOK_SECRET
+    // ==================== CHECKOUT ====================
+    if (route === '/checkout' && method === 'POST') {
+      const body = await request.json();
+      const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod } = body;
 
-  const { external_id, status, payment_method } = body;
+      if (!productSlug || !customerEmail || !customerName || !paymentMethod) {
+        return jsonResponse({ error: 'Data tidak lengkap' }, 400);
+      }
 
-  if (status === 'PAID' || status === 'COMPLETED') {
-    // Update order status
-    await env.DB.prepare(
-      'UPDATE orders SET status = \'PAID\', paid_at = datetime(\'now\'), payment_method = ? WHERE id = ?'
-    ).bind(payment_method, external_id).run();
+      // Get product
+      const product = await env.DB.prepare(
+        'SELECT * FROM products WHERE slug = ? AND is_active = 1'
+      )
+        .bind(productSlug)
+        .first();
 
-    // Get order details
-    const order = await env.DB.prepare(
-      'SELECT * FROM orders WHERE id = ?'
-    ).bind(external_id).first();
+      if (!product) {
+        return jsonResponse({ error: 'Produk tidak ditemukan' }, 404);
+      }
 
-    if (order) {
-      // Check if All-Access Pass
-      if (order.product_id === 'ALL-ACCESS') {
-        // Update user to all-access
-        const user = await env.DB.prepare(
-          'SELECT id FROM users WHERE email = ?'
-        ).bind(order.user_email).first();
+      let discountAmount = 0;
+      let couponId = null;
 
-        if (user) {
-          await env.DB.prepare(
-            'UPDATE users SET is_all_access = 1 WHERE id = ?'
-          ).bind(user.id).run();
+      // Validate coupon if provided
+      if (couponCode) {
+        const coupon = await env.DB.prepare(
+          'SELECT * FROM coupons WHERE code = ? AND is_active = 1'
+        )
+          .bind(couponCode.toUpperCase())
+          .first();
+
+        if (coupon) {
+          const now = new Date().toISOString();
+          const isValid = (!coupon.expires_at || coupon.expires_at > now) &&
+                         (coupon.current_uses < coupon.max_uses) &&
+                         (!coupon.min_purchase || product.price >= coupon.min_purchase);
+
+          if (isValid) {
+            couponId = coupon.id;
+            if (coupon.type === 'PERCENTAGE') {
+              discountAmount = Math.round(product.price * (coupon.value / 100));
+            } else if (coupon.type === 'FIXED') {
+              discountAmount = coupon.value;
+            }
+          }
         }
       }
 
-      // Send confirmation email via Resend
+      const finalAmount = product.price - discountAmount;
+      const orderId = generateId();
+      const orderCode = `INV-${Date.now().toString(36).toUpperCase()}`;
+
+      // Create order
+      await env.DB.prepare(
+        `INSERT INTO orders (id, user_id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'))`
+      )
+        .bind(
+          orderId,
+          null, // user_id null for guest checkout
+          customerEmail,
+          customerName,
+          customerPhone || null,
+          product.id,
+          product.title,
+          finalAmount,
+          paymentMethod,
+          couponId
+        )
+        .run();
+
+      // Update coupon usage
+      if (couponId) {
+        await env.DB.prepare(
+          'UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ?'
+        )
+          .bind(couponId)
+          .run();
+      }
+
+      // Create DompetX payment
+      let paymentUrl = null;
+      let paymentData = null;
+
       try {
-        await fetch('https://api.resend.com/emails', {
+        const dompetxResponse = await fetch(`${env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${env.DOMPETX_API_KEY}`
           },
           body: JSON.stringify({
-            from: 'Asri Digital <noreply@asridigital.com>',
-            to: order.user_email,
-            subject: `✅ Pembayaran Berhasil - ${order.product_title}`,
-            html: `
-              <h1>Pembayaran Berhasil!</h1>
-              <p>Terima kasih ${order.user_name},</p>
-              <p>Pembelian <strong>${order.product_title}</strong> telah berhasil.</p>
-              <p>No. Invoice: <strong>${order.id}</strong></p>
-              <p>Anda bisa mengakses produk melalui dashboard.</p>
-              <a href="https://asridigital-com.pages.dev/dashboard" style="display:inline-block;background:#5C7A36;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;">Buka Dashboard</a>
-            `,
-          }),
+            ref_id: orderId,
+            amount: finalAmount,
+            currency: 'IDR',
+            description: `Pembelian ${product.title}`,
+            customer_email: customerEmail,
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            payment_method: paymentMethod,
+            callback_url: `${env.APP_URL}/api/webhook/dompetx`,
+            return_url: `${env.APP_URL}/success?order=${orderId}`,
+            expiry_minutes: 60
+          })
         });
-      } catch (emailError) {
-        console.error('Email Error:', emailError);
-      }
-    }
-  }
 
-  return Response.json({ received: true }, { headers: corsHeaders });
+        const dompetxData = await dompetxResponse.json() as any;
+
+        if (dompetxData.success || dompetxData.invoice_url) {
+          paymentUrl = dompetxData.invoice_url || dompetxData.payment_url;
+          paymentData = dompetxData;
+
+          // Update order with DompetX reference
+          await env.DB.prepare(
+            'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
+          )
+            .bind(paymentUrl, dompetxData.invoice_id || dompetxData.id, orderId)
+            .run();
+        }
+      } catch (error) {
+        console.error('DompetX error:', error);
+        // Continue even if DompetX fails - we can process manually
+      }
+
+      // If no DompetX URL, generate mock payment for testing
+      if (!paymentUrl) {
+        paymentUrl = `${env.APP_URL}/success?order=${orderId}`;
+      }
+
+      return jsonResponse({
+        success: true,
+        orderId,
+        orderCode,
+        paymentUrl,
+        paymentData,
+        amount: finalAmount,
+        discount: discountAmount
+      });
+    }
+
+    // ==================== COUPON ====================
+    if (route === '/coupon/validate' && method === 'POST') {
+      const { code, productSlug } = await request.json();
+
+      if (!code) {
+        return jsonResponse({ valid: false, message: 'Kode kupon wajib diisi' });
+      }
+
+      const coupon = await env.DB.prepare(
+        'SELECT * FROM coupons WHERE code = ? AND is_active = 1'
+      )
+        .bind(code.toUpperCase())
+        .first();
+
+      if (!coupon) {
+        return jsonResponse({ valid: false, message: 'Kupon tidak ditemukan' });
+      }
+
+      const now = new Date().toISOString();
+      
+      if (coupon.expires_at && coupon.expires_at < now) {
+        return jsonResponse({ valid: false, message: 'Kupon sudah kedaluwarsa' });
+      }
+
+      if (coupon.current_uses >= coupon.max_uses) {
+        return jsonResponse({ valid: false, message: 'Kupon sudah habis' });
+      }
+
+      let productPrice = 0;
+      if (productSlug) {
+        const product = await env.DB.prepare(
+          'SELECT price FROM products WHERE slug = ?'
+        )
+          .bind(productSlug)
+          .first();
+        if (product) {
+          productPrice = product.price as number;
+        }
+      }
+
+      if (coupon.min_purchase && productPrice < coupon.min_purchase) {
+        return jsonResponse({
+          valid: false,
+          message: `Minimal pembelian Rp ${coupon.min_purchase.toLocaleString()}`
+        });
+      }
+
+      return jsonResponse({
+        valid: true,
+        coupon: {
+          id: coupon.id,
+          code: coupon.code,
+          type: coupon.type,
+          value: coupon.value,
+          description: coupon.description
+        }
+      });
+    }
+
+    // ==================== ORDERS ====================
+    if (route === '/orders' && method === 'GET') {
+      const user = await getUser(request, env);
+      
+      let orders;
+      if (user) {
+        orders = await env.DB.prepare(
+          'SELECT * FROM orders WHERE user_email = ? ORDER BY created_at DESC LIMIT 50'
+        )
+          .bind(user.email)
+          .all();
+      } else {
+        // For admin or testing - return recent orders
+        orders = await env.DB.prepare(
+          'SELECT * FROM orders ORDER BY created_at DESC LIMIT 50'
+        )
+          .all();
+      }
+
+      return jsonResponse({ orders: orders.results });
+    }
+
+    if (route.startsWith('/orders/') && method === 'GET') {
+      const orderId = route.split('/')[2];
+      
+      const order = await env.DB.prepare(
+        'SELECT o.*, p.title as product_title, p.image_icon as product_image FROM orders o LEFT JOIN products p ON o.product_id = p.id WHERE o.id = ?'
+      )
+        .bind(orderId)
+        .first();
+
+      if (!order) {
+        return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
+      }
+
+      return jsonResponse({ order });
+    }
+
+    // ==================== RECENT SALES (FOMO) ====================
+    if (route === '/recent-sales' && method === 'GET') {
+      const sales = await env.DB.prepare(
+        `SELECT 
+           SUBSTR(user_name, 1, 1) || '***' as firstName,
+           product_title as productName,
+           created_at
+         FROM orders 
+         WHERE status = 'PAID' 
+         ORDER BY created_at DESC 
+         LIMIT 3`
+      )
+        .all();
+
+      const formattedSales = sales.results.map((sale: any) => ({
+        firstName: sale.firstName,
+        productName: sale.productName,
+        timeAgo: timeAgo(sale.created_at)
+      }));
+
+      return jsonResponse({ sales: formattedSales });
+    }
+
+    // ==================== WEBHOOK DOMPETX ====================
+    if (route === '/webhook/dompetx' && method === 'POST') {
+      const body = await request.json() as any;
+      
+      // Verify webhook signature if secret is set
+      if (env.DOMPETX_WEBHOOK_SECRET && env.DOMPETX_WEBHOOK_SECRET !== 'placeholder-set-after-dompetx-config') {
+        const signature = request.headers.get('X-DompetX-Signature');
+        // TODO: Implement proper signature verification
+      }
+
+      const { ref_id, status, amount, payment_method, paid_at } = body;
+
+      if (!ref_id) {
+        return jsonResponse({ error: 'Missing ref_id' }, 400);
+      }
+
+      // Find order
+      const order = await env.DB.prepare(
+        'SELECT * FROM orders WHERE id = ?'
+      )
+        .bind(ref_id)
+        .first();
+
+      if (!order) {
+        return jsonResponse({ error: 'Order not found' }, 404);
+      }
+
+      // Update order status
+      if (status === 'SUCCESS' || status === 'PAID') {
+        await env.DB.prepare(
+          `UPDATE orders 
+           SET status = 'PAID', 
+               paid_at = datetime('now'),
+               payment_method = ?,
+               updated_at = datetime('now')
+           WHERE id = ?`
+        )
+          .bind(payment_method || order.payment_method, ref_id)
+          .run();
+
+        // Check if All-Access Pass
+        if (order.product_id === 'ALL-ACCESS') {
+          // Find or create user by email
+          let user = await env.DB.prepare(
+            'SELECT id FROM users WHERE email = ?'
+          )
+            .bind(order.user_email)
+            .first();
+
+          if (user) {
+            await env.DB.prepare(
+              'UPDATE users SET is_all_access = 1 WHERE id = ?'
+            )
+              .bind(user.id)
+              .run();
+          }
+        }
+
+        // Send confirmation email
+        try {
+          await sendOrderConfirmationEmail(env, order);
+        } catch (emailError) {
+          console.error('Email error:', emailError);
+        }
+
+      } else if (status === 'FAILED') {
+        await env.DB.prepare(
+          `UPDATE orders 
+           SET status = 'FAILED', 
+               updated_at = datetime('now')
+           WHERE id = ?`
+        )
+          .bind(ref_id)
+          .run();
+      }
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== USER PRODUCTS ====================
+    if (route === '/user/products' && method === 'GET') {
+      const user = await getUser(request, env);
+      if (!user) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      let products;
+
+      if (user.is_all_access) {
+        // All-access user gets all active products
+        products = await env.DB.prepare(
+          'SELECT * FROM products WHERE is_active = 1 AND id != ? ORDER BY sort_order ASC'
+        )
+          .bind('ALL-ACCESS')
+          .all();
+      } else {
+        // Regular user gets only purchased products
+        products = await env.DB.prepare(
+          `SELECT DISTINCT p.* 
+           FROM products p
+           INNER JOIN orders o ON p.id = o.product_id
+           WHERE o.user_email = ? AND o.status = 'PAID'
+           ORDER BY p.sort_order ASC`
+        )
+          .bind(user.email)
+          .all();
+      }
+
+      return jsonResponse({ products: products.results });
+    }
+
+    // ==================== SETTINGS ====================
+    if (route === '/settings' && method === 'GET') {
+      const settings = await env.DB.prepare(
+        'SELECT * FROM site_settings WHERE key IN (?, ?, ?, ?, ?)'
+      )
+        .bind('site_name', 'site_description', 'whatsapp_number', 'commission_percent', 'fomo_enabled')
+        .all();
+
+      const settingsObj: any = {};
+      settings.results.forEach((s: any) => {
+        settingsObj[s.key] = s.value;
+      });
+
+      return jsonResponse({ settings: settingsObj });
+    }
+
+    // ==================== BLOG POSTS ====================
+    if (route === '/blog/posts' && method === 'GET') {
+      const category = url.searchParams.get('category');
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '10');
+      const offset = (page - 1) * limit;
+
+      let query = 'SELECT id, title, slug, excerpt, image_url, category, tags, published_at, author_name FROM blog_posts WHERE is_published = 1';
+      const params: any[] = [];
+
+      if (category && category !== 'all') {
+        query += ' AND category = ?';
+        params.push(category);
+      }
+
+      query += ' ORDER BY published_at DESC LIMIT ? OFFSET ?';
+
+      const posts = await env.DB.prepare(query)
+        .bind(...params, limit, offset)
+        .all();
+
+      return jsonResponse({ posts: posts.results });
+    }
+
+    if (route.startsWith('/blog/') && method === 'GET') {
+      const slug = route.split('/')[2];
+      
+      const post = await env.DB.prepare(
+        'SELECT * FROM blog_posts WHERE slug = ? AND is_published = 1'
+      )
+        .bind(slug)
+        .first();
+
+      if (!post) {
+        return jsonResponse({ error: 'Artikel tidak ditemukan' }, 404);
+      }
+
+      // Get related posts
+      const relatedPosts = await env.DB.prepare(
+        'SELECT id, title, slug, excerpt, image_url, category, published_at FROM blog_posts WHERE is_published = 1 AND id != ? ORDER BY published_at DESC LIMIT 3'
+      )
+        .bind(post.id)
+        .all();
+
+      return jsonResponse({ post, relatedPosts: relatedPosts.results });
+    }
+
+    // ==================== ADMIN STATS ====================
+    if (route === '/admin/stats' && method === 'GET') {
+      const totalOrders = await env.DB.prepare(
+        'SELECT COUNT(*) as count FROM orders'
+      ).first();
+
+      const paidOrders = await env.DB.prepare(
+        "SELECT COUNT(*) as count, SUM(amount) as revenue FROM orders WHERE status = 'PAID'"
+      ).first();
+
+      const pendingOrders = await env.DB.prepare(
+        "SELECT COUNT(*) as count FROM orders WHERE status = 'PENDING'"
+      ).first();
+
+      const totalUsers = await env.DB.prepare(
+        'SELECT COUNT(*) as count FROM users'
+      ).first();
+
+      const recentOrders = await env.DB.prepare(
+        `SELECT o.*, p.title as product_title 
+         FROM orders o 
+         LEFT JOIN products p ON o.product_id = p.id 
+         ORDER BY o.created_at DESC 
+         LIMIT 10`
+      ).all();
+
+      return jsonResponse({
+        stats: {
+          totalOrders: totalOrders?.count || 0,
+          paidOrders: paidOrders?.count || 0,
+          revenue: paidOrders?.revenue || 0,
+          pendingOrders: pendingOrders?.count || 0,
+          totalUsers: totalUsers?.count || 0
+        },
+        recentOrders: recentOrders.results
+      });
+    }
+
+    // ==================== DEFAULT 404 ====================
+    return jsonResponse({ error: 'Endpoint not found' }, 404);
+
+  } catch (error: any) {
+    console.error('API Error:', error);
+    return jsonResponse({ error: error.message || 'Internal server error' }, 500);
+  }
 }
 
-// ============ SETTINGS ============
+// Email helper function
+async function sendOrderConfirmationEmail(env: Env, order: any) {
+  if (!env.RESEND_API_KEY || env.RESEND_API_KEY.startsWith('re_your_')) {
+    console.log('Resend API key not configured, skipping email');
+    return;
+  }
 
-async function handleGetSettings(db: D1Database, corsHeaders: HeadersInit): Promise<Response> {
-  const { results } = await db.prepare(
-    'SELECT key, value FROM site_settings'
-  ).all();
+  const isAllAccess = order.product_id === 'ALL-ACCESS';
+  const subject = isAllAccess
+    ? '🏆 Selamat! All-Access Pass Anda Aktif'
+    : `🎉 Pembayaran Berhasil - ${order.product_title}`;
 
-  const settings: Record<string, string> = {};
-  results.forEach((row: any) => {
-    settings[row.key] = row.value;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: 'Inter', -apple-system, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <!-- Header -->
+        <div style="background-color: #5C7A36; padding: 32px; text-align: center;">
+          <h1 style="color: #ffffff; font-size: 24px; margin: 0;">✨ Asri Digital</h1>
+          <p style="color: #ffffff; opacity: 0.9; margin-top: 8px;">Custom GPT untuk Profesional Indonesia</p>
+        </div>
+        
+        <!-- Content -->
+        <div style="padding: 32px;">
+          <h2 style="font-size: 20px; color: #171717; margin-bottom: 16px;">
+            ${isAllAccess ? '🏆 Selamat! All-Access Pass Anda Aktif' : '🎉 Pembayaran Berhasil!'}
+          </h2>
+          
+          <p style="color: #525252; line-height: 1.6;">
+            Halo <strong>${order.user_name}</strong>,
+          </p>
+          
+          <p style="color: #525252; line-height: 1.6;">
+            ${isAllAccess
+              ? 'Terima kasih telah membeli All-Access Pass! Anda sekarang memiliki akses ke semua Custom GPT yang tersedia dan yang akan datang.'
+              : `Terima kasih telah membeli <strong>${order.product_title}</strong>! Produk Anda sudah siap digunakan.`
+            }
+          </p>
+          
+          <!-- Order Details -->
+          <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <h3 style="font-size: 14px; color: #737373; text-transform: uppercase; margin-top: 0;">Detail Pesanan</h3>
+            <table style="width: 100%;">
+              <tr>
+                <td style="color: #525252; padding: 4px 0;">Order ID</td>
+                <td style="color: #171717; font-weight: 600; text-align: right;">${order.id}</td>
+              </tr>
+              <tr>
+                <td style="color: #525252; padding: 4px 0;">Produk</td>
+                <td style="color: #171717; font-weight: 600; text-align: right;">${order.product_title}</td>
+              </tr>
+              <tr>
+                <td style="color: #525252; padding: 4px 0;">Total</td>
+                <td style="color: #5C7A36; font-weight: 700; font-size: 18px; text-align: right;">Rp ${order.amount.toLocaleString()}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- CTA Button -->
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${env.APP_URL}/dashboard" style="display: inline-block; background-color: #5C7A36; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+              Buka Dashboard →
+            </a>
+          </div>
+          
+          <p style="color: #737373; font-size: 14px; text-align: center;">
+            Jika ada pertanyaan, balas email ini atau hubungi kami via WhatsApp.
+          </p>
+        </div>
+        
+        <!-- Footer -->
+        <div style="background-color: #f5f5f5; padding: 24px; text-align: center; border-top: 1px solid #e5e5e5;">
+          <p style="color: #a3a3a3; font-size: 12px; margin: 0;">
+            © 2026 Asri Digital. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`
+    },
+    body: JSON.stringify({
+      from: 'Asri Digital <noreply@asridigital.com>',
+      to: order.user_email,
+      subject,
+      html
+    })
   });
 
-  return Response.json({ settings }, { headers: corsHeaders });
-}
+  const result = await response.json() as any;
 
-// ============ HELPERS ============
+  // Log email
+  await env.DB.prepare(
+    `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
+     VALUES (?, ?, 'ORDER_CONFIRMATION', 'SENT', datetime('now'))`
+  )
+    .bind(order.user_email, subject)
+    .run();
 
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)));
-}
-
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const hashed = await hashPassword(password);
-  return hashed === hash;
-}
-
-async function createJWT(payload: any, secret: string): Promise<string> {
-  // Simple JWT implementation for Cloudflare Workers
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const body = btoa(JSON.stringify({ ...payload, exp: Math.floor(Date.now() / 1000) + 86400 }));
-  const signature = await hmacSha256(`${header}.${body}`, secret);
-  return `${header}.${body}.${signature}`;
-}
-
-async function validateJWT(token: string, secret: string): Promise<any> {
-  const [header, body, signature] = token.split('.');
-  const expectedSignature = await hmacSha256(`${header}.${body}`, secret);
-  
-  if (signature !== expectedSignature) {
-    throw new Error('Invalid signature');
-  }
-
-  const payload = JSON.parse(atob(body));
-  if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-    throw new Error('Token expired');
-  }
-
-  return payload;
-}
-
-async function hmacSha256(message: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
-  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+  return result;
 }

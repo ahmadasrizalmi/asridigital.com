@@ -13,12 +13,6 @@ import Icon from '../ui/Icon.astro';
     timeAgo: string;
   }
 
-  const mockSales: RecentSale[] = [
-    { firstName: 'S***', productName: 'Animasi Muslim Kids Studio', timeAgo: '5 menit' },
-    { firstName: 'B***', productName: 'Lifetime All-Access Pass', timeAgo: '12 menit' },
-    { firstName: 'A***', productName: 'Sahabat Guru PAUD Islami', timeAgo: '1 jam' },
-  ];
-
   const container = document.getElementById('fomo-container');
 
   function createToast(sale: RecentSale): HTMLElement {
@@ -65,17 +59,53 @@ import Icon from '../ui/Icon.astro';
     }, delay);
   }
 
-  function startSequence() {
+  async function fetchRecentSales(): Promise<RecentSale[]> {
+    try {
+      const response = await fetch('/api/recent-sales');
+      const data = await response.json() as any;
+      return data.sales || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function startSequence() {
     if (!container) return;
-    showToast(mockSales[0], 3000);
-    showToast(mockSales[1], 8000);
-    showToast(mockSales[2], 15000);
+
+    // Fetch real sales data
+    const sales = await fetchRecentSales();
     
-    setInterval(() => {
-      showToast(mockSales[0], 0);
-      showToast(mockSales[1], 5000);
-      showToast(mockSales[2], 12000);
-    }, 30000);
+    if (sales.length > 0) {
+      // Show real sales
+      sales.forEach((sale, index) => {
+        showToast(sale, 3000 + (index * 5000));
+      });
+
+      // Repeat every 30 seconds
+      setInterval(async () => {
+        const newSales = await fetchRecentSales();
+        newSales.forEach((sale, index) => {
+          showToast(sale, index * 5000);
+        });
+      }, 30000);
+    } else {
+      // Fallback to mock data
+      const mockSales: RecentSale[] = [
+        { firstName: 'S***', productName: 'Animasi Muslim Kids Studio', timeAgo: '5 menit' },
+        { firstName: 'B***', productName: 'Lifetime All-Access Pass', timeAgo: '12 menit' },
+        { firstName: 'A***', productName: 'Sahabat Guru PAUD Islami', timeAgo: '1 jam' },
+      ];
+
+      mockSales.forEach((sale, index) => {
+        showToast(sale, 3000 + (index * 5000));
+      });
+
+      setInterval(() => {
+        mockSales.forEach((sale, index) => {
+          showToast(sale, index * 5000);
+        });
+      }, 30000);
+    }
   }
 
   if (document.readyState === 'loading') {

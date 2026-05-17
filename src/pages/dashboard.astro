@@ -3,256 +3,427 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
-
-// Mock user data (will be fetched from DB later)
-const user = {
-  name: 'Ahmad',
-  email: 'ahmad@example.com',
-  isAllAccess: true,
-  joinedAt: '2026-05-01',
-};
-
-// Mock purchased products
-const purchasedProducts = [
-  {
-    id: 'ALL-ACCESS',
-    title: 'Lifetime All-Access Pass',
-    gptUrl: null,
-    purchasedAt: '2026-05-01',
-    status: 'active',
-  },
-  {
-    id: 'gpt-animasi-muslim',
-    title: 'Animasi Muslim Kids Studio',
-    gptUrl: 'https://chatgpt.com/g/g-6a06bc1c2e5481918d9767aa00048789-animasi-muslim-kids-studio',
-    purchasedAt: '2026-05-01',
-    status: 'active',
-  },
-  {
-    id: 'gpt-sahabat-guru',
-    title: 'Sahabat Guru PAUD Islami',
-    gptUrl: 'https://chatgpt.com/g/g-6a06d28370f4819189acb6d1815a5df6-sahabat-guru-paud-islami',
-    purchasedAt: '2026-05-01',
-    status: 'active',
-  },
-];
-
-// Mock all products for all-access users
-const allProducts = [
-  { id: 'gpt-animasi-muslim', title: 'Animasi Muslim Kids Studio', gptUrl: 'https://chatgpt.com/g/g-6a06bc1c2e5481918d9767aa00048789-animasi-muslim-kids-studio', category: 'kreatif' },
-  { id: 'gpt-sahabat-guru', title: 'Sahabat Guru PAUD Islami', gptUrl: 'https://chatgpt.com/g/g-6a06d28370f4819189acb6d1815a5df6-sahabat-guru-paud-islami', category: 'pendidikan' },
-  { id: 'gpt-content-creator', title: 'Content Creator Pro', gptUrl: '#', category: 'marketing' },
-  { id: 'gpt-code-helper', title: 'Code Helper Pro', gptUrl: '#', category: 'coding' },
-  { id: 'gpt-copywriter', title: 'Copywriter AI', gptUrl: '#', category: 'marketing' },
-];
-
-const sidebarLinks = [
-  { icon: 'home', label: 'Dashboard', href: '/dashboard', active: true },
-  { icon: 'sparkles', label: 'Produk Saya', href: '/dashboard/products', active: false },
-  { icon: 'download', label: 'Riwayat Pembelian', href: '/dashboard/orders', active: false },
-  { icon: 'user', label: 'Profil', href: '/dashboard/profile', active: false },
-  { icon: 'settings', label: 'Pengaturan', href: '/dashboard/settings', active: false },
-];
 ---
 
 <BaseLayout title="Dashboard - Asri Digital">
   <Header />
   
-  <main class="flex-1 bg-background">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex flex-col md:flex-row gap-8">
-        <!-- Sidebar -->
-        <aside class="w-full md:w-64 shrink-0">
-          <div class="card p-4 sticky top-24">
-            <!-- User Info -->
-            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-border">
-              <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <span class="text-xl font-bold text-primary">{user.name.charAt(0)}</span>
-              </div>
-              <div>
-                <h3 class="font-semibold text-text-primary">{user.name}</h3>
-                <p class="text-xs text-text-muted">{user.email}</p>
-              </div>
-            </div>
-            
-            <!-- All-Access Badge -->
-            {user.isAllAccess && (
-              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
-                <div class="flex items-center gap-2">
-                  <Icon name="crown" size={18} class="text-amber-600" />
-                  <span class="text-sm font-semibold text-amber-800">All-Access Member</span>
-                </div>
-              </div>
-            )}
-            
-            <!-- Navigation -->
-            <nav class="space-y-1">
-              {sidebarLinks.map((link) => (
-                <a
-                  href={link.href}
-                  class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    link.active
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-background'
-                  }`}
-                >
-                  <Icon name={link.icon} size={18} />
-                  {link.label}
-                </a>
-              ))}
-            </nav>
-            
-            <!-- Logout -->
-            <div class="mt-6 pt-4 border-t border-border">
-              <a href="/api/auth/logout" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-                <Icon name="log-out" size={18} />
-                Logout
-              </a>
+  <main class="flex-1 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Welcome Banner -->
+      <div id="welcome-banner" class="card p-6 mb-8 bg-gradient-to-r from-primary/5 to-primary/10">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-text-primary mb-2">
+              Selamat datang, <span id="user-name">Guest</span>! 👋
+            </h1>
+            <p class="text-text-secondary" id="user-status">Silakan login untuk mengakses dashboard Anda.</p>
+          </div>
+          <div id="all-access-badge" class="hidden">
+            <div class="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-full">
+              <Icon name="crown" size={20} />
+              <span class="font-semibold">ALL-ACCESS MEMBER</span>
             </div>
           </div>
-        </aside>
-        
-        <!-- Main Content -->
-        <div class="flex-1">
-          <!-- Welcome Banner -->
-          <div class="card p-6 mb-8 bg-gradient-to-r from-primary/5 to-primary/10">
-            <h1 class="text-2xl font-bold text-text-primary mb-2">
-              Selamat Datang, {user.name}! 👋
-            </h1>
-            <p class="text-text-secondary">
-              {user.isAllAccess
-                ? 'Anda memiliki akses ke semua produk. Mulai jelajahi sekarang!'
-                : 'Kelola produk dan lihat riwayat pembelian Anda.'}
+        </div>
+      </div>
+
+      <!-- Auth Section (shown when not logged in) -->
+      <div id="auth-section" class="max-w-md mx-auto">
+        <div class="card p-8">
+          <h2 class="text-xl font-bold text-text-primary mb-6 text-center">Login ke Dashboard</h2>
+          
+          <!-- Login Form -->
+          <form id="login-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Email</label>
+              <input type="email" id="login-email" name="email" class="input" placeholder="email@contoh.com" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Password</label>
+              <input type="password" id="login-password" name="password" class="input" placeholder="Masukkan password" required />
+            </div>
+            <button type="submit" class="btn-primary w-full">
+              <Icon name="log-in" size={18} />
+              Login
+            </button>
+          </form>
+
+          <div class="mt-4 text-center">
+            <p class="text-sm text-text-muted">
+              Belum punya akun? 
+              <button id="show-register" class="text-primary hover:underline font-medium">Daftar</button>
             </p>
           </div>
-          
-          <!-- Stats Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div class="card p-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Icon name="sparkles" size={20} class="text-primary" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-text-primary">{purchasedProducts.length}</p>
-                  <p class="text-xs text-text-muted">Produk Aktif</p>
-                </div>
-              </div>
+
+          <!-- Register Form (hidden by default) -->
+          <form id="register-form" class="space-y-4 hidden">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Nama Lengkap</label>
+              <input type="text" id="register-name" name="name" class="input" placeholder="Nama Anda" required />
             </div>
-            
-            <div class="card p-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Icon name="crown" size={20} class="text-amber-600" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-text-primary">{user.isAllAccess ? 'VIP' : 'Basic'}</p>
-                  <p class="text-xs text-text-muted">Status Member</p>
-                </div>
-              </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Email</label>
+              <input type="email" id="register-email" name="email" class="input" placeholder="email@contoh.com" required />
             </div>
-            
-            <div class="card p-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Icon name="calendar" size={20} class="text-green-600" />
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-text-primary">{new Date(user.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</p>
-                  <p class="text-xs text-text-muted">Bergabung</p>
-                </div>
-              </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Password</label>
+              <input type="password" id="register-password" name="password" class="input" placeholder="Minimal 6 karakter" required minlength="6" />
             </div>
-          </div>
-          
-          {/* All-Access Products */}
-          {user.isAllAccess && (
-            <div class="mb-8">
-              <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-text-primary flex items-center gap-2">
-                  <Icon name="crown" size={24} class="text-amber-500" />
-                  Semua Produk (All-Access)
-                </h2>
-                <span class="badge-primary">{allProducts.length} Produk</span>
+            <button type="submit" class="btn-primary w-full">
+              <Icon name="user-plus" size={18} />
+              Daftar
+            </button>
+          </form>
+
+          <div id="auth-error" class="mt-4 text-sm text-red-600 text-center hidden"></div>
+        </div>
+      </div>
+
+      <!-- Dashboard Content (hidden when not logged in) -->
+      <div id="dashboard-content" class="hidden">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div class="card p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Icon name="package" size={20} class="text-primary" />
               </div>
-              
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {allProducts.map((product) => (
-                  <div class="card-hover p-4">
-                    <div class="flex items-start justify-between">
-                      <div>
-                        <span class="badge-muted mb-2">{product.category}</span>
-                        <h3 class="font-semibold text-text-primary">{product.title}</h3>
-                      </div>
-                      <a
-                        href={product.gptUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="btn-primary text-sm px-3 py-1.5"
-                      >
-                        <Icon name="external-link" size={14} />
-                        Buka
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Recent Orders */}
-          <div>
-            <h2 class="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
-              <Icon name="clock" size={24} class="text-text-muted" />
-              Pembelian Terakhir
-            </h2>
-            
-            <div class="card overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead>
-                    <tr class="border-b border-border bg-background">
-                      <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
-                      <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-border">
-                    {purchasedProducts.map((product) => (
-                      <tr>
-                        <td class="px-4 py-4">
-                          <div class="font-medium text-text-primary">{product.title}</div>
-                        </td>
-                        <td class="px-4 py-4 text-sm text-text-secondary">
-                          {new Date(product.purchasedAt).toLocaleDateString('id-ID')}
-                        </td>
-                        <td class="px-4 py-4">
-                          <span class="badge-success">Aktif</span>
-                        </td>
-                        <td class="px-4 py-4 text-right">
-                          {product.gptUrl ? (
-                            <a
-                              href={product.gptUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              class="text-primary hover:underline text-sm font-medium"
-                            >
-                              Buka GPT
-                            </a>
-                          ) : (
-                            <span class="text-text-muted text-sm">All-Access</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                <p class="text-sm text-text-muted">Produk Saya</p>
+                <p id="product-count" class="text-xl font-bold text-text-primary">0</p>
               </div>
             </div>
           </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Icon name="check-circle" size={20} class="text-green-600" />
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Pesanan Berhasil</p>
+                <p id="order-count" class="text-xl font-bold text-text-primary">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="card p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Icon name="crown" size={20} class="text-amber-600" />
+              </div>
+              <div>
+                <p class="text-sm text-text-muted">Status</p>
+                <p id="member-status" class="text-xl font-bold text-text-primary">Regular</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Products -->
+        <div class="mb-8">
+          <h2 class="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="sparkles" size={20} class="text-primary" />
+            Produk Saya
+          </h2>
+          
+          <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Products will be loaded here -->
+          </div>
+
+          <div id="no-products" class="card p-8 text-center hidden">
+            <Icon name="package" size={48} class="text-text-muted mx-auto mb-4" />
+            <h3 class="font-semibold text-text-primary mb-2">Belum Ada Produk</h3>
+            <p class="text-text-secondary mb-4">Anda belum memiliki produk. Mulai belanja sekarang!</p>
+            <a href="/#produk" class="btn-primary">
+              <Icon name="shopping-cart" size={18} />
+              Lihat Produk
+            </a>
+          </div>
+        </div>
+
+        <!-- Order History -->
+        <div class="mb-8">
+          <h2 class="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="clock" size={20} class="text-primary" />
+            Riwayat Pesanan
+          </h2>
+          
+          <div class="card overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b border-border bg-background">
+                    <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Order ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Jumlah</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table" class="divide-y divide-border">
+                  <!-- Orders will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div id="no-orders" class="p-8 text-center hidden">
+              <Icon name="shopping-bag" size={48} class="text-text-muted mx-auto mb-4" />
+              <h3 class="font-semibold text-text-primary mb-2">Belum Ada Pesanan</h3>
+              <p class="text-text-secondary">Riwayat pesanan Anda akan muncul di sini.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="text-center">
+          <button id="logout-btn" class="btn-tertiary">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </div>
   </main>
 </BaseLayout>
+
+<script>
+  // API helper
+  const API_BASE = '/api';
+
+  function getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
+  function getUser(): any {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  function setAuth(token: string, user: any) {
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  function clearAuth() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+  }
+
+  async function apiRequest(endpoint: string, options: RequestInit = {}) {
+    const token = getToken();
+    const headers: any = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers
+    });
+
+    return response.json();
+  }
+
+  // Format IDR
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  // DOM Elements
+  const authSection = document.getElementById('auth-section');
+  const dashboardContent = document.getElementById('dashboard-content');
+  const loginForm = document.getElementById('login-form') as HTMLFormElement;
+  const registerForm = document.getElementById('register-form') as HTMLFormElement;
+  const showRegisterBtn = document.getElementById('show-register');
+  const authError = document.getElementById('auth-error');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  // Show/hide auth forms
+  showRegisterBtn?.addEventListener('click', () => {
+    loginForm?.classList.add('hidden');
+    registerForm?.classList.remove('hidden');
+    authError?.classList.add('hidden');
+  });
+
+  // Login handler
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError?.classList.add('hidden');
+
+    const email = (document.getElementById('login-email') as HTMLInputElement).value;
+    const password = (document.getElementById('login-password') as HTMLInputElement).value;
+
+    try {
+      const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      });
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAuth(data.token, data.user);
+      showDashboard();
+    } catch (error: any) {
+      if (authError) {
+        authError.textContent = error.message || 'Login gagal';
+        authError.classList.remove('hidden');
+      }
+    }
+  });
+
+  // Register handler
+  registerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError?.classList.add('hidden');
+
+    const name = (document.getElementById('register-name') as HTMLInputElement).value;
+    const email = (document.getElementById('register-email') as HTMLInputElement).value;
+    const password = (document.getElementById('register-password') as HTMLInputElement).value;
+
+    try {
+      const data = await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, name })
+      });
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAuth(data.token, data.user);
+      showDashboard();
+    } catch (error: any) {
+      if (authError) {
+        authError.textContent = error.message || 'Registrasi gagal';
+        authError.classList.remove('hidden');
+      }
+    }
+  });
+
+  // Logout handler
+  logoutBtn?.addEventListener('click', () => {
+    clearAuth();
+    window.location.reload();
+  });
+
+  // Show dashboard
+  async function showDashboard() {
+    const user = getUser();
+    if (!user) return;
+
+    // Hide auth, show dashboard
+    authSection?.classList.add('hidden');
+    dashboardContent?.classList.remove('hidden');
+
+    // Update UI
+    const userName = document.getElementById('user-name');
+    const userStatus = document.getElementById('user-status');
+    const allAccessBadge = document.getElementById('all-access-badge');
+    const memberStatus = document.getElementById('member-status');
+
+    if (userName) userName.textContent = user.name || 'User';
+    if (userStatus) userStatus.textContent = user.email;
+    
+    if (user.is_all_access) {
+      allAccessBadge?.classList.remove('hidden');
+      if (memberStatus) memberStatus.textContent = 'VIP';
+    }
+
+    // Fetch user products
+    try {
+      const productsData = await apiRequest('/user/products');
+      const productsGrid = document.getElementById('products-grid');
+      const noProducts = document.getElementById('no-products');
+      const productCount = document.getElementById('product-count');
+
+      if (productsData.products && productsData.products.length > 0) {
+        if (productCount) productCount.textContent = productsData.products.length.toString();
+        
+        if (productsGrid) {
+          productsGrid.innerHTML = productsData.products.map((product: any) => `
+            <div class="card-hover p-4">
+              <div class="flex items-start gap-3">
+                <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-text-primary">${product.title}</h3>
+                  <p class="text-sm text-text-muted mt-1">${product.short_description || ''}</p>
+                </div>
+              </div>
+              <div class="mt-4 flex gap-2">
+                ${product.gpt_url ? `
+                  <a href="${product.gpt_url}" target="_blank" rel="noopener noreferrer" class="btn-primary flex-1 justify-center text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13V19C18 19.5304 17.7893 20.0391 17.4142 20.4142C17.0391 20.7893 16.5304 21 16 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V8C3 7.46957 3.21071 6.96086 3.58579 6.58579C3.96086 6.21071 4.46957 6 5 6H11 M15 3H21V9 M10 14L21 3"></path>
+                    </svg>
+                    Buka GPT
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+      } else {
+        noProducts?.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+
+    // Fetch orders
+    try {
+      const ordersData = await apiRequest('/orders');
+      const ordersTable = document.getElementById('orders-table');
+      const noOrders = document.getElementById('no-orders');
+      const orderCount = document.getElementById('order-count');
+
+      if (ordersData.orders && ordersData.orders.length > 0) {
+        if (orderCount) {
+          const paidOrders = ordersData.orders.filter((o: any) => o.status === 'PAID');
+          orderCount.textContent = paidOrders.length.toString();
+        }
+
+        if (ordersTable) {
+          ordersTable.innerHTML = ordersData.orders.map((order: any) => `
+            <tr>
+              <td class="px-4 py-4">
+                <span class="font-mono text-sm text-text-primary">${order.id.substring(0, 8)}...</span>
+              </td>
+              <td class="px-4 py-4 text-text-main">${order.product_title}</td>
+              <td class="px-4 py-4 font-medium text-text-primary">${formatIDR(order.amount)}</td>
+              <td class="px-4 py-4">
+                <span class="${order.status === 'PAID' ? 'badge-success' : order.status === 'PENDING' ? 'badge-warning' : 'badge-danger'}">
+                  ${order.status === 'PAID' ? 'Lunas' : order.status === 'PENDING' ? 'Pending' : 'Gagal'}
+                </span>
+              </td>
+              <td class="px-4 py-4 text-sm text-text-muted">${new Date(order.created_at).toLocaleDateString('id-ID')}</td>
+            </tr>
+          `).join('');
+        }
+      } else {
+        noOrders?.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  }
+
+  // Check if already logged in
+  const user = getUser();
+  if (user && getToken()) {
+    showDashboard();
+  }
+</script>
