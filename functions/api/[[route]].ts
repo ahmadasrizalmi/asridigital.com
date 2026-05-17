@@ -833,6 +833,326 @@ export async function onRequest(context: any): Promise<Response> {
       });
     }
 
+    // ==================== ADMIN: COUPONS LIST ====================
+    if (route === '/admin/coupons' && method === 'GET') {
+      const coupons = await env.DB.prepare(
+        'SELECT * FROM coupons ORDER BY created_at DESC'
+      ).all();
+
+      return jsonResponse({ coupons: coupons.results });
+    }
+
+    // ==================== ADMIN: CREATE COUPON ====================
+    if (route === '/admin/coupons' && method === 'POST') {
+      const body = await request.json();
+      const { code, type, value, description, max_uses, min_purchase, expires_at, is_active } = body;
+
+      if (!code || !type || !value) {
+        return jsonResponse({ error: 'Code, type, dan value wajib diisi' }, 400);
+      }
+
+      const couponId = generateId();
+      
+      await env.DB.prepare(
+        `INSERT INTO coupons (id, code, type, value, description, max_uses, current_uses, min_purchase, expires_at, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'), datetime('now'))`
+      )
+        .bind(
+          couponId,
+          code.toUpperCase(),
+          type,
+          value,
+          description || null,
+          max_uses || 100,
+          min_purchase || null,
+          expires_at || null,
+          is_active !== false ? 1 : 0
+        )
+        .run();
+
+      return jsonResponse({ success: true, coupon: { id: couponId, code: code.toUpperCase() } });
+    }
+
+    // ==================== ADMIN: UPDATE COUPON ====================
+    if (route.startsWith('/admin/coupons/') && method === 'PUT') {
+      const couponId = route.split('/')[3];
+      const body = await request.json();
+      const { code, type, value, description, max_uses, min_purchase, expires_at, is_active } = body;
+
+      await env.DB.prepare(
+        `UPDATE coupons 
+         SET code = ?, type = ?, value = ?, description = ?, max_uses = ?, 
+             min_purchase = ?, expires_at = ?, is_active = ?, updated_at = datetime('now')
+         WHERE id = ?`
+      )
+        .bind(
+          code?.toUpperCase(),
+          type,
+          value,
+          description,
+          max_uses,
+          min_purchase,
+          expires_at,
+          is_active !== false ? 1 : 0,
+          couponId
+        )
+        .run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: DELETE COUPON ====================
+    if (route.startsWith('/admin/coupons/') && method === 'DELETE') {
+      const couponId = route.split('/')[3];
+
+      await env.DB.prepare(
+        'DELETE FROM coupons WHERE id = ?'
+      )
+        .bind(couponId)
+        .run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: PRODUCTS LIST ====================
+    if (route === '/admin/products' && method === 'GET') {
+      const products = await env.DB.prepare(
+        'SELECT * FROM products ORDER BY sort_order ASC'
+      ).all();
+
+      return jsonResponse({ products: products.results });
+    }
+
+    // ==================== ADMIN: CREATE PRODUCT ====================
+    if (route === '/admin/products' && method === 'POST') {
+      const body = await request.json();
+      const { id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured } = body;
+
+      if (!title || !slug || !price) {
+        return jsonResponse({ error: 'Title, slug, dan price wajib diisi' }, 400);
+      }
+
+      const productId = id || generateId();
+      
+      await env.DB.prepare(
+        `INSERT INTO products (id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, image_icon, tags, is_active, is_featured, sort_order, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+      )
+        .bind(
+          productId,
+          title,
+          slug,
+          description || null,
+          short_description || null,
+          price,
+          compare_at_price || null,
+          category || 'general',
+          gpt_url || null,
+          `/images/${slug}.jpg`,
+          typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+          is_active !== false ? 1 : 0,
+          is_featured ? 1 : 0,
+          body.sort_order || 0
+        )
+        .run();
+
+      return jsonResponse({ success: true, product: { id: productId, title, slug } });
+    }
+
+    // ==================== ADMIN: UPDATE PRODUCT ====================
+    if (route.startsWith('/admin/products/') && method === 'PUT') {
+      const productId = route.split('/')[3];
+      const body = await request.json();
+      const { title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured } = body;
+
+      await env.DB.prepare(
+        `UPDATE products 
+         SET title = ?, slug = ?, description = ?, short_description = ?, price = ?, 
+             compare_at_price = ?, category = ?, gpt_url = ?, tags = ?, 
+             is_active = ?, is_featured = ?, updated_at = datetime('now')
+         WHERE id = ?`
+      )
+        .bind(
+          title,
+          slug,
+          description,
+          short_description,
+          price,
+          compare_at_price,
+          category,
+          gpt_url,
+          typeof tags === 'string' ? tags : JSON.stringify(tags),
+          is_active !== false ? 1 : 0,
+          is_featured ? 1 : 0,
+          productId
+        )
+        .run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: DELETE PRODUCT ====================
+    if (route.startsWith('/admin/products/') && method === 'DELETE') {
+      const productId = route.split('/')[3];
+
+      // Soft delete - set is_active to false
+      await env.DB.prepare(
+        'UPDATE products SET is_active = 0 WHERE id = ?'
+      )
+        .bind(productId)
+        .run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: BLOG POSTS LIST ====================
+    if (route === '/admin/blog' && method === 'GET') {
+      const posts = await env.DB.prepare(
+        'SELECT * FROM blog_posts ORDER BY published_at DESC'
+      ).all();
+
+      return jsonResponse({ posts: posts.results });
+    }
+
+    // ==================== ADMIN: CREATE BLOG POST ====================
+    if (route === '/admin/blog' && method === 'POST') {
+      const body = await request.json();
+      const { title, slug, content, excerpt, image_url, category, tags, author_name, is_published } = body;
+
+      if (!title || !slug || !content) {
+        return jsonResponse({ error: 'Title, slug, dan content wajib diisi' }, 400);
+      }
+
+      const postId = generateId();
+      
+      await env.DB.prepare(
+        `INSERT INTO blog_posts (id, title, slug, content, excerpt, image_url, category, tags, author_name, author_email, is_published, published_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))`
+      )
+        .bind(
+          postId,
+          title,
+          slug,
+          content,
+          excerpt || null,
+          image_url || null,
+          category || 'general',
+          typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+          author_name || 'Admin',
+          'admin@asridigital.com',
+          is_published !== false ? 1 : 0
+        )
+        .run();
+
+      return jsonResponse({ success: true, post: { id: postId, title, slug } });
+    }
+
+    // ==================== ADMIN: UPDATE BLOG POST ====================
+    if (route.startsWith('/admin/blog/') && method === 'PUT') {
+      const postId = route.split('/')[3];
+      const body = await request.json();
+      const { title, slug, content, excerpt, image_url, category, tags, author_name, is_published } = body;
+
+      await env.DB.prepare(
+        `UPDATE blog_posts 
+         SET title = ?, slug = ?, content = ?, excerpt = ?, image_url = ?, 
+             category = ?, tags = ?, author_name = ?, is_published = ?, updated_at = datetime('now')
+         WHERE id = ?`
+      )
+        .bind(
+          title,
+          slug,
+          content,
+          excerpt,
+          image_url,
+          category,
+          typeof tags === 'string' ? tags : JSON.stringify(tags),
+          author_name,
+          is_published ? 1 : 0,
+          postId
+        )
+        .run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: DELETE BLOG POST ====================
+    if (route.startsWith('/admin/blog/') && method === 'DELETE') {
+      const postId = route.split('/')[3];
+
+      await env.DB.prepare(
+        'DELETE FROM blog_posts WHERE id = ?'
+      )
+        .bind(postId)
+        .run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: SETTINGS ====================
+    if (route === '/admin/settings' && method === 'GET') {
+      const settings = await env.DB.prepare(
+        'SELECT * FROM site_settings ORDER BY key ASC'
+      ).all();
+
+      const settingsObj: any = {};
+      settings.results.forEach((s: any) => {
+        settingsObj[s.key] = s.value;
+      });
+
+      return jsonResponse({ settings: settingsObj });
+    }
+
+    if (route === '/admin/settings' && method === 'PUT') {
+      const body = await request.json();
+      
+      for (const [key, value] of Object.entries(body)) {
+        await env.DB.prepare(
+          `INSERT INTO site_settings (key, value, updated_at) 
+           VALUES (?, ?, datetime('now'))
+           ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')`
+        )
+          .bind(key, value as string, value as string)
+          .run();
+      }
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: UPDATE ORDER STATUS ====================
+    if (route.startsWith('/admin/orders/') && route.endsWith('/status') && method === 'PUT') {
+      const orderId = route.split('/')[3];
+      const body = await request.json();
+      const { status } = body;
+
+      if (!['PENDING', 'PAID', 'FAILED', 'CANCELLED'].includes(status)) {
+        return jsonResponse({ error: 'Invalid status' }, 400);
+      }
+
+      await env.DB.prepare(
+        `UPDATE orders 
+         SET status = ?, 
+             paid_at = CASE WHEN ? = 'PAID' THEN datetime('now') ELSE paid_at END,
+             updated_at = datetime('now')
+         WHERE id = ?`
+      )
+        .bind(status, status, orderId)
+        .run();
+
+      // If paid, check for all-access
+      if (status === 'PAID') {
+        const order = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+        if (order && order.product_id === 'ALL-ACCESS') {
+          const user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(order.user_email).first();
+          if (user) {
+            await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
+          }
+        }
+      }
+
+      return jsonResponse({ success: true });
+    }
+
     // ==================== DEFAULT 404 ====================
     return jsonResponse({ error: 'Endpoint not found' }, 404);
 

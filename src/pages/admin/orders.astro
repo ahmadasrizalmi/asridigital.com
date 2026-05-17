@@ -1,33 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
-import { formatIDR } from '../../lib/utils';
-
-// Mock orders data
-const orders = [
-  { id: 'INV-20260517-001', customer: 'S***', email: 's***@gmail.com', product: 'All-Access Pass', amount: 299000, status: 'PAID', payment: 'QRIS', date: '2026-05-17 14:30' },
-  { id: 'INV-20260517-002', customer: 'B***', email: 'b***@gmail.com', product: 'Animasi Muslim', amount: 99000, status: 'PAID', payment: 'BCA', date: '2026-05-17 12:15' },
-  { id: 'INV-20260517-003', customer: 'A***', email: 'a***@yahoo.com', product: 'Sahabat Guru', amount: 79000, status: 'PENDING', payment: 'QRIS', date: '2026-05-17 10:45' },
-  { id: 'INV-20260516-001', customer: 'R***', email: 'r***@gmail.com', product: 'All-Access Pass', amount: 149500, status: 'PAID', payment: 'GoPay', date: '2026-05-16 20:30', coupon: 'LAUNCH50' },
-  { id: 'INV-20260516-002', customer: 'M***', email: 'm***@outlook.com', product: 'Content Creator', amount: 89000, status: 'PAID', payment: 'DANA', date: '2026-05-16 15:20' },
-  { id: 'INV-20260515-001', customer: 'D***', email: 'd***@gmail.com', product: 'Copywriter AI', amount: 79000, status: 'FAILED', payment: 'BCA', date: '2026-05-15 09:10' },
-];
-
-const sidebarLinks = [
-  { icon: 'bar-chart', label: 'Dashboard', href: '/admin', active: false },
-  { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: false },
-  { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: true },
-  { icon: 'users', label: 'Pengguna', href: '/admin/users', active: false },
-  { icon: 'tag', label: 'Kupon', href: '/admin/coupons', active: false },
-  { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: false },
-  { icon: 'file-text', label: 'Blog', href: '/admin/blog', active: false },
-  { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: false },
-];
 ---
 
-<BaseLayout title="Pesanan - Admin">
+<BaseLayout title="Kelola Pesanan - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <!-- Sidebar -->
     <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
@@ -41,8 +18,23 @@ const sidebarLinks = [
         </a>
         
         <nav class="space-y-1">
-          {sidebarLinks.map((link) => (
-            <a href={link.href} class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-background'}`}>
+          {[
+            { icon: 'bar-chart', label: 'Dashboard', href: '/admin' },
+            { icon: 'sparkles', label: 'Produk', href: '/admin/products' },
+            { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: true },
+            { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
+            { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
+          ].map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
               <Icon name={link.icon} size={18} />
               {link.label}
             </a>
@@ -58,22 +50,24 @@ const sidebarLinks = [
       </div>
     </aside>
     
-    <!-- Main Content -->
     <main class="flex-1 bg-background">
       <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <button class="lg:hidden p-2 hover:bg-background rounded-lg">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
               <Icon name="menu" size={24} class="text-text-secondary" />
             </button>
-            <h1 class="text-xl font-bold text-text-primary">Pesanan</h1>
+            <h1 class="text-xl font-bold text-text-primary">Kelola Pesanan</h1>
           </div>
+          
           <div class="flex items-center gap-3">
-            <button class="btn-tertiary text-sm">
-              <Icon name="filter" size={16} />
-              Filter
-            </button>
-            <button class="btn-tertiary text-sm">
+            <select id="status-filter" class="input py-2 text-sm">
+              <option value="all">Semua Status</option>
+              <option value="PAID">Lunas</option>
+              <option value="PENDING">Pending</option>
+              <option value="FAILED">Gagal</option>
+            </select>
+            <button onclick="exportOrders()" class="btn-tertiary py-2">
               <Icon name="download" size={16} />
               Export
             </button>
@@ -82,78 +76,179 @@ const sidebarLinks = [
       </header>
       
       <div class="p-6">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-          <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Total Pesanan</p>
-            <p class="text-2xl font-bold text-text-primary">{orders.length}</p>
-          </div>
-          <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Lunas</p>
-            <p class="text-2xl font-bold text-green-600">{orders.filter(o => o.status === 'PAID').length}</p>
-          </div>
-          <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Pending</p>
-            <p class="text-2xl font-bold text-amber-600">{orders.filter(o => o.status === 'PENDING').length}</p>
-          </div>
-          <div class="card p-4">
-            <p class="text-sm text-text-muted mb-1">Gagal</p>
-            <p class="text-2xl font-bold text-red-600">{orders.filter(o => o.status === 'FAILED').length}</p>
-          </div>
-        </div>
-        
-        <!-- Orders Table -->
-        <div class="card overflow-hidden">
+        <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-background">
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Invoice</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Pelanggan</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Jumlah</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Pembayaran</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase">Aksi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Order ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Pelanggan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Jumlah</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Metode</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Tanggal</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-border">
-                {orders.map((order) => (
-                  <tr>
-                    <td class="px-4 py-4">
-                      <span class="font-mono text-sm text-text-primary">{order.id}</span>
-                    </td>
-                    <td class="px-4 py-4">
-                      <div>
-                        <div class="font-medium text-text-primary">{order.customer}</div>
-                        <div class="text-xs text-text-muted">{order.email}</div>
-                      </div>
-                    </td>
-                    <td class="px-4 py-4 text-text-main">{order.product}</td>
-                    <td class="px-4 py-4">
-                      <div class="font-medium text-text-primary">{formatIDR(order.amount)}</div>
-                      {order.coupon && <div class="text-xs text-green-600">Kupon: {order.coupon}</div>}
-                    </td>
-                    <td class="px-4 py-4">
-                      <span class={order.status === 'PAID' ? 'badge-success' : order.status === 'PENDING' ? 'badge-warning' : 'badge-danger'}>
-                        {order.status === 'PAID' ? 'Lunas' : order.status === 'PENDING' ? 'Pending' : 'Gagal'}
-                      </span>
-                    </td>
-                    <td class="px-4 py-4 text-sm text-text-main">{order.payment}</td>
-                    <td class="px-4 py-4 text-sm text-text-muted">{order.date}</td>
-                    <td class="px-4 py-4 text-right">
-                      <button class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+              <tbody id="orders-table" class="divide-y divide-border">
+                <tr>
+                  <td colspan="8" class="px-6 py-12 text-center text-text-muted">
+                    Loading...
+                  </td>
+                </tr>
               </tbody>
             </table>
+          </div>
+          
+          <div id="empty-state" class="hidden p-12 text-center">
+            <Icon name="shopping-bag" size={48} class="text-text-muted mx-auto mb-4" />
+            <h3 class="text-lg font-semibold text-text-primary mb-2">Belum Ada Pesanan</h3>
+            <p class="text-text-secondary">Pesanan akan muncul di sini ketika pelanggan melakukan checkout.</p>
           </div>
         </div>
       </div>
     </main>
   </div>
 </BaseLayout>
+
+<script>
+  const API_BASE = '/api';
+  let allOrders: any[] = [];
+
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  function getStatusBadge(status: string) {
+    const statusMap: Record<string, { class: string; label: string }> = {
+      'PAID': { class: 'badge-success', label: 'Lunas' },
+      'PENDING': { class: 'badge-warning', label: 'Pending' },
+      'FAILED': { class: 'badge-danger', label: 'Gagal' },
+    };
+    const s = statusMap[status] || { class: 'bg-gray-100 text-gray-600', label: status };
+    return `<span class="${s.class}">${s.label}</span>`;
+  }
+
+  function renderOrders(orders: any[]) {
+    const table = document.getElementById('orders-table')!;
+    const emptyState = document.getElementById('empty-state')!;
+    
+    if (orders.length === 0) {
+      table.innerHTML = '';
+      emptyState.classList.remove('hidden');
+      return;
+    }
+    
+    emptyState.classList.add('hidden');
+    table.innerHTML = orders.map(order => `
+      <tr class="hover:bg-background/50">
+        <td class="px-6 py-4">
+          <span class="font-mono text-sm text-text-primary">${order.id.substring(0, 12)}...</span>
+        </td>
+        <td class="px-6 py-4">
+          <div>
+            <p class="text-text-main font-medium">${order.user_name || '-'}</p>
+            <p class="text-xs text-text-muted">${order.user_email}</p>
+          </div>
+        </td>
+        <td class="px-6 py-4 text-text-main">${order.product_title}</td>
+        <td class="px-6 py-4 font-medium text-text-primary">${formatIDR(order.amount)}</td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 bg-background rounded text-xs font-medium text-text-secondary">
+            ${(order.payment_method || 'qris').toUpperCase()}
+          </span>
+        </td>
+        <td class="px-6 py-4">${getStatusBadge(order.status)}</td>
+        <td class="px-6 py-4 text-sm text-text-muted">
+          ${new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </td>
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-2">
+            <button onclick="viewOrder('${order.id}')" class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+              <Icon name="eye" size={16} />
+            </button>
+            ${order.status === 'PENDING' ? `
+              <button onclick="markAsPaid('${order.id}')" class="p-1.5 hover:bg-green-50 rounded-lg text-text-secondary hover:text-green-600">
+                <Icon name="check" size={16} />
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadOrders() {
+    try {
+      const response = await fetch(`${API_BASE}/orders`);
+      const data = await response.json() as any;
+      allOrders = data.orders || [];
+      renderOrders(allOrders);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+    }
+  }
+
+  function filterOrders() {
+    const status = (document.getElementById('status-filter') as HTMLSelectElement).value;
+    if (status === 'all') {
+      renderOrders(allOrders);
+    } else {
+      renderOrders(allOrders.filter(o => o.status === status));
+    }
+  }
+
+  async function viewOrder(orderId: string) {
+    try {
+      const response = await fetch(`${API_BASE}/orders/${orderId}`);
+      const data = await response.json() as any;
+      const order = data.order;
+      
+      alert(`Order Details:\n\nID: ${order.id}\nCustomer: ${order.user_name} (${order.user_email})\nProduct: ${order.product_title}\nAmount: ${formatIDR(order.amount)}\nStatus: ${order.status}\nDate: ${new Date(order.created_at).toLocaleString('id-ID')}`);
+    } catch (error) {
+      console.error('Error viewing order:', error);
+    }
+  }
+
+  async function markAsPaid(orderId: string) {
+    if (!confirm('Tandai pesanan ini sebagai LUNAS?')) return;
+    
+    // This would need a PATCH endpoint to update order status
+    // For now, just show message
+    alert('Fitur ini akan segera tersedia. Gunakan webhook DompetX untuk update otomatis.');
+  }
+
+  function exportOrders() {
+    const csv = [
+      ['Order ID', 'Nama', 'Email', 'Produk', 'Jumlah', 'Status', 'Tanggal'].join(','),
+      ...allOrders.map(o => [
+        o.id,
+        `"${o.user_name || ''}"`,
+        o.user_email,
+        `"${o.product_title}"`,
+        o.amount,
+        o.status,
+        new Date(o.created_at).toLocaleDateString('id-ID')
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Event listeners
+  document.getElementById('status-filter')?.addEventListener('change', filterOrders);
+
+  // Load on page load
+  loadOrders();
+</script>

@@ -1,33 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/ui/Icon.astro';
-import { formatIDR } from '../../lib/utils';
-
-// Mock products data
-const products = [
-  { id: 'ALL-ACCESS', title: 'Lifetime All-Access Pass', price: 299000, category: 'membership', isActive: true, isFeatured: true, orders: 25 },
-  { id: 'gpt-animasi-muslim', title: 'Animasi Muslim Kids Studio', price: 99000, category: 'kreatif', isActive: true, isFeatured: true, orders: 18 },
-  { id: 'gpt-sahabat-guru', title: 'Sahabat Guru PAUD Islami', price: 79000, category: 'pendidikan', isActive: true, isFeatured: false, orders: 12 },
-  { id: 'gpt-content-creator', title: 'Content Creator Pro', price: 89000, category: 'marketing', isActive: true, isFeatured: false, orders: 8 },
-  { id: 'gpt-copywriter', title: 'Copywriter AI', price: 79000, category: 'marketing', isActive: true, isFeatured: false, orders: 5 },
-  { id: 'gpt-code-helper', title: 'Code Helper Pro', price: 99000, category: 'coding', isActive: true, isFeatured: false, orders: 3 },
-];
-
-const sidebarLinks = [
-  { icon: 'bar-chart', label: 'Dashboard', href: '/admin', active: false },
-  { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: true },
-  { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders', active: false },
-  { icon: 'users', label: 'Pengguna', href: '/admin/users', active: false },
-  { icon: 'tag', label: 'Kupon', href: '/admin/coupons', active: false },
-  { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: false },
-  { icon: 'file-text', label: 'Blog', href: '/admin/blog', active: false },
-  { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: false },
-];
 ---
 
-<BaseLayout title="Kelola Produk - Admin">
+<BaseLayout title="Kelola Produk - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <!-- Sidebar -->
     <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
@@ -41,8 +18,23 @@ const sidebarLinks = [
         </a>
         
         <nav class="space-y-1">
-          {sidebarLinks.map((link) => (
-            <a href={link.href} class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-background'}`}>
+          {[
+            { icon: 'bar-chart', label: 'Dashboard', href: '/admin' },
+            { icon: 'sparkles', label: 'Produk', href: '/admin/products', active: true },
+            { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders' },
+            { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
+            { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
+          ].map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
               <Icon name={link.icon} size={18} />
               {link.label}
             </a>
@@ -58,74 +50,43 @@ const sidebarLinks = [
       </div>
     </aside>
     
-    <!-- Main Content -->
     <main class="flex-1 bg-background">
       <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <button class="lg:hidden p-2 hover:bg-background rounded-lg">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
               <Icon name="menu" size={24} class="text-text-secondary" />
             </button>
             <h1 class="text-xl font-bold text-text-primary">Kelola Produk</h1>
           </div>
-          <button class="btn-primary text-sm">
-            <Icon name="plus" size={16} />
+          
+          <button onclick="openModal()" class="btn-primary">
+            <Icon name="plus" size={18} />
             Tambah Produk
           </button>
         </div>
       </header>
       
       <div class="p-6">
-        <!-- Products Table -->
-        <div class="card overflow-hidden">
+        <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-background">
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Kategori</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Harga</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase">Pesanan</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-text-muted uppercase">Aksi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Kategori</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Harga</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Featured</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-border">
-                {products.map((product) => (
-                  <tr>
-                    <td class="px-4 py-4">
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Icon name="sparkles" size={16} class="text-primary" />
-                        </div>
-                        <div>
-                          <div class="font-medium text-text-primary">{product.title}</div>
-                          <div class="text-xs text-text-muted">ID: {product.id}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-4 py-4">
-                      <span class="badge-muted">{product.category}</span>
-                    </td>
-                    <td class="px-4 py-4 font-medium text-text-primary">{formatIDR(product.price)}</td>
-                    <td class="px-4 py-4">
-                      <span class={product.isActive ? 'badge-success' : 'badge-danger'}>
-                        {product.isActive ? 'Aktif' : 'Nonaktif'}
-                      </span>
-                    </td>
-                    <td class="px-4 py-4 text-text-main">{product.orders}</td>
-                    <td class="px-4 py-4 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <button class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary">
-                          <Icon name="edit" size={16} />
-                        </button>
-                        <button class="p-2 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                          <Icon name="trash" size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+              <tbody id="products-table" class="divide-y divide-border">
+                <tr>
+                  <td colspan="6" class="px-6 py-12 text-center text-text-muted">
+                    Loading...
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -133,4 +94,238 @@ const sidebarLinks = [
       </div>
     </main>
   </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div id="product-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-border">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-text-primary" id="modal-title">Tambah Produk</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-background rounded-lg">
+              <Icon name="x" size={20} class="text-text-secondary" />
+            </button>
+          </div>
+        </div>
+        
+        <form id="product-form" class="p-6 space-y-4">
+          <input type="hidden" id="product-id" />
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Nama Produk *</label>
+              <input type="text" id="product-title" class="input" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Slug *</label>
+              <input type="text" id="product-slug" class="input" required />
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi</label>
+            <textarea id="product-description" class="input" rows="3"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi Pendek</label>
+            <input type="text" id="product-short-desc" class="input" />
+          </div>
+          
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Harga *</label>
+              <input type="number" id="product-price" class="input" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Harga Coret</label>
+              <input type="number" id="product-compare-price" class="input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Kategori</label>
+              <select id="product-category" class="input">
+                <option value="membership">Membership</option>
+                <option value="kreatif">Kreatif</option>
+                <option value="pendidikan">Pendidikan</option>
+                <option value="marketing">Marketing</option>
+                <option value="coding">Coding</option>
+                <option value="bisnis">Bisnis</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">URL GPT</label>
+            <input type="url" id="product-gpt-url" class="input" placeholder="https://chatgpt.com/g/..." />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Tags</label>
+            <input type="text" id="product-tags" class="input" placeholder="tag1, tag2, tag3" />
+          </div>
+          
+          <div class="flex items-center gap-6">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="product-active" class="rounded" checked />
+              <span class="text-sm text-text-main">Aktif</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="product-featured" class="rounded" />
+              <span class="text-sm text-text-main">Featured</span>
+            </label>
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-4 border-t border-border">
+            <button type="button" onclick="closeModal()" class="btn-tertiary">Batal</button>
+            <button type="submit" class="btn-primary">Simpan Produk</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </BaseLayout>
+
+<script>
+  const API_BASE = '/api';
+
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  async function loadProducts() {
+    try {
+      const response = await fetch(`${API_BASE}/products?limit=50`);
+      const data = await response.json() as any;
+      
+      const table = document.getElementById('products-table')!;
+      if (data.products && data.products.length > 0) {
+        table.innerHTML = data.products.map((product: any) => `
+          <tr class="hover:bg-background/50">
+            <td class="px-6 py-4">
+              <div>
+                <p class="font-medium text-text-primary">${product.title}</p>
+                <p class="text-xs text-text-muted">${product.slug}</p>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 bg-background rounded text-xs font-medium text-text-secondary">
+                ${product.category || '-'}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div>
+                <p class="font-medium text-text-primary">${formatIDR(product.price)}</p>
+                ${product.compare_at_price ? `<p class="text-xs text-text-muted line-through">${formatIDR(product.compare_at_price)}</p>` : ''}
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="${product.is_active ? 'badge-success' : 'badge-danger'}">
+                ${product.is_active ? 'Aktif' : 'Nonaktif'}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              ${product.is_featured ? '<span class="badge-warning">Featured</span>' : '<span class="text-text-muted">-</span>'}
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <button onclick='editProduct(${JSON.stringify(product)})' class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+                  <Icon name="edit" size={16} />
+                </button>
+                <button onclick="deleteProduct('${product.id}')" class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
+                  <Icon name="trash-2" size={16} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  }
+
+  function openModal(product?: any) {
+    const modal = document.getElementById('product-modal')!;
+    const title = document.getElementById('modal-title')!;
+    
+    if (product) {
+      title.textContent = 'Edit Produk';
+      (document.getElementById('product-id') as HTMLInputElement).value = product.id;
+      (document.getElementById('product-title') as HTMLInputElement).value = product.title;
+      (document.getElementById('product-slug') as HTMLInputElement).value = product.slug;
+      (document.getElementById('product-description') as HTMLTextAreaElement).value = product.description || '';
+      (document.getElementById('product-short-desc') as HTMLInputElement).value = product.short_description || '';
+      (document.getElementById('product-price') as HTMLInputElement).value = product.price;
+      (document.getElementById('product-compare-price') as HTMLInputElement).value = product.compare_at_price || '';
+      (document.getElementById('product-category') as HTMLSelectElement).value = product.category || 'membership';
+      (document.getElementById('product-gpt-url') as HTMLInputElement).value = product.gpt_url || '';
+      (document.getElementById('product-tags') as HTMLInputElement).value = product.tags || '';
+      (document.getElementById('product-active') as HTMLInputElement).checked = product.is_active;
+      (document.getElementById('product-featured') as HTMLInputElement).checked = product.is_featured;
+    } else {
+      title.textContent = 'Tambah Produk';
+      (document.getElementById('product-form') as HTMLFormElement).reset();
+      (document.getElementById('product-id') as HTMLInputElement).value = '';
+      (document.getElementById('product-active') as HTMLInputElement).checked = true;
+    }
+    
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('product-modal')!.classList.add('hidden');
+  }
+
+  function editProduct(product: any) {
+    openModal(product);
+  }
+
+  async function deleteProduct(id: string) {
+    if (!confirm('Yakin ingin menghapus produk ini?')) return;
+    
+    // This would need a DELETE endpoint
+    alert('Fitur hapus produk akan segera tersedia.');
+  }
+
+  // Form submission
+  document.getElementById('product-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const productData = {
+      id: (document.getElementById('product-id') as HTMLInputElement).value,
+      title: (document.getElementById('product-title') as HTMLInputElement).value,
+      slug: (document.getElementById('product-slug') as HTMLInputElement).value,
+      description: (document.getElementById('product-description') as HTMLTextAreaElement).value,
+      short_description: (document.getElementById('product-short-desc') as HTMLInputElement).value,
+      price: parseInt((document.getElementById('product-price') as HTMLInputElement).value),
+      compare_at_price: (document.getElementById('product-compare-price') as HTMLInputElement).value ? 
+        parseInt((document.getElementById('product-compare-price') as HTMLInputElement).value) : null,
+      category: (document.getElementById('product-category') as HTMLSelectElement).value,
+      gpt_url: (document.getElementById('product-gpt-url') as HTMLInputElement).value || null,
+      tags: (document.getElementById('product-tags') as HTMLInputElement).value,
+      is_active: (document.getElementById('product-active') as HTMLInputElement).checked,
+      is_featured: (document.getElementById('product-featured') as HTMLInputElement).checked,
+    };
+
+    // This would need POST/PUT endpoints for products
+    alert('Fitur simpan produk akan segera tersedia. Untuk sementara, edit langsung di database.');
+    closeModal();
+  });
+
+  // Auto-generate slug from title
+  document.getElementById('product-title')?.addEventListener('input', (e) => {
+    const title = (e.target as HTMLInputElement).value;
+    const slug = title.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+    (document.getElementById('product-slug') as HTMLInputElement).value = slug;
+  });
+
+  // Load on page load
+  loadProducts();
+</script>

@@ -1,0 +1,15 @@
+# Robots.txt for Asri Digital
+# https://asridigital-com.pages.dev
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://asridigital-com.pages.dev/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /api/
+
+# Crawl-delay
+Crawl-delay: 10
