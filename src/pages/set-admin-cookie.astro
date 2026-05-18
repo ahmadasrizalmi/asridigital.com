@@ -11,11 +11,11 @@
   <body>
     <p>Memproses login admin...</p>
 
-    <script>
+    <script is:inline>
       const token = localStorage.getItem('auth_token');
 
       if (token) {
-        document.cookie = `token=${encodeURIComponent(token)};path=/;max-age=86400;SameSite=Lax`;
+        document.cookie = 'token=' + encodeURIComponent(token) + ';path=/;max-age=86400;SameSite=Lax';
 
         const urlParams = new URLSearchParams(window.location.search);
         const redirect = urlParams.get('redirect') || '/admin';
