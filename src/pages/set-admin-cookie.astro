@@ -1,15 +1,28 @@
-// Set admin cookie script
-// Run this after login to set the cookie
+---
+// Client-side cookie setter for admin token
+---
 
-const token = localStorage.getItem('auth_token');
-if (token) {
-  // Set cookie with 24 hour expiry
-  document.cookie = `token=${encodeURIComponent(token)};path=/;max-age=86400;SameSite=Lax`;
-  // Redirect to admin
-  const urlParams = new URLSearchParams(window.location.search);
-  const redirect = urlParams.get('redirect') || '/admin';
-  window.location.href = redirect;
-} else {
-  // No token found, go to login
-  window.location.href = '/dashboard';
-}
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Set Admin Cookie</title>
+  </head>
+  <body>
+    <p>Memproses login admin...</p>
+
+    <script>
+      const token = localStorage.getItem('auth_token');
+
+      if (token) {
+        document.cookie = `token=${encodeURIComponent(token)};path=/;max-age=86400;SameSite=Lax`;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect') || '/admin';
+        window.location.href = redirect;
+      } else {
+        window.location.href = '/dashboard';
+      }
+    </script>
+  </body>
+</html>
