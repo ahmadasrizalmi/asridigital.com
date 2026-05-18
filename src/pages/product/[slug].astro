@@ -11,8 +11,24 @@ interface Feature {
   description: string;
 }
 
-const url = new URL(Astro.request.url);
-const productSlug = url.pathname.split('/').pop() || '';
+export async function getStaticPaths() {
+  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
+
+  try {
+    const res = await fetch(`${apiBase}/api/products`);
+    const data = await res.json() as any;
+    const products = data.products || [];
+
+    return products.map((p: any) => ({
+      params: { slug: p.slug },
+    }));
+  } catch {
+    return [];
+  }
+}
+
+const productSlug = Astro.params.slug || '';
+const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
 
 let product: any = null;
 let relatedProducts: any[] = [];
@@ -20,14 +36,14 @@ let notFound = false;
 
 // Fetch product from database/API
 try {
-  const apiResponse = await fetch(`${Astro.url.origin}/api/products/${productSlug}`);
+  const apiResponse = await fetch(`${apiBase}/api/products/${productSlug}`);
   if (apiResponse.ok) {
     const data = await apiResponse.json();
     product = data.product;
 
     // Fetch related products (same category, excluding current)
     if (product?.category) {
-      const relatedResponse = await fetch(`${Astro.url.origin}/api/products?category=${product.category}&limit=4`);
+      const relatedResponse = await fetch(`${apiBase}/api/products?category=${product.category}&limit=4`);
       if (relatedResponse.ok) {
         const relatedData = await relatedResponse.json();
         relatedProducts = (relatedData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
