@@ -4,38 +4,14 @@ import Header from '../components/layout/Header.astro';
 import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
 
-// Fetch product from database/API
-const url = new URL(Astro.request.url);
-const productSlug = url.searchParams.get('product') || 'lifetime-all-access-pass';
+const product = {
+  title: 'Memuat produk...',
+  price: 0,
+  description: 'Mengambil detail produk...',
+  short_description: 'Mengambil detail produk...',
+};
 
-let product: any = null;
-let notFound = false;
-
-try {
-  const apiResponse = await fetch(`${Astro.url.origin}/api/products/${productSlug}`);
-  if (apiResponse.ok) {
-    const data = await apiResponse.json();
-    product = data.product;
-  } else {
-    notFound = true;
-  }
-} catch (e) {
-  console.error('Error fetching product:', e);
-  // Fallback to default product if API fails
-  product = {
-    id: 'ALL-ACCESS',
-    title: 'Lifetime All-Access Pass',
-    slug: 'lifetime-all-access-pass',
-    price: 299000,
-    compare_at_price: 599000,
-    description: 'Akses seluruh Custom GPT yang ada saat ini dan semua update di masa depan.',
-    short_description: 'Akses unlimited ke semua Custom GPT. Sekali bayar, seumur hidup.',
-  };
-}
-
-if (!product && notFound) {
-  return Astro.redirect('/#produk');
-}
+const productSlug = 'loading';
 ---
 
 <BaseLayout title={`Checkout - ${product?.title || 'Produk'}`}>
@@ -49,7 +25,7 @@ if (!product && notFound) {
         <Icon name="chevron-right" size={14} />
         <a href="/#produk" class="hover:text-primary transition-colors">Produk</a>
         <Icon name="chevron-right" size={14} />
-        <span class="text-text-main truncate max-w-[150px]">{product?.title || 'Checkout'}</span>
+        <span id="breadcrumb-product-title" class="text-text-main truncate max-w-[150px]">Memuat produk...</span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -207,7 +183,7 @@ if (!product && notFound) {
                 class="btn-primary w-full py-3 sm:py-4 text-base sm:text-lg"
               >
                 <Icon name="lock" size={18} />
-                Bayar Sekarang - <span id="btn-price">{formatIDR(product?.price || 299000)}</span>
+                Bayar Sekarang - <span id="btn-price">Memuat...</span>
               </button>
 
               <p class="text-xs text-text-muted text-center">
@@ -229,8 +205,8 @@ if (!product && notFound) {
                   <Icon name="sparkles" size={18} class="text-primary sm:size-6" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-medium text-text-primary text-sm sm:text-base line-clamp-2">{product?.title || 'Produk'}</h3>
-                  <p class="text-xs sm:text-sm text-text-muted mt-1 line-clamp-2">{product?.short_description || product?.description || ''}</p>
+                  <h3 id="summary-product-title" class="font-medium text-text-primary text-sm sm:text-base line-clamp-2">Memuat produk...</h3>
+                  <p id="summary-product-description" class="text-xs sm:text-sm text-text-muted mt-1 line-clamp-2">Mengambil detail produk...</p>
                 </div>
               </div>
 
@@ -240,7 +216,7 @@ if (!product && notFound) {
               <div class="space-y-2">
                 <div class="flex justify-between text-sm">
                   <span class="text-text-secondary">Harga</span>
-                  <span class="text-text-main"><span id="summary-price">{formatIDR(product?.price || 299000)}</span></span>
+                  <span class="text-text-main"><span id="summary-price">Memuat...</span></span>
                 </div>
                 <div id="discount-row" class="flex justify-between text-sm hidden">
                   <span class="text-green-600">Diskon</span>
@@ -257,7 +233,7 @@ if (!product && notFound) {
               <!-- Total -->
               <div class="flex justify-between items-center">
                 <span class="font-semibold text-text-primary text-sm sm:text-base">Total</span>
-                <span id="total-price" class="text-xl sm:text-2xl font-bold text-primary">{formatIDR(product?.price || 299000)}</span>
+                <span id="total-price" class="text-xl sm:text-2xl font-bold text-primary">Memuat...</span>
               </div>
             </div>
 
@@ -296,7 +272,7 @@ if (!product && notFound) {
   </main>
 </BaseLayout>
 
-<script define:vars={{ product, productSlug }}>
+<script>
   const form = document.getElementById('checkout-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const couponInput = document.getElementById('coupon') as HTMLInputElement;
@@ -306,10 +282,17 @@ if (!product && notFound) {
   const totalPrice = document.getElementById('total-price') as HTMLSpanElement;
   const btnPrice = document.getElementById('btn-price') as HTMLSpanElement;
   const summaryPrice = document.getElementById('summary-price') as HTMLSpanElement;
+  const breadcrumbProductTitle = document.getElementById('breadcrumb-product-title') as HTMLSpanElement;
+  const summaryProductTitle = document.getElementById('summary-product-title') as HTMLHeadingElement;
+  const summaryProductDescription = document.getElementById('summary-product-description') as HTMLParagraphElement;
 
+  let productSlug = new URLSearchParams(window.location.search).get('product') || 'lifetime-all-access-pass';
   let discount = 0;
   let couponApplied = false;
-  const basePrice = product?.price || 299000;
+  let basePrice = 0;
+
+  submitBtn.disabled = true;
+  applyCouponBtn.disabled = true;
 
   // Helper to format IDR
   function formatIDR(amount: number): string {
@@ -319,6 +302,50 @@ if (!product && notFound) {
       minimumFractionDigits: 0
     }).format(amount);
   }
+
+  function normalizeProduct(raw: any) {
+    return {
+      title: raw?.title || 'Produk',
+      slug: raw?.slug || productSlug,
+      price: Number(raw?.price || 0),
+      description: raw?.short_description || raw?.shortDescription || raw?.description || '',
+    };
+  }
+
+  async function loadCheckoutProduct() {
+    try {
+      const response = await fetch('/api/products/' + encodeURIComponent(productSlug));
+      if (!response.ok) throw new Error('Produk tidak ditemukan');
+
+      const data = await response.json() as any;
+      const loadedProduct = normalizeProduct(data.product);
+      basePrice = loadedProduct.price;
+      productSlug = loadedProduct.slug;
+
+      document.title = 'Checkout - ' + loadedProduct.title;
+      breadcrumbProductTitle.textContent = loadedProduct.title;
+      summaryProductTitle.textContent = loadedProduct.title;
+      summaryProductDescription.textContent = loadedProduct.description;
+
+      const formattedPrice = formatIDR(basePrice);
+      summaryPrice.textContent = formattedPrice;
+      totalPrice.textContent = formattedPrice;
+      btnPrice.textContent = formattedPrice;
+      submitBtn.disabled = false;
+      applyCouponBtn.disabled = false;
+    } catch (error) {
+      breadcrumbProductTitle.textContent = 'Produk tidak ditemukan';
+      summaryProductTitle.textContent = 'Produk tidak ditemukan';
+      summaryProductDescription.textContent = 'Silakan kembali ke katalog dan pilih produk yang tersedia.';
+      summaryPrice.textContent = '-';
+      totalPrice.textContent = '-';
+      btnPrice.textContent = '-';
+      submitBtn.disabled = true;
+      applyCouponBtn.disabled = true;
+    }
+  }
+
+  await loadCheckoutProduct();
 
   // Apply Coupon
   applyCouponBtn?.addEventListener('click', async () => {

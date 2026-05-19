@@ -8,7 +8,7 @@ import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
 import type { Product } from '../types/index';
 
-// Static product data
+// Fallback product data; production tries DB/API first.
 const allAccessProduct: Product = {
   id: 'ALL-ACCESS',
   title: 'Lifetime All-Access Pass',
@@ -26,7 +26,7 @@ const allAccessProduct: Product = {
   sortOrder: 0,
 };
 
-const products: Product[] = [
+let products: Product[] = [
   {
     id: 'gpt-animasi-muslim',
     title: 'Animasi Muslim Kids Studio',
@@ -76,6 +76,48 @@ const products: Product[] = [
     sortOrder: 3,
   },
 ];
+
+function normalizeProduct(raw: any): Product {
+  return {
+    id: raw.id,
+    title: raw.title,
+    slug: raw.slug,
+    description: raw.description || '',
+    shortDescription: raw.shortDescription ?? raw.short_description ?? null,
+    price: Number(raw.price || 0),
+    compareAtPrice: raw.compareAtPrice ?? raw.compare_at_price ?? null,
+    gptUrl: raw.gptUrl ?? raw.gpt_url ?? null,
+    imageIcon: raw.imageIcon ?? raw.image_icon ?? null,
+    galleryImages: raw.galleryImages ?? raw.gallery_images ?? null,
+    galleryVideos: raw.galleryVideos ?? raw.gallery_videos ?? null,
+    videoEmbedUrl: raw.videoEmbedUrl ?? raw.video_embed_url ?? null,
+    features: raw.features ?? null,
+    specs: raw.specs ?? null,
+    faq: raw.faq ?? null,
+    category: raw.category || 'produk',
+    tags: Array.isArray(raw.tags) ? raw.tags : (() => { try { return JSON.parse(raw.tags || '[]'); } catch { return []; } })(),
+    isActive: Boolean(raw.isActive ?? raw.is_active ?? true),
+    isFeatured: Boolean(raw.isFeatured ?? raw.is_featured ?? false),
+    sortOrder: Number(raw.sortOrder ?? raw.sort_order ?? 0),
+  };
+}
+
+try {
+  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
+  const response = await fetch(`${apiBase}/api/products?limit=12`);
+  if (response.ok) {
+    const data = await response.json() as any;
+    const dbProducts = (data.products || [])
+      .filter((p: any) => p.slug !== allAccessProduct.slug)
+      .map(normalizeProduct);
+
+    if (dbProducts.length > 0) {
+      products = dbProducts;
+    }
+  }
+} catch (error) {
+  console.warn('Using fallback products because API products failed:', error);
+}
 
 const features = [
   { icon: 'zap', title: 'Instant Akses', description: 'Langsung bisa pakai setelah bayar' },

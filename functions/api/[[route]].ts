@@ -857,9 +857,15 @@ export async function onRequest(context: any): Promise<Response> {
         // Continue even if DompetX fails - we can process manually
       }
 
-      // If no DompetX URL, generate mock payment for testing
+      // Do not fake a successful payment URL. If payment gateway fails,
+      // keep the order as PENDING and ask customer to retry/contact support.
       if (!paymentUrl) {
-        paymentUrl = `${env.APP_URL}/success?order=${orderId}`;
+        return jsonResponse({
+          success: false,
+          error: 'Gagal membuat invoice pembayaran. Silakan coba lagi atau hubungi admin.',
+          orderId,
+          orderCode,
+        }, 502);
       }
 
       return jsonResponse({

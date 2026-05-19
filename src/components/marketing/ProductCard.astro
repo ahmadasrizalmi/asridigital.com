@@ -7,7 +7,15 @@ interface Props {
   product: Product;
 }
 
-const { product } = Astro.props;
+const rawProduct = Astro.props.product as any;
+const product = {
+  ...rawProduct,
+  shortDescription: rawProduct.shortDescription ?? rawProduct.short_description ?? null,
+  compareAtPrice: rawProduct.compareAtPrice ?? rawProduct.compare_at_price ?? null,
+  gptUrl: rawProduct.gptUrl ?? rawProduct.gpt_url ?? null,
+  imageIcon: rawProduct.imageIcon ?? rawProduct.image_icon ?? null,
+  isFeatured: rawProduct.isFeatured ?? rawProduct.is_featured ?? false,
+};
 const tags = parseTags(product.tags);
 const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
 const discount = hasDiscount 
