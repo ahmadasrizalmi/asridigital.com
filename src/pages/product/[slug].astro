@@ -262,40 +262,43 @@ const tags = parseTags(product?.tags);
             <p>{product?.description}</p>
           </div>
 
-          <!-- GPT URL Preview -->
-          {product?.gpt_url && product.gpt_url !== '#' && (
+          <!-- GPT URL - Only shown to authenticated owners -->
+          <div id="gpt-access-section" class="hidden">
             <a
-              href={product.gpt_url}
+              id="gpt-preview-link"
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
             >
               <Icon name="sparkles" size={16} />
-              Preview GPT
+              Buka GPT
               <Icon name="external-link" size={14} />
             </a>
-          )}
+          </div>
 
           <!-- CTA Buttons -->
           <div class="flex flex-col sm:flex-row gap-3 pt-4">
             <a
+              id="buy-button"
               href={`/checkout?product=${product?.slug}`}
               class="btn-primary justify-center text-lg py-4"
             >
               <Icon name="shopping-cart" size={20} />
               Beli Sekarang
             </a>
-            {product?.gpt_url && product.gpt_url !== '#' && (
+            <div id="gpt-demo-section" class="hidden">
               <a
-                href={product.gpt_url}
+                id="gpt-demo-link"
+                href="#"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="btn-tertiary justify-center text-lg py-4"
               >
                 <Icon name="play-circle" size={20} />
-                Coba Demo
+                Buka GPT
               </a>
-            )}
+            </div>
           </div>
 
           <!-- Trust Badges -->
@@ -504,4 +507,56 @@ const tags = parseTags(product?.tags);
   (window as any).openVideoModal = openVideoModal;
   (window as any).closeVideoModal = closeVideoModal;
   (window as any).toggleFaq = toggleFaq;
+
+  // Check if user owns this product and show GPT link
+  (async function checkProductAccess() {
+    const token = document.cookie.split('; ').find(c => c.startsWith('token='))?.split('=')[1];
+    if (!token) return; // Not logged in
+
+    const currentSlug = window.location.pathname.split('/').filter(Boolean).pop();
+
+    try {
+      // Check if user has access to this product
+      const res = await fetch('/api/user/products', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const userProducts = data.products || [];
+
+      // Find current product in user's products
+      const ownedProduct = userProducts.find((p: any) => p.slug === currentSlug);
+
+      if (ownedProduct && ownedProduct.gpt_url && ownedProduct.gpt_url !== '#') {
+        // Show GPT access section
+        const accessSection = document.getElementById('gpt-access-section');
+        const previewLink = document.getElementById('gpt-preview-link') as HTMLAnchorElement;
+        const demoSection = document.getElementById('gpt-demo-section');
+        const demoLink = document.getElementById('gpt-demo-link') as HTMLAnchorElement;
+        const buyButton = document.getElementById('buy-button');
+
+        if (accessSection && previewLink) {
+          previewLink.href = ownedProduct.gpt_url;
+          accessSection.classList.remove('hidden');
+        }
+
+        if (demoSection && demoLink) {
+          demoLink.href = ownedProduct.gpt_url;
+          demoSection.classList.remove('hidden');
+        }
+
+        // Change buy button to "Sudah Dibeli" style
+        if (buyButton) {
+          buyButton.classList.remove('btn-primary');
+          buyButton.classList.add('btn-tertiary', 'opacity-60', 'cursor-default');
+          buyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sudah Dibeli';
+          buyButton.removeAttribute('href');
+        }
+      }
+    } catch (e) {
+      // Silently fail - user just won't see the GPT link
+    }
+  })();
 </script>

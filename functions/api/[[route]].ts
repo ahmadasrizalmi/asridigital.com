@@ -405,8 +405,15 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(...params)
         .first();
 
+      // Hide gpt_url from public responses
+      const publicProducts = (products.results || []).map((p: any) => {
+        const pub = { ...p };
+        delete pub.gpt_url;
+        return pub;
+      });
+
       return jsonResponse({
-        products: products.results,
+        products: publicProducts,
         total: countResult?.total || 0,
         page,
         totalPages: Math.ceil((countResult?.total || 0) / limit)
@@ -420,7 +427,14 @@ export async function onRequest(context: any): Promise<Response> {
         .bind('ALL-ACCESS')
         .all();
 
-      return jsonResponse({ products: products.results });
+      // Hide gpt_url from public responses
+      const publicProducts = (products.results || []).map((p: any) => {
+        const pub = { ...p };
+        delete pub.gpt_url;
+        return pub;
+      });
+
+      return jsonResponse({ products: publicProducts });
     }
 
     if (route.startsWith('/products/') && method === 'GET') {
@@ -435,7 +449,11 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Product not found' }, 404);
       }
 
-      return jsonResponse({ product });
+      // Hide gpt_url from public - only show to authenticated owners
+      const publicProduct = { ...product };
+      delete publicProduct.gpt_url;
+
+      return jsonResponse({ product: publicProduct });
     }
 
     // ==================== AUTH ====================
