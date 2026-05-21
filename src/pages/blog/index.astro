@@ -87,9 +87,13 @@ function getCategoryMeta(category: string) {
           return (
             <article class="card-hover overflow-hidden group" data-category={post.category?.toLowerCase() || 'general'}>
               <div class="relative overflow-hidden">
-                <div class={`w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center`}>
-                  <Icon name={icon} size={48} class={iconColor} />
-                </div>
+                {post.image_url ? (
+                  <img src={post.image_url} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
+                ) : (
+                  <div class={`w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center`}>
+                    <Icon name={icon} size={48} class={iconColor} />
+                  </div>
+                )}
                 <div class="absolute top-3 left-3">
                   <span class={`px-3 py-1 ${meta.color} text-xs font-medium rounded-full`}>
                     {meta.label}
