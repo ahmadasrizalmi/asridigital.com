@@ -242,8 +242,8 @@ const { slug } = Astro.params;
     if (tocList) tocList.innerHTML = html;
     if (tocMobileList) tocMobileList.innerHTML = html;
 
-    document.getElementById('toc-sidebar').style.display = 'block';
-    document.getElementById('toc-mobile').style.display = 'block';
+    document.getElementById('toc-sidebar').classList.add('toc-ready');
+    document.getElementById('toc-mobile').classList.add('toc-ready');
   }
 
   function setupReadingProgress() {
@@ -404,6 +404,10 @@ const { slug } = Astro.params;
     display: none;
   }
 
+  .blog-toc-desktop.toc-ready {
+    display: block;
+  }
+
   /* ===== TOC Mobile ===== */
   .blog-toc-mobile {
     margin-bottom: 24px;
@@ -411,6 +415,10 @@ const { slug } = Astro.params;
     border-radius: 12px;
     padding: 0;
     display: none;
+  }
+
+  .blog-toc-mobile.toc-ready {
+    display: block;
   }
 
   /* ===== Table Wrapper ===== */
@@ -608,8 +616,12 @@ const { slug } = Astro.params;
       padding: 40px 24px;
     }
 
-    .blog-toc-desktop {
+    .blog-toc-desktop.toc-ready {
       display: block !important;
+    }
+
+    .blog-toc-mobile.toc-ready {
+      display: none !important;
     }
 
     .blog-article {
@@ -634,7 +646,11 @@ const { slug } = Astro.params;
 
   /* ===== Mobile: TOC show ===== */
   @media (max-width: 1023px) {
-    .blog-toc-mobile {
+    .blog-toc-desktop.toc-ready {
+      display: none !important;
+    }
+
+    .blog-toc-mobile.toc-ready {
       display: block !important;
     }
 
