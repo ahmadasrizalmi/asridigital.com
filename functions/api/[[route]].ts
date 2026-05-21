@@ -307,54 +307,6 @@ export async function onRequest(context: any): Promise<Response> {
     });
   }
 
-  // Debug endpoint for env vars
-  const debugRoute = path.replace('/api', '') || '/';
-  if (debugRoute === '/debug/env' && method === 'GET') {
-    try {
-      const apiKey = env.DOMPETX_API_KEY || '';
-      const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
-      const timestamp = Math.floor(Date.now() / 1000).toString();
-      const testBody = JSON.stringify({ test: true, amount: 1000 });
-      
-      const encoder = new TextEncoder();
-      const key = await crypto.subtle.importKey(
-        'raw', encoder.encode(apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-      );
-      const signatureBuffer = await crypto.subtle.sign(
-        'HMAC', key, encoder.encode(timestamp + '.' + testBody)
-      );
-      const signature = Array.from(new Uint8Array(signatureBuffer))
-        .map(b => b.toString(16).padStart(2, '0')).join('');
-
-      // Test actual DompetX API call
-      const testResponse = await fetch(`${baseUrl}/payments/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-DOMPAY-API-Key': apiKey,
-          'X-DOMPAY-Timestamp': timestamp,
-          'X-DOMPAY-Signature': signature
-        },
-        body: testBody
-      });
-      const testData = await testResponse.json() as any;
-
-      return jsonResponse({
-        envOk: true,
-        hasKey: !!apiKey,
-        keyLen: apiKey.length,
-        signingOk: signature.length > 0,
-        dompetxStatus: testResponse.status,
-        dompetxResponse: testData
-      });
-    } catch (err: any) {
-      return jsonResponse({
-        error: err.message,
-        stack: err.stack
-      });
-    }
-  }
-
   // Rate limiting for auth endpoints
   if (path.includes('/auth/login') || path.includes('/auth/register') || path.includes('/auth/forgot-password')) {
     if (!checkRateLimit(clientIp, 10, 60000)) { // 10 requests per minute
@@ -951,23 +903,9 @@ export async function onRequest(context: any): Promise<Response> {
             .run();
         } else {
           console.error('DOMPETX: Checkout failed', dompetxData);
-          return jsonResponse({
-            success: false,
-            error: `DompetX error: ${JSON.stringify(dompetxData)}`,
-            orderId,
-            orderCode,
-            dompetxResponse: dompetxData
-          }, 400);
         }
       } catch (error: any) {
-        console.error('DOMPETX: Error', error);
-        return jsonResponse({
-          success: false,
-          error: `DompetX exception: ${error.message}`,
-          orderId,
-          orderCode,
-          stack: error.stack
-        }, 500);
+        console.error('DOMPETX: Error', error.message);
       }
 
       // If DompetX fails, fall back to direct success
