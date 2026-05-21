@@ -845,11 +845,11 @@ export async function onRequest(context: any): Promise<Response> {
       let paymentData = null;
 
       try {
-        const dompetxResponse = await fetch(`${env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`, {
+        const dompetxResponse = await fetch(`${env.DOMPETX_API_URL || env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.DOMPETX_API_KEY}`
+            'Authorization': `Bearer ${env.DOMPETX_API_KEY || ''}`
           },
           body: JSON.stringify({
             ref_id: orderId,
