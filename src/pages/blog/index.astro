@@ -22,19 +22,19 @@ import Icon from '../../components/ui/Icon.astro';
       
       <!-- Category Filter -->
       <div class="flex flex-wrap justify-center gap-2 mb-8">
-        <button class="px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
+        <button data-category="all" class="px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
           Semua
         </button>
-        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+        <button data-category="tips" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
           Tips & Trik
         </button>
-        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+        <button data-category="tutorial" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
           Tutorial
         </button>
-        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+        <button data-category="studi-kasus" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
           Studi Kasus
         </button>
-        <button class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+        <button data-category="berita" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
           Berita
         </button>
       </div>
@@ -179,23 +179,40 @@ import Icon from '../../components/ui/Icon.astro';
 </BaseLayout>
 
 <script>
-  // Blog filtering
-  document.querySelectorAll('.flex.flex-wrap button').forEach(btn => {
+  // Blog filtering by category
+  const articles = document.querySelectorAll('article[data-category]');
+  const buttons = document.querySelectorAll('.flex.flex-wrap button');
+  
+  buttons.forEach(btn => {
     btn.addEventListener('click', () => {
+      const category = btn.getAttribute('data-category') || 'all';
+      
       // Update active state
-      document.querySelectorAll('.flex.flex-wrap button').forEach(b => {
+      buttons.forEach(b => {
         b.classList.remove('bg-primary', 'text-white');
         b.classList.add('bg-surface', 'border', 'border-border', 'text-text-secondary');
       });
       btn.classList.remove('bg-surface', 'border', 'border-border', 'text-text-secondary');
       btn.classList.add('bg-primary', 'text-white');
       
-      // Filter logic would go here
+      // Filter articles
+      articles.forEach(article => {
+        if (category === 'all' || article.getAttribute('data-category') === category) {
+          article.style.display = '';
+        } else {
+          article.style.display = 'none';
+        }
+      });
     });
   });
 
-  // Load more
+  // Load more - show message since all articles are displayed
   document.getElementById('load-more')?.addEventListener('click', () => {
-    alert('Semua artikel sudah ditampilkan.');
+    const btn = document.getElementById('load-more');
+    if (btn) {
+      btn.textContent = 'Semua artikel sudah ditampilkan';
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
   });
 </script>

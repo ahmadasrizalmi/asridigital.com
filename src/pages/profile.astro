@@ -191,16 +191,50 @@ import Icon from '../components/ui/Icon.astro';
   document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Menyimpan...';
+    
     const name = document.getElementById('input-name').value;
     const phone = document.getElementById('input-phone').value;
     
-    // This would need a PATCH /api/auth/profile endpoint
-    alert('Fitur update profil akan segera tersedia.');
+    try {
+      const data = await apiRequest('/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ name, phone })
+      });
+      
+      if (data.error) {
+        alert(data.error);
+      } else {
+        // Update sidebar name
+        document.getElementById('profile-name').textContent = name;
+        // Update stored user
+        const user = getUser();
+        if (user) {
+          user.name = name;
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+        alert('Profil berhasil diperbarui!');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
   });
   
   // Change password
   document.getElementById('password-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Mengubah...';
     
     const currentPassword = document.getElementById('current-password').value;
     const newPassword = document.getElementById('new-password').value;
@@ -208,23 +242,47 @@ import Icon from '../components/ui/Icon.astro';
     
     if (newPassword !== confirmPassword) {
       alert('Password baru tidak cocok!');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
       return;
     }
     
     if (newPassword.length < 6) {
       alert('Password baru minimal 6 karakter!');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
       return;
     }
     
-    // This would need a PATCH /api/auth/password endpoint
-    alert('Fitur ubah password akan segera tersedia.');
+    try {
+      const data = await apiRequest('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+      });
+      
+      if (data.error) {
+        alert(data.error);
+      } else {
+        alert('Password berhasil diubah!');
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
   });
   
   // Delete account
   function confirmDeleteAccount() {
     if (confirm('Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.')) {
       if (confirm('Konfirmasi sekali lagi: Semua data Anda akan dihapus permanen.')) {
-        alert('Fitur hapus akun akan segera tersedia.');
+        // Note: Delete account endpoint not yet implemented in API
+        alert('Fitur hapus akun belum tersedia. Silakan hubungi support@asridigital.com untuk bantuan.');
       }
     }
   }

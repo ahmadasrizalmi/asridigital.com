@@ -1,0 +1,223 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import Icon from '../components/ui/Icon.astro';
+
+const faqCategories = [
+  {
+    category: 'Tentang Produk',
+    items: [
+      {
+        q: 'Apa itu Custom GPT?',
+        a: 'Custom GPT adalah versi khusus dari ChatGPT yang telah dioptimasi dengan instruksi, pengetahuan, dan perilaku tertentu untuk menjalankan tugas spesifik. Misalnya, ada Custom GPT khusus untuk membuat konten marketing, merancang kurikulum, atau menulis kode program. Setiap Custom GPT di Asri Digital dirancang khusus untuk kebutuhan profesional Indonesia.',
+      },
+      {
+        q: 'Apa bedanya Custom GPT dengan ChatGPT biasa?',
+        a: 'ChatGPT biasa adalah AI general-purpose yang bisa menjawab berbagai pertanyaan. Custom GPT di Asri Digital sudah di-setting dengan prompt engineering tingkat lanjut, pengetahuan domain spesifik, dan gaya komunikasi yang sesuai untuk tugas tertentu. Hasilnya lebih fokus, relevan, dan berkualitas dibanding menggunakan ChatGPT biasa.',
+      },
+      {
+        q: 'Apakah saya perlu langganan ChatGPT Plus untuk menggunakan Custom GPT?',
+        a: 'Ya, untuk menggunakan Custom GPT dengan optimal, Anda memerlukan akun ChatGPT (baik yang gratis maupun Plus). Sebagian besar Custom GPT kami dapat digunakan dengan akun ChatGPT gratis, namun untuk performa terbaik, kami menyarankan menggunakan ChatGPT Plus.',
+      },
+    ],
+  },
+  {
+    category: 'Pembelian & Pembayaran',
+    items: [
+      {
+        q: 'Bagaimana cara membeli produk di Asri Digital?',
+        a: 'Sangat mudah! Pilih produk yang Anda inginkan, klik tombol "Beli" atau "Checkout", masukkan data Anda, pilih metode pembayaran, lalu selesaikan pembayaran. Setelah pembayaran terverifikasi, Anda akan langsung mendapatkan akses ke produk yang dibeli.',
+      },
+      {
+        q: 'Metode pembayaran apa saja yang tersedia?',
+        a: 'Kami mendukung berbagai metode pembayaran melalui mitra payment gateway kami (DompetX), termasuk: transfer bank (BCA, Mandiri, BRI, BNI, dan bank lainnya), e-wallet (GoPay, OVO, DANA, ShopeePay), QRIS, dan kartu kredit/debit. Semua pembayaran diproses secara aman.',
+      },
+      {
+        q: 'Apakah ada garansi uang kembali?',
+        a: 'Ya! Kami memberikan garansi uang kembali selama 7 hari setelah pembelian. Jika Anda tidak puas dengan produk yang dibeli, hubungi kami di support@asridigital.com dengan menyertakan bukti pembelian, dan kami akan memproses refund Anda.',
+      },
+    ],
+  },
+  {
+    category: 'Akses & Penggunaan',
+    items: [
+      {
+        q: 'Berapa lama akses yang saya dapatkan setelah membeli?',
+        a: 'Semua pembelian bersifat lifetime (seumur hidup). Setelah Anda membeli sebuah Custom GPT, Anda bisa mengaksesnya selamanya tanpa biaya tambahan. Termasuk update dan peningkatan yang kami lakukan di masa depan.',
+      },
+      {
+        q: 'Bagaimana cara mengakses Custom GPT setelah pembelian?',
+        a: 'Setelah pembayaran terverifikasi, Anda akan menerima email berisi link akses ke Custom GPT yang dibeli. Klik link tersebut untuk langsung diarahkan ke halaman Custom GPT di ChatGPT. Anda juga bisa mengaksesnya dari halaman akun Anda di website kami.',
+      },
+      {
+        q: 'Tips apa untuk mendapatkan hasil terbaik dari Custom GPT?',
+        a: 'Beberapa tips: (1) Berikan konteks yang jelas dan spesifik dalam permintaan Anda. (2) Gunakan bahasa Indonesia untuk hasil optimal. (3) Jangan ragu untuk meminta revisi atau klarifikasi. (4) Manfaatkan fitur "continue" jika jawaban terpotong. (5) Eksplorasi berbagai fitur yang tersedia di setiap Custom GPT.',
+      },
+    ],
+  },
+  {
+    category: 'Dukungan Teknis',
+    items: [
+      {
+        q: 'Bagaimana jika saya mengalami masalah teknis?',
+        a: 'Jika Anda mengalami masalah teknis seperti link akses tidak berfungsi, pembayaran gagal, atau masalah lainnya, silakan hubungi kami di support@asridigital.com. Tim kami akan merespons dalam 24-48 jam di hari kerja.',
+      },
+      {
+        q: 'Apakah produk akan diupdate?',
+        a: 'Ya! Kami secara berkala mengupdate Custom GPT kami untuk meningkatkan kualitas, menambah fitur, dan memastikan kompatibilitas dengan update terbaru dari ChatGPT. Semua update ini gratis untuk pembeli produk terkait.',
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="FAQ - Pertanyaan yang Sering Diajukan - Asri Digital"
+  description="Temukan jawaban atas pertanyaan umum tentang Custom GPT, pembelian, pembayaran, dan penggunaan produk Asri Digital."
+  canonicalUrl="https://asridigital.com/faq"
+>
+  <Header />
+
+  <main class="flex-1">
+    {/* BREADCRUMB */}
+    <nav class="bg-surface border-b border-border py-3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center gap-2 text-sm text-text-secondary">
+          <li><a href="/" class="hover:text-primary transition-colors">Beranda</a></li>
+          <li><Icon name="chevron-right" size={14} /></li>
+          <li class="text-text-primary font-medium">FAQ</li>
+        </ol>
+      </div>
+    </nav>
+
+    {/* HERO */}
+    <section class="py-16 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
+          <Icon name="help-circle" size={16} class="text-primary" />
+          <span class="text-sm text-primary font-medium">FAQ</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-text-primary">
+          Pertanyaan yang <span class="text-primary">Sering Diajukan</span>
+        </h1>
+        <p class="text-text-secondary text-lg max-w-2xl mx-auto">
+          Temukan jawaban cepat untuk pertanyaan umum tentang produk dan layanan kami.
+        </p>
+      </div>
+    </section>
+
+    {/* FAQ CONTENT */}
+    <section class="py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {faqCategories.map((cat) => (
+          <div class="mb-12">
+            <h2 class="text-2xl font-bold text-text-primary mb-6 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              {cat.category}
+            </h2>
+            <div class="space-y-3">
+              {cat.items.map((item, idx) => (
+                <div class="faq-item card overflow-hidden" data-category={cat.category}>
+                  <button
+                    class="faq-toggle w-full flex items-center justify-between gap-4 p-5 text-left hover:bg-background/50 transition-colors"
+                    aria-expanded="false"
+                  >
+                    <span class="font-semibold text-text-primary pr-4">{item.q}</span>
+                    <span class="faq-icon shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-300">
+                      <Icon name="plus" size={16} class="text-primary faq-icon-open" />
+                      <Icon name="minus" size={16} class="text-primary faq-icon-close hidden" />
+                    </span>
+                  </button>
+                  <div class="faq-content hidden px-5 pb-5">
+                    <div class="pt-2 border-t border-border">
+                      <p class="text-text-secondary leading-relaxed mt-3 whitespace-pre-line">{item.a}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* MASIH ADA PERTANYAAN */}
+    <section class="py-16 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="card p-12">
+          <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Icon name="message-circle" size={32} class="text-primary" />
+          </div>
+          <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Masih Ada Pertanyaan?</h2>
+          <p class="text-text-secondary text-lg mb-8 max-w-xl mx-auto">
+            Tidak menemukan jawaban yang Anda cari? Tim kami siap membantu Anda.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/contact" class="btn-primary text-lg px-8 py-4">
+              <Icon name="mail" size={20} />
+              <span>Hubungi Kami</span>
+            </a>
+            <a href="/guide" class="btn-secondary text-lg px-8 py-4">
+              <Icon name="book-open" size={20} />
+              <span>Baca Panduan</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="py-20">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Siap Meningkatkan Produktivitas?</h2>
+        <p class="text-text-secondary text-lg mb-8">
+          Jelajahi koleksi Custom GPT kami dan temukan yang sesuai untuk Anda.
+        </p>
+        <a href="/#produk" class="btn-primary text-lg px-8 py-4">
+          <Icon name="sparkles" size={20} />
+          <span>Lihat Semua Produk</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const content = item.querySelector('.faq-content')!;
+      const icon = item.querySelector('.faq-icon')!;
+      const iconOpen = item.querySelector('.faq-icon-open')!;
+      const iconClose = item.querySelector('.faq-icon-close')!;
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+      // Close all others
+      document.querySelectorAll('.faq-item').forEach((other) => {
+        if (other !== item) {
+          other.querySelector('.faq-content')!.classList.add('hidden');
+          other.querySelector('.faq-toggle')!.setAttribute('aria-expanded', 'false');
+          other.querySelector('.faq-icon')!.classList.remove('rotate-45');
+          other.querySelector('.faq-icon-open')!.classList.remove('hidden');
+          other.querySelector('.faq-icon-close')!.classList.add('hidden');
+        }
+      });
+
+      // Toggle current
+      content.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      icon.classList.toggle('rotate-45');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+    });
+  });
+</script>
+
+<style>
+  .faq-icon {
+    transition: transform 0.3s ease;
+  }
+</style>

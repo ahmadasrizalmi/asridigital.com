@@ -17,6 +17,8 @@ const {
 
 const siteUrl = 'https://asridigital.com';
 const defaultOgImage = `${siteUrl}/og-default.jpg`;
+const currentPath = Astro.url.pathname;
+const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
 ---
 
 <!DOCTYPE html>
@@ -27,7 +29,7 @@ const defaultOgImage = `${siteUrl}/og-default.jpg`;
   <meta name="description" content={description} />
   
   <!-- Canonical URL -->
-  {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+  <link rel="canonical" href={fullCanonicalUrl} />
   
   <!-- Open Graph -->
   <meta property="og:title" content={title} />

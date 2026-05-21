@@ -1,0 +1,302 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import Icon from '../components/ui/Icon.astro';
+---
+
+<BaseLayout
+  title="Panduan Penggunaan - Asri Digital"
+  description="Panduan lengkap cara menggunakan Custom GPT dari Asri Digital. Pelajari langkah demi langkah dari pembelian hingga penggunaan."
+  canonicalUrl="https://asridigital.com/guide"
+>
+  <Header />
+
+  <main class="flex-1">
+    {/* BREADCRUMB */}
+    <nav class="bg-surface border-b border-border py-3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center gap-2 text-sm text-text-secondary">
+          <li><a href="/" class="hover:text-primary transition-colors">Beranda</a></li>
+          <li><Icon name="chevron-right" size={14} /></li>
+          <li class="text-text-primary font-medium">Panduan Penggunaan</li>
+        </ol>
+      </div>
+    </nav>
+
+    {/* HERO */}
+    <section class="py-16 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
+          <Icon name="book-open" size={16} class="text-primary" />
+          <span class="text-sm text-primary font-medium">Panduan</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-text-primary">
+          Panduan <span class="text-primary">Penggunaan</span>
+        </h1>
+        <p class="text-text-secondary text-lg max-w-2xl mx-auto">
+          Ikuti langkah-langkah berikut untuk mendapatkan pengalaman terbaik menggunakan Custom GPT dari Asri Digital.
+        </p>
+      </div>
+    </section>
+
+    {/* LANGKAH-LANGKAH */}
+    <section class="py-20">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-extrabold mb-12 text-text-primary text-center">
+          Langkah-langkah <span class="text-primary">Penggunaan</span>
+        </h2>
+
+        <div class="space-y-8">
+          {/* STEP 1 */}
+          <div class="card p-8 relative">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shrink-0">
+                <span class="text-white font-extrabold text-xl">1</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-text-primary mb-2">Pilih & Beli Produk</h3>
+                <p class="text-text-secondary mb-4">
+                  Kunjungi halaman produk kami dan pilih Custom GPT yang sesuai dengan kebutuhan Anda. Klik tombol "Beli" atau "Checkout" pada produk yang diinginkan.
+                </p>
+                <div class="bg-background rounded-lg p-4 text-sm text-text-secondary">
+                  <strong class="text-text-primary">💡 Tips:</strong> Jika Anda membutuhkan akses ke semua produk, pertimbangkan untuk membeli <strong>Lifetime All-Access Pass</strong> yang lebih hemat.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 2 */}
+          <div class="card p-8 relative">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shrink-0">
+                <span class="text-white font-extrabold text-xl">2</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-text-primary mb-2">Selesaikan Pembayaran</h3>
+                <p class="text-text-secondary mb-4">
+                  Isi data yang diperlukan, lalu pilih metode pembayaran yang Anda inginkan. Kami mendukung transfer bank, e-wallet, QRIS, dan kartu kredit/debit.
+                </p>
+                <div class="bg-background rounded-lg p-4 text-sm text-text-secondary">
+                  <strong class="text-text-primary">💡 Tips:</strong> Pastikan nominal pembayaran sesuai dengan yang tertera. Pembayaran akan terverifikasi otomatis dalam hitungan menit.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 3 */}
+          <div class="card p-8 relative">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shrink-0">
+                <span class="text-white font-extrabold text-xl">3</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-text-primary mb-2">Terima Akses via Email</h3>
+                <p class="text-text-secondary mb-4">
+                  Setelah pembayaran terverifikasi, Anda akan menerima email berisi link akses ke Custom GPT yang dibeli. Email dikirim otomatis ke alamat email yang Anda daftarkan.
+                </p>
+                <div class="bg-background rounded-lg p-4 text-sm text-text-secondary">
+                  <strong class="text-text-primary">💡 Tips:</strong> Cek folder spam/junk jika email tidak masuk dalam 15 menit. Hubungi support@asridigital.com jika masih belum menerima email.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 4 */}
+          <div class="card p-8 relative">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shrink-0">
+                <span class="text-white font-extrabold text-xl">4</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-text-primary mb-2">Akses Custom GPT</h3>
+                <p class="text-text-secondary mb-4">
+                  Klik link yang diterima via email. Anda akan diarahkan langsung ke halaman Custom GPT di platform ChatGPT. Login ke akun ChatGPT Anda jika diminta.
+                </p>
+                <div class="bg-background rounded-lg p-4 text-sm text-text-secondary">
+                  <strong class="text-text-primary">💡 Tips:</strong> Bookmark halaman Custom GPT agar mudah diakses di kemudian hari. Anda juga bisa menemukan Custom GPT di sidebar ChatGPT.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 5 */}
+          <div class="card p-8 relative">
+            <div class="flex items-start gap-5">
+              <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shrink-0">
+                <span class="text-white font-extrabold text-xl">5</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-text-primary mb-2">Mulai Menggunakan!</h3>
+                <p class="text-text-secondary mb-4">
+                  Ketik permintaan Anda di kolom chat dan biarkan Custom GPT membantu Anda. Mulai dari hal sederhana, lalu eksplorasi fitur-fitur lain yang tersedia.
+                </p>
+                <div class="bg-background rounded-lg p-4 text-sm text-text-secondary">
+                  <strong class="text-text-primary">💡 Tips:</strong> Gunakan bahasa Indonesia yang jelas dan spesifik untuk hasil terbaik. Berikan konteks yang cukup agar AI memahami kebutuhan Anda.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* TIPS HASIL TERBAIK */}
+    <section class="py-20 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-extrabold mb-4 text-text-primary text-center">
+          Tips Mendapatkan <span class="text-primary">Hasil Terbaik</span>
+        </h2>
+        <p class="text-text-secondary text-center mb-12 max-w-xl mx-auto">
+          Ikuti tips berikut agar Anda mendapatkan output yang paling optimal dari Custom GPT kami.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            {
+              icon: 'edit',
+              title: 'Berikan Konteks yang Jelas',
+              desc: 'Jelaskan siapa Anda, apa tujuan Anda, dan format output yang Anda harapkan. Semakin spesifik, semakin baik hasilnya.',
+            },
+            {
+              icon: 'message-square',
+              title: 'Gunakan Bahasa Indonesia',
+              desc: 'Semua Custom GPT kami dioptimasi untuk bahasa Indonesia. Berikan instruksi dalam bahasa Indonesia untuk hasil terbaik.',
+            },
+            {
+              icon: 'refresh-cw',
+              title: 'Minta Revisi Jika Perlu',
+              desc: 'Jangan ragu untuk meminta perbaikan, penambahan detail, atau perubahan format. AI siap menyesuaikan output sesuai keinginan Anda.',
+            },
+            {
+              icon: 'layers',
+              title: 'Bangun Percakapan Bertahap',
+              desc: 'Mulai dari permintaan sederhana, lalu tambahkan detail secara bertahap. Ini membantu AI memahami konteks dengan lebih baik.',
+            },
+            {
+              icon: 'copy',
+              title: 'Simpan Hasil Terbaik',
+              desc: 'Copy dan simpan output yang Anda anggap bagus sebagai referensi untuk permintaan serupa di masa depan.',
+            },
+            {
+              icon: 'zap',
+              title: 'Eksplorasi Fitur',
+              desc: 'Setiap Custom GPT memiliki berbagai kemampuan. Coba berbagai jenis permintaan untuk menemukan fitur yang paling berguna bagi Anda.',
+            },
+          ].map((tip) => (
+            <div class="card-hover p-6">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Icon name={tip.icon} size={24} class="text-primary" />
+                </div>
+                <div>
+                  <h3 class="font-bold text-text-primary mb-1">{tip.title}</h3>
+                  <p class="text-text-secondary text-sm">{tip.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* TROUBLESHOOTING */}
+    <section class="py-20">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-extrabold mb-4 text-text-primary text-center">
+          Pemecahan Masalah <span class="text-primary">Umum</span>
+        </h2>
+        <p class="text-text-secondary text-center mb-12 max-w-xl mx-auto">
+          Mengalami kendala? Cek solusi untuk masalah yang umum terjadi.
+        </p>
+
+        <div class="space-y-6">
+          {[
+            {
+              problem: 'Saya belum menerima email akses setelah pembayaran',
+              solutions: [
+                'Tunggu hingga 15 menit karena proses verifikasi bisa memakan waktu.',
+                'Cek folder spam/junk di email Anda.',
+                'Pastikan email yang Anda masukkan saat checkout sudah benar.',
+                'Jika masih belum menerima, hubungi support@asridigital.com dengan bukti pembayaran.',
+              ],
+            },
+            {
+              problem: 'Link Custom GPT tidak bisa dibuka',
+              solutions: [
+                'Pastikan Anda sudah login ke akun ChatGPT.',
+                'Coba buka link di browser yang berbeda.',
+                'Clear cache dan cookies browser Anda.',
+                'Jika menggunakan VPN, coba nonaktifkan terlebih dahulu.',
+              ],
+            },
+            {
+              problem: 'Custom GPT tidak merespons atau error',
+              solutions: [
+                'Refresh halaman dan coba lagi.',
+                'Cek status ChatGPT di status.openai.com untuk memastikan tidak ada gangguan.',
+                'Coba gunakan akun ChatGPT lain jika tersedia.',
+                'Hubungi kami jika masalah berlanjut.',
+              ],
+            },
+            {
+              problem: 'Output tidak sesuai harapan',
+              solutions: [
+                'Coba berikan instruksi yang lebih spesifik dan detail.',
+                'Gunakan fitur "regenerate" untuk mendapatkan alternatif output.',
+                'Minta revisi dengan menjelaskan apa yang perlu diperbaiki.',
+                'Baca tips di atas untuk mendapatkan hasil terbaik.',
+              ],
+            },
+          ].map((item) => (
+            <div class="card p-6">
+              <h3 class="font-bold text-lg text-text-primary mb-4 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                  <Icon name="alert-circle" size={18} class="text-red-500" />
+                </div>
+                {item.problem}
+              </h3>
+              <div class="pl-11">
+                <p class="text-sm font-medium text-text-main mb-2">Solusi:</p>
+                <ul class="space-y-2">
+                  {item.solutions.map((sol) => (
+                    <li class="flex items-start gap-2 text-text-secondary text-sm">
+                      <Icon name="check" size={14} class="text-primary shrink-0 mt-1" />
+                      <span>{sol}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div class="mt-8 text-center">
+          <p class="text-text-muted text-sm mb-4">Masih mengalami kendala?</p>
+          <a href="/contact" class="btn-secondary">
+            <Icon name="mail" size={18} />
+            <span>Hubungi Tim Support</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="py-20 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="card p-12">
+          <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Siap Mencoba?</h2>
+          <p class="text-text-secondary text-lg mb-8 max-w-xl mx-auto">
+            Sekarang Anda sudah tahu cara menggunakan Custom GPT kami. Saatnya meningkatkan produktivitas Anda!
+          </p>
+          <a href="/#produk" class="btn-primary text-lg px-8 py-4">
+            <Icon name="sparkles" size={20} />
+            <span>Lihat Semua Produk</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,195 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import Icon from '../components/ui/Icon.astro';
+---
+
+<BaseLayout
+  title="Tentang Kami - Asri Digital"
+  description="Kenali Asri Digital, marketplace Custom GPT terpercaya untuk profesional Indonesia. Misi kami adalah membuat AI dapat diakses oleh semua orang."
+  canonicalUrl="https://asridigital.com/about"
+>
+  <Header />
+
+  <main class="flex-1">
+    {/* BREADCRUMB */}
+    <nav class="bg-surface border-b border-border py-3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center gap-2 text-sm text-text-secondary">
+          <li><a href="/" class="hover:text-primary transition-colors">Beranda</a></li>
+          <li><Icon name="chevron-right" size={14} /></li>
+          <li class="text-text-primary font-medium">Tentang Kami</li>
+        </ol>
+      </div>
+    </nav>
+
+    {/* HERO */}
+    <section class="relative py-20 bg-surface overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+      </div>
+      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
+          <Icon name="info" size={16} class="text-primary" />
+          <span class="text-sm text-primary font-medium">Tentang Kami</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-text-primary">
+          Membuat AI <span class="text-primary">Dapat Diakses</span> oleh Semua
+        </h1>
+        <p class="text-xl text-text-secondary max-w-2xl mx-auto">
+          Asri Digital hadir untuk membantu profesional Indonesia memanfaatkan kekuatan AI dalam kehidupan sehari-hari.
+        </p>
+      </div>
+    </section>
+
+    {/* CERITA KAMI */}
+    <section class="py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 class="text-3xl font-extrabold mb-6 text-text-primary">Cerita <span class="text-primary">Kami</span></h2>
+            <div class="space-y-4 text-text-secondary">
+              <p>
+                Asri Digital lahir dari keyakinan sederhana: teknologi AI seharusnya tidak eksklusif untuk mereka yang mengerti teknologi. Setiap profesional di Indonesia—baik guru, marketer, pengusaha, maupun kreator konten—berhak mendapatkan akses ke tools AI yang powerful.
+              </p>
+              <p>
+                Kami memulai perjalanan ini karena menyadari bahwa banyak Custom GPT yang tersedia di internet tidak dirancang untuk pengguna Indonesia. Bahasa yang digunakan bahasa Inggris, konteks yang tidak relevan, dan tidak memahami kebutuhan lokal.
+              </p>
+              <p>
+                Dari situlah ide Asri Digital muncul: sebuah marketplace yang menyediakan Custom GPT berkualitas tinggi, dirancang khusus untuk konteks Indonesia, dengan bahasa Indonesia yang natural, dan dengan harga yang terjangkau.
+              </p>
+            </div>
+          </div>
+          <div class="card p-8">
+            <div class="grid grid-cols-2 gap-6">
+              {[
+                { value: '500+', label: 'Pengguna Aktif', icon: 'users' },
+                { value: '10+', label: 'Custom GPT', icon: 'sparkles' },
+                { value: '4.9/5', label: 'Rating Rata-rata', icon: 'star' },
+                { value: '1,000+', label: 'Produk Terjual', icon: 'trending-up' },
+              ].map((stat) => (
+                <div class="text-center p-4 rounded-xl bg-background">
+                  <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Icon name={stat.icon} size={24} class="text-primary" />
+                  </div>
+                  <div class="text-2xl font-extrabold text-text-primary">{stat.value}</div>
+                  <div class="text-sm text-text-muted">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* MISI KAMI */}
+    <section class="py-20 bg-surface">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Misi <span class="text-primary">Kami</span></h2>
+        <p class="text-text-secondary text-lg max-w-2xl mx-auto mb-12">
+          Kami percaya bahwa AI adalah masa depan produktivitas, dan setiap orang berhak mendapatkan aksesnya.
+        </p>
+        <div class="max-w-3xl mx-auto card p-10">
+          <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Icon name="target" size={32} class="text-primary" />
+          </div>
+          <blockquote class="text-2xl font-medium text-text-main leading-relaxed">
+            "Memberdayakan jutaan profesional Indonesia dengan Custom GPT yang terjangkau, berkualitas, dan relevan dengan kebutuhan lokal."
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    {/* TIM KAMI */}
+    <section class="py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Tim <span class="text-primary">Kami</span></h2>
+          <p class="text-text-secondary text-lg max-w-2xl mx-auto">
+            Kami adalah tim kecil yang passionate tentang AI dan dampaknya bagi masyarakat Indonesia.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {[
+            { name: 'Founder & AI Engineer', desc: 'Berpengalaman dalam pengembangan AI dan produk digital selama bertahun-tahun.', icon: 'code' },
+            { name: 'Content & Prompt Specialist', desc: 'Ahli dalam merancang prompt yang efektif untuk menghasilkan output berkualitas tinggi.', icon: 'edit' },
+            { name: 'Community & Support', desc: 'Bertugas memastikan setiap pengguna mendapatkan pengalaman terbaik dan dukungan yang dibutuhkan.', icon: 'heart' },
+          ].map((member) => (
+            <div class="card-hover p-8 text-center">
+              <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Icon name={member.icon} size={36} class="text-primary" />
+              </div>
+              <h3 class="font-bold text-lg mb-2 text-text-primary">{member.name}</h3>
+              <p class="text-text-secondary text-sm">{member.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* NILAI-NILAI KAMI */}
+    <section class="py-20 bg-surface">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Nilai-Nilai <span class="text-primary">Kami</span></h2>
+          <p class="text-text-secondary text-lg max-w-2xl mx-auto">
+            Prinsip-prinsip yang menjadi fondasi setiap produk dan layanan yang kami berikan.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: 'lightbulb',
+              title: 'Inovasi',
+              desc: 'Kami terus berinovasi menghadirkan Custom GPT terbaru yang relevan dengan kebutuhan pasar Indonesia. Setiap produk kami selalu diperbarui agar tetap optimal.',
+            },
+            {
+              icon: 'globe',
+              title: 'Aksesibilitas',
+              desc: 'Kami percaya AI harus bisa diakses oleh siapa saja. Harga terjangkau, bahasa Indonesia yang familiar, dan proses yang mudah adalah komitmen kami.',
+            },
+            {
+              icon: 'award',
+              title: 'Kualitas',
+              desc: 'Setiap Custom GPT yang kami rilis sudah melalui proses pengujian dan optimasi yang ketat. Kami hanya menjual produk yang benar-benar bermanfaat.',
+            },
+          ].map((value) => (
+            <div class="card-hover p-8">
+              <div class="w-14 h-14 mb-5 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Icon name={value.icon} size={28} class="text-primary" />
+              </div>
+              <h3 class="font-bold text-xl mb-3 text-text-primary">{value.title}</h3>
+              <p class="text-text-secondary">{value.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="py-20">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="card p-12">
+          <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Siap Meningkatkan Produktivitas?</h2>
+          <p class="text-text-secondary text-lg mb-8 max-w-xl mx-auto">
+            Jelajahi koleksi Custom GPT kami dan temukan yang sesuai dengan kebutuhan Anda.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/#produk" class="btn-primary text-lg px-8 py-4">
+              <Icon name="eye" size={20} />
+              <span>Lihat Produk</span>
+            </a>
+            <a href="/contact" class="btn-secondary text-lg px-8 py-4">
+              <Icon name="message-square" size={20} />
+              <span>Hubungi Kami</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

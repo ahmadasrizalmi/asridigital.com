@@ -1,0 +1,198 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import Icon from '../components/ui/Icon.astro';
+
+const sections = [
+  {
+    id: 'service-description',
+    title: 'Deskripsi Layanan',
+    icon: 'info',
+    content: `Asri Digital adalah platform marketplace yang menyediakan akses ke Custom GPT (Generative Pre-trained Transformer) yang telah dirancang dan dioptimasi khusus untuk pengguna Indonesia.
+
+Produk yang kami tawarkan meliputi:
+• Akses ke Custom GPT individual
+• Lifetime All-Access Pass untuk semua Custom GPT
+• Update dan penambahan produk baru secara berkala
+
+Semua Custom GPT dijalankan pada platform OpenAI ChatGPT. Kami menyediakan akses dan panduan penggunaan, namun tidak mengontrol ketersediaan atau performa platform ChatGPT secara keseluruhan.`,
+  },
+  {
+    id: 'user-accounts',
+    title: 'Akun Pengguna',
+    icon: 'user',
+    content: `Untuk menggunakan layanan kami, Anda mungkin perlu membuat akun dengan informasi yang akurat dan lengkap.
+
+Anda bertanggung jawab untuk:
+• Menjaga kerahasiaan akun dan kata sandi Anda
+• Semua aktivitas yang terjadi di bawah akun Anda
+• Memberitahu kami segera jika terjadi penggunaan yang tidak sah
+
+Kami berhak menangguhkan atau menghentikan akun yang melanggar syarat dan ketentuan ini.`,
+  },
+  {
+    id: 'payment-terms',
+    title: 'Ketentuan Pembayaran',
+    icon: 'credit-card',
+    content: `Pembayaran diproses melalui mitra pembayaran kami, DompetX, yang mendukung berbagai metode pembayaran populer di Indonesia.
+
+Ketentuan pembayaran:
+• Semua harga tercantum dalam Rupiah (IDR) dan sudah termasuk pajak yang berlaku.
+• Pembayaran bersifat satu kali (one-time payment) kecuali dinyatakan lain.
+• Akses produk akan diberikan setelah pembayaran berhasil diverifikasi.
+• Garansi uang kembali 7 hari berlaku untuk semua produk.
+• Untuk permintaan refund, hubungi support@asridigital.com dengan menyertakan bukti pembelian.`,
+  },
+  {
+    id: 'intellectual-property',
+    title: 'Hak Kekayaan Intelektual',
+    icon: 'award',
+    content: `Semua konten di platform Asri Digital, termasuk namun tidak terbatas pada teks, grafik, logo, prompt engineering, dan desain, adalah milik Asri Digital dan dilindungi oleh hukum kekayaan intelektual Indonesia.
+
+Anda TIDAK diperkenankan untuk:
+• Menjual kembali atau mendistribusikan ulang akses Custom GPT kami
+• Menyalin, memodifikasi, atau membuat karya turunan dari produk kami
+• Menggunakan produk kami untuk tujuan komersial tanpa izin tertulis
+• Membagikan akses akun Anda kepada pihak lain
+
+Output yang dihasilkan oleh penggunaan Custom GPT menjadi milik pengguna, sesuai dengan ketentuan OpenAI.`,
+  },
+  {
+    id: 'liability',
+    title: 'Batasan Tanggung Jawab',
+    icon: 'alert-triangle',
+    content: `Asri Digital menyediakan layanan "sebagaimana adanya" dan "sebagaimana tersedia".
+
+Kami TIDAK bertanggung jawab atas:
+• Kerugian yang timbul dari penggunaan atau ketidakmampuan menggunakan layanan kami
+• Ketidakakuratan output yang dihasilkan oleh Custom GPT
+• Gangguan layanan dari pihak ketiga seperti OpenAI atau DompetX
+• Keputusan bisnis atau pribadi yang dibuat berdasarkan output dari Custom GPT
+• Kerugian tidak langsung, insidental, atau konsekuensial
+
+Output dari Custom GPT bersifat AI-generated dan sebaiknya selalu diverifikasi oleh pengguna sebelum digunakan untuk kepentingan penting.`,
+  },
+  {
+    id: 'termination',
+    title: 'Penghentian Layanan',
+    icon: 'x-circle',
+    content: `Kami berhak menghentikan atau menangguhkan akses Anda ke layanan kami, secara keseluruhan atau sebagian, tanpa pemberitahuan sebelumnya, jika:
+
+• Anda melanggar syarat dan ketentuan ini
+• Terjadi aktivitas yang mencurigakan atau penipuan
+• Diwajibkan oleh hukum yang berlaku
+
+Anda dapat berhenti menggunakan layanan kami kapan saja. Namun, penghentian layanan tidak menghapus kewajiban pembayaran yang sudah jatuh tempo.
+
+Produk yang sudah dibeli tetap dapat diakses sesuai ketentuan akses yang berlaku (selamanya/lifetime), kecuali jika penghentian disebabkan oleh pelanggaran dari pengguna.`,
+  },
+  {
+    id: 'governing-law',
+    title: 'Hukum yang Berlaku',
+    icon: 'scale',
+    content: `Syarat dan ketentuan ini tunduk pada dan ditafsirkan sesuai dengan hukum Negara Republik Indonesia.
+
+Setiap sengketa yang timbul dari atau terkait dengan syarat dan ketentuan ini akan diselesaikan melalui:
+1. Musyawarah untuk mufakat terlebih dahulu
+2. Mediasi
+3. Pengadilan Negeri yang berwenang di wilayah Republik Indonesia
+
+Kami berhak mengubah syarat dan ketentuan ini dari waktu ke waktu. Perubahan akan diberitahukan melalui website atau email. Penggunaan layanan secara terus-menerus setelah perubahan dianggap sebagai persetujuan Anda.`,
+  },
+];
+---
+
+<BaseLayout
+  title="Syarat & Ketentuan - Asri Digital"
+  description="Syarat dan ketentuan penggunaan layanan Asri Digital. Harap baca dengan seksama sebelum menggunakan layanan kami."
+  canonicalUrl="https://asridigital.com/terms"
+>
+  <Header />
+
+  <main class="flex-1">
+    {/* BREADCRUMB */}
+    <nav class="bg-surface border-b border-border py-3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center gap-2 text-sm text-text-secondary">
+          <li><a href="/" class="hover:text-primary transition-colors">Beranda</a></li>
+          <li><Icon name="chevron-right" size={14} /></li>
+          <li class="text-text-primary font-medium">Syarat & Ketentuan</li>
+        </ol>
+      </div>
+    </nav>
+
+    {/* HERO */}
+    <section class="py-16 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
+          <Icon name="file-text" size={16} class="text-primary" />
+          <span class="text-sm text-primary font-medium">Legal</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-text-primary">
+          Syarat & <span class="text-primary">Ketentuan</span>
+        </h1>
+        <p class="text-text-secondary text-lg">
+          Terakhir diperbarui: Mei 2026
+        </p>
+      </div>
+    </section>
+
+    {/* CONTENT */}
+    <section class="py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-10 p-6 bg-primary/5 border border-primary/20 rounded-xl">
+          <p class="text-text-main">
+            Selamat datang di Asri Digital. Dengan mengakses dan menggunakan layanan kami, Anda menyetujui syarat dan ketentuan berikut. Harap baca dokumen ini dengan seksama.
+          </p>
+        </div>
+
+        {/* TOC */}
+        <nav class="card p-6 mb-10">
+          <h2 class="font-bold text-lg mb-4 text-text-primary">Daftar Isi</h2>
+          <ul class="space-y-2">
+            {sections.map((s) => (
+              <li>
+                <a href={`#${s.id}`} class="flex items-center gap-2 text-primary hover:underline text-sm">
+                  <Icon name="chevron-right" size={14} />
+                  <span>{s.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* SECTIONS */}
+        <div class="space-y-10">
+          {sections.map((s) => (
+            <article id={s.id} class="scroll-mt-24">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon name={s.icon} size={20} class="text-primary" />
+                </div>
+                <h2 class="text-2xl font-bold text-text-primary">{s.title}</h2>
+              </div>
+              <div class="text-text-secondary leading-relaxed whitespace-pre-line pl-13">{s.content}</div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="py-20 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Siap Mencoba?</h2>
+        <p class="text-text-secondary text-lg mb-8">
+          Dengan memahami syarat dan ketentuan, Anda siap untuk mulai menggunakan layanan kami.
+        </p>
+        <a href="/#produk" class="btn-primary text-lg px-8 py-4">
+          <Icon name="sparkles" size={20} />
+          <span>Lihat Produk</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

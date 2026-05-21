@@ -260,9 +260,11 @@ function jsonResponse(data: any, status: number = 200): Response {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': 'https://asridigital.com',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+      'Vary': 'Origin'
     }
   });
 }
@@ -291,11 +293,16 @@ export async function onRequest(context: any): Promise<Response> {
 
   // Handle CORS preflight
   if (method === 'OPTIONS') {
+    const origin = request.headers.get('Origin') || '';
+    const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com'];
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://asridigital.com';
     return new Response(null, {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': corsOrigin,
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Credentials': 'true',
+        'Vary': 'Origin'
       }
     });
   }

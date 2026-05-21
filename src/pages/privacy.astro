@@ -1,0 +1,194 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import Icon from '../components/ui/Icon.astro';
+
+const sections = [
+  {
+    id: 'data-collected',
+    title: 'Data yang Kami Kumpulkan',
+    icon: 'database',
+    content: `Kami mengumpulkan informasi berikut saat Anda menggunakan layanan Asri Digital:
+
+• **Informasi Akun:** Nama, alamat email, dan kata sandi yang Anda berikan saat mendaftar.
+• **Informasi Pembayaran:** Detail transaksi diproses melalui mitra pembayaran kami (DompetX). Kami tidak menyimpan informasi kartu kredit atau rekening bank Anda secara langsung.
+• **Data Penggunaan:** Informasi tentang bagaimana Anda berinteraksi dengan platform kami, termasuk halaman yang dikunjungi, waktu akses, dan perangkat yang digunakan.
+• **Komunikasi:** Pesan yang Anda kirimkan kepada kami melalui formulir kontak atau email.`,
+  },
+  {
+    id: 'data-usage',
+    title: 'Penggunaan Data',
+    icon: 'settings',
+    content: `Data yang kami kumpulkan digunakan untuk:
+
+• **Menyediakan Layanan:** Memproses pembelian, mengirimkan akses produk, dan mengelola akun Anda.
+• **Peningkatan Layanan:** Menganalisis penggunaan untuk meningkatkan kualitas produk dan pengalaman pengguna.
+• **Komunikasi:** Mengirimkan informasi terkait transaksi, update produk, dan promosi (dengan persetujuan Anda).
+• **Keamanan:** Melindungi akun Anda dan mencegah aktivitas penipuan.
+• **Kepatuhan Hukum:** Memenuhi kewajiban hukum yang berlaku di Indonesia.`,
+  },
+  {
+    id: 'data-security',
+    title: 'Keamanan Data',
+    icon: 'shield',
+    content: `Keamanan data Anda adalah prioritas kami:
+
+• Semua komunikasi dienkripsi menggunakan protokol HTTPS/TLS.
+• Data disimpan di server yang aman dengan akses terbatas.
+• Kami melakukan audit keamanan secara berkala.
+• Kata sandi disimpan dalam bentuk terenkripsi (hashed).
+• Kami menerapkan kontrol akses berlapis untuk melindungi data Anda.
+• Backup data dilakukan secara teratur untuk mencegah kehilangan data.`,
+  },
+  {
+    id: 'third-party',
+    title: 'Layanan Pihak Ketiga',
+    icon: 'link',
+    content: `Kami menggunakan layanan pihak ketiga berikut:
+
+• **Resend** — Digunakan untuk mengirim email transaksional seperti konfirmasi pembelian, link akses produk, dan komunikasi terkait layanan. Kebijakan privasi: [resend.com/privacy](https://resend.com/privacy).
+• **DompetX** — Digunakan sebagai payment gateway untuk memproses pembayaran Anda. Data pembayaran diproses sepenuhnya oleh DompetX sesuai kebijakan privasi mereka.
+• **Cloudflare** — Digunakan untuk keamanan website, CDN, dan analitik performa.
+
+Kami tidak menjual atau membagikan data pribadi Anda kepada pihak ketiga untuk tujuan pemasaran.`,
+  },
+  {
+    id: 'user-rights',
+    title: 'Hak Pengguna',
+    icon: 'user',
+    content: `Sebagai pengguna, Anda memiliki hak berikut sesuai dengan peraturan perlindungan data di Indonesia:
+
+• **Hak Akses:** Anda berhak mengetahui data apa saja yang kami kumpulkan tentang Anda.
+• **Hak Koreksi:** Anda dapat meminta koreksi data yang tidak akurat.
+• **Hak Penghapusan:** Anda dapat meminta penghapusan data pribadi Anda dari sistem kami.
+• **Hak Portabilitas:** Anda dapat meminta salinan data Anda dalam format yang dapat dibaca.
+• **Hak Keberatan:** Anda dapat menolak penggunaan data Anda untuk tujuan tertentu.
+
+Untuk mengajukan permohonan terkait hak Anda, silakan hubungi kami di support@asridigital.com.`,
+  },
+  {
+    id: 'cookies',
+    title: 'Kebijakan Cookie',
+    icon: 'file-text',
+    content: `Kami menggunakan cookie untuk meningkatkan pengalaman Anda:
+
+• **Cookie Esensial:** Diperlukan untuk fungsi dasar website seperti autentikasi dan keamanan.
+• **Cookie Analitik:** Membantu kami memahami bagaimana pengunjung berinteraksi dengan website.
+• **Cookie Preferensi:** Menyimpan pengaturan Anda seperti bahasa dan preferensi tampilan.
+
+Anda dapat mengatur preferensi cookie melalui pengaturan browser Anda. Perlu diperhatikan bahwa menonaktifkan cookie tertentu dapat mempengaruhi fungsionalitas website.`,
+  },
+  {
+    id: 'privacy-contact',
+    title: 'Kontak untuk Pertanyaan Privasi',
+    icon: 'mail',
+    content: `Jika Anda memiliki pertanyaan atau kekhawatiran mengenai kebijakan privasi kami, silakan hubungi:
+
+**Email:** support@asridigital.com
+**Subjek:** Pertanyaan Privasi
+
+Kami berkomitmen untuk merespons pertanyaan terkait privasi dalam waktu 48 jam.`,
+  },
+];
+---
+
+<BaseLayout
+  title="Kebijakan Privasi - Asri Digital"
+  description="Kebijakan privasi Asri Digital. Pelajari bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda."
+  canonicalUrl="https://asridigital.com/privacy"
+>
+  <Header />
+
+  <main class="flex-1">
+    {/* BREADCRUMB */}
+    <nav class="bg-surface border-b border-border py-3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center gap-2 text-sm text-text-secondary">
+          <li><a href="/" class="hover:text-primary transition-colors">Beranda</a></li>
+          <li><Icon name="chevron-right" size={14} /></li>
+          <li class="text-text-primary font-medium">Kebijakan Privasi</li>
+        </ol>
+      </div>
+    </nav>
+
+    {/* HERO */}
+    <section class="py-16 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
+          <Icon name="shield" size={16} class="text-primary" />
+          <span class="text-sm text-primary font-medium">Privasi</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-text-primary">
+          Kebijakan <span class="text-primary">Privasi</span>
+        </h1>
+        <p class="text-text-secondary text-lg">
+          Terakhir diperbarui: Mei 2026
+        </p>
+      </div>
+    </section>
+
+    {/* CONTENT */}
+    <section class="py-16">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-10 p-6 bg-primary/5 border border-primary/20 rounded-xl">
+          <p class="text-text-main">
+            Asri Digital ("kami") berkomitmen untuk melindungi privasi Anda. Kebijakan privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda saat menggunakan layanan kami.
+          </p>
+        </div>
+
+        {/* TOC */}
+        <nav class="card p-6 mb-10">
+          <h2 class="font-bold text-lg mb-4 text-text-primary">Daftar Isi</h2>
+          <ul class="space-y-2">
+            {sections.map((s) => (
+              <li>
+                <a href={`#${s.id}`} class="flex items-center gap-2 text-primary hover:underline text-sm">
+                  <Icon name="chevron-right" size={14} />
+                  <span>{s.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* SECTIONS */}
+        <div class="space-y-10">
+          {sections.map((s) => (
+            <article id={s.id} class="scroll-mt-24">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon name={s.icon} size={20} class="text-primary" />
+                </div>
+                <h2 class="text-2xl font-bold text-text-primary">{s.title}</h2>
+              </div>
+              <div class="text-text-secondary leading-relaxed whitespace-pre-line pl-13">{s.content}</div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="py-20 bg-surface">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-extrabold mb-4 text-text-primary">Punya Pertanyaan?</h2>
+        <p class="text-text-secondary text-lg mb-8">
+          Jika Anda memiliki pertanyaan tentang kebijakan privasi kami, jangan ragu untuk menghubungi kami.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="/contact" class="btn-primary text-lg px-8 py-4">
+            <Icon name="mail" size={20} />
+            <span>Hubungi Kami</span>
+          </a>
+          <a href="/#produk" class="btn-secondary text-lg px-8 py-4">
+            <Icon name="eye" size={20} />
+            <span>Lihat Produk</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
