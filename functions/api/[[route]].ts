@@ -842,56 +842,12 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      // Create DompetX payment
+      // Create DompetX payment (disabled for testing)
       let paymentUrl = null;
       let paymentData = null;
-      console.log('CHECKOUT: About to call DompetX API');
 
-      try {
-        const dompetxUrl = `${env.DOMPETX_API_URL || env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`;
-        console.log('CHECKOUT: DompetX URL:', dompetxUrl);
-        console.log('CHECKOUT: DompetX API key exists:', !!env.DOMPETX_API_KEY);
-        
-        const dompetxResponse = await fetch(dompetxUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.DOMPETX_API_KEY || ''}`
-          },
-          body: JSON.stringify({
-            ref_id: orderId,
-            amount: finalAmount,
-            currency: 'IDR',
-            description: `Pembelian ${product.title}`,
-            customer_email: customerEmail,
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            payment_method: paymentMethod,
-            callback_url: `${env.APP_URL}/api/webhook/dompetx`,
-            return_url: `${env.APP_URL}/success?order=${orderId}`,
-            expiry_minutes: 60
-          })
-        });
-
-        const dompetxData = await dompetxResponse.json() as any;
-
-        if (dompetxData.success || dompetxData.invoice_url) {
-          paymentUrl = dompetxData.invoice_url || dompetxData.payment_url;
-          paymentData = dompetxData;
-
-          // Update order with DompetX reference
-          await env.DB.prepare(
-            'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
-          )
-            .bind(paymentUrl, dompetxData.invoice_id || dompetxData.id, orderId)
-            .run();
-        }
-      } catch (error) {
-        console.error('CHECKOUT: DompetX error:', error);
-        // Continue even if DompetX fails - we can process manually
-      }
-
-      console.log('CHECKOUT: After DompetX, paymentUrl:', paymentUrl);
+      // Skip DompetX for now - go directly to success
+      paymentUrl = `${env.APP_URL}/success?order=${orderId}`;
 
       // Do not fake a successful payment URL. If payment gateway fails,
       // keep the order as PENDING and ask customer to retry/contact support.
