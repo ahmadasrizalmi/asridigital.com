@@ -951,9 +951,23 @@ export async function onRequest(context: any): Promise<Response> {
             .run();
         } else {
           console.error('DOMPETX: Checkout failed', dompetxData);
+          return jsonResponse({
+            success: false,
+            error: `DompetX error: ${JSON.stringify(dompetxData)}`,
+            orderId,
+            orderCode,
+            dompetxResponse: dompetxData
+          }, 400);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('DOMPETX: Error', error);
+        return jsonResponse({
+          success: false,
+          error: `DompetX exception: ${error.message}`,
+          orderId,
+          orderCode,
+          stack: error.stack
+        }, 500);
       }
 
       // If DompetX fails, fall back to direct success
