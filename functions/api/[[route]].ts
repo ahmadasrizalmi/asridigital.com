@@ -308,7 +308,8 @@ export async function onRequest(context: any): Promise<Response> {
   }
 
   // Debug endpoint for env vars
-  if (route === '/debug/env' && method === 'GET') {
+  const debugRoute = path.replace('/api', '') || '/';
+  if (debugRoute === '/debug/env' && method === 'GET') {
     return jsonResponse({
       hasDompetxKey: !!env.DOMPETX_API_KEY,
       dompetxKeyLen: env.DOMPETX_API_KEY?.length || 0,
