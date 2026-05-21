@@ -29,54 +29,54 @@ const { slug } = Astro.params;
 
   <main class="flex-1">
     <!-- Loading State -->
-    <div id="loading-state" class="text-center py-40">
-      <div class="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-      <p class="text-text-muted">Memuat artikel...</p>
+    <div id="loading-state" class="text-center py-20 sm:py-40 px-4">
+      <div class="animate-spin w-10 h-10 sm:w-12 sm:h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+      <p class="text-text-muted text-sm sm:text-base">Memuat artikel...</p>
     </div>
 
     <!-- Article Content -->
     <div id="article-content" class="hidden">
 
       <!-- Hero Header -->
-      <div id="hero-section" class="relative" style="min-height:340px;background:linear-gradient(135deg,#1a2e0a 0%,#2d4a1a 50%,#5C7A36 100%);">
+      <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#1a2e0a 0%,#2d4a1a 50%,#5C7A36 100%);">
         <div style="position:absolute;inset:0;background:url('https://picsum.photos/seed/asridigital-blog/1200/600') center/cover;opacity:0.15;"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
-        <div style="position:relative;max-width:800px;margin:0 auto;padding:100px 24px 40px;">
+        <div style="position:relative;max-width:800px;margin:0 auto;padding:80px 16px 32px;">
           <!-- Breadcrumb -->
-          <nav style="display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:20px;">
+          <nav style="display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:16px;flex-wrap:wrap;">
             <a href="/" style="color:rgba(255,255,255,0.7);text-decoration:none;">Beranda</a>
             <span>›</span>
             <a href="/blog" style="color:rgba(255,255,255,0.7);text-decoration:none;">Blog</a>
             <span>›</span>
-            <span id="breadcrumb-title" style="color:#fff;"></span>
+            <span id="breadcrumb-title" style="color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
           </nav>
           <!-- Category + Date + Reading Time -->
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-            <span id="post-category" style="padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.2);color:#fff;"></span>
-            <span id="post-date" style="font-size:14px;color:rgba(255,255,255,0.8);"></span>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <span id="post-category" style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.2);color:#fff;"></span>
+            <span id="post-date" style="font-size:13px;color:rgba(255,255,255,0.8);"></span>
             <span style="color:rgba(255,255,255,0.4);">•</span>
-            <span id="reading-time" style="font-size:14px;color:rgba(255,255,255,0.8);"></span>
+            <span id="reading-time" style="font-size:13px;color:rgba(255,255,255,0.8);"></span>
           </div>
           <!-- Title -->
-          <h1 id="post-title" style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:800;color:#fff;line-height:1.2;margin-bottom:20px;"></h1>
+          <h1 id="post-title" style="font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;color:#fff;line-height:1.25;margin-bottom:16px;"></h1>
           <!-- Author -->
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
-              <Icon name="user" size={18} />
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
+              <Icon name="user" size={16} />
             </div>
             <div>
-              <p id="post-author" style="font-weight:600;color:#fff;font-size:15px;"></p>
-              <p style="font-size:13px;color:rgba(255,255,255,0.7);">Author</p>
+              <p id="post-author" style="font-weight:600;color:#fff;font-size:14px;"></p>
+              <p style="font-size:12px;color:rgba(255,255,255,0.7);">Author</p>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Content Area with Sidebar -->
-      <div style="max-width:1200px;margin:0 auto;padding:40px 24px;display:flex;gap:40px;">
+      <div class="blog-content-wrapper">
 
         <!-- Table of Contents - Desktop Sidebar -->
-        <aside id="toc-sidebar" style="width:260px;flex-shrink:0;display:none;">
+        <aside id="toc-sidebar" class="blog-toc-desktop">
           <div style="position:sticky;top:80px;">
             <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737373;margin-bottom:16px;">Daftar Isi</p>
             <nav id="toc-list" style="display:flex;flex-direction:column;gap:4px;"></nav>
@@ -84,79 +84,81 @@ const { slug } = Astro.params;
         </aside>
 
         <!-- Main Article -->
-        <article style="flex:1;min-width:0;max-width:760px;">
+        <article class="blog-article">
 
           <!-- TOC - Mobile Collapsible -->
-          <details id="toc-mobile" style="margin-bottom:32px;border:1px solid #e5e5e5;border-radius:12px;padding:0;display:none;">
-            <summary style="padding:16px 20px;font-weight:600;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+          <details id="toc-mobile" class="blog-toc-mobile">
+            <summary style="padding:14px 16px;font-weight:600;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
               <span>📋 Daftar Isi</span>
-              <span id="toc-arrow" style="transition:transform 0.2s;">▼</span>
+              <span id="toc-arrow" style="transition:transform 0.2s;font-size:12px;">▼</span>
             </summary>
-            <nav id="toc-mobile-list" style="padding:0 20px 16px;display:flex;flex-direction:column;gap:6px;"></nav>
+            <nav id="toc-mobile-list" style="padding:0 16px 14px;display:flex;flex-direction:column;gap:6px;"></nav>
           </details>
 
           <!-- Featured Image -->
-          <div id="post-image-container" style="margin-bottom:32px;border-radius:12px;overflow:hidden;display:none;">
-            <img id="post-image" style="width:100%;height:auto;" alt="" />
+          <div id="post-image-container" style="margin-bottom:24px;border-radius:12px;overflow:hidden;display:none;">
+            <img id="post-image" style="width:100%;height:auto;" alt="" loading="lazy" />
           </div>
 
           <!-- Content -->
           <div id="post-content" class="prose"></div>
 
           <!-- Stat Highlight Cards (auto-generated) -->
-          <div id="stat-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:32px 0;"></div>
+          <div id="stat-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0;"></div>
 
           <!-- Tags -->
-          <div id="post-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin:32px 0;"></div>
+          <div id="post-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin:24px 0;"></div>
 
           <!-- Share Bar -->
-          <div style="display:flex;align-items:center;gap:16px;padding:24px 0;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;margin:32px 0;">
-            <span style="font-size:14px;font-weight:600;color:#262626;">Bagikan:</span>
-            <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#25D366;color:#fff;font-size:13px;font-weight:500;text-decoration:none;">
-              WhatsApp
-            </a>
-            <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#1DA1F2;color:#fff;font-size:13px;font-weight:500;text-decoration:none;">
-              Twitter
-            </a>
-            <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#1877F2;color:#fff;font-size:13px;font-weight:500;text-decoration:none;">
-              Facebook
-            </a>
-            <button id="share-copy" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#f5f5f5;color:#262626;font-size:13px;font-weight:500;border:none;cursor:pointer;">
-              📋 Salin Link
-            </button>
+          <div class="blog-share-bar">
+            <span style="font-size:13px;font-weight:600;color:#262626;margin-bottom:4px;">Bagikan:</span>
+            <div class="blog-share-buttons">
+              <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-wa">
+                💬 WhatsApp
+              </a>
+              <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-tw">
+                🐦 Twitter
+              </a>
+              <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-fb">
+                f Facebook
+              </a>
+              <button id="share-copy" class="blog-share-btn blog-share-copy">
+                📋 Salin Link
+              </button>
+            </div>
           </div>
 
           <!-- Author Box -->
-          <div id="author-box" style="display:flex;gap:20px;padding:24px;background:#f9fafb;border-radius:12px;margin:32px 0;">
-            <div style="width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,#5C7A36,#4A6628);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <Icon name="user" size={28} />
+          <div class="blog-author-box">
+            <div class="blog-author-avatar">
+              <Icon name="user" size={24} />
             </div>
-            <div>
-              <p id="author-box-name" style="font-weight:700;font-size:18px;color:#171717;margin-bottom:4px;"></p>
-              <p style="font-size:14px;color:#737373;margin-bottom:8px;">Content Writer di Asri Digital</p>
-              <p style="font-size:14px;color:#525252;line-height:1.6;">Menulis tentang AI, teknologi, dan produktivitas untuk membantu profesional Indonesia berkembang di era digital.</p>
+            <div class="blog-author-info">
+              <p id="author-box-name" class="blog-author-name"></p>
+              <p class="blog-author-role">Content Writer di Asri Digital</p>
+              <p class="blog-author-bio">Menulis tentang AI, teknologi, dan produktivitas untuk membantu profesional Indonesia berkembang di era digital.</p>
             </div>
           </div>
 
           <!-- Related Posts -->
-          <div id="related-posts" style="margin-top:48px;display:none;">
-            <h2 style="font-size:1.5rem;font-weight:700;color:#171717;margin-bottom:24px;">📖 Artikel Terkait</h2>
-            <div id="related-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;"></div>
+          <div id="related-posts" style="margin-top:40px;display:none;">
+            <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin-bottom:20px;">📖 Artikel Terkait</h2>
+            <div id="related-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;"></div>
           </div>
         </article>
       </div>
 
-      <!-- Floating Share - Desktop -->
-      <div id="floating-share" style="position:fixed;left:max(calc((100vw - 1200px)/2 - 80px),16px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:12px;z-index:50;">
-        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" style="width:44px;height:44px;border-radius:999px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Share WhatsApp">💬</a>
-        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" style="width:44px;height:44px;border-radius:999px;background:#1DA1F2;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Share Twitter">🐦</a>
-        <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" style="width:44px;height:44px;border-radius:999px;background:#1877F2;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Share Facebook">f</a>
-        <button id="float-copy" style="width:44px;height:44px;border-radius:999px;background:#f5f5f5;color:#262626;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Salin Link">📋</button>
+      <!-- Floating Share - Desktop Only -->
+      <div id="floating-share" class="blog-floating-share">
+        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#25D366;" title="Share WhatsApp">💬</a>
+        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1DA1F2;" title="Share Twitter">🐦</a>
+        <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1877F2;" title="Share Facebook">f</a>
+        <button id="float-copy" class="blog-float-btn" style="background:#f5f5f5;color:#262626;" title="Salin Link">📋</button>
       </div>
     </div>
 
     <!-- Error State -->
-    <div id="error-state" class="text-center py-20 hidden">
+    <div id="error-state" class="text-center py-20 px-4 hidden">
       <Icon name="alert-circle" size={48} />
       <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin:16px 0 8px;">Artikel Tidak Ditemukan</h2>
       <p style="color:#737373;margin-bottom:24px;">Maaf, artikel yang Anda cari tidak tersedia.</p>
@@ -321,6 +323,14 @@ const { slug } = Astro.params;
       const contentEl = document.getElementById('post-content');
       contentEl.innerHTML = renderMarkdown(post.content);
 
+      // Wrap tables for horizontal scroll
+      contentEl.querySelectorAll('table').forEach(table => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-wrapper';
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+      });
+
       // Generate TOC
       generateTOC();
 
@@ -329,7 +339,7 @@ const { slug } = Astro.params;
         try {
           const tags = JSON.parse(post.tags);
           document.getElementById('post-tags').innerHTML = tags.map(t =>
-            `<span style="padding:4px 14px;background:#f5f5f5;border-radius:999px;font-size:13px;color:#525252;">#${t}</span>`
+            `<span style="padding:4px 12px;background:#f5f5f5;border-radius:999px;font-size:12px;color:#525252;">#${t}</span>`
           ).join('');
         } catch(e) {}
       }
@@ -343,13 +353,13 @@ const { slug } = Astro.params;
         const grid = document.getElementById('related-grid');
         grid.innerHTML = relatedPosts.map(r => `
           <a href="/blog/${r.slug}" style="border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-            <div style="height:140px;background:linear-gradient(135deg,#5C7A36 0%,#4A6628 100%);display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:3rem;">📝</span>
+            <div style="height:120px;background:linear-gradient(135deg,#5C7A36 0%,#4A6628 100%);display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:2.5rem;">📝</span>
             </div>
-            <div style="padding:16px;">
+            <div style="padding:14px;">
               <p style="font-size:11px;color:#737373;margin-bottom:4px;">${r.category || ''}</p>
-              <h3 style="font-size:15px;font-weight:600;color:#171717;margin-bottom:8px;line-height:1.4;">${r.title}</h3>
-              <p style="font-size:13px;color:#737373;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${r.excerpt || ''}</p>
+              <h3 style="font-size:14px;font-weight:600;color:#171717;margin-bottom:6px;line-height:1.4;">${r.title}</h3>
+              <p style="font-size:12px;color:#737373;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${r.excerpt || ''}</p>
             </div>
           </a>
         `).join('');
@@ -372,49 +382,288 @@ const { slug } = Astro.params;
 </script>
 
 <style>
-  /* Prose styles */
-  .prose { color: #262626; line-height: 1.85; font-size: 1.05rem; }
-  .prose h1, .prose h2, .prose h3, .prose h4 { color: #171717; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; line-height: 1.3; scroll-margin-top: 80px; }
-  .prose h2 { font-size: 1.5rem; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
-  .prose h3 { font-size: 1.25rem; font-weight: 600; }
-  .prose p { margin-bottom: 1.25rem; }
-  .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.25rem; padding-left: 0; }
+  /* ===== Content Layout ===== */
+  .blog-content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: flex;
+    gap: 40px;
+  }
+
+  .blog-article {
+    flex: 1;
+    min-width: 0;
+    max-width: 760px;
+  }
+
+  /* ===== TOC Desktop ===== */
+  .blog-toc-desktop {
+    width: 220px;
+    flex-shrink: 0;
+    display: none;
+  }
+
+  /* ===== TOC Mobile ===== */
+  .blog-toc-mobile {
+    margin-bottom: 24px;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 0;
+    display: none;
+  }
+
+  /* ===== Table Wrapper ===== */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+  }
+
+  .table-wrapper table {
+    margin-bottom: 0;
+    min-width: 500px;
+  }
+
+  /* ===== Share Bar ===== */
+  .blog-share-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 0;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+    margin: 24px 0;
+  }
+
+  .blog-share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .blog-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .blog-share-wa { background: #25D366; color: #fff; }
+  .blog-share-tw { background: #1DA1F2; color: #fff; }
+  .blog-share-fb { background: #1877F2; color: #fff; }
+  .blog-share-copy { background: #f5f5f5; color: #262626; }
+
+  /* ===== Author Box ===== */
+  .blog-author-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: 24px 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin: 24px 0;
+  }
+
+  .blog-author-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #5C7A36, #4A6628);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  .blog-author-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: #171717;
+    margin-bottom: 4px;
+  }
+
+  .blog-author-role {
+    font-size: 13px;
+    color: #737373;
+    margin-bottom: 8px;
+  }
+
+  .blog-author-bio {
+    font-size: 13px;
+    color: #525252;
+    line-height: 1.6;
+  }
+
+  /* ===== Floating Share ===== */
+  .blog-floating-share {
+    position: fixed;
+    left: max(calc((100vw - 1200px) / 2 - 80px), 16px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 50;
+  }
+
+  .blog-float-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* ===== Prose ===== */
+  .prose { color: #262626; line-height: 1.8; font-size: 1rem; }
+  .prose h1, .prose h2, .prose h3, .prose h4 { color: #171717; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; line-height: 1.3; scroll-margin-top: 70px; }
+  .prose h2 { font-size: 1.35rem; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+  .prose h3 { font-size: 1.15rem; font-weight: 600; }
+  .prose p { margin-bottom: 1rem; }
+  .prose ul, .prose ol { margin-left: 1.25rem; margin-bottom: 1rem; padding-left: 0; }
   .prose ul { list-style-type: disc; }
   .prose ol { list-style-type: decimal; }
-  .prose li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
-  .prose li > ul, .prose li > ol { margin-top: 0.5rem; margin-bottom: 0; }
+  .prose li { margin-bottom: 0.4rem; padding-left: 0.25rem; }
+  .prose li > ul, .prose li > ol { margin-top: 0.4rem; margin-bottom: 0; }
   .prose strong { font-weight: 700; color: #171717; }
-  .prose code { background-color: #f5f5f5; padding: 0.2em 0.4em; border-radius: 0.25rem; font-size: 0.875em; font-family: ui-monospace, monospace; }
-  .prose pre { background-color: #171717; color: #e5e5e5; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1.25rem; }
-  .prose pre code { background-color: transparent; padding: 0; color: inherit; }
+  .prose code { background-color: #f5f5f5; padding: 0.15em 0.35em; border-radius: 0.25rem; font-size: 0.85em; font-family: ui-monospace, monospace; word-break: break-word; }
+  .prose pre { background-color: #171717; color: #e5e5e5; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; -webkit-overflow-scrolling: touch; }
+  .prose pre code { background-color: transparent; padding: 0; color: inherit; word-break: normal; }
   .prose a { color: #5C7A36; text-decoration: underline; text-underline-offset: 2px; }
   .prose a:hover { color: #4A6628; }
-  .prose blockquote { border-left: 4px solid #5C7A36; padding: 1rem 1.25rem; margin: 1.5rem 0; background: linear-gradient(135deg, #f0f7e6 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #3a5a1e; font-size: 1.1rem; font-style: italic; }
+  .prose blockquote { border-left: 4px solid #5C7A36; padding: 0.75rem 1rem; margin: 1.25rem 0; background: linear-gradient(135deg, #f0f7e6 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #3a5a1e; font-size: 1rem; font-style: italic; }
   .prose blockquote p:last-child { margin-bottom: 0; }
-  .prose hr { border: none; border-top: 1px solid #e5e5e5; margin: 2.5rem 0; }
-  .prose img { border-radius: 12px; margin: 1.5rem 0; }
-  .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.25rem; border-radius: 8px; overflow: hidden; }
-  .prose th, .prose td { border: 1px solid #e5e5e5; padding: 10px 14px; text-align: left; }
+  .prose hr { border: none; border-top: 1px solid #e5e5e5; margin: 2rem 0; }
+  .prose img { border-radius: 12px; margin: 1.25rem 0; max-width: 100%; height: auto; }
+  .prose table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+  .prose th, .prose td { border: 1px solid #e5e5e5; padding: 8px 12px; text-align: left; font-size: 0.9rem; }
   .prose th { background-color: #f9fafb; font-weight: 600; }
   .prose tr:nth-child(even) { background-color: #fafafa; }
 
-  /* Callout boxes */
-  .callout { padding: 16px 20px; border-radius: 12px; margin: 24px 0; font-size: 0.95rem; line-height: 1.6; }
+  /* ===== Callout boxes ===== */
+  .callout { padding: 14px 16px; border-radius: 12px; margin: 20px 0; font-size: 0.9rem; line-height: 1.6; }
   .callout strong { display: inline; }
   .callout-tip { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
   .callout-warning { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
   .callout-info { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
 
-  /* Stat highlight */
-  .stat-highlight { display: inline-flex; align-items: baseline; gap: 6px; background: linear-gradient(135deg, #f0f7e6, #e8f5e0); padding: 2px 10px; border-radius: 6px; }
-  .stat-number { font-size: 1.1em; font-weight: 800; color: #5C7A36; }
+  /* ===== Stat highlight ===== */
+  .stat-highlight { display: inline-flex; align-items: baseline; gap: 4px; background: linear-gradient(135deg, #f0f7e6, #e8f5e0); padding: 2px 8px; border-radius: 6px; }
+  .stat-number { font-size: 1em; font-weight: 800; color: #5C7A36; }
 
-  /* Responsive */
-  @media (min-width: 1024px) {
-    #toc-sidebar { display: block !important; }
+  /* ===== Responsive: Tablet (640px+) ===== */
+  @media (min-width: 640px) {
+    .blog-content-wrapper {
+      padding: 32px 24px;
+    }
+
+    .blog-article {
+      max-width: 700px;
+    }
+
+    .blog-author-box {
+      flex-direction: row;
+      text-align: left;
+      padding: 24px;
+    }
+
+    .blog-author-avatar {
+      width: 64px;
+      height: 64px;
+    }
+
+    .blog-author-name {
+      font-size: 18px;
+    }
+
+    .prose { font-size: 1.05rem; }
+    .prose h2 { font-size: 1.5rem; }
+    .prose h3 { font-size: 1.25rem; }
+    .prose blockquote { padding: 1rem 1.25rem; font-size: 1.05rem; }
   }
+
+  /* ===== Responsive: Desktop (1024px+) ===== */
+  @media (min-width: 1024px) {
+    .blog-content-wrapper {
+      padding: 40px 24px;
+    }
+
+    .blog-toc-desktop {
+      display: block !important;
+    }
+
+    .blog-article {
+      max-width: 760px;
+    }
+
+    .blog-share-bar {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .prose h2 { font-size: 1.5rem; }
+    .prose h3 { font-size: 1.25rem; }
+  }
+
+  /* ===== Responsive: Large Desktop (1280px+) ===== */
+  @media (min-width: 1280px) {
+    .blog-floating-share {
+      display: flex !important;
+    }
+  }
+
+  /* ===== Mobile: TOC show ===== */
   @media (max-width: 1023px) {
-    #toc-mobile { display: block !important; }
-    #floating-share { display: none !important; }
+    .blog-toc-mobile {
+      display: block !important;
+    }
+
+    .blog-floating-share {
+      display: none !important;
+    }
+  }
+
+  /* ===== Mobile: Small (under 480px) ===== */
+  @media (max-width: 479px) {
+    .blog-content-wrapper {
+      padding: 16px 12px;
+    }
+
+    .prose { font-size: 0.95rem; line-height: 1.75; }
+    .prose h2 { font-size: 1.2rem; }
+    .prose h3 { font-size: 1.05rem; }
+    .prose blockquote { padding: 0.6rem 0.8rem; font-size: 0.95rem; }
+    .prose pre { padding: 0.75rem; font-size: 0.8rem; }
+    .prose th, .prose td { padding: 6px 8px; font-size: 0.8rem; }
+
+    .blog-share-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .blog-author-avatar {
+      width: 48px;
+      height: 48px;
+    }
   }
 </style>
