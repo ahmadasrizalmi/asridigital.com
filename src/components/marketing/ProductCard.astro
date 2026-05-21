@@ -12,7 +12,6 @@ const product = {
   ...rawProduct,
   shortDescription: rawProduct.shortDescription ?? rawProduct.short_description ?? null,
   compareAtPrice: rawProduct.compareAtPrice ?? rawProduct.compare_at_price ?? null,
-  gptUrl: rawProduct.gptUrl ?? rawProduct.gpt_url ?? null,
   imageIcon: rawProduct.imageIcon ?? rawProduct.image_icon ?? null,
   isFeatured: rawProduct.isFeatured ?? rawProduct.is_featured ?? false,
 };
@@ -108,18 +107,6 @@ const discount = hasDiscount
           <Icon name="shopping-cart" size={16} />
           Beli
         </a>
-        
-        {product.gptUrl && (
-          <a 
-            href={product.gptUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn-tertiary px-3"
-            title="Preview GPT"
-          >
-            <Icon name="external-link" size={16} />
-          </a>
-        )}
       </div>
       
       {/* All-Access Badge */}
