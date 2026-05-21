@@ -314,7 +314,7 @@ const { slug } = Astro.params;
       if (post.image_url) {
         const container = document.getElementById('post-image-container');
         const img = document.getElementById('post-image');
-        img.src = post.image_url;
+        img.src = `${post.image_url}?v=${Date.now()}`;
         img.alt = post.title;
         container.style.display = 'block';
       }

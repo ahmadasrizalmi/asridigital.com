@@ -88,7 +88,7 @@ function getCategoryMeta(category: string) {
             <article class="card-hover overflow-hidden group" data-category={post.category?.toLowerCase() || 'general'}>
               <div class="relative overflow-hidden">
                 {post.image_url ? (
-                  <img src={post.image_url} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
+                  <img src={`${post.image_url}?v=${Date.now()}`} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
                 ) : (
                   <div class={`w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center`}>
                     <Icon name={icon} size={48} class={iconColor} />
