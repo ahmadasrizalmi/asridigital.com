@@ -307,6 +307,17 @@ export async function onRequest(context: any): Promise<Response> {
     });
   }
 
+  // Debug endpoint for env vars
+  if (route === '/debug/env' && method === 'GET') {
+    return jsonResponse({
+      hasDompetxKey: !!env.DOMPETX_API_KEY,
+      dompetxKeyLen: env.DOMPETX_API_KEY?.length || 0,
+      dompetxKeyPrefix: env.DOMPETX_API_KEY?.substring(0, 10) || 'MISSING',
+      dompetxUrl: env.DOMPETX_API_URL || 'MISSING',
+      appUrl: env.APP_URL || 'MISSING'
+    });
+  }
+
   // Rate limiting for auth endpoints
   if (path.includes('/auth/login') || path.includes('/auth/register') || path.includes('/auth/forgot-password')) {
     if (!checkRateLimit(clientIp, 10, 60000)) { // 10 requests per minute
