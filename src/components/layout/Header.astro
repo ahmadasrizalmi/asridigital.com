@@ -53,27 +53,27 @@ const navLinks = [
   </div>
 
   <!-- Mobile Menu - Responsive width -->
-  <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-50">
-    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="mobile-menu-overlay"></div>
-    <div class="absolute right-0 top-0 h-full w-72 sm:w-80 bg-surface border-l border-border p-4 sm:p-6 shadow-xl">
-      <div class="flex justify-between items-center mb-8 sm:mb-10">
-        <span class="font-bold text-xl text-text-primary">Menu</span>
-        <button id="mobile-menu-close" class="p-2 hover:bg-background rounded-lg transition-colors text-text-secondary">
+  <div id="mobile-menu" class="hidden md:hidden" style="position:fixed;inset:0;z-index:9999;">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);" id="mobile-menu-overlay"></div>
+    <div style="position:absolute;right:0;top:0;height:100%;width:280px;background:#FFFFFF;border-left:1px solid #E5E5E5;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+        <span style="font-weight:700;font-size:20px;color:#171717;">Menu</span>
+        <button id="mobile-menu-close" style="padding:8px;border-radius:8px;background:transparent;border:none;cursor:pointer;">
           <Icon name="x" size={24} />
         </button>
       </div>
 
-      <nav class="flex flex-col gap-2">
+      <nav style="display:flex;flex-direction:column;gap:8px;">
         {navLinks.map((link) => (
           <a
             href={link.href}
-            class="px-4 py-3 text-text-main hover:text-primary hover:bg-primary/5 rounded-lg transition-colors font-medium text-base"
+            style="display:block;padding:12px 16px;color:#262626;font-weight:500;font-size:16px;text-decoration:none;border-radius:8px;"
           >
             {link.label}
           </a>
         ))}
 
-        <hr class="border-border my-4" />
+        <hr style="border:none;border-top:1px solid #E5E5E5;margin:16px 0;" />
 
         <a href="/dashboard" class="btn-tertiary justify-center w-full">
           <Icon name="user" size={18} />
