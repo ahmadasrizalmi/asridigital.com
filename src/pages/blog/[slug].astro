@@ -4,7 +4,6 @@ import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
-// Fetch blog post slugs from API at build time
 export async function getStaticPaths() {
   const apiBase = 'https://asridigital.com';
   try {
@@ -15,7 +14,6 @@ export async function getStaticPaths() {
       params: { slug: post.slug },
     }));
   } catch (e) {
-    console.error('Failed to fetch blog slugs:', e);
     return [];
   }
 }
@@ -25,117 +23,172 @@ const { slug } = Astro.params;
 
 <BaseLayout title="Blog - Asri Digital">
   <Header />
-  
-  <main class="flex-1 py-12">
-    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Loading State -->
-      <div id="loading-state" class="text-center py-20">
-        <div class="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p class="text-text-muted">Memuat artikel...</p>
-      </div>
-      
-      <!-- Article Content -->
-      <div id="article-content" class="hidden">
-        <!-- Breadcrumb -->
-        <nav class="flex items-center gap-2 text-sm text-text-muted mb-8">
-          <a href="/" class="hover:text-primary">Beranda</a>
-          <Icon name="chevron-right" size={16} />
-          <a href="/blog" class="hover:text-primary">Blog</a>
-          <Icon name="chevron-right" size={16} />
-          <span id="breadcrumb-title" class="text-text-main"></span>
-        </nav>
-        
-        <!-- Header -->
-        <header class="mb-8">
-          <div class="flex items-center gap-3 mb-4">
-            <span id="post-category" class="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"></span>
-            <span id="post-date" class="text-sm text-text-muted"></span>
+
+  <!-- Reading Progress Bar -->
+  <div id="reading-progress" style="position:fixed;top:0;left:0;height:3px;background:#5C7A36;z-index:9999;width:0;transition:width 0.1s;"></div>
+
+  <main class="flex-1">
+    <!-- Loading State -->
+    <div id="loading-state" class="text-center py-40">
+      <div class="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+      <p class="text-text-muted">Memuat artikel...</p>
+    </div>
+
+    <!-- Article Content -->
+    <div id="article-content" class="hidden">
+
+      <!-- Hero Header -->
+      <div id="hero-section" class="relative" style="min-height:340px;background:linear-gradient(135deg,#1a2e0a 0%,#2d4a1a 50%,#5C7A36 100%);">
+        <div style="position:absolute;inset:0;background:url('https://picsum.photos/seed/asridigital-blog/1200/600') center/cover;opacity:0.15;"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
+        <div style="position:relative;max-width:800px;margin:0 auto;padding:100px 24px 40px;">
+          <!-- Breadcrumb -->
+          <nav style="display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:20px;">
+            <a href="/" style="color:rgba(255,255,255,0.7);text-decoration:none;">Beranda</a>
+            <span>›</span>
+            <a href="/blog" style="color:rgba(255,255,255,0.7);text-decoration:none;">Blog</a>
+            <span>›</span>
+            <span id="breadcrumb-title" style="color:#fff;"></span>
+          </nav>
+          <!-- Category + Date + Reading Time -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+            <span id="post-category" style="padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.2);color:#fff;"></span>
+            <span id="post-date" style="font-size:14px;color:rgba(255,255,255,0.8);"></span>
+            <span style="color:rgba(255,255,255,0.4);">•</span>
+            <span id="reading-time" style="font-size:14px;color:rgba(255,255,255,0.8);"></span>
           </div>
-          
-          <h1 id="post-title" class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4"></h1>
-          
-          <div class="flex items-center gap-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <Icon name="user" size={18} class="text-primary" />
-              </div>
-              <div>
-                <p id="post-author" class="font-medium text-text-primary">Admin</p>
-                <p class="text-sm text-text-muted">Author</p>
-              </div>
+          <!-- Title -->
+          <h1 id="post-title" style="font-size:clamp(1.75rem,4vw,2.5rem);font-weight:800;color:#fff;line-height:1.2;margin-bottom:20px;"></h1>
+          <!-- Author -->
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
+              <Icon name="user" size={18} />
+            </div>
+            <div>
+              <p id="post-author" style="font-weight:600;color:#fff;font-size:15px;"></p>
+              <p style="font-size:13px;color:rgba(255,255,255,0.7);">Author</p>
             </div>
           </div>
-        </header>
-        
-        <!-- Featured Image -->
-        <div id="post-image-container" class="mb-8 rounded-xl overflow-hidden hidden">
-          <img id="post-image" class="w-full h-auto" alt="" />
-        </div>
-        
-        <!-- Content -->
-        <div id="post-content" class="prose prose-lg max-w-none mb-12"></div>
-        
-        <!-- Tags -->
-        <div id="post-tags" class="flex flex-wrap gap-2 mb-8"></div>
-        
-        <!-- Share -->
-        <div class="flex items-center gap-4 py-6 border-t border-border">
-          <span class="text-sm font-medium text-text-main">Share:</span>
-          <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-            <Icon name="twitter" size={20} />
-          </a>
-          <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-            <Icon name="facebook" size={20} />
-          </a>
-          <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-            <Icon name="message-circle" size={20} />
-          </a>
-        </div>
-        
-        <!-- Related Posts -->
-        <div id="related-posts" class="mt-12 hidden">
-          <h2 class="text-2xl font-bold text-text-primary mb-6">Artikel Terkait</h2>
-          <div id="related-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
         </div>
       </div>
-      
-      <!-- Error State -->
-      <div id="error-state" class="text-center py-20 hidden">
-        <Icon name="alert-circle" size={48} class="text-red-500 mx-auto mb-4" />
-        <h2 class="text-xl font-bold text-text-primary mb-2">Artikel Tidak Ditemukan</h2>
-        <p class="text-text-secondary mb-6">Maaf, artikel yang Anda cari tidak tersedia.</p>
-        <a href="/blog" class="btn-primary">
-          <Icon name="arrow-left" size={18} />
-          Kembali ke Blog
-        </a>
+
+      <!-- Content Area with Sidebar -->
+      <div style="max-width:1200px;margin:0 auto;padding:40px 24px;display:flex;gap:40px;">
+
+        <!-- Table of Contents - Desktop Sidebar -->
+        <aside id="toc-sidebar" style="width:260px;flex-shrink:0;display:none;">
+          <div style="position:sticky;top:80px;">
+            <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737373;margin-bottom:16px;">Daftar Isi</p>
+            <nav id="toc-list" style="display:flex;flex-direction:column;gap:4px;"></nav>
+          </div>
+        </aside>
+
+        <!-- Main Article -->
+        <article style="flex:1;min-width:0;max-width:760px;">
+
+          <!-- TOC - Mobile Collapsible -->
+          <details id="toc-mobile" style="margin-bottom:32px;border:1px solid #e5e5e5;border-radius:12px;padding:0;display:none;">
+            <summary style="padding:16px 20px;font-weight:600;font-size:15px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+              <span>📋 Daftar Isi</span>
+              <span id="toc-arrow" style="transition:transform 0.2s;">▼</span>
+            </summary>
+            <nav id="toc-mobile-list" style="padding:0 20px 16px;display:flex;flex-direction:column;gap:6px;"></nav>
+          </details>
+
+          <!-- Featured Image -->
+          <div id="post-image-container" style="margin-bottom:32px;border-radius:12px;overflow:hidden;display:none;">
+            <img id="post-image" style="width:100%;height:auto;" alt="" />
+          </div>
+
+          <!-- Content -->
+          <div id="post-content" class="prose"></div>
+
+          <!-- Stat Highlight Cards (auto-generated) -->
+          <div id="stat-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:32px 0;"></div>
+
+          <!-- Tags -->
+          <div id="post-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin:32px 0;"></div>
+
+          <!-- Share Bar -->
+          <div style="display:flex;align-items:center;gap:16px;padding:24px 0;border-top:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;margin:32px 0;">
+            <span style="font-size:14px;font-weight:600;color:#262626;">Bagikan:</span>
+            <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#25D366;color:#fff;font-size:13px;font-weight:500;text-decoration:none;">
+              WhatsApp
+            </a>
+            <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#1DA1F2;color:#fff;font-size:13px;font-weight:500;text-decoration:none;">
+              Twitter
+            </a>
+            <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#1877F2;color:#fff;font-size:13px;font-weight:500;text-decoration:none;">
+              Facebook
+            </a>
+            <button id="share-copy" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#f5f5f5;color:#262626;font-size:13px;font-weight:500;border:none;cursor:pointer;">
+              📋 Salin Link
+            </button>
+          </div>
+
+          <!-- Author Box -->
+          <div id="author-box" style="display:flex;gap:20px;padding:24px;background:#f9fafb;border-radius:12px;margin:32px 0;">
+            <div style="width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,#5C7A36,#4A6628);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <Icon name="user" size={28} />
+            </div>
+            <div>
+              <p id="author-box-name" style="font-weight:700;font-size:18px;color:#171717;margin-bottom:4px;"></p>
+              <p style="font-size:14px;color:#737373;margin-bottom:8px;">Content Writer di Asri Digital</p>
+              <p style="font-size:14px;color:#525252;line-height:1.6;">Menulis tentang AI, teknologi, dan produktivitas untuk membantu profesional Indonesia berkembang di era digital.</p>
+            </div>
+          </div>
+
+          <!-- Related Posts -->
+          <div id="related-posts" style="margin-top:48px;display:none;">
+            <h2 style="font-size:1.5rem;font-weight:700;color:#171717;margin-bottom:24px;">📖 Artikel Terkait</h2>
+            <div id="related-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;"></div>
+          </div>
+        </article>
       </div>
-    </article>
+
+      <!-- Floating Share - Desktop -->
+      <div id="floating-share" style="position:fixed;left:max(calc((100vw - 1200px)/2 - 80px),16px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;gap:12px;z-index:50;">
+        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" style="width:44px;height:44px;border-radius:999px;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Share WhatsApp">💬</a>
+        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" style="width:44px;height:44px;border-radius:999px;background:#1DA1F2;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Share Twitter">🐦</a>
+        <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" style="width:44px;height:44px;border-radius:999px;background:#1877F2;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Share Facebook">f</a>
+        <button id="float-copy" style="width:44px;height:44px;border-radius:999px;background:#f5f5f5;color:#262626;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);" title="Salin Link">📋</button>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="text-center py-20 hidden">
+      <Icon name="alert-circle" size={48} />
+      <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin:16px 0 8px;">Artikel Tidak Ditemukan</h2>
+      <p style="color:#737373;margin-bottom:24px;">Maaf, artikel yang Anda cari tidak tersedia.</p>
+      <a href="/blog" class="btn-primary">← Kembali ke Blog</a>
+    </div>
   </main>
-  
+
   <Footer />
 </BaseLayout>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
 <script define:vars={{ slug }}>
   const API_BASE = '/api';
-  
+
   function formatDate(dateStr) {
-    return new Date(dateStr).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   }
-  
+
+  function calcReadingTime(text) {
+    const words = text.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / 200);
+    return `${minutes} menit baca`;
+  }
+
   const categoryColors = {
-    'AI': 'bg-primary/10 text-primary',
-    'Tips & Trik': 'bg-red-100 text-red-600',
-    'Tutorial': 'bg-blue-100 text-blue-600',
-    'Studi Kasus': 'bg-amber-100 text-amber-600',
-    'Productivity': 'bg-purple-100 text-purple-600',
-    'general': 'bg-gray-100 text-gray-600',
+    'AI': { bg: 'rgba(92,122,54,0.15)', color: '#fff' },
+    'Tips & Trik': { bg: 'rgba(220,38,38,0.15)', color: '#fff' },
+    'Tutorial': { bg: 'rgba(59,130,246,0.15)', color: '#fff' },
+    'Studi Kasus': { bg: 'rgba(245,158,11,0.15)', color: '#fff' },
+    'Productivity': { bg: 'rgba(147,51,234,0.15)', color: '#fff' },
   };
-  
+
   async function waitForMarked(maxWait = 5000) {
     const start = Date.now();
     while (typeof marked === 'undefined' && Date.now() - start < maxWait) {
@@ -143,234 +196,225 @@ const { slug } = Astro.params;
     }
     return typeof marked !== 'undefined';
   }
-  
+
+  // Custom renderer for special blocks
   function renderMarkdown(content) {
-    if (typeof marked !== 'undefined') {
-      marked.setOptions({ breaks: true, gfm: true });
-      return marked.parse(content);
+    if (typeof marked === 'undefined') {
+      return content.replace(/\n/g, '<br>');
     }
-    // Fallback: basic markdown to HTML
-    return content
-      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^\- (.*$)/gm, '<li>$1</li>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/^/, '<p>')
-      .replace(/$/, '</p>');
+    marked.setOptions({ breaks: true, gfm: true });
+
+    // Pre-process: convert [!TIP], [!WARNING], [!INFO] blocks
+    content = content.replace(/>\s*\[!TIP\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
+      return `<div class="callout callout-tip">💡 <strong>Tips:</strong>${text}</div>`;
+    });
+    content = content.replace(/>\s*\[!WARNING\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
+      return `<div class="callout callout-warning">⚠️ <strong>Peringatan:</strong>${text}</div>`;
+    });
+    content = content.replace(/>\s*\[!INFO\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
+      return `<div class="callout callout-info">ℹ️ <strong>Info:</strong>${text}</div>`;
+    });
+
+    // Pre-process: highlight stats like **67%** or **10x** into stat cards
+    content = content.replace(/\*\*(\d+[%xX]?(?:\s*(?:perusahaan|juta|ribu|miliar|triliun))?)\*\*\s*([^\n<]+)/g, (_, num, desc) => {
+      return `<span class="stat-highlight"><span class="stat-number">${num}</span><span class="stat-desc">${desc.trim()}</span></span>`;
+    });
+
+    return marked.parse(content);
   }
-  
+
+  function generateTOC() {
+    const headings = document.querySelectorAll('#post-content h2, #post-content h3');
+    const tocList = document.getElementById('toc-list');
+    const tocMobileList = document.getElementById('toc-mobile-list');
+    if (headings.length < 3) return;
+
+    let html = '';
+    headings.forEach((h, i) => {
+      const id = `heading-${i}`;
+      h.id = id;
+      const isH3 = h.tagName === 'H3';
+      const style = isH3 ? 'padding-left:16px;font-size:13px;' : 'font-size:14px;font-weight:600;';
+      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#5C7A36'" onmouseout="this.style.style='#525252'">${h.textContent}</a>`;
+    });
+    if (tocList) tocList.innerHTML = html;
+    if (tocMobileList) tocMobileList.innerHTML = html;
+
+    document.getElementById('toc-sidebar').style.display = 'block';
+    document.getElementById('toc-mobile').style.display = 'block';
+  }
+
+  function setupReadingProgress() {
+    const bar = document.getElementById('reading-progress');
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      bar.style.width = `${Math.min(progress, 100)}%`;
+    });
+  }
+
+  function setupShareLinks(post) {
+    const postUrl = window.location.href;
+    const title = encodeURIComponent(post.title);
+    const waUrl = `https://api.whatsapp.com/send?text=${title}%20${encodeURIComponent(postUrl)}`;
+    const twUrl = `https://twitter.com/intent/tweet?text=${title}&url=${encodeURIComponent(postUrl)}`;
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
+
+    ['share-whatsapp', 'float-whatsapp'].forEach(id => { const el = document.getElementById(id); if (el) el.href = waUrl; });
+    ['share-twitter', 'float-twitter'].forEach(id => { const el = document.getElementById(id); if (el) el.href = twUrl; });
+    ['share-facebook', 'float-facebook'].forEach(id => { const el = document.getElementById(id); if (el) el.href = fbUrl; });
+
+    const copyHandler = () => {
+      navigator.clipboard.writeText(postUrl).then(() => {
+        const btns = ['share-copy', 'float-copy'];
+        btns.forEach(id => {
+          const btn = document.getElementById(id);
+          if (btn) { btn.textContent = '✅ Tersalin!'; setTimeout(() => { btn.textContent = id === 'share-copy' ? '📋 Salin Link' : '📋'; }, 2000); }
+        });
+      });
+    };
+    const copyBtn = document.getElementById('share-copy');
+    const floatCopyBtn = document.getElementById('float-copy');
+    if (copyBtn) copyBtn.addEventListener('click', copyHandler);
+    if (floatCopyBtn) floatCopyBtn.addEventListener('click', copyHandler);
+  }
+
+  function setupFloatingShare() {
+    const floating = document.getElementById('floating-share');
+    if (window.innerWidth >= 1280) {
+      floating.style.display = 'flex';
+    }
+  }
+
   async function loadBlogPost() {
     try {
       await waitForMarked();
-      
       const response = await fetch(`${API_BASE}/blog/${slug}`);
       const data = await response.json();
-      
-      if (!data.post) {
-        throw new Error('Post not found');
-      }
-      
+      if (!data.post) throw new Error('Post not found');
+
       const post = data.post;
       const relatedPosts = data.relatedPosts || [];
-      
+
       document.title = `${post.title} - Blog Asri Digital`;
       document.getElementById('breadcrumb-title').textContent = post.title;
-      
-      const categoryEl = document.getElementById('post-category');
-      categoryEl.textContent = post.category;
-      categoryEl.className = `px-3 py-1 rounded-full text-xs font-medium ${categoryColors[post.category] || categoryColors.general}`;
-      
+
+      const catEl = document.getElementById('post-category');
+      catEl.textContent = post.category;
+
       document.getElementById('post-date').textContent = formatDate(post.published_at);
+      document.getElementById('reading-time').textContent = calcReadingTime(post.content);
       document.getElementById('post-title').textContent = post.title;
-      document.getElementById('post-author').textContent = post.author_name || 'Admin';
-      
+      document.getElementById('post-author').textContent = post.author_name || 'Admin Asri Digital';
+      document.getElementById('author-box-name').textContent = post.author_name || 'Admin Asri Digital';
+
       if (post.image_url) {
-        const imageContainer = document.getElementById('post-image-container');
-        const imageEl = document.getElementById('post-image');
-        imageEl.src = post.image_url;
-        imageEl.alt = post.title;
-        imageContainer.classList.remove('hidden');
+        const container = document.getElementById('post-image-container');
+        const img = document.getElementById('post-image');
+        img.src = post.image_url;
+        img.alt = post.title;
+        container.style.display = 'block';
       }
-      
-      // Render markdown content
-      const postContentEl = document.getElementById('post-content');
-      postContentEl.innerHTML = renderMarkdown(post.content);
-      
+
+      // Render content
+      const contentEl = document.getElementById('post-content');
+      contentEl.innerHTML = renderMarkdown(post.content);
+
+      // Generate TOC
+      generateTOC();
+
+      // Tags
       if (post.tags) {
-        const tagsContainer = document.getElementById('post-tags');
         try {
           const tags = JSON.parse(post.tags);
-          tagsContainer.innerHTML = tags.map(tag => `
-            <span class="px-3 py-1 bg-background rounded-full text-sm text-text-secondary">#${tag}</span>
-          `).join('');
+          document.getElementById('post-tags').innerHTML = tags.map(t =>
+            `<span style="padding:4px 14px;background:#f5f5f5;border-radius:999px;font-size:13px;color:#525252;">#${t}</span>`
+          ).join('');
         } catch(e) {}
       }
-      
-      const postUrl = window.location.href;
-      const postTitle = encodeURIComponent(post.title);
-      document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${postTitle}&url=${encodeURIComponent(postUrl)}`;
-      document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
-      document.getElementById('share-whatsapp').href = `https://api.whatsapp.com/send?text=${postTitle} ${encodeURIComponent(postUrl)}`;
-      
+
+      // Share links
+      setupShareLinks(post);
+      setupFloatingShare();
+
+      // Related posts
       if (relatedPosts.length > 0) {
-        const relatedGrid = document.getElementById('related-grid');
-        relatedGrid.innerHTML = relatedPosts.map(related => `
-          <a href="/blog/${related.slug}" class="card-hover overflow-hidden group">
-            <div class="w-full h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
+        const grid = document.getElementById('related-grid');
+        grid.innerHTML = relatedPosts.map(r => `
+          <a href="/blog/${r.slug}" style="border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div style="height:140px;background:linear-gradient(135deg,#5C7A36 0%,#4A6628 100%);display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:3rem;">📝</span>
             </div>
-            <div class="p-4">
-              <h3 class="font-semibold text-text-primary group-hover:text-primary transition-colors line-clamp-2">${related.title}</h3>
-              <p class="text-sm text-text-muted mt-2 line-clamp-2">${related.excerpt || ''}</p>
+            <div style="padding:16px;">
+              <p style="font-size:11px;color:#737373;margin-bottom:4px;">${r.category || ''}</p>
+              <h3 style="font-size:15px;font-weight:600;color:#171717;margin-bottom:8px;line-height:1.4;">${r.title}</h3>
+              <p style="font-size:13px;color:#737373;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${r.excerpt || ''}</p>
             </div>
           </a>
         `).join('');
-        document.getElementById('related-posts').classList.remove('hidden');
+        document.getElementById('related-posts').style.display = 'block';
       }
-      
+
+      // Show
       document.getElementById('loading-state').classList.add('hidden');
       document.getElementById('article-content').classList.remove('hidden');
-      
+      setupReadingProgress();
+
     } catch (error) {
-      console.error('Error loading blog post:', error);
+      console.error('Error:', error);
       document.getElementById('loading-state').classList.add('hidden');
       document.getElementById('error-state').classList.remove('hidden');
     }
   }
-  
+
   loadBlogPost();
 </script>
 
 <style>
-  .prose {
-    color: #262626;
-    line-height: 1.8;
-    font-size: 1.05rem;
-  }
-  
-  .prose h1, .prose h2, .prose h3, .prose h4 {
-    color: #171717;
-    font-weight: 700;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    line-height: 1.3;
-  }
-  
-  .prose h1 { font-size: 1.875rem; }
-  .prose h2 { font-size: 1.5rem; }
+  /* Prose styles */
+  .prose { color: #262626; line-height: 1.85; font-size: 1.05rem; }
+  .prose h1, .prose h2, .prose h3, .prose h4 { color: #171717; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; line-height: 1.3; scroll-margin-top: 80px; }
+  .prose h2 { font-size: 1.5rem; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
   .prose h3 { font-size: 1.25rem; font-weight: 600; }
-  .prose h4 { font-size: 1.125rem; font-weight: 600; }
-  
-  .prose p {
-    margin-bottom: 1.25rem;
-  }
-  
-  .prose ul, .prose ol {
-    margin-left: 1.5rem;
-    margin-bottom: 1.25rem;
-    padding-left: 0;
-  }
-  
+  .prose p { margin-bottom: 1.25rem; }
+  .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.25rem; padding-left: 0; }
   .prose ul { list-style-type: disc; }
   .prose ol { list-style-type: decimal; }
-  
-  .prose li {
-    margin-bottom: 0.5rem;
-    padding-left: 0.25rem;
+  .prose li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+  .prose li > ul, .prose li > ol { margin-top: 0.5rem; margin-bottom: 0; }
+  .prose strong { font-weight: 700; color: #171717; }
+  .prose code { background-color: #f5f5f5; padding: 0.2em 0.4em; border-radius: 0.25rem; font-size: 0.875em; font-family: ui-monospace, monospace; }
+  .prose pre { background-color: #171717; color: #e5e5e5; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1.25rem; }
+  .prose pre code { background-color: transparent; padding: 0; color: inherit; }
+  .prose a { color: #5C7A36; text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: #4A6628; }
+  .prose blockquote { border-left: 4px solid #5C7A36; padding: 1rem 1.25rem; margin: 1.5rem 0; background: linear-gradient(135deg, #f0f7e6 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #3a5a1e; font-size: 1.1rem; font-style: italic; }
+  .prose blockquote p:last-child { margin-bottom: 0; }
+  .prose hr { border: none; border-top: 1px solid #e5e5e5; margin: 2.5rem 0; }
+  .prose img { border-radius: 12px; margin: 1.5rem 0; }
+  .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.25rem; border-radius: 8px; overflow: hidden; }
+  .prose th, .prose td { border: 1px solid #e5e5e5; padding: 10px 14px; text-align: left; }
+  .prose th { background-color: #f9fafb; font-weight: 600; }
+  .prose tr:nth-child(even) { background-color: #fafafa; }
+
+  /* Callout boxes */
+  .callout { padding: 16px 20px; border-radius: 12px; margin: 24px 0; font-size: 0.95rem; line-height: 1.6; }
+  .callout strong { display: inline; }
+  .callout-tip { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
+  .callout-warning { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+  .callout-info { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+
+  /* Stat highlight */
+  .stat-highlight { display: inline-flex; align-items: baseline; gap: 6px; background: linear-gradient(135deg, #f0f7e6, #e8f5e0); padding: 2px 10px; border-radius: 6px; }
+  .stat-number { font-size: 1.1em; font-weight: 800; color: #5C7A36; }
+
+  /* Responsive */
+  @media (min-width: 1024px) {
+    #toc-sidebar { display: block !important; }
   }
-  
-  .prose li > ul, .prose li > ol {
-    margin-top: 0.5rem;
-    margin-bottom: 0;
-  }
-  
-  .prose strong {
-    font-weight: 700;
-    color: #171717;
-  }
-  
-  .prose em {
-    font-style: italic;
-  }
-  
-  .prose code {
-    background-color: #f5f5f5;
-    padding: 0.2em 0.4em;
-    border-radius: 0.25rem;
-    font-size: 0.875em;
-    font-family: ui-monospace, monospace;
-  }
-  
-  .prose pre {
-    background-color: #171717;
-    color: #e5e5e5;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin-bottom: 1.25rem;
-  }
-  
-  .prose pre code {
-    background-color: transparent;
-    padding: 0;
-    color: inherit;
-  }
-  
-  .prose a {
-    color: #5C7A36;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-  
-  .prose a:hover {
-    color: #4A6628;
-  }
-  
-  .prose blockquote {
-    border-left: 4px solid #5C7A36;
-    padding: 0.75rem 1rem;
-    margin: 0 0 1.25rem 0;
-    background-color: #f9fafb;
-    border-radius: 0 0.5rem 0.5rem 0;
-    color: #525252;
-    font-style: italic;
-  }
-  
-  .prose blockquote p:last-child {
-    margin-bottom: 0;
-  }
-  
-  .prose hr {
-    border: none;
-    border-top: 1px solid #e5e5e5;
-    margin: 2rem 0;
-  }
-  
-  .prose img {
-    border-radius: 0.75rem;
-    margin: 1.5rem 0;
-  }
-  
-  .prose table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1.25rem;
-  }
-  
-  .prose th, .prose td {
-    border: 1px solid #e5e5e5;
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-  }
-  
-  .prose th {
-    background-color: #f9fafb;
-    font-weight: 600;
+  @media (max-width: 1023px) {
+    #toc-mobile { display: block !important; }
+    #floating-share { display: none !important; }
   }
 </style>
