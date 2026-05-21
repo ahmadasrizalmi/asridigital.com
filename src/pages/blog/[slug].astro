@@ -4,15 +4,20 @@ import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
-// For static build with dynamic routes, we need getStaticPaths
+// Fetch blog post slugs from API at build time
 export async function getStaticPaths() {
-  // Return known slugs - these will be pre-rendered at build time
-  // Other slugs will be handled by client-side JS
-  return [
-    { params: { slug: 'custom-gpt-untuk-bisnis' } },
-    { params: { slug: 'cara-menggunakan-chatgpt' } },
-    { params: { slug: 'case-study-konten-youtube' } },
-  ];
+  const apiBase = 'https://asridigital.com';
+  try {
+    const res = await fetch(`${apiBase}/api/blog/posts`);
+    const data = await res.json();
+    const posts = data.posts || [];
+    return posts.map((post: any) => ({
+      params: { slug: post.slug },
+    }));
+  } catch (e) {
+    console.error('Failed to fetch blog slugs:', e);
+    return [];
+  }
 }
 
 const { slug } = Astro.params;
@@ -110,6 +115,7 @@ const { slug } = Astro.params;
   <Footer />
 </BaseLayout>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script define:vars={{ slug }}>
   const API_BASE = '/api';
   
@@ -178,8 +184,13 @@ const { slug } = Astro.params;
         imageContainer.classList.remove('hidden');
       }
       
-      // Update content
-      document.getElementById('post-content').innerHTML = post.content;
+      // Update content (render markdown)
+      const postContentEl = document.getElementById('post-content');
+      if (typeof marked !== 'undefined' && marked.parse) {
+        postContentEl.innerHTML = marked.parse(post.content);
+      } else {
+        postContentEl.innerHTML = post.content;
+      }
       
       // Update tags
       if (post.tags) {

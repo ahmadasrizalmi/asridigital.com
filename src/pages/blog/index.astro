@@ -3,6 +3,44 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
+
+// Fetch blog posts from API at build time
+const apiBase = 'https://asridigital.com';
+let posts = [];
+try {
+  const res = await fetch(`${apiBase}/api/blog/posts`);
+  const data = await res.json();
+  posts = data.posts || [];
+} catch (e) {
+  console.error('Failed to fetch blog posts:', e);
+}
+
+// Category metadata
+const categoryMeta: Record<string, { label: string; color: string; bgColor: string }> = {
+  'tips': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+  'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+  'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+  'ai': { label: 'AI', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+  'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
+};
+
+const iconNames = ['sparkles', 'code', 'video', 'lightbulb', 'rocket', 'star', 'zap'];
+const iconColors = ['text-primary', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-emerald-500', 'text-rose-500', 'text-cyan-500'];
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+function getCategoryMeta(category: string) {
+  const key = category?.toLowerCase() || 'general';
+  return categoryMeta[key] || categoryMeta['general'];
+}
 ---
 
 <BaseLayout title="Blog - Asri Digital">
@@ -41,137 +79,64 @@ import Icon from '../../components/ui/Icon.astro';
       
       <!-- Blog Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="blog-grid">
-        <!-- Blog Post 1 -->
-        <article class="card-hover overflow-hidden group">
-          <div class="relative overflow-hidden">
-            <div class="w-full h-48 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Icon name="sparkles" size={48} class="text-primary" />
-            </div>
-            <div class="absolute top-3 left-3">
-              <span class="px-3 py-1 bg-primary text-white text-xs font-medium rounded-full">
-                Tips & Trik
-              </span>
-            </div>
-          </div>
+        {posts.map((post: any, index: number) => {
+          const meta = getCategoryMeta(post.category);
+          const icon = iconNames[index % iconNames.length];
+          const iconColor = iconColors[index % iconColors.length];
           
-          <div class="p-5">
-            <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
-              <span class="flex items-center gap-1">
-                <Icon name="user" size={14} />
-                Admin
-              </span>
-              <span>•</span>
-              <span class="flex items-center gap-1">
-                <Icon name="calendar" size={14} />
-                14 Mei 2026
-              </span>
-            </div>
-            
-            <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
-              5 Cara Custom GPT Meningkatkan Produktivitas Bisnis Anda
-            </h2>
-            
-            <p class="text-sm text-text-secondary mb-4 line-clamp-3">
-              Custom GPT bukan hanya chatbot biasa. Dengan instruksi yang tepat, ia bisa menjadi asisten virtual yang memahami kebutuhan spesifik bisnis Anda.
-            </p>
-            
-            <a href="/blog/custom-gpt-untuk-bisnis/" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
-              Baca Selengkapnya
-              <Icon name="arrow-right" size={16} />
-            </a>
-          </div>
-        </article>
-        
-        <!-- Blog Post 2 -->
-        <article class="card-hover overflow-hidden group">
-          <div class="relative overflow-hidden">
-            <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
-              <Icon name="code" size={48} class="text-blue-500" />
-            </div>
-            <div class="absolute top-3 left-3">
-              <span class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
-                Tutorial
-              </span>
-            </div>
-          </div>
-          
-          <div class="p-5">
-            <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
-              <span class="flex items-center gap-1">
-                <Icon name="user" size={14} />
-                Admin
-              </span>
-              <span>•</span>
-              <span class="flex items-center gap-1">
-                <Icon name="calendar" size={14} />
-                12 Mei 2026
-              </span>
-            </div>
-            
-            <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
-              Panduan Lengkap Menggunakan ChatGPT untuk Pemula
-            </h2>
-            
-            <p class="text-sm text-text-secondary mb-4 line-clamp-3">
-              Baru menggunakan ChatGPT? Artikel ini akan membantu Anda memahami dasar-dasar dan cara memaksimalkan penggunaannya.
-            </p>
-            
-            <a href="/blog/cara-menggunakan-chatgpt/" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
-              Baca Selengkapnya
-              <Icon name="arrow-right" size={16} />
-            </a>
-          </div>
-        </article>
-        
-        <!-- Blog Post 3 -->
-        <article class="card-hover overflow-hidden group">
-          <div class="relative overflow-hidden">
-            <div class="w-full h-48 bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
-              <Icon name="video" size={48} class="text-amber-500" />
-            </div>
-            <div class="absolute top-3 left-3">
-              <span class="px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-full">
-                Studi Kasus
-              </span>
-            </div>
-          </div>
-          
-          <div class="p-5">
-            <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
-              <span class="flex items-center gap-1">
-                <Icon name="user" size={14} />
-                Admin
-              </span>
-              <span>•</span>
-              <span class="flex items-center gap-1">
-                <Icon name="calendar" size={14} />
-                10 Mei 2026
-              </span>
-            </div>
-            
-            <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
-              Case Study: Membuat Konten YouTube 10x Lebih Cepat dengan AI
-            </h2>
-            
-            <p class="text-sm text-text-secondary mb-4 line-clamp-3">
-              Lihat bagaimana seorang content creator bisa menghasilkan 30 video per bulan menggunakan bantuan Custom GPT.
-            </p>
-            
-            <a href="#" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
-              Baca Selengkapnya
-              <Icon name="arrow-right" size={16} />
-            </a>
-          </div>
-        </article>
+          return (
+            <article class="card-hover overflow-hidden group" data-category={post.category?.toLowerCase() || 'general'}>
+              <div class="relative overflow-hidden">
+                <div class={`w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center`}>
+                  <Icon name={icon} size={48} class={iconColor} />
+                </div>
+                <div class="absolute top-3 left-3">
+                  <span class={`px-3 py-1 ${meta.color} text-xs font-medium rounded-full`}>
+                    {meta.label}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="p-5">
+                <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
+                  <span class="flex items-center gap-1">
+                    <Icon name="user" size={14} />
+                    {post.author_name || 'Admin'}
+                  </span>
+                  <span>•</span>
+                  <span class="flex items-center gap-1">
+                    <Icon name="calendar" size={14} />
+                    {formatDate(post.published_at)}
+                  </span>
+                </div>
+                
+                <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                  {post.title}
+                </h2>
+                
+                <p class="text-sm text-text-secondary mb-4 line-clamp-3">
+                  {post.excerpt}
+                </p>
+                
+                <a href={`/blog/${post.slug}/`} class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
+                  Baca Selengkapnya
+                  <Icon name="arrow-right" size={16} />
+                </a>
+              </div>
+            </article>
+          );
+        })}
       </div>
       
-      <!-- Load More -->
-      <div class="text-center mt-12">
-        <button id="load-more" class="btn-tertiary">
-          <Icon name="refresh-cw" size={18} />
-          Muat Lebih Banyak
-        </button>
-      </div>
+      <!-- Load More (hidden when all posts shown) -->
+      {posts.length > 9 && (
+        <div class="text-center mt-12">
+          <button id="load-more" class="btn-tertiary">
+            <Icon name="refresh-cw" size={18} />
+            Muat Lebih Banyak
+          </button>
+        </div>
+      )}
     </div>
   </main>
   
@@ -185,7 +150,7 @@ import Icon from '../../components/ui/Icon.astro';
   
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const category = btn.getAttribute('data-category') || 'all';
+      const category = (btn as HTMLElement).getAttribute('data-category') || 'all';
       
       // Update active state
       buttons.forEach(b => {
@@ -197,21 +162,21 @@ import Icon from '../../components/ui/Icon.astro';
       
       // Filter articles
       articles.forEach(article => {
-        if (category === 'all' || article.getAttribute('data-category') === category) {
-          article.style.display = '';
+        if (category === 'all' || (article as HTMLElement).getAttribute('data-category') === category) {
+          (article as HTMLElement).style.display = '';
         } else {
-          article.style.display = 'none';
+          (article as HTMLElement).style.display = 'none';
         }
       });
     });
   });
 
-  // Load more - show message since all articles are displayed
+  // Load more button handler
   document.getElementById('load-more')?.addEventListener('click', () => {
     const btn = document.getElementById('load-more');
     if (btn) {
       btn.textContent = 'Semua artikel sudah ditampilkan';
-      btn.disabled = true;
+      (btn as HTMLButtonElement).disabled = true;
       btn.classList.add('opacity-50', 'cursor-not-allowed');
     }
   });
