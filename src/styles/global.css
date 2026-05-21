@@ -136,7 +136,7 @@
   /* ========================================= */
   
   .navbar {
-    @apply bg-surface/95 backdrop-blur-md border-b border-border shadow-nav;
+    @apply bg-surface/95 border-b border-border shadow-nav;
   }
 }
 
