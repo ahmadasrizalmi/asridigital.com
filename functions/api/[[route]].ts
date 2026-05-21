@@ -842,52 +842,70 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      // Create DompetX payment
+      // Create DompetX payment (signed request)
       let paymentUrl = null;
       let paymentData = null;
 
       try {
-        console.log('DOMPETX: Creating invoice', { orderId, amount: finalAmount, method: paymentMethod });
-        const dompetxResponse = await fetch(`${env.DOMPETX_API_URL || env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`, {
+        const apiKey = env.DOMPETX_API_KEY || '';
+        const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
+        const timestamp = Math.floor(Date.now() / 1000).toString();
+        
+        const requestBody = JSON.stringify({
+          ref_id: orderId,
+          amount: finalAmount,
+          currency: 'IDR',
+          description: `Pembelian ${product.title}`,
+          customer_email: customerEmail,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          payment_method: paymentMethod,
+          return_url: `${env.APP_URL}/success?order=${orderId}`,
+          expiry_minutes: 60
+        });
+
+        // HMAC-SHA256 signature: timestamp + '.' + body
+        const encoder = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+          'raw', encoder.encode(apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+        );
+        const signatureBuffer = await crypto.subtle.sign(
+          'HMAC', key, encoder.encode(timestamp + '.' + requestBody)
+        );
+        const signature = Array.from(new Uint8Array(signatureBuffer))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+
+        console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
+        
+        const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.DOMPETX_API_KEY || ''}`
+            'X-DOMPAY-API-Key': apiKey,
+            'X-DOMPAY-Timestamp': timestamp,
+            'X-DOMPAY-Signature': signature
           },
-          body: JSON.stringify({
-            ref_id: orderId,
-            amount: finalAmount,
-            currency: 'IDR',
-            description: `Pembelian ${product.title}`,
-            customer_email: customerEmail,
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            payment_method: paymentMethod,
-            callback_url: `${env.APP_URL}/api/webhook/dompetx`,
-            return_url: `${env.APP_URL}/success?order=${orderId}`,
-            expiry_minutes: 60
-          })
+          body: requestBody
         });
 
         const dompetxData = await dompetxResponse.json() as any;
         console.log('DOMPETX: Response', JSON.stringify(dompetxData));
 
-        if (dompetxData.success || dompetxData.invoice_url) {
-          paymentUrl = dompetxData.invoice_url || dompetxData.payment_url;
+        if (dompetxData.payment_url || dompetxData.id) {
+          paymentUrl = dompetxData.payment_url;
           paymentData = dompetxData;
 
           // Update order with DompetX reference
           await env.DB.prepare(
             'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
           )
-            .bind(paymentUrl, dompetxData.invoice_id || dompetxData.id, orderId)
+            .bind(paymentUrl, dompetxData.id, orderId)
             .run();
         } else {
-          console.error('DOMPETX: Invoice creation failed', dompetxData);
+          console.error('DOMPETX: Checkout failed', dompetxData);
         }
       } catch (error) {
         console.error('DOMPETX: Error', error);
-        // Continue even if DompetX fails - we can process manually
       }
 
       // If DompetX fails, fall back to direct success
