@@ -45,6 +45,10 @@ let isValid = false;
 if (token) {
   const payload = await verifyJWT(token);
   if (payload && payload.userId) {
+    // Check if user has admin role
+    if (payload.role !== 'admin') {
+      return Astro.redirect('/dashboard?error=unauthorized');
+    }
     isValid = true;
     user = payload;
   }
@@ -67,7 +71,7 @@ if (!isValid) {
     @import '../styles/global.css';
   </style>
   <script define:vars={{ user }}>
-    window.__ADMIN_USER__ = JSON.stringify({ userId: user?.userId, email: user?.email, name: user?.name });
+    window.__ADMIN_USER__ = JSON.stringify({ userId: user?.userId, email: user?.email, name: user?.name, role: user?.role });
   </script>
 </head>
 <body class="h-screen overflow-hidden bg-background text-text-primary">

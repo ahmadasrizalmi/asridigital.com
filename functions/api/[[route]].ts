@@ -481,12 +481,12 @@ export async function onRequest(context: any): Promise<Response> {
         .run();
 
       // Create JWT token
-      const token = await createJWT({ userId, email, name }, env.JWT_SECRET);
+      const token = await createJWT({ userId, email, name, role: 'user' }, env.JWT_SECRET);
 
       return jsonResponse({
         success: true,
         token,
-        user: { id: userId, email, name, is_all_access: false }
+        user: { id: userId, email, name, role: 'user', is_all_access: false }
       });
     }
 
@@ -516,7 +516,7 @@ export async function onRequest(context: any): Promise<Response> {
 
       // Create JWT token
       const token = await createJWT(
-        { userId: user.id, email: user.email, name: user.name },
+        { userId: user.id, email: user.email, name: user.name, role: user.role || 'user' },
         env.JWT_SECRET
       );
 
@@ -527,6 +527,7 @@ export async function onRequest(context: any): Promise<Response> {
           id: user.id,
           email: user.email,
           name: user.name,
+          role: user.role || 'user',
           is_all_access: user.is_all_access
         }
       });
@@ -543,6 +544,7 @@ export async function onRequest(context: any): Promise<Response> {
           id: user.id,
           email: user.email,
           name: user.name,
+          role: user.role || 'user',
           is_all_access: user.is_all_access
         }
       });
