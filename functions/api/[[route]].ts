@@ -738,8 +738,10 @@ export async function onRequest(context: any): Promise<Response> {
 
     // ==================== CHECKOUT ====================
     if (route === '/checkout' && method === 'POST') {
+      console.log('CHECKOUT: Starting checkout process');
       const body = await request.json();
-      const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod, referredBy } = body;
+      const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod, referredBy, csrfToken } = body;
+      console.log('CHECKOUT: Body parsed', { productSlug, customerEmail, paymentMethod });
 
       if (!productSlug || !customerEmail || !customerName || !paymentMethod) {
         return jsonResponse({ error: 'Data tidak lengkap' }, 400);
@@ -843,9 +845,14 @@ export async function onRequest(context: any): Promise<Response> {
       // Create DompetX payment
       let paymentUrl = null;
       let paymentData = null;
+      console.log('CHECKOUT: About to call DompetX API');
 
       try {
-        const dompetxResponse = await fetch(`${env.DOMPETX_API_URL || env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`, {
+        const dompetxUrl = `${env.DOMPETX_API_URL || env.DOMPETX_BASE_URL || 'https://api.dompetx.com/v1'}/create-invoice`;
+        console.log('CHECKOUT: DompetX URL:', dompetxUrl);
+        console.log('CHECKOUT: DompetX API key exists:', !!env.DOMPETX_API_KEY);
+        
+        const dompetxResponse = await fetch(dompetxUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -880,9 +887,11 @@ export async function onRequest(context: any): Promise<Response> {
             .run();
         }
       } catch (error) {
-        console.error('DompetX error:', error);
+        console.error('CHECKOUT: DompetX error:', error);
         // Continue even if DompetX fails - we can process manually
       }
+
+      console.log('CHECKOUT: After DompetX, paymentUrl:', paymentUrl);
 
       // Do not fake a successful payment URL. If payment gateway fails,
       // keep the order as PENDING and ask customer to retry/contact support.
@@ -1876,6 +1885,7 @@ export async function onRequest(context: any): Promise<Response> {
 
   } catch (error: any) {
     console.error('API Error:', error);
+    console.error('API Error stack:', error.stack);
     return jsonResponse({ error: error.message || 'Internal server error' }, 500);
   }
 }
