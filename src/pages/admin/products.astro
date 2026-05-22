@@ -98,7 +98,7 @@ import Icon from '../../components/ui/Icon.astro';
   <!-- Add/Edit Product Modal -->
   <div id="product-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-      <div class="bg-surface rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="bg-surface rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-border">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-text-primary" id="modal-title">Tambah Produk</h2>
@@ -163,7 +163,53 @@ import Icon from '../../components/ui/Icon.astro';
             <label class="block text-sm font-medium text-text-main mb-2">Tags</label>
             <input type="text" id="product-tags" class="input" placeholder="tag1, tag2, tag3" />
           </div>
-          
+
+          {/* ====== MEDIA GALLERY SECTION ====== */}
+          <div class="border-t border-border pt-4 mt-4">
+            <h3 class="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
+              📸 Media Produk
+            </h3>
+
+            {/* Gallery Images */}
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-text-main mb-2">
+                Gambar Produk <span class="text-text-muted font-normal">(klik untuk jadikan cover)</span>
+              </label>
+
+              <div id="gallery-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
+                {/* Image thumbnails will be rendered here */}
+              </div>
+
+              <div class="flex gap-2">
+                <input type="url" id="image-url-input" class="input flex-1" placeholder="https://res.cloudinary.com/xxx/image.jpg" />
+                <button type="button" onclick="addImage()" class="btn-secondary whitespace-nowrap px-3">
+                  + Tambah
+                </button>
+              </div>
+              <p class="text-xs text-text-muted mt-1">Paste URL gambar dari Cloudinary, lalu klik gambar untuk pilih cover</p>
+            </div>
+
+            {/* Video */}
+            <div class="mb-2">
+              <label class="block text-sm font-medium text-text-main mb-2">
+                Video <span class="text-text-muted font-normal">(opsional, YouTube/Vimeo)</span>
+              </label>
+              <div class="flex gap-2">
+                <input type="url" id="video-url-input" class="input flex-1" placeholder="https://youtube.com/watch?v=xxx atau https://vimeo.com/xxx" />
+                <button type="button" onclick="addVideo()" class="btn-secondary whitespace-nowrap px-3">
+                  + Video
+                </button>
+              </div>
+              <div id="video-preview" class="hidden mt-2">
+                <div class="flex items-center gap-2 p-2 bg-background rounded-lg">
+                  <span class="text-sm text-text-main flex-1 truncate" id="video-url-display"></span>
+                  <button type="button" onclick="removeVideo()" class="text-red-500 hover:text-red-700 text-sm">✕ Hapus</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* ====== END MEDIA SECTION ====== */}
+
           <div class="flex items-center gap-6">
             <label class="flex items-center gap-2">
               <input type="checkbox" id="product-active" class="rounded" checked />
@@ -199,6 +245,105 @@ import Icon from '../../components/ui/Icon.astro';
       minimumFractionDigits: 0
     }).format(amount);
   }
+
+  // ====== GALLERY MANAGEMENT ======
+  let galleryImages: string[] = [];
+  let coverImage: string = '';
+  let videoUrl: string = '';
+
+  function renderGallery() {
+    const grid = document.getElementById('gallery-grid')!;
+    if (galleryImages.length === 0) {
+      grid.innerHTML = '<p class="text-xs text-text-muted col-span-full py-4 text-center border-2 border-dashed border-border rounded-lg">Belum ada gambar. Paste URL gambar di bawah.</p>';
+      return;
+    }
+    grid.innerHTML = galleryImages.map((url, i) => `
+      <div class="relative group rounded-lg overflow-hidden border-2 ${url === coverImage ? 'border-primary ring-2 ring-primary/30' : 'border-border'} aspect-square cursor-pointer" onclick="setCover(${i})">
+        <img src="${url}" alt="Gambar ${i + 1}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f3f4f6%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2212%22>Error</text></svg>'" />
+        ${url === coverImage ? '<div class="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">⭐ Cover</div>' : ''}
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+          ${i > 0 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, -1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white">◀</button>` : ''}
+          ${i < galleryImages.length - 1 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, 1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white">▶</button>` : ''}
+          <button type="button" onclick="event.stopPropagation(); removeImage(${i})" class="bg-red-500/90 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs hover:bg-red-600">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addImage() {
+    const input = document.getElementById('image-url-input') as HTMLInputElement;
+    const url = input.value.trim();
+    if (!url) return;
+    if (!url.startsWith('http')) { alert('URL harus dimulai dengan http:// atau https://'); return; }
+    if (galleryImages.includes(url)) { alert('Gambar sudah ditambahkan'); return; }
+    galleryImages.push(url);
+    if (galleryImages.length === 1) coverImage = url; // First image = cover
+    input.value = '';
+    renderGallery();
+  }
+
+  function removeImage(index: number) {
+    const removed = galleryImages.splice(index, 1)[0];
+    if (removed === coverImage) coverImage = galleryImages[0] || '';
+    renderGallery();
+  }
+
+  function setCover(index: number) {
+    coverImage = galleryImages[index];
+    renderGallery();
+  }
+
+  function moveImage(index: number, direction: number) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= galleryImages.length) return;
+    [galleryImages[index], galleryImages[newIndex]] = [galleryImages[newIndex], galleryImages[index]];
+    renderGallery();
+  }
+
+  function addVideo() {
+    const input = document.getElementById('video-url-input') as HTMLInputElement;
+    const url = input.value.trim();
+    if (!url) return;
+    if (!url.includes('youtube.com') && !url.includes('youtu.be') && !url.includes('vimeo.com')) {
+      alert('URL harus dari YouTube atau Vimeo');
+      return;
+    }
+    videoUrl = url;
+    input.value = '';
+    const preview = document.getElementById('video-preview')!;
+    const display = document.getElementById('video-url-display')!;
+    preview.classList.remove('hidden');
+    display.textContent = url;
+  }
+
+  function removeVideo() {
+    videoUrl = '';
+    document.getElementById('video-preview')!.classList.add('hidden');
+  }
+
+  function resetMedia() {
+    galleryImages = [];
+    coverImage = '';
+    videoUrl = '';
+    renderGallery();
+    document.getElementById('video-preview')!.classList.add('hidden');
+    (document.getElementById('image-url-input') as HTMLInputElement).value = '';
+    (document.getElementById('video-url-input') as HTMLInputElement).value = '';
+  }
+
+  function parseJsonField(val: any): any[] {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try { return JSON.parse(val); } catch { return []; }
+  }
+
+  // Expose gallery functions to global scope
+  (window as any).addImage = addImage;
+  (window as any).removeImage = removeImage;
+  (window as any).setCover = setCover;
+  (window as any).moveImage = moveImage;
+  (window as any).addVideo = addVideo;
+  (window as any).removeVideo = removeVideo;
 
   async function loadProducts() {
     try {
@@ -273,11 +418,25 @@ import Icon from '../../components/ui/Icon.astro';
       (document.getElementById('product-tags') as HTMLInputElement).value = product.tags || '';
       (document.getElementById('product-active') as HTMLInputElement).checked = product.is_active;
       (document.getElementById('product-featured') as HTMLInputElement).checked = product.is_featured;
+
+      // Load media data
+      galleryImages = parseJsonField(product.gallery_images);
+      coverImage = product.image_icon || galleryImages[0] || '';
+      const videos = parseJsonField(product.gallery_videos);
+      videoUrl = product.video_embed_url || videos[0] || '';
+      renderGallery();
+      if (videoUrl) {
+        document.getElementById('video-preview')!.classList.remove('hidden');
+        document.getElementById('video-url-display')!.textContent = videoUrl;
+      } else {
+        document.getElementById('video-preview')!.classList.add('hidden');
+      }
     } else {
       title.textContent = 'Tambah Produk';
       (document.getElementById('product-form') as HTMLFormElement).reset();
       (document.getElementById('product-id') as HTMLInputElement).value = '';
       (document.getElementById('product-active') as HTMLInputElement).checked = true;
+      resetMedia();
     }
     
     modal.classList.remove('hidden');
@@ -364,6 +523,11 @@ import Icon from '../../components/ui/Icon.astro';
       tags: (document.getElementById('product-tags') as HTMLInputElement).value,
       is_active: (document.getElementById('product-active') as HTMLInputElement).checked,
       is_featured: (document.getElementById('product-featured') as HTMLInputElement).checked,
+      // Media fields
+      image_icon: coverImage || null,
+      gallery_images: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
+      gallery_videos: videoUrl ? JSON.stringify([videoUrl]) : null,
+      video_embed_url: videoUrl || null,
     };
 
     const submitBtn = e.target.querySelector('button[type="submit"]') as HTMLButtonElement;
