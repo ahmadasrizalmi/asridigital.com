@@ -169,12 +169,12 @@ import Icon from '../../components/ui/Icon.astro';
         </td>
         <td class="px-6 py-4">
           <div class="flex items-center gap-2">
-            <button onclick="viewOrder('${order.id}')" class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-              <Icon name="eye" size={16} />
+            <button onclick="viewOrder('${order.id}')" class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Lihat Detail">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
             ${order.status === 'PENDING' ? `
-              <button onclick="markAsPaid('${order.id}')" class="p-1.5 hover:bg-green-50 rounded-lg text-text-secondary hover:text-green-600">
-                <Icon name="check" size={16} />
+              <button onclick="markAsPaid('${order.id}')" class="p-1.5 hover:bg-green-50 rounded-lg text-text-secondary hover:text-green-600" title="Tandai Lunas">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
             ` : ''}
           </div>
