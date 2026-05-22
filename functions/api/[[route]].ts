@@ -457,6 +457,24 @@ export async function onRequest(context: any): Promise<Response> {
     }
 
     // ==================== AUTH ====================
+    // ==================== ORDER STATUS (PUBLIC) ====================
+    if (route.startsWith('/orders/') && method === 'GET') {
+      const orderId = route.split('/')[2];
+      if (!orderId) {
+        return jsonResponse({ error: 'Order ID diperlukan' }, 400);
+      }
+
+      const order = await env.DB.prepare(
+        'SELECT id, product_title, amount, status, paid_at, created_at FROM orders WHERE id = ?'
+      ).bind(orderId).first();
+
+      if (!order) {
+        return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
+      }
+
+      return jsonResponse({ order });
+    }
+
     if (route === '/auth/register' && method === 'POST') {
       const { email, password, name } = await request.json();
 
@@ -920,6 +938,16 @@ export async function onRequest(context: any): Promise<Response> {
           "UPDATE orders SET status = 'PAID', paid_at = datetime('now') WHERE id = ?"
         ).bind(orderId).run();
 
+        // Send confirmation email for free orders too
+        try {
+          const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+          if (paidOrder) {
+            await sendOrderConfirmationEmail(env, paidOrder);
+          }
+        } catch (emailErr: any) {
+          console.error('EMAIL: Failed to send free order confirmation:', emailErr.message);
+        }
+
         return jsonResponse({
           success: true,
           orderId,
@@ -930,9 +958,14 @@ export async function onRequest(context: any): Promise<Response> {
         });
       }
 
-      // If DompetX fails, fall back to direct success
+      // If DompetX fails, don't fake success - return error
       if (!paymentUrl) {
-        paymentUrl = `${env.APP_URL}/success?order=${orderId}`;
+        return jsonResponse({
+          success: false,
+          error: 'Payment gateway sedang bermasalah. Silakan coba beberapa saat lagi atau hubungi support.',
+          orderId,
+          orderCode
+        }, 502);
       }
 
       return jsonResponse({

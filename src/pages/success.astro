@@ -5,86 +5,130 @@ import Icon from '../components/ui/Icon.astro';
 
 // Get order ID from URL
 const url = new URL(Astro.request.url);
-const orderId = url.searchParams.get('order') || 'INV-UNKNOWN';
+const orderId = url.searchParams.get('order') || '';
 ---
 
-<BaseLayout title="Pembayaran Berhasil - Asri Digital">
+<BaseLayout title="Status Pesanan - Asri Digital">
   <Header />
   
   <main class="flex-1 py-20">
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <!-- Success Icon -->
-      <div class="w-24 h-24 mx-auto mb-8 bg-green-100 rounded-full flex items-center justify-center animate-fade-in">
-        <Icon name="check-circle" size={48} class="text-green-600" />
-      </div>
-      
-      <!-- Success Message -->
-      <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4 animate-slide-up">
-        Pembayaran Berhasil! 🎉
-      </h1>
-      
-      <p class="text-lg text-text-secondary mb-8 animate-slide-up" style="animation-delay: 0.1s">
-        Terima kasih atas pembelian Anda. Link akses produk telah dikirim ke email Anda.
-      </p>
-      
-      <!-- Order Details -->
-      <div class="card p-6 mb-8 text-left animate-slide-up" style="animation-delay: 0.2s">
-        <h2 class="font-semibold text-text-primary mb-4">Detail Pesanan</h2>
-        
-        <div class="space-y-3">
-          <div class="flex justify-between">
-            <span class="text-text-secondary">No. Invoice</span>
-            <span class="font-mono text-text-primary">{orderId}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-text-secondary">Status</span>
-            <span class="badge-success">Lunas</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-text-secondary">Waktu</span>
-            <span class="text-text-primary">{new Date().toLocaleString('id-ID')}</span>
-          </div>
+      <!-- Loading State -->
+      <div id="loading-state">
+        <div class="w-24 h-24 mx-auto mb-8 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
+          <Icon name="loader" size={48} class="text-primary" />
         </div>
+        <h1 class="text-2xl font-bold text-text-primary mb-4">Memverifikasi Pembayaran...</h1>
+        <p class="text-text-secondary">Mohon tunggu sebentar.</p>
       </div>
-      
-      <!-- What's Next -->
-      <div class="card p-6 mb-8 text-left animate-slide-up" style="animation-delay: 0.3s">
-        <h2 class="font-semibold text-text-primary mb-4 flex items-center gap-2">
-          <Icon name="info" size={20} class="text-primary" />
-          Langkah Selanjutnya
-        </h2>
+
+      <!-- Success State (hidden by default) -->
+      <div id="success-state" class="hidden">
+        <div class="w-24 h-24 mx-auto mb-8 bg-green-100 rounded-full flex items-center justify-center animate-fade-in">
+          <Icon name="check-circle" size={48} class="text-green-600" />
+        </div>
         
-        <div class="space-y-4">
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-              <span class="text-sm font-bold text-primary">1</span>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4 animate-slide-up">
+          Pembayaran Berhasil! 🎉
+        </h1>
+        
+        <p class="text-lg text-text-secondary mb-8 animate-slide-up" style="animation-delay: 0.1s">
+          Terima kasih atas pembelian Anda. Link akses produk telah dikirim ke email Anda.
+        </p>
+        
+        <!-- Order Details -->
+        <div class="card p-6 mb-8 text-left animate-slide-up" style="animation-delay: 0.2s">
+          <h2 class="font-semibold text-text-primary mb-4">Detail Pesanan</h2>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-text-secondary">No. Invoice</span>
+              <span class="font-mono text-text-primary" id="order-id-display">-</span>
             </div>
-            <div>
-              <h3 class="font-medium text-text-primary">Cek Email Anda</h3>
-              <p class="text-sm text-text-secondary">Link akses produk sudah dikirim ke email yang didaftarkan.</p>
+            <div class="flex justify-between">
+              <span class="text-text-secondary">Produk</span>
+              <span class="text-text-primary" id="order-product">-</span>
             </div>
-          </div>
-          
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-              <span class="text-sm font-bold text-primary">2</span>
+            <div class="flex justify-between">
+              <span class="text-text-secondary">Total</span>
+              <span class="font-bold text-primary" id="order-amount">-</span>
             </div>
-            <div>
-              <h3 class="font-medium text-text-primary">Buka Link GPT</h3>
-              <p class="text-sm text-text-secondary">Klik link yang ada di email untuk langsung menggunakan GPT.</p>
-            </div>
-          </div>
-          
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-              <span class="text-sm font-bold text-primary">3</span>
-            </div>
-            <div>
-              <h3 class="font-medium text-text-primary">Simpan di Dashboard</h3>
-              <p class="text-sm text-text-secondary">Daftar untuk menyimpan semua akses GPT di satu tempat.</p>
+            <div class="flex justify-between">
+              <span class="text-text-secondary">Status</span>
+              <span class="badge-success" id="order-status">Lunas</span>
             </div>
           </div>
         </div>
+        
+        <!-- What's Next -->
+        <div class="card p-6 mb-8 text-left animate-slide-up" style="animation-delay: 0.3s">
+          <h2 class="font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="info" size={20} class="text-primary" />
+            Langkah Selanjutnya
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span class="text-sm font-bold text-primary">1</span>
+              </div>
+              <div>
+                <h3 class="font-medium text-text-primary">Cek Email Anda</h3>
+                <p class="text-sm text-text-secondary">Link akses produk sudah dikirim ke email yang didaftarkan.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span class="text-sm font-bold text-primary">2</span>
+              </div>
+              <div>
+                <h3 class="font-medium text-text-primary">Buka Dashboard</h3>
+                <p class="text-sm text-text-secondary">Akses semua produk yang sudah dibeli dari dashboard.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending State (hidden by default) -->
+      <div id="pending-state" class="hidden">
+        <div class="w-24 h-24 mx-auto mb-8 bg-amber-100 rounded-full flex items-center justify-center animate-fade-in">
+          <Icon name="clock" size={48} class="text-amber-600" />
+        </div>
+        
+        <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">
+          Menunggu Pembayaran
+        </h1>
+        
+        <p class="text-lg text-text-secondary mb-8">
+          Pesanan Anda belum terkonfirmasi. Jika sudah melakukan pembayaran, mohon tunggu beberapa saat.
+        </p>
+        
+        <div class="card p-6 mb-8 text-left">
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-text-secondary">No. Invoice</span>
+              <span class="font-mono text-text-primary" id="pending-order-id">-</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-text-secondary">Status</span>
+              <span class="badge-warning">Menunggu Pembayaran</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State (hidden by default) -->
+      <div id="error-state" class="hidden">
+        <div class="w-24 h-24 mx-auto mb-8 bg-red-100 rounded-full flex items-center justify-center animate-fade-in">
+          <Icon name="x-circle" size={48} class="text-red-600" />
+        </div>
+        
+        <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">
+          Pesanan Tidak Ditemukan
+        </h1>
+        
+        <p class="text-lg text-text-secondary mb-8" id="error-message">
+          Kami tidak dapat menemukan pesanan Anda. Silakan hubungi support jika Anda sudah melakukan pembayaran.
+        </p>
       </div>
       
       <!-- Action Buttons -->
@@ -109,3 +153,67 @@ const orderId = url.searchParams.get('order') || 'INV-UNKNOWN';
     </div>
   </main>
 </BaseLayout>
+
+<script is:inline>
+  (async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order');
+
+    const loadingState = document.getElementById('loading-state');
+    const successState = document.getElementById('success-state');
+    const pendingState = document.getElementById('pending-state');
+    const errorState = document.getElementById('error-state');
+
+    function hideAll() {
+      loadingState?.classList.add('hidden');
+      successState?.classList.add('hidden');
+      pendingState?.classList.add('hidden');
+      errorState?.classList.add('hidden');
+    }
+
+    if (!orderId) {
+      hideAll();
+      errorState?.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/orders/' + encodeURIComponent(orderId));
+      const data = await response.json();
+
+      if (!response.ok || !data.order) {
+        hideAll();
+        errorState?.classList.remove('hidden');
+        const em = document.getElementById('error-message');
+        if (em) em.textContent = data.error || 'Pesanan tidak ditemukan.';
+        return;
+      }
+
+      const order = data.order;
+
+      if (order.status === 'PAID') {
+        hideAll();
+        successState?.classList.remove('hidden');
+        const oid = document.getElementById('order-id-display');
+        const op = document.getElementById('order-product');
+        const oa = document.getElementById('order-amount');
+        if (oid) oid.textContent = order.id;
+        if (op) op.textContent = order.product_title || '-';
+        if (oa) oa.textContent = order.amount === 0 ? 'Gratis' : 'Rp ' + (order.amount || 0).toLocaleString('id-ID');
+      } else if (order.status === 'PENDING') {
+        hideAll();
+        pendingState?.classList.remove('hidden');
+        const pid = document.getElementById('pending-order-id');
+        if (pid) pid.textContent = order.id;
+      } else {
+        hideAll();
+        errorState?.classList.remove('hidden');
+        const em = document.getElementById('error-message');
+        if (em) em.textContent = 'Status pesanan: ' + order.status + '. Silakan hubungi support.';
+      }
+    } catch (err) {
+      hideAll();
+      errorState?.classList.remove('hidden');
+    }
+  })();
+</script>
