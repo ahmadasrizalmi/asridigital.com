@@ -5,7 +5,7 @@ interface Env {
   DB: D1Database;
   DOMPETX_API_KEY: string;
   DOMPETX_WEBHOOK_SECRET: string;
-  DOMPETX_BASE_URL: string;
+  DOMPETX_API_URL: string;
   RESEND_API_KEY: string;
   JWT_SECRET: string;
   APP_URL: string;
@@ -797,6 +797,7 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== CHECKOUT ====================
     if (route === '/checkout' && method === 'POST') {
       console.log('CHECKOUT: Starting checkout process');
+      try {
       const body = await request.json();
       const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod, referredBy, csrfToken } = body;
       console.log('CHECKOUT: Body parsed', { productSlug, customerEmail, paymentMethod });
@@ -1007,6 +1008,13 @@ export async function onRequest(context: any): Promise<Response> {
         amount: finalAmount,
         discount: discountAmount
       });
+      } catch (checkoutError: any) {
+        console.error('CHECKOUT: Unhandled error', checkoutError.message, checkoutError.stack);
+        return jsonResponse({ 
+          error: 'Terjadi kesalahan server. Silakan coba lagi.',
+          details: checkoutError.message 
+        }, 500);
+      }
     }
 
     // ==================== COUPON ====================
@@ -1088,22 +1096,6 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       return jsonResponse({ orders: orders.results });
-    }
-
-    if (route.startsWith('/orders/') && method === 'GET') {
-      const orderId = route.split('/')[2];
-      
-      const order = await env.DB.prepare(
-        'SELECT o.*, p.title as product_title, p.image_icon as product_image FROM orders o LEFT JOIN products p ON o.product_id = p.id WHERE o.id = ?'
-      )
-        .bind(orderId)
-        .first();
-
-      if (!order) {
-        return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
-      }
-
-      return jsonResponse({ order });
     }
 
     // ==================== RECENT SALES (FOMO) ====================
