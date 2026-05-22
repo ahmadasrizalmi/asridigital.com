@@ -12,7 +12,7 @@ import { formatIDR } from '../lib/utils';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Welcome Banner -->
       <div id="welcome-banner" class="card p-6 mb-8 bg-gradient-to-r from-primary/5 to-primary/10">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 class="text-2xl font-bold text-text-primary mb-2">
               Selamat datang, <span id="user-name">Guest</span>! 👋
@@ -22,7 +22,7 @@ import { formatIDR } from '../lib/utils';
           <div id="all-access-badge" class="hidden">
             <div class="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-full">
               <Icon name="crown" size={20} />
-              <span class="font-semibold">ALL-ACCESS MEMBER</span>
+              <span class="font-semibold text-sm sm:text-base">ALL-ACCESS MEMBER</span>
             </div>
           </div>
         </div>
@@ -182,14 +182,14 @@ import { formatIDR } from '../lib/utils';
           </h2>
           <div class="card p-6">
             <p class="text-sm text-text-secondary mb-3">Bagikan link referral Anda dan dapatkan komisi!</p>
-            <div class="flex gap-2 mb-4">
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
               <input type="text" id="referral-link" class="input flex-1" readonly value="Loading..." />
               <button onclick="copyReferralLink()" class="btn-secondary px-4">
                 <Icon name="copy" size={16} />
                 Copy
               </button>
             </div>
-            <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div class="p-3 bg-background rounded-lg">
                 <p class="text-xl font-bold text-primary" id="affiliate-conversions">0</p>
                 <p class="text-xs text-text-muted">Konversi</p>
