@@ -465,11 +465,51 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       const order = await env.DB.prepare(
-        'SELECT id, product_title, amount, status, paid_at, created_at FROM orders WHERE id = ?'
+        'SELECT id, product_title, amount, status, paid_at, created_at, dompetx_id, payment_url FROM orders WHERE id = ?'
       ).bind(orderId).first();
 
       if (!order) {
         return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
+      }
+
+      // If order is still PENDING and has a DompetX checkout ID, poll for status
+      if (order.status === 'PENDING' && order.dompetx_id) {
+        try {
+          const apiKey = env.DOMPETX_API_KEY || '';
+          const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
+
+          const dompetxResponse = await fetch(`${baseUrl}/checkout/${order.dompetx_id}`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+          });
+
+          if (dompetxResponse.ok) {
+            const checkoutData = await dompetxResponse.json() as any;
+            console.log('ORDER STATUS: DompetX poll result', checkoutData.status);
+
+            if (checkoutData.status === 'paid' || checkoutData.status === 'confirmed') {
+              // Update order to PAID
+              await env.DB.prepare(
+                "UPDATE orders SET status = 'PAID', paid_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
+              ).bind(orderId).run();
+
+              // Send confirmation email
+              try {
+                const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+                if (paidOrder) await sendOrderConfirmationEmail(env, paidOrder);
+              } catch (e) { console.error('Email error:', e); }
+
+              order.status = 'PAID';
+              order.paid_at = new Date().toISOString();
+            } else if (checkoutData.status === 'expired' || checkoutData.status === 'cancelled') {
+              await env.DB.prepare(
+                "UPDATE orders SET status = 'FAILED', updated_at = datetime('now') WHERE id = ?"
+              ).bind(orderId).run();
+              order.status = 'FAILED';
+            }
+          }
+        } catch (pollError) {
+          console.error('ORDER STATUS: DompetX poll error', pollError);
+        }
       }
 
       return jsonResponse({ order });
@@ -862,7 +902,7 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      // Create DompetX payment (signed request) - skip for free products
+      // Create DompetX checkout session - skip for free products
       let paymentUrl = null;
       let paymentData = null;
 
@@ -870,41 +910,30 @@ export async function onRequest(context: any): Promise<Response> {
         try {
           const apiKey = env.DOMPETX_API_KEY || '';
           const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
-          const timestamp = Math.floor(Date.now() / 1000).toString();
-          
+
+          // DompetX API: POST /checkout with Bearer auth
           const requestBody = JSON.stringify({
-            ref_id: orderId,
             amount: finalAmount,
             currency: 'IDR',
             description: `Pembelian ${product.title}`,
-            customer_email: customerEmail,
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            payment_method: paymentMethod,
-            return_url: `${env.APP_URL}/success?order=${orderId}`,
-            expiry_minutes: 60
+            callback_url: `${env.APP_URL}/api/webhook/dompetx`,
+            success_url: `${env.APP_URL}/success?order=${orderId}`,
+            cancel_url: `${env.APP_URL}/checkout?product=${productSlug}`,
+            metadata: {
+              order_id: orderId,
+              product_slug: productSlug,
+              customer_email: sanitizedEmail,
+              customer_name: sanitizedName
+            }
           });
 
-          // HMAC-SHA256 signature: timestamp + '.' + body
-          const encoder = new TextEncoder();
-          const key = await crypto.subtle.importKey(
-            'raw', encoder.encode(apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-          );
-          const signatureBuffer = await crypto.subtle.sign(
-            'HMAC', key, encoder.encode(timestamp + '.' + requestBody)
-          );
-          const signature = Array.from(new Uint8Array(signatureBuffer))
-            .map(b => b.toString(16).padStart(2, '0')).join('');
-
           console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
-          
-          const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
+
+          const dompetxResponse = await fetch(`${baseUrl}/checkout`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-DOMPAY-API-Key': apiKey,
-              'X-DOMPAY-Timestamp': timestamp,
-              'X-DOMPAY-Signature': signature
+              'Authorization': `Bearer ${apiKey}`
             },
             body: requestBody
           });
@@ -912,8 +941,9 @@ export async function onRequest(context: any): Promise<Response> {
           const dompetxData = await dompetxResponse.json() as any;
           console.log('DOMPETX: Response', JSON.stringify(dompetxData));
 
-          if (dompetxData.payment_url || dompetxData.id) {
-            paymentUrl = dompetxData.payment_url;
+          // DompetX returns checkout_url (not payment_url)
+          if (dompetxData.checkout_url || dompetxData.id) {
+            paymentUrl = dompetxData.checkout_url;
             paymentData = dompetxData;
 
             // Update order with DompetX reference
@@ -923,7 +953,7 @@ export async function onRequest(context: any): Promise<Response> {
               .bind(paymentUrl, dompetxData.id, orderId)
               .run();
           } else {
-            console.error('DOMPETX: Checkout failed', dompetxData);
+            console.error('DOMPETX: Checkout failed - no checkout_url', dompetxData);
           }
         } catch (error: any) {
           console.error('DOMPETX: Error', error.message);
@@ -1109,45 +1139,27 @@ export async function onRequest(context: any): Promise<Response> {
       } catch (e) {
         return jsonResponse({ error: 'Invalid JSON' }, 400);
       }
-      
-      // Verify webhook signature if secret is set
-      if (env.DOMPETX_WEBHOOK_SECRET && env.DOMPETX_WEBHOOK_SECRET !== 'placeholder-set-after-dompetx-config') {
-        const signature = request.headers.get('X-DompetX-Signature');
-        
-        if (!signature) {
-          return jsonResponse({ error: 'Missing signature' }, 401);
-        }
-        
-        // Verify HMAC-SHA256 signature
-        try {
-          const encoder = new TextEncoder();
-          const key = await crypto.subtle.importKey(
-            'raw',
-            encoder.encode(env.DOMPETX_WEBHOOK_SECRET),
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['sign']
-          );
-          
-          const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody));
-          const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-          
-          if (signature !== expectedSignature) {
-            return jsonResponse({ error: 'Invalid signature' }, 401);
-          }
-        } catch (verifyError) {
-          console.error('Signature verification error:', verifyError);
-          return jsonResponse({ error: 'Signature verification failed' }, 401);
-        }
-      }
 
-      const { ref_id, status, amount, payment_method, paid_at } = body;
+      console.log('WEBHOOK: Received DompetX webhook', JSON.stringify(body).substring(0, 500));
+
+      // DompetX webhook format: { event: 'checkout.paid', data: { id, status, metadata, ... } }
+      const event = body.event || '';
+      const checkoutData = body.data || body;
+
+      // Extract order ID from metadata (we set it during checkout creation)
+      const ref_id = checkoutData.metadata?.order_id || checkoutData.ref_id || checkoutData.id;
+      const checkoutStatus = checkoutData.status || '';
+
+      // Only process payment-related events
+      const isPaidEvent = event === 'checkout.paid' || event === 'checkout.confirmed' || 
+                          checkoutStatus === 'paid' || checkoutStatus === 'confirmed';
 
       if (!ref_id) {
-        return jsonResponse({ error: 'Missing ref_id' }, 400);
+        console.error('WEBHOOK: No order ID found in webhook data');
+        return jsonResponse({ error: 'Missing order reference' }, 400);
       }
+
+      console.log('WEBHOOK: Processing', { event, ref_id, status: checkoutStatus });
 
       // Find order
       const order = await env.DB.prepare(
@@ -1161,7 +1173,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       // Update order status
-      if (status === 'SUCCESS' || status === 'PAID') {
+      if (isPaidEvent) {
         await env.DB.prepare(
           `UPDATE orders 
            SET status = 'PAID', 
@@ -1170,7 +1182,7 @@ export async function onRequest(context: any): Promise<Response> {
                updated_at = datetime('now')
            WHERE id = ?`
         )
-          .bind(payment_method || order.payment_method, ref_id)
+          .bind(checkoutData.payment_method || order.payment_method, ref_id)
           .run();
 
         // Check if All-Access Pass
