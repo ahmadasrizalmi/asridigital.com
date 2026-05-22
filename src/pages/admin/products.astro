@@ -202,7 +202,7 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadProducts() {
     try {
-      const response = await fetch(`${API_BASE}/products?limit=50`);
+      const response = await fetch(`${API_BASE}/admin/products`);
       const data = await response.json() as any;
       
       const table = document.getElementById('products-table')!;

@@ -141,7 +141,12 @@ const tags = parseTags(product?.tags);
 
             {/* Badges */}
             <div class="absolute top-4 left-4 flex flex-wrap gap-2">
-              {hasDiscount && (
+              {product?.price === 0 && (
+                <span class="badge-success">
+                  GRATIS
+                </span>
+              )}
+              {hasDiscount && product?.price !== 0 && (
                 <span class="badge-danger">
                   HEMAT {discount}%
                 </span>
@@ -241,16 +246,24 @@ const tags = parseTags(product?.tags);
           <!-- Price -->
           <div class="space-y-2">
             <div class="flex items-baseline gap-3">
-              <span class="text-3xl sm:text-4xl font-bold text-primary">
-                {formatIDR(product?.price)}
-              </span>
-              {hasDiscount && (
-                <span class="text-xl text-text-muted line-through">
-                  {formatIDR(product?.compare_at_price)}
+              {product?.price === 0 ? (
+                <span class="text-3xl sm:text-4xl font-bold text-green-600">
+                  Gratis
                 </span>
+              ) : (
+                <>
+                  <span class="text-3xl sm:text-4xl font-bold text-primary">
+                    {formatIDR(product?.price)}
+                  </span>
+                  {hasDiscount && (
+                    <span class="text-xl text-text-muted line-through">
+                      {formatIDR(product?.compare_at_price)}
+                    </span>
+                  )}
+                </>
               )}
             </div>
-            {hasDiscount && (
+            {hasDiscount && product?.price !== 0 && (
               <p class="text-green-600 text-sm font-medium">
                 Hemat {formatIDR(product?.compare_at_price - product?.price)} ({discount}%)
               </p>
@@ -282,10 +295,10 @@ const tags = parseTags(product?.tags);
             <a
               id="buy-button"
               href={`/checkout?product=${product?.slug}`}
-              class="btn-primary justify-center text-lg py-4"
+              class={`${product?.price === 0 ? 'btn-secondary' : 'btn-primary'} justify-center text-lg py-4`}
             >
-              <Icon name="shopping-cart" size={20} />
-              Beli Sekarang
+              <Icon name={product?.price === 0 ? 'gift' : 'shopping-cart'} size={20} />
+              {product?.price === 0 ? 'Ambil Gratis' : 'Beli Sekarang'}
             </a>
             <div id="gpt-demo-section" class="hidden">
               <a

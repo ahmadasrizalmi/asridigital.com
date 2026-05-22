@@ -327,12 +327,32 @@ const productSlug = 'loading';
       summaryProductTitle.textContent = loadedProduct.title;
       summaryProductDescription.textContent = loadedProduct.description;
 
-      const formattedPrice = formatIDR(basePrice);
+      const formattedPrice = basePrice === 0 ? 'Gratis' : formatIDR(basePrice);
       summaryPrice.textContent = formattedPrice;
+      summaryPrice.className = basePrice === 0 ? 'text-2xl font-bold text-green-600' : 'text-2xl font-bold text-text-primary';
       totalPrice.textContent = formattedPrice;
+      totalPrice.className = basePrice === 0 ? 'text-green-600' : '';
       btnPrice.textContent = formattedPrice;
       submitBtn.disabled = false;
-      applyCouponBtn.disabled = false;
+      applyCouponBtn.disabled = basePrice === 0; // Disable coupon for free products
+
+      // Update button text for free products
+      if (basePrice === 0) {
+        submitBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg> Ambil Gratis`;
+
+        // Hide payment method section for free products
+        const paymentSection = document.querySelector('[name="payment_method"]')?.closest('div[class*="space-y"]');
+        if (paymentSection) {
+          const paymentContainer = paymentSection.parentElement;
+          if (paymentContainer) paymentContainer.style.display = 'none';
+        }
+        // Hide coupon section for free products
+        const couponSection = couponInput?.closest('div[class*="space-y"]');
+        if (couponSection) {
+          const couponContainer = couponSection.parentElement;
+          if (couponContainer) couponContainer.style.display = 'none';
+        }
+      }
     } catch (error) {
       breadcrumbProductTitle.textContent = 'Produk tidak ditemukan';
       summaryProductTitle.textContent = 'Produk tidak ditemukan';

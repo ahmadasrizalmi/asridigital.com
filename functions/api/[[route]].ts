@@ -743,7 +743,20 @@ export async function onRequest(context: any): Promise<Response> {
       const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod, referredBy, csrfToken } = body;
       console.log('CHECKOUT: Body parsed', { productSlug, customerEmail, paymentMethod });
 
-      if (!productSlug || !customerEmail || !customerName || !paymentMethod) {
+      // Get product first to check if it's free
+      const product = await env.DB.prepare(
+        'SELECT * FROM products WHERE slug = ? AND is_active = 1'
+      )
+        .bind(productSlug)
+        .first();
+
+      if (!product) {
+        return jsonResponse({ error: 'Produk tidak ditemukan' }, 404);
+      }
+
+      // For free products, paymentMethod is optional
+      const isFree = product.price === 0;
+      if (!productSlug || !customerEmail || !customerName || (!isFree && !paymentMethod)) {
         return jsonResponse({ error: 'Data tidak lengkap' }, 400);
       }
 
@@ -754,17 +767,6 @@ export async function onRequest(context: any): Promise<Response> {
       // Validate email
       if (!isValidEmail(sanitizedEmail)) {
         return jsonResponse({ error: 'Format email tidak valid' }, 400);
-      }
-
-      // Get product
-      const product = await env.DB.prepare(
-        'SELECT * FROM products WHERE slug = ? AND is_active = 1'
-      )
-        .bind(productSlug)
-        .first();
-
-      if (!product) {
-        return jsonResponse({ error: 'Produk tidak ditemukan' }, 404);
       }
 
       let discountAmount = 0;
@@ -842,70 +844,90 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      // Create DompetX payment (signed request)
+      // Create DompetX payment (signed request) - skip for free products
       let paymentUrl = null;
       let paymentData = null;
 
-      try {
-        const apiKey = env.DOMPETX_API_KEY || '';
-        const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
-        const timestamp = Math.floor(Date.now() / 1000).toString();
-        
-        const requestBody = JSON.stringify({
-          ref_id: orderId,
-          amount: finalAmount,
-          currency: 'IDR',
-          description: `Pembelian ${product.title}`,
-          customer_email: customerEmail,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          payment_method: paymentMethod,
-          return_url: `${env.APP_URL}/success?order=${orderId}`,
-          expiry_minutes: 60
-        });
+      if (!isFree && finalAmount > 0) {
+        try {
+          const apiKey = env.DOMPETX_API_KEY || '';
+          const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          
+          const requestBody = JSON.stringify({
+            ref_id: orderId,
+            amount: finalAmount,
+            currency: 'IDR',
+            description: `Pembelian ${product.title}`,
+            customer_email: customerEmail,
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            payment_method: paymentMethod,
+            return_url: `${env.APP_URL}/success?order=${orderId}`,
+            expiry_minutes: 60
+          });
 
-        // HMAC-SHA256 signature: timestamp + '.' + body
-        const encoder = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          'raw', encoder.encode(apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-        );
-        const signatureBuffer = await crypto.subtle.sign(
-          'HMAC', key, encoder.encode(timestamp + '.' + requestBody)
-        );
-        const signature = Array.from(new Uint8Array(signatureBuffer))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
+          // HMAC-SHA256 signature: timestamp + '.' + body
+          const encoder = new TextEncoder();
+          const key = await crypto.subtle.importKey(
+            'raw', encoder.encode(apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+          );
+          const signatureBuffer = await crypto.subtle.sign(
+            'HMAC', key, encoder.encode(timestamp + '.' + requestBody)
+          );
+          const signature = Array.from(new Uint8Array(signatureBuffer))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
 
-        console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
-        
-        const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-DOMPAY-API-Key': apiKey,
-            'X-DOMPAY-Timestamp': timestamp,
-            'X-DOMPAY-Signature': signature
-          },
-          body: requestBody
-        });
+          console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
+          
+          const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-DOMPAY-API-Key': apiKey,
+              'X-DOMPAY-Timestamp': timestamp,
+              'X-DOMPAY-Signature': signature
+            },
+            body: requestBody
+          });
 
-        const dompetxData = await dompetxResponse.json() as any;
-        console.log('DOMPETX: Response', JSON.stringify(dompetxData));
+          const dompetxData = await dompetxResponse.json() as any;
+          console.log('DOMPETX: Response', JSON.stringify(dompetxData));
 
-        if (dompetxData.payment_url || dompetxData.id) {
-          paymentUrl = dompetxData.payment_url;
-          paymentData = dompetxData;
+          if (dompetxData.payment_url || dompetxData.id) {
+            paymentUrl = dompetxData.payment_url;
+            paymentData = dompetxData;
 
-          // Update order with DompetX reference
-          await env.DB.prepare(
-            'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
-          )
-            .bind(paymentUrl, dompetxData.id, orderId)
-            .run();
-        } else {
-          console.error('DOMPETX: Checkout failed', dompetxData);
+            // Update order with DompetX reference
+            await env.DB.prepare(
+              'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
+            )
+              .bind(paymentUrl, dompetxData.id, orderId)
+              .run();
+          } else {
+            console.error('DOMPETX: Checkout failed', dompetxData);
+          }
+        } catch (error: any) {
+          console.error('DOMPETX: Error', error.message);
         }
-      } catch (error: any) {
-        console.error('DOMPETX: Error', error.message);
+      } else {
+        console.log('CHECKOUT: Free product, skipping payment gateway');
+      }
+
+      // Free products (price=0 or coupon covers full amount) - skip payment
+      if (finalAmount <= 0) {
+        await env.DB.prepare(
+          "UPDATE orders SET status = 'PAID', paid_at = datetime('now') WHERE id = ?"
+        ).bind(orderId).run();
+
+        return jsonResponse({
+          success: true,
+          orderId,
+          orderCode,
+          amount: finalAmount,
+          discount: discountAmount
+          // No paymentUrl - frontend will redirect to success page
+        });
       }
 
       // If DompetX fails, fall back to direct success
@@ -1444,7 +1466,7 @@ export async function onRequest(context: any): Promise<Response> {
       const body = await request.json();
       const { id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured } = body;
 
-      if (!title || !slug || !price) {
+      if (!title || !slug || price === undefined || price === null) {
         return jsonResponse({ error: 'Title, slug, dan price wajib diisi' }, 400);
       }
 
@@ -1479,29 +1501,34 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.startsWith('/admin/products/') && method === 'PUT') {
       const productId = route.split('/')[3];
       const body = await request.json();
-      const { title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured } = body;
+
+      // Build dynamic SET clause - only update fields that were provided
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.title !== undefined) { updates.push('title = ?'); values.push(body.title); }
+      if (body.slug !== undefined) { updates.push('slug = ?'); values.push(body.slug); }
+      if (body.description !== undefined) { updates.push('description = ?'); values.push(body.description); }
+      if (body.short_description !== undefined) { updates.push('short_description = ?'); values.push(body.short_description); }
+      if (body.price !== undefined) { updates.push('price = ?'); values.push(body.price); }
+      if (body.compare_at_price !== undefined) { updates.push('compare_at_price = ?'); values.push(body.compare_at_price); }
+      if (body.category !== undefined) { updates.push('category = ?'); values.push(body.category); }
+      if (body.gpt_url !== undefined) { updates.push('gpt_url = ?'); values.push(body.gpt_url); }
+      if (body.tags !== undefined) { updates.push('tags = ?'); values.push(typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags)); }
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
+      if (body.is_featured !== undefined) { updates.push('is_featured = ?'); values.push(body.is_featured ? 1 : 0); }
+
+      if (updates.length === 0) {
+        return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+      }
+
+      updates.push("updated_at = datetime('now')");
+      values.push(productId);
 
       await env.DB.prepare(
-        `UPDATE products 
-         SET title = ?, slug = ?, description = ?, short_description = ?, price = ?, 
-             compare_at_price = ?, category = ?, gpt_url = ?, tags = ?, 
-             is_active = ?, is_featured = ?, updated_at = datetime('now')
-         WHERE id = ?`
+        `UPDATE products SET ${updates.join(', ')} WHERE id = ?`
       )
-        .bind(
-          title,
-          slug,
-          description,
-          short_description,
-          price,
-          compare_at_price,
-          category,
-          gpt_url,
-          typeof tags === 'string' ? tags : JSON.stringify(tags),
-          is_active !== false ? 1 : 0,
-          is_featured ? 1 : 0,
-          productId
-        )
+        .bind(...values)
         .run();
 
       return jsonResponse({ success: true });

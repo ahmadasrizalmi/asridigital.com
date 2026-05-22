@@ -15,8 +15,9 @@ const product = {
   imageIcon: rawProduct.imageIcon ?? rawProduct.image_icon ?? null,
   isFeatured: rawProduct.isFeatured ?? rawProduct.is_featured ?? false,
 };
-const tags = parseTags(product.tags);
+    const tags = parseTags(product.tags);
 const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+const isFree = product.price === 0;
 const discount = hasDiscount 
   ? Math.round((1 - product.price / product.compareAtPrice!) * 100) 
   : 0;
@@ -34,7 +35,12 @@ const discount = hasDiscount
     
     {/* Badges */}
     <div class="absolute top-3 left-3 flex gap-2">
-      {hasDiscount && (
+      {isFree && (
+        <span class="badge-success">
+          GRATIS
+        </span>
+      )}
+      {hasDiscount && !isFree && (
         <span class="badge-danger">
           HEMAT {discount}%
         </span>
@@ -81,13 +87,21 @@ const discount = hasDiscount
     {/* Price & Actions */}
     <div class="mt-auto pt-4 border-t border-border">
       <div class="flex items-baseline gap-2 mb-4">
-        <span class="text-2xl font-bold text-text-primary">
-          {formatIDR(product.price)}
-        </span>
-        {hasDiscount && (
-          <span class="text-sm text-text-muted line-through">
-            {formatIDR(product.compareAtPrice!)}
+        {isFree ? (
+          <span class="text-2xl font-bold text-green-600">
+            Gratis
           </span>
+        ) : (
+          <>
+            <span class="text-2xl font-bold text-text-primary">
+              {formatIDR(product.price)}
+            </span>
+            {hasDiscount && (
+              <span class="text-sm text-text-muted line-through">
+                {formatIDR(product.compareAtPrice!)}
+              </span>
+            )}
+          </>
         )}
       </div>
       
@@ -102,10 +116,10 @@ const discount = hasDiscount
         
         <a 
           href={`/checkout?product=${product.slug}`}
-          class="btn-primary flex-1 justify-center text-sm"
+          class={`flex-1 justify-center text-sm ${isFree ? 'btn-secondary' : 'btn-primary'}`}
         >
-          <Icon name="shopping-cart" size={16} />
-          Beli
+          <Icon name={isFree ? 'gift' : 'shopping-cart'} size={16} />
+          {isFree ? 'Ambil Gratis' : 'Beli'}
         </a>
       </div>
       

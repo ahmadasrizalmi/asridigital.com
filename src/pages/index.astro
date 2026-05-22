@@ -449,4 +449,81 @@ const stats = [
     const cleanUrl = window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
   }
+
+  // Dynamic product loading - fetch fresh products from API
+  function formatIDR(amount) {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  function renderProductCard(product) {
+    const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+    const isFree = product.price === 0;
+    const discount = hasDiscount ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
+    const tags = (() => { try { return Array.isArray(product.tags) ? product.tags : JSON.parse(product.tags || '[]'); } catch { return []; } })();
+    const desc = product.short_description || product.description || '';
+
+    let badges = '';
+    if (isFree) badges += '<span class="badge-success">GRATIS</span>';
+    else if (hasDiscount) badges += `<span class="badge-danger">HEMAT ${discount}%</span>`;
+    if (product.is_featured) badges += '<span class="badge-warning">POPULER</span>';
+
+    let priceHtml;
+    if (isFree) {
+      priceHtml = '<span class="text-2xl font-bold text-green-600">Gratis</span>';
+    } else {
+      priceHtml = `<span class="text-2xl font-bold text-text-primary">${formatIDR(product.price)}</span>`;
+      if (hasDiscount) priceHtml += `<span class="text-sm text-text-muted line-through">${formatIDR(product.compare_at_price)}</span>`;
+    }
+
+    const tagsHtml = tags.slice(0, 3).map(t => `<span class="text-xs text-text-muted">#${t}</span>`).join('');
+
+    return `
+      <div class="card-hover group">
+        <div class="relative h-48 overflow-hidden bg-background">
+          <img src="${product.image_icon || '/images/placeholder.jpg'}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <div class="absolute top-3 left-3 flex gap-2">${badges}</div>
+          <div class="absolute bottom-3 left-3"><span class="badge-muted">${product.category || 'produk'}</span></div>
+        </div>
+        <div class="p-5">
+          ${tagsHtml ? `<div class="flex flex-wrap gap-1.5 mb-3">${tagsHtml}</div>` : ''}
+          <h3 class="font-semibold text-lg mb-2 text-text-primary group-hover:text-primary transition-colors line-clamp-2">${product.title}</h3>
+          <p class="text-sm text-text-secondary mb-4 line-clamp-2">${desc}</p>
+          <div class="mt-auto pt-4 border-t border-border">
+            <div class="flex items-baseline gap-2 mb-4">${priceHtml}</div>
+            <div class="flex gap-2">
+              <a href="/product/${product.slug}" class="btn-tertiary flex-1 justify-center text-sm">Detail</a>
+              <a href="/checkout?product=${product.slug}" class="${isFree ? 'btn-secondary' : 'btn-primary'} flex-1 justify-center text-sm">${isFree ? 'Ambil Gratis' : 'Beli'}</a>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function loadFreshProducts() {
+    try {
+      const response = await fetch('/api/products?limit=12');
+      if (!response.ok) return;
+      const data = await response.json();
+      if (!data.products || data.products.length === 0) return;
+
+      const allAccessSlug = 'lifetime-all-access-pass';
+      const filtered = data.products.filter(p => p.slug !== allAccessSlug);
+      if (filtered.length === 0) return;
+
+      const grid = document.querySelector('#produk .grid');
+      if (!grid) return;
+
+      grid.innerHTML = filtered.map((p, i) =>
+        `<div class="animate-slide-up" style="animation-delay: ${i * 0.1}s">${renderProductCard(p)}</div>`
+      ).join('');
+    } catch (err) {
+      console.log('Dynamic product load failed, using static fallback:', err);
+    }
+  }
+
+  loadFreshProducts();
 </script>
