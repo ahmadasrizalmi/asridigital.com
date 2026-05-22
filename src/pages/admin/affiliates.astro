@@ -121,82 +121,7 @@ import Icon from '../../components/ui/Icon.astro';
                 </tr>
               </thead>
               <tbody id="affiliates-table" class="divide-y divide-border">
-                <!-- Mock data - replace with API call -->
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div>
-                      <p class="font-medium text-text-primary">Ahmad Rizalmi</p>
-                      <p class="text-xs text-text-muted">ahmad@example.com</p>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">AHMAD20</span>
-                  </td>
-                  <td class="px-6 py-4 font-medium text-text-primary">20%</td>
-                  <td class="px-6 py-4 text-text-main">5</td>
-                  <td class="px-6 py-4 font-medium text-green-600">Rp 149.500</td>
-                  <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div>
-                      <p class="font-medium text-text-primary">Siti Nurhaliza</p>
-                      <p class="text-xs text-text-muted">siti@example.com</p>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">SITI15</span>
-                  </td>
-                  <td class="px-6 py-4 font-medium text-text-primary">15%</td>
-                  <td class="px-6 py-4 text-text-main">3</td>
-                  <td class="px-6 py-4 font-medium text-green-600">Rp 59.700</td>
-                  <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div>
-                      <p class="font-medium text-text-primary">Budi Santoso</p>
-                      <p class="text-xs text-text-muted">budi@example.com</p>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">BUDI10</span>
-                  </td>
-                  <td class="px-6 py-4 font-medium text-text-primary">10%</td>
-                  <td class="px-6 py-4 text-text-main">4</td>
-                  <td class="px-6 py-4 font-medium text-green-600">Rp 39.600</td>
-                  <td class="px-6 py-4"><span class="badge-warning">Pending</span></td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colspan="7" class="px-6 py-12 text-center text-text-muted">Memuat data affiliate...</td></tr>
               </tbody>
             </table>
           </div>
@@ -248,17 +173,227 @@ import Icon from '../../components/ui/Icon.astro';
 </BaseLayout>
 
 <script>
+  const API_BASE = '/api';
+
+  function getAdminToken(): string | null {
+    return localStorage.getItem('admin_token');
+  }
+
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
   function openModal() {
     document.getElementById('affiliate-modal')!.classList.remove('hidden');
   }
+  (window as any).openModal = openModal;
 
   function closeModal() {
     document.getElementById('affiliate-modal')!.classList.add('hidden');
   }
+  (window as any).closeModal = closeModal;
 
+  async function copyReferralCode(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+      alert(`Kode referral "${code}" berhasil disalin!`);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = code;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert(`Kode referral "${code}" berhasil disalin!`);
+    }
+  }
+  (window as any).copyReferralCode = copyReferralCode;
+
+  function viewAffiliateDetails(affiliate: any) {
+    const details = [
+      `Nama: ${affiliate.name || '-'}`,
+      `Email: ${affiliate.email || '-'}`,
+      `Kode Referral: ${affiliate.code || '-'}`,
+      `Komisi: ${affiliate.commission || 0}%`,
+      `Total Referral: ${affiliate.totalReferrals || 0}`,
+      `Total Komisi: ${formatIDR(affiliate.totalCommission || 0)}`,
+      `Status: ${affiliate.status || '-'}`,
+    ].join('\n');
+    alert(details);
+  }
+  (window as any).viewAffiliateDetails = viewAffiliateDetails;
+
+  let allAffiliates: any[] = [];
+
+  async function loadAffiliates() {
+    const table = document.getElementById('affiliates-table')!;
+    const token = getAdminToken();
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
+
+    try {
+      // Try fetching admin stats for any affiliate-related data
+      const res = await fetch(`${API_BASE}/admin/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('admin_token');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (!res.ok) throw new Error('Failed to fetch admin stats');
+      const data = await res.json() as any;
+
+      // Extract affiliate data from stats if available
+      const affiliates = data.affiliates || data.stats?.affiliates || [];
+      allAffiliates = Array.isArray(affiliates) ? affiliates : [];
+
+      // Update summary stats
+      const totalAffiliates = allAffiliates.length;
+      const totalCommission = allAffiliates.reduce((sum: number, a: any) => sum + (a.totalCommission || a.total_commission || 0), 0);
+      const totalReferrals = allAffiliates.reduce((sum: number, a: any) => sum + (a.totalReferrals || a.total_referrals || 0), 0);
+
+      const statAffEl = document.getElementById('stat-affiliates');
+      const statCommEl = document.getElementById('stat-commission');
+      const statRefEl = document.getElementById('stat-referrals');
+
+      if (statAffEl) statAffEl.textContent = totalAffiliates.toString();
+      if (statCommEl) statCommEl.textContent = formatIDR(totalCommission);
+      if (statRefEl) statRefEl.textContent = totalReferrals.toString();
+
+      renderAffiliateTable();
+    } catch (error) {
+      console.error('Error loading affiliates:', error);
+      table.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Gagal memuat data affiliate.</td></tr>`;
+    }
+  }
+
+  function renderAffiliateTable() {
+    const table = document.getElementById('affiliates-table')!;
+
+    if (allAffiliates.length === 0) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="7" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center gap-2">
+              <p class="text-text-muted text-sm">Belum ada affiliate terdaftar.</p>
+              <p class="text-text-muted text-xs">Klik "Tambah Affiliate" untuk menambahkan affiliate baru.</p>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    table.innerHTML = allAffiliates.map((a: any) => {
+      const name = a.name || a.user_name || '-';
+      const email = a.email || a.user_email || '-';
+      const code = a.code || a.referral_code || '-';
+      const commission = a.commission || a.commission_rate || 0;
+      const referrals = a.totalReferrals || a.total_referrals || 0;
+      const totalComm = a.totalCommission || a.total_commission || 0;
+      const status = a.status || 'active';
+      const isActive = status === 'active' || status === 'Aktif' || a.is_active;
+      const badge = isActive
+        ? '<span class="badge-success">Aktif</span>'
+        : '<span class="badge-warning">Pending</span>';
+
+      // Encode affiliate data for the view button
+      const affJson = JSON.stringify(a).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      return `
+        <tr class="hover:bg-background/50">
+          <td class="px-6 py-4">
+            <div>
+              <p class="font-medium text-text-primary">${name}</p>
+              <p class="text-xs text-text-muted">${email}</p>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">${code}</span>
+          </td>
+          <td class="px-6 py-4 font-medium text-text-primary">${commission}%</td>
+          <td class="px-6 py-4 text-text-main">${referrals}</td>
+          <td class="px-6 py-4 font-medium text-green-600">${formatIDR(totalComm)}</td>
+          <td class="px-6 py-4">${badge}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+              <button onclick="copyReferralCode('${code}')" class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Salin kode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+              <button onclick='viewAffiliateDetails(${affJson})' class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Lihat detail">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // Form submit handler
   document.getElementById('affiliate-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    alert('Fitur tambah affiliate akan segera tersedia.');
-    closeModal();
+
+    const userSelect = document.getElementById('affiliate-user') as HTMLSelectElement;
+    const codeInput = document.getElementById('affiliate-code') as HTMLInputElement;
+    const commissionInput = document.getElementById('affiliate-commission') as HTMLInputElement;
+
+    const userId = userSelect?.value;
+    const code = codeInput?.value?.trim();
+    const commission = commissionInput?.value;
+
+    if (!userId || !code) {
+      alert('Harap isi semua field yang diperlukan.');
+      return;
+    }
+
+    const token = getAdminToken();
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
+
+    try {
+      // Try to create affiliate via API
+      const res = await fetch(`${API_BASE}/admin/affiliates`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, code: code.toUpperCase(), commission: Number(commission) })
+      });
+
+      if (res.ok) {
+        alert('Affiliate berhasil ditambahkan!');
+        closeModal();
+        loadAffiliates();
+      } else if (res.status === 404) {
+        alert('Endpoint belum tersedia. Fitur tambah affiliate akan segera hadir.');
+        closeModal();
+      } else {
+        const data = await res.json() as any;
+        alert(data.error || 'Gagal menambahkan affiliate.');
+      }
+    } catch (error) {
+      alert('Fitur tambah affiliate belum tersedia. Silakan hubungi developer.');
+      closeModal();
+    }
   });
+
+  // Load on page ready
+  const existingToken = getAdminToken();
+  if (existingToken) {
+    loadAffiliates();
+  } else {
+    window.location.href = '/admin/login';
+  }
 </script>

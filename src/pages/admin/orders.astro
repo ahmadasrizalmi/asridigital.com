@@ -217,10 +217,25 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function markAsPaid(orderId: string) {
     if (!confirm('Tandai pesanan ini sebagai LUNAS?')) return;
-    
-    // This would need a PATCH endpoint to update order status
-    // For now, just show message
-    alert('Fitur ini akan segera tersedia. Gunakan webhook DompetX untuk update otomatis.');
+    const token = localStorage.getItem('admin_token');
+    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
+    try {
+      const response = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status: 'PAID' })
+      });
+      const result = await response.json() as any;
+      if (response.ok) {
+        alert('Pesanan berhasil ditandai LUNAS!');
+        loadOrders();
+      } else {
+        alert(result.error || 'Gagal update status');
+      }
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('Terjadi kesalahan.');
+    }
   }
 
   function exportOrders() {

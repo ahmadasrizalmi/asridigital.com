@@ -170,7 +170,9 @@ import Icon from '../../components/ui/Icon.astro';
 </BaseLayout>
 
 <script>
-  const API_BASE = '/api';
+  function getAdminToken(): string | null {
+    return localStorage.getItem('admin_token');
+  }
 
   function formatIDR(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
@@ -181,83 +183,69 @@ import Icon from '../../components/ui/Icon.astro';
   }
 
   async function loadCoupons() {
+    const table = document.getElementById('coupons-table')!;
+    const token = getAdminToken();
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
     try {
-      // This would need a dedicated coupons API endpoint
-      // For now, show placeholder data
-      const table = document.getElementById('coupons-table')!;
-      table.innerHTML = `
+      const res = await fetch('/api/admin/coupons', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('admin_token');
+        window.location.href = '/admin/login';
+        return;
+      }
+      if (!res.ok) throw new Error('Failed to fetch coupons');
+      const data = await res.json();
+      const coupons = data.coupons || [];
+
+      if (coupons.length === 0) {
+        table.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-text-muted">Belum ada kupon.</td></tr>`;
+        return;
+      }
+
+      table.innerHTML = coupons.map((c: any) => {
+        const typeLabel = c.type === 'PERCENTAGE' ? 'Persentase' : 'Nominal';
+        const valueDisplay = c.type === 'PERCENTAGE' ? `${c.value}%` : formatIDR(c.value);
+        const minPurchase = c.min_purchase ? formatIDR(c.min_purchase) : '-';
+        const expiresDisplay = c.expires_at
+          ? new Date(c.expires_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '-';
+        const statusBadge = c.is_active
+          ? '<span class="badge-success">Aktif</span>'
+          : '<span class="badge-error">Nonaktif</span>';
+
+        return `
         <tr class="hover:bg-background/50">
           <td class="px-6 py-4">
-            <span class="font-mono text-sm font-medium text-primary bg-primary/10 px-2 py-1 rounded">LAUNCH50</span>
+            <span class="font-mono text-sm font-medium text-primary bg-primary/10 px-2 py-1 rounded">${c.code}</span>
           </td>
-          <td class="px-6 py-4 text-text-main">Persentase</td>
-          <td class="px-6 py-4 font-medium text-text-primary">50%</td>
+          <td class="px-6 py-4 text-text-main">${typeLabel}</td>
+          <td class="px-6 py-4 font-medium text-text-primary">${valueDisplay}</td>
           <td class="px-6 py-4">
-            <span class="text-text-muted">0 / 100</span>
+            <span class="text-text-muted">${c.current_uses ?? 0} / ${c.max_uses ?? '∞'}</span>
           </td>
-          <td class="px-6 py-4 text-text-main">-</td>
-          <td class="px-6 py-4 text-text-muted">31 Des 2026</td>
-          <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
+          <td class="px-6 py-4 text-text-main">${minPurchase}</td>
+          <td class="px-6 py-4 text-text-muted">${expiresDisplay}</td>
+          <td class="px-6 py-4">${statusBadge}</td>
           <td class="px-6 py-4">
             <div class="flex items-center gap-2">
-              <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
+              <button onclick='editCoupon(${JSON.stringify(c).replace(/'/g, "&#39;")})' class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </button>
-              <button class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
+              <button onclick="deleteCoupon(${c.id})" class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
               </button>
             </div>
           </td>
-        </tr>
-        <tr class="hover:bg-background/50">
-          <td class="px-6 py-4">
-            <span class="font-mono text-sm font-medium text-primary bg-primary/10 px-2 py-1 rounded">DISKON20K</span>
-          </td>
-          <td class="px-6 py-4 text-text-main">Nominal</td>
-          <td class="px-6 py-4 font-medium text-text-primary">${formatIDR(20000)}</td>
-          <td class="px-6 py-4">
-            <span class="text-text-muted">0 / 50</span>
-          </td>
-          <td class="px-6 py-4 text-text-main">${formatIDR(100000)}</td>
-          <td class="px-6 py-4 text-text-muted">30 Jun 2026</td>
-          <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
-          <td class="px-6 py-4">
-            <div class="flex items-center gap-2">
-              <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              <button class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr class="hover:bg-background/50">
-          <td class="px-6 py-4">
-            <span class="font-mono text-sm font-medium text-primary bg-primary/10 px-2 py-1 rounded">WELCOME10</span>
-          </td>
-          <td class="px-6 py-4 text-text-main">Persentase</td>
-          <td class="px-6 py-4 font-medium text-text-primary">10%</td>
-          <td class="px-6 py-4">
-            <span class="text-text-muted">0 / 1000</span>
-          </td>
-          <td class="px-6 py-4 text-text-main">-</td>
-          <td class="px-6 py-4 text-text-muted">-</td>
-          <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
-          <td class="px-6 py-4">
-            <div class="flex items-center gap-2">
-              <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              <button class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
+        </tr>`;
+      }).join('');
     } catch (error) {
       console.error('Error loading coupons:', error);
+      table.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500">Gagal memuat data kupon.</td></tr>`;
     }
   }
 
@@ -266,6 +254,38 @@ import Icon from '../../components/ui/Icon.astro';
     (document.getElementById('coupon-form') as HTMLFormElement).reset();
     (document.getElementById('coupon-id') as HTMLInputElement).value = '';
     (document.getElementById('coupon-active') as HTMLInputElement).checked = true;
+    document.getElementById('modal-title')!.textContent = 'Tambah Kupon';
+  }
+
+  function editCoupon(coupon: any) {
+    document.getElementById('modal-title')!.textContent = 'Edit Kupon';
+    document.getElementById('coupon-modal')!.classList.remove('hidden');
+    (document.getElementById('coupon-id') as HTMLInputElement).value = coupon.id;
+    (document.getElementById('coupon-code') as HTMLInputElement).value = coupon.code;
+    (document.getElementById('coupon-type') as HTMLSelectElement).value = coupon.type;
+    (document.getElementById('coupon-value') as HTMLInputElement).value = coupon.value;
+    (document.getElementById('coupon-description') as HTMLInputElement).value = coupon.description || '';
+    (document.getElementById('coupon-max-uses') as HTMLInputElement).value = coupon.max_uses || '';
+    (document.getElementById('coupon-min-purchase') as HTMLInputElement).value = coupon.min_purchase || '';
+    (document.getElementById('coupon-expires') as HTMLInputElement).value = coupon.expires_at ? coupon.expires_at.slice(0, 16) : '';
+    (document.getElementById('coupon-active') as HTMLInputElement).checked = !!coupon.is_active;
+  }
+
+  async function deleteCoupon(id: number) {
+    if (!confirm('Yakin ingin menghapus kupon ini?')) return;
+    const token = getAdminToken();
+    if (!token) { window.location.href = '/admin/login'; return; }
+    try {
+      const res = await fetch(`/api/admin/coupons/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to delete coupon');
+      loadCoupons();
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      alert('Gagal menghapus kupon.');
+    }
   }
 
   function closeModal() {
@@ -274,22 +294,41 @@ import Icon from '../../components/ui/Icon.astro';
 
   document.getElementById('coupon-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+    const token = getAdminToken();
+    if (!token) { window.location.href = '/admin/login'; return; }
+
+    const id = (document.getElementById('coupon-id') as HTMLInputElement).value;
     const couponData = {
       code: (document.getElementById('coupon-code') as HTMLInputElement).value.toUpperCase(),
       type: (document.getElementById('coupon-type') as HTMLSelectElement).value,
       value: parseInt((document.getElementById('coupon-value') as HTMLInputElement).value),
       description: (document.getElementById('coupon-description') as HTMLInputElement).value,
-      max_uses: parseInt((document.getElementById('coupon-max-uses') as HTMLInputElement).value),
-      min_purchase: (document.getElementById('coupon-min-purchase') as HTMLInputElement).value ? 
+      max_uses: parseInt((document.getElementById('coupon-max-uses') as HTMLInputElement).value) || null,
+      min_purchase: (document.getElementById('coupon-min-purchase') as HTMLInputElement).value ?
         parseInt((document.getElementById('coupon-min-purchase') as HTMLInputElement).value) : null,
       expires_at: (document.getElementById('coupon-expires') as HTMLInputElement).value || null,
       is_active: (document.getElementById('coupon-active') as HTMLInputElement).checked,
     };
 
-    // This would need POST/PUT endpoints for coupons
-    alert('Fitur simpan kupon akan segera tersedia.');
-    closeModal();
+    try {
+      const isEdit = !!id;
+      const url = isEdit ? `/api/admin/coupons/${id}` : '/api/admin/coupons';
+      const method = isEdit ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(couponData)
+      });
+      if (!res.ok) throw new Error('Failed to save coupon');
+      closeModal();
+      loadCoupons();
+    } catch (error) {
+      console.error('Error saving coupon:', error);
+      alert('Gagal menyimpan kupon.');
+    }
   });
 
   loadCoupons();
