@@ -408,6 +408,13 @@ import Icon from '../../components/ui/Icon.astro';
     (document.getElementById('product-slug') as HTMLInputElement).value = slug;
   });
 
+  // Expose to global scope for onclick handlers
+  (window as any).openModal = openModal;
+  (window as any).closeModal = closeModal;
+  (window as any).editProduct = editProduct;
+  (window as any).toggleProduct = toggleProduct;
+  (window as any).deleteProduct = deleteProduct;
+
   // Load on page load
   loadProducts();
 </script>

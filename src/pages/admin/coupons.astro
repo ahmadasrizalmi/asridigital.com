@@ -331,5 +331,11 @@ import Icon from '../../components/ui/Icon.astro';
     }
   });
 
+  // Expose to global scope for onclick handlers
+  (window as any).openModal = openModal;
+  (window as any).closeModal = closeModal;
+  (window as any).editCoupon = editCoupon;
+  (window as any).deleteCoupon = deleteCoupon;
+
   loadCoupons();
 </script>

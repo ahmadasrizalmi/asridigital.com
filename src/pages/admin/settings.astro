@@ -304,6 +304,10 @@ import Icon from '../../components/ui/Icon.astro';
     }
   }
   
+  // Expose to global scope for onclick handlers
+  (window as any).saveSettings = saveSettings;
+  (window as any).resetSettings = resetSettings;
+
   // Load on page load
   loadSettings();
 </script>

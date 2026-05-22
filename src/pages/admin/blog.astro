@@ -361,6 +361,12 @@ import Icon from '../../components/ui/Icon.astro';
     }
   });
 
+  // Expose to global scope for onclick handlers
+  (window as any).openModal = openModal;
+  (window as any).closeModal = closeModal;
+  (window as any).editPost = editPost;
+  (window as any).deletePost = deletePost;
+
   // Load posts on page load
   loadPosts();
 </script>

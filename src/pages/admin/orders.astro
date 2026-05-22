@@ -264,6 +264,11 @@ import Icon from '../../components/ui/Icon.astro';
   // Event listeners
   document.getElementById('status-filter')?.addEventListener('change', filterOrders);
 
+  // Expose to global scope for onclick handlers
+  (window as any).exportOrders = exportOrders;
+  (window as any).viewOrder = viewOrder;
+  (window as any).markAsPaid = markAsPaid;
+
   // Load on page load
   loadOrders();
 </script>

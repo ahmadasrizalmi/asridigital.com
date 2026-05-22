@@ -378,6 +378,9 @@ import { formatIDR } from '../../lib/utils';
     showLogin();
   }
 
+  // Expose to global scope for onclick handlers
+  (window as any).adminLogout = adminLogout;
+
   // Refresh every 30 seconds
   setInterval(loadAdminStats, 30000);
 </script>
