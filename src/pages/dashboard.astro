@@ -222,6 +222,29 @@ import { formatIDR } from '../lib/utils';
   // API helper
   const API_BASE = '/api';
 
+  // Read token from URL fragment (magic login redirect)
+  (function() {
+    const hash = window.location.hash;
+    if (hash && hash.includes('token=')) {
+      const token = hash.split('token=')[1];
+      if (token) {
+        localStorage.setItem('auth_token', token);
+        // Clean URL
+        window.history.replaceState({}, '', '/dashboard');
+        // Fetch user info with the token
+        fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(data => {
+            if (data.user) {
+              localStorage.setItem('user', JSON.stringify(data.user));
+              location.reload();
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  })();
+
   function getToken(): string | null {
     return localStorage.getItem('auth_token');
   }

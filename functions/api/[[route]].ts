@@ -508,11 +508,41 @@ export async function onRequest(context: any): Promise<Response> {
                 "UPDATE orders SET status = 'PAID', paid_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
               ).bind(orderId).run();
 
-              // Send confirmation email
-              try {
-                const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
-                if (paidOrder) await sendOrderConfirmationEmail(env, paidOrder);
-              } catch (e) { console.error('Email error:', e); }
+              // Auto-create user + magic link (same as webhook handler)
+              const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+              if (paidOrder) {
+                let user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email).first();
+                let magicToken = '';
+
+                if (!user) {
+                  const userId = generateId();
+                  const randomPassword = crypto.randomUUID().slice(0, 12);
+                  const passwordHash = await hashPassword(randomPassword);
+                  try {
+                    await env.DB.prepare(
+                      'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
+                    ).bind(userId, paidOrder.user_email, paidOrder.user_name, passwordHash, paidOrder.product_id === 'ALL-ACCESS' ? 1 : 0).run();
+                    user = { id: userId };
+                  } catch (e) {
+                    user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email.toLowerCase()).first();
+                  }
+                }
+
+                if (user && paidOrder.product_id === 'ALL-ACCESS') {
+                  await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
+                }
+
+                if (user) {
+                  await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(user.id, orderId).run();
+                  magicToken = await createJWT(
+                    { userId: user.id, email: paidOrder.user_email, type: 'magic_login' },
+                    env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026',
+                    '720h'
+                  );
+                }
+
+                await sendOrderConfirmationEmail(env, paidOrder, magicToken);
+              }
 
               order.status = 'PAID';
               order.paid_at = new Date().toISOString();
@@ -528,7 +558,22 @@ export async function onRequest(context: any): Promise<Response> {
         }
       }
 
-      return jsonResponse({ order });
+      // Generate dashboard URL for PAID orders
+      let dashboardUrl = '';
+      if (order.status === 'PAID') {
+        // Get full order with user_id
+        const fullOrder = await env.DB.prepare('SELECT user_id FROM orders WHERE id = ?').bind(orderId).first();
+        if (fullOrder?.user_id) {
+          const magicToken = await createJWT(
+            { userId: fullOrder.user_id, type: 'magic_login' },
+            env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026',
+            '720h'
+          );
+          dashboardUrl = `/api/auth/magic-login?token=${magicToken}`;
+        }
+      }
+
+      return jsonResponse({ order: { ...order, dashboardUrl } });
     }
 
     if (route === '/auth/register' && method === 'POST') {
@@ -1214,22 +1259,49 @@ export async function onRequest(context: any): Promise<Response> {
           .bind(webhookData.payment_method || order.payment_method, order.id)
           .run();
 
-        // Check if All-Access Pass
-        if (order.product_id === 'ALL-ACCESS') {
-          // Find or create user by email
-          let user = await env.DB.prepare(
-            'SELECT id FROM users WHERE email = ?'
-          )
-            .bind(order.user_email)
-            .first();
+        // Auto-create user account after payment (for ALL products)
+        let user = await env.DB.prepare(
+          'SELECT id FROM users WHERE email = ?'
+        )
+          .bind(order.user_email)
+          .first();
 
-          if (user) {
+        let magicToken = '';
+        if (!user) {
+          // Create new user with random password
+          const userId = generateId();
+          const randomPassword = crypto.randomUUID().slice(0, 12);
+          const passwordHash = await hashPassword(randomPassword);
+
+          try {
             await env.DB.prepare(
-              'UPDATE users SET is_all_access = 1 WHERE id = ?'
-            )
-              .bind(user.id)
-              .run();
+              'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
+            ).bind(userId, order.user_email, order.user_name, passwordHash, order.product_id === 'ALL-ACCESS' ? 1 : 0).run();
+
+            user = { id: userId };
+          } catch (e) {
+            // User might already exist with different casing
+            user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(order.user_email.toLowerCase()).first();
           }
+        }
+
+        // Set all_access for ALL-ACCESS products
+        if (user && order.product_id === 'ALL-ACCESS') {
+          await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
+        }
+
+        // Generate magic login link (valid 30 days)
+        if (user) {
+          magicToken = await createJWT(
+            { userId: user.id, email: order.user_email, type: 'magic_login' },
+            env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026',
+            '720h' // 30 days
+          );
+
+          // Store magic link in order for success page
+          await env.DB.prepare(
+            'UPDATE orders SET user_id = ? WHERE id = ?'
+          ).bind(user.id, order.id).run();
         }
 
         // Process affiliate commission if order has referral
@@ -1266,9 +1338,9 @@ export async function onRequest(context: any): Promise<Response> {
           }
         }
 
-        // Send confirmation email
+        // Send confirmation email with magic link
         try {
-          await sendOrderConfirmationEmail(env, order);
+          await sendOrderConfirmationEmail(env, order, magicToken);
         } catch (emailError) {
           console.error('Email error:', emailError);
         }
@@ -1784,6 +1856,49 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true, message: 'Logged out successfully' });
     }
 
+    // ==================== MAGIC LOGIN ====================
+    if (route === '/auth/magic-login' && method === 'GET') {
+      const token = url.searchParams.get('token');
+      if (!token) {
+        return new Response('<html><body>Token tidak valid</body></html>', {
+          status: 400,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+
+      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      if (!payload || payload.type !== 'magic_login') {
+        return new Response('<html><body>Token tidak valid atau sudah expired</body></html>', {
+          status: 400,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+
+      // Get user info
+      const user = await env.DB.prepare('SELECT id, email, name, role, is_all_access FROM users WHERE id = ?')
+        .bind(payload.userId).first();
+
+      if (!user) {
+        return new Response('<html><body>User tidak ditemukan</body></html>', {
+          status: 404,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+
+      // Create a regular JWT for the user
+      const authToken = await createJWT(
+        { userId: user.id, email: user.email, name: user.name, role: user.role || 'user' },
+        env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026'
+      );
+
+      // Redirect to dashboard with token in URL fragment (client-side reads it)
+      const dashboardUrl = `${env.APP_URL}/dashboard#token=${authToken}`;
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': dashboardUrl }
+      });
+    }
+
     // ==================== AFFILIATE: STATS ====================
     if (route === '/affiliate/stats' && method === 'GET') {
       // Get user from auth header
@@ -2008,13 +2123,16 @@ export async function onRequest(context: any): Promise<Response> {
 }
 
 // Email helper function
-async function sendOrderConfirmationEmail(env: Env, order: any) {
+async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: string) {
   if (!env.RESEND_API_KEY || env.RESEND_API_KEY.startsWith('re_your_')) {
     console.log('Resend API key not configured, skipping email');
     return;
   }
 
   const isAllAccess = order.product_id === 'ALL-ACCESS';
+  const dashboardUrl = magicToken
+    ? `${env.APP_URL}/api/auth/magic-login?token=${magicToken}`
+    : `${env.APP_URL}/dashboard`;
   const subject = isAllAccess
     ? '🏆 Selamat! All-Access Pass Anda Aktif'
     : `🎉 Pembayaran Berhasil - ${order.product_title}`;
@@ -2072,7 +2190,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any) {
           
           <!-- CTA Button -->
           <div style="text-align: center; margin: 32px 0;">
-            <a href="${env.APP_URL}/dashboard" style="display: inline-block; background-color: #5C7A36; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #5C7A36; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
               Buka Dashboard →
             </a>
           </div>
