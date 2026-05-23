@@ -363,7 +363,12 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadProducts() {
     try {
-      const response = await fetch(`${API_BASE}/admin/products`);
+      const token = getAdminToken();
+      const response = await fetch(`${API_BASE}/admin/products`, {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       const data = await response.json() as any;
       
       const table = document.getElementById('products-table')!;
