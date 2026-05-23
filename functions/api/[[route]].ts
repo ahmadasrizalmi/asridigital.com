@@ -242,7 +242,7 @@ async function getUser(request: Request, env: Env): Promise<any> {
   }
   
   const token = authHeader.substring(7);
-  const payload = await verifyJWT(token, env.JWT_SECRET);
+  const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
   if (!payload || !payload.userId) {
     return null;
   }
@@ -625,7 +625,7 @@ export async function onRequest(context: any): Promise<Response> {
         .run();
 
       // Create JWT token
-      const token = await createJWT({ userId, email, name, role: 'user' }, env.JWT_SECRET);
+      const token = await createJWT({ userId, email, name, role: 'user' }, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
 
       return jsonResponse({
         success: true,
@@ -661,7 +661,7 @@ export async function onRequest(context: any): Promise<Response> {
       // Create JWT token
       const token = await createJWT(
         { userId: user.id, email: user.email, name: user.name, role: user.role || 'user' },
-        env.JWT_SECRET
+        env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026'
       );
 
       return jsonResponse({
