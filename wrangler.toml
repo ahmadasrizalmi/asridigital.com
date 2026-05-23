@@ -13,4 +13,4 @@ database_id = "20495966-0e22-435e-b01b-bc3db9457312"
 [vars]
 APP_URL = "https://asridigital.com"
 DOMPETX_API_URL = "https://api.dompetx.com/v1"
-DOMPETX_API_KEY = "dompk_f82e01cc83e0eb58b6c64bdf16ae9921db4e1f7b993c0efba4c686dc5b274865"
+DOMPETX_API_KEY = "dompk_91232df93e9f89aaf4971223a7d1a5a8e47676a6666add517a5afbc11c96de42"

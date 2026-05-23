@@ -478,8 +478,24 @@ export async function onRequest(context: any): Promise<Response> {
           const apiKey = env.DOMPETX_API_KEY || '';
           const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
 
-          const dompetxResponse = await fetch(`${baseUrl}/checkout/${order.dompetx_id}`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
+          // DompetX: GET /payments/checkout/check-status/{id} with signed headers
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          const encoder = new TextEncoder();
+          const hmacKey = await crypto.subtle.importKey(
+            'raw', encoder.encode(apiKey),
+            { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+          );
+          const sigInput = `${timestamp}.{}`;
+          const sigBuffer = await crypto.subtle.sign('HMAC', hmacKey, encoder.encode(sigInput));
+          const signature = Array.from(new Uint8Array(sigBuffer))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+
+          const dompetxResponse = await fetch(`${baseUrl}/payments/checkout/check-status/${order.dompetx_id}`, {
+            headers: {
+              'X-DOMPAY-API-Key': apiKey,
+              'X-DOMPAY-Signature': signature,
+              'X-DOMPAY-Timestamp': timestamp
+            }
           });
 
           if (dompetxResponse.ok) {
@@ -912,29 +928,44 @@ export async function onRequest(context: any): Promise<Response> {
           const apiKey = env.DOMPETX_API_KEY || '';
           const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
 
-          // DompetX API: POST /checkout with Bearer auth
-          const requestBody = JSON.stringify({
+          // Generate HMAC-SHA256 signature per DompetX docs
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          const requestBodyObj = {
             amount: finalAmount,
             currency: 'IDR',
-            description: `Pembelian ${product.title}`,
-            callback_url: `${env.APP_URL}/api/webhook/dompetx`,
-            success_url: `${env.APP_URL}/success?order=${orderId}`,
-            cancel_url: `${env.APP_URL}/checkout?product=${productSlug}`,
+            reference: orderCode,
             metadata: {
               order_id: orderId,
               product_slug: productSlug,
               customer_email: sanitizedEmail,
               customer_name: sanitizedName
             }
-          });
+          };
+          const requestBody = JSON.stringify(requestBodyObj);
+
+          // Signature = HMAC-SHA256(timestamp + "." + body, apiKey)
+          const encoder = new TextEncoder();
+          const key = await crypto.subtle.importKey(
+            'raw', encoder.encode(apiKey),
+            { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+          );
+          const sigInput = `${timestamp}.${requestBody}`;
+          const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(sigInput));
+          const signature = Array.from(new Uint8Array(sigBuffer))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+
+          const idempotencyKey = `req_${orderId}`;
 
           console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
 
-          const dompetxResponse = await fetch(`${baseUrl}/checkout`, {
+          const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`
+              'X-DOMPAY-API-Key': apiKey,
+              'X-DOMPAY-Signature': signature,
+              'X-DOMPAY-Timestamp': timestamp,
+              'Idempotency-Key': idempotencyKey
             },
             body: requestBody
           });
@@ -942,9 +973,9 @@ export async function onRequest(context: any): Promise<Response> {
           const dompetxData = await dompetxResponse.json() as any;
           console.log('DOMPETX: Response', JSON.stringify(dompetxData));
 
-          // DompetX returns checkout_url (not payment_url)
-          if (dompetxData.checkout_url || dompetxData.id) {
-            paymentUrl = dompetxData.checkout_url;
+          // DompetX returns payment_link (not checkout_url)
+          if (dompetxData.payment_link || dompetxData.id) {
+            paymentUrl = dompetxData.payment_link;
             paymentData = dompetxData;
 
             // Update order with DompetX reference
@@ -954,7 +985,7 @@ export async function onRequest(context: any): Promise<Response> {
               .bind(paymentUrl, dompetxData.id, orderId)
               .run();
           } else {
-            console.error('DOMPETX: Checkout failed - no checkout_url', dompetxData);
+            console.error('DOMPETX: Checkout failed', dompetxData);
           }
         } catch (error: any) {
           console.error('DOMPETX: Error', error.message);
@@ -1134,31 +1165,36 @@ export async function onRequest(context: any): Promise<Response> {
 
       console.log('WEBHOOK: Received DompetX webhook', JSON.stringify(body).substring(0, 500));
 
-      // DompetX webhook format: { event: 'checkout.paid', data: { id, status, metadata, ... } }
-      const event = body.event || '';
-      const checkoutData = body.data || body;
+      // DompetX webhook format per docs:
+      // { "data": { "id": "...", "amount": ..., "status": "paid", "currency": "IDR", "reference": "INV-XXX" }, "eventType": "deposit", "paymentId": "..." }
+      const eventType = body.eventType || '';
+      const webhookData = body.data || body;
+      const checkoutStatus = webhookData.status || '';
 
-      // Extract order ID from metadata (we set it during checkout creation)
-      const ref_id = checkoutData.metadata?.order_id || checkoutData.ref_id || checkoutData.id;
-      const checkoutStatus = checkoutData.status || '';
+      // Find order by reference (our orderCode, e.g. INV-xxx)
+      const orderCode = webhookData.reference || '';
+      const dompetxId = webhookData.id || body.paymentId || '';
 
-      // Only process payment-related events
-      const isPaidEvent = event === 'checkout.paid' || event === 'checkout.confirmed' || 
-                          checkoutStatus === 'paid' || checkoutStatus === 'confirmed';
+      // Only process paid events
+      const isPaidEvent = checkoutStatus === 'paid' || checkoutStatus === 'confirmed' || eventType === 'deposit';
 
-      if (!ref_id) {
-        console.error('WEBHOOK: No order ID found in webhook data');
-        return jsonResponse({ error: 'Missing order reference' }, 400);
+      if (!orderCode && !dompetxId) {
+        console.error('WEBHOOK: No reference or ID found');
+        return jsonResponse({ error: 'Missing reference' }, 400);
       }
 
-      console.log('WEBHOOK: Processing', { event, ref_id, status: checkoutStatus });
+      console.log('WEBHOOK: Processing', { eventType, orderCode, dompetxId, status: checkoutStatus });
 
-      // Find order
-      const order = await env.DB.prepare(
-        'SELECT * FROM orders WHERE id = ?'
-      )
-        .bind(ref_id)
-        .first();
+      // Find order by orderCode or dompetx_id
+      let order: any = null;
+      if (orderCode) {
+        order = await env.DB.prepare('SELECT * FROM orders WHERE id LIKE ? OR id = ?')
+          .bind(`%${orderCode}%`, orderCode).first();
+      }
+      if (!order && dompetxId) {
+        order = await env.DB.prepare('SELECT * FROM orders WHERE dompetx_id = ?')
+          .bind(dompetxId).first();
+      }
 
       if (!order) {
         return jsonResponse({ error: 'Order not found' }, 404);
@@ -1174,7 +1210,7 @@ export async function onRequest(context: any): Promise<Response> {
                updated_at = datetime('now')
            WHERE id = ?`
         )
-          .bind(checkoutData.payment_method || order.payment_method, ref_id)
+          .bind(webhookData.payment_method || order.payment_method, order.id)
           .run();
 
         // Check if All-Access Pass
