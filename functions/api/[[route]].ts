@@ -254,13 +254,25 @@ async function getUser(request: Request, env: Env): Promise<any> {
   return user;
 }
 
+// Helper: Get allowed CORS origin
+function getAllowedOrigin(request: Request): string {
+  const origin = request.headers.get('Origin') || '';
+  const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com', 'http://localhost:4321'];
+  return allowedOrigins.includes(origin) ? origin : 'https://asridigital.com';
+}
+
+// Module-level request reference for jsonResponse
+let _currentRequest: Request | null = null;
+
 // Helper: JSON response
-function jsonResponse(data: any, status: number = 200): Response {
+function jsonResponse(data: any, status: number = 200, request?: Request): Response {
+  const req = request || _currentRequest;
+  const origin = req ? getAllowedOrigin(req) : 'https://asridigital.com';
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': 'https://asridigital.com',
+      'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Allow-Credentials': 'true',
@@ -284,6 +296,7 @@ function timeAgo(dateStr: string): string {
 // Main request handler
 export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
+  _currentRequest = request;
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
@@ -903,7 +916,7 @@ export async function onRequest(context: any): Promise<Response> {
         if (coupon) {
           const now = new Date().toISOString();
           const isValid = (!coupon.expires_at || coupon.expires_at > now) &&
-                         (coupon.current_uses < coupon.max_uses) &&
+                         (!coupon.max_uses || coupon.current_uses < coupon.max_uses) &&
                          (!coupon.min_purchase || product.price >= coupon.min_purchase);
 
           if (isValid) {
@@ -1117,7 +1130,7 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ valid: false, message: 'Kupon sudah kedaluwarsa' });
       }
 
-      if (coupon.current_uses >= coupon.max_uses) {
+      if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
         return jsonResponse({ valid: false, message: 'Kupon sudah habis' });
       }
 
@@ -1345,14 +1358,14 @@ export async function onRequest(context: any): Promise<Response> {
           console.error('Email error:', emailError);
         }
 
-      } else if (status === 'FAILED') {
+      } else if (checkoutStatus === 'FAILED') {
         await env.DB.prepare(
           `UPDATE orders 
            SET status = 'FAILED', 
                updated_at = datetime('now')
            WHERE id = ?`
         )
-          .bind(ref_id)
+          .bind(order.id)
           .run();
       }
 
@@ -1722,8 +1735,8 @@ export async function onRequest(context: any): Promise<Response> {
       const postId = generateId();
       
       await env.DB.prepare(
-        `INSERT INTO blog_posts (id, title, slug, content, excerpt, image_url, category, tags, author_name, author_email, is_published, published_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))`
+        `INSERT INTO blog_posts (id, title, slug, content, excerpt, image_url, category, tags, author_name, is_published, published_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))`
       )
         .bind(
           postId,
@@ -1735,7 +1748,6 @@ export async function onRequest(context: any): Promise<Response> {
           category || 'general',
           typeof tags === 'string' ? tags : JSON.stringify(tags || []),
           author_name || 'Admin',
-          'admin@asridigital.com',
           is_published !== false ? 1 : 0
         )
         .run();
@@ -2036,7 +2048,7 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ valid: false, message: 'Kupon sudah kedaluwarsa' });
       }
 
-      if (coupon.current_uses >= coupon.max_uses) {
+      if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
         return jsonResponse({ valid: false, message: 'Kupon sudah habis' });
       }
 

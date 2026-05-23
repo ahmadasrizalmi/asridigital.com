@@ -103,12 +103,25 @@ import Icon from '../../components/ui/Icon.astro';
           document.cookie = `token=${encodeURIComponent(data.token)};path=/;max-age=86400;SameSite=Lax`;
           
           // Store in localStorage too
-          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('admin_token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+
+          // Verify admin role before redirecting
+          try {
+            const meRes = await fetch('/api/auth/me', {
+              headers: { 'Authorization': `Bearer ${data.token}` }
+            });
+            const meData = await meRes.json();
+            if (meData.user?.role !== 'admin') {
+              showError('Akses ditolak. Hanya admin yang bisa masuk.');
+              localStorage.removeItem('admin_token');
+              return;
+            }
+          } catch (e) { /* continue if me endpoint fails */ }
 
           // Show success message
           submitBtn.innerHTML = '✅ Login Berhasil! Mengalihkan...';
-          
+
           // Redirect to admin
           setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -136,7 +149,7 @@ import Icon from '../../components/ui/Icon.astro';
     }
 
     // Check if already logged in
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('admin_token');
     if (token) {
       // Verify by checking current user
       fetch('/api/auth/me', {

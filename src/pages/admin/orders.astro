@@ -201,7 +201,12 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadOrders() {
     try {
-      const response = await fetch(`${API_BASE}/orders`);
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch(`${API_BASE}/orders`, {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       const data = await response.json() as any;
       allOrders = data.orders || [];
       renderOrders(allOrders);
