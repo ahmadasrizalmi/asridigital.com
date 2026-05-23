@@ -113,6 +113,7 @@ const orderId = url.searchParams.get('order') || '';
               <span class="badge-warning">Menunggu Pembayaran</span>
             </div>
           </div>
+          <p class="text-sm text-text-muted mt-4" id="pending-retry-info">Memeriksa status pembayaran...</p>
         </div>
       </div>
 
@@ -181,43 +182,67 @@ const orderId = url.searchParams.get('order') || '';
     localStorage.removeItem('last_order_id');
     localStorage.removeItem('last_order_code');
 
-    try {
-      const response = await fetch('/api/orders/' + encodeURIComponent(orderId));
-      const data = await response.json();
+    // Update URL to include order param for shareability
+    if (!urlParams.get('order')) {
+      window.history.replaceState({}, '', '/success?order=' + orderId);
+    }
 
-      if (!response.ok || !data.order) {
-        hideAll();
-        errorState?.classList.remove('hidden');
-        const em = document.getElementById('error-message');
-        if (em) em.textContent = data.error || 'Pesanan tidak ditemukan.';
-        return;
-      }
+    function showSuccess(order) {
+      hideAll();
+      successState?.classList.remove('hidden');
+      var oid = document.getElementById('order-id-display');
+      var op = document.getElementById('order-product');
+      var oa = document.getElementById('order-amount');
+      if (oid) oid.textContent = order.id;
+      if (op) op.textContent = order.product_title || '-';
+      if (oa) oa.textContent = order.amount === 0 ? 'Gratis' : 'Rp ' + (order.amount || 0).toLocaleString('id-ID');
+    }
 
-      const order = data.order;
+    function showPending(order, attempt) {
+      hideAll();
+      pendingState?.classList.remove('hidden');
+      var pid = document.getElementById('pending-order-id');
+      if (pid) pid.textContent = order.id;
+      var retryInfo = document.getElementById('pending-retry-info');
+      if (retryInfo) retryInfo.textContent = 'Memeriksa status pembayaran... (' + attempt + '/10)';
+    }
 
-      if (order.status === 'PAID') {
-        hideAll();
-        successState?.classList.remove('hidden');
-        const oid = document.getElementById('order-id-display');
-        const op = document.getElementById('order-product');
-        const oa = document.getElementById('order-amount');
-        if (oid) oid.textContent = order.id;
-        if (op) op.textContent = order.product_title || '-';
-        if (oa) oa.textContent = order.amount === 0 ? 'Gratis' : 'Rp ' + (order.amount || 0).toLocaleString('id-ID');
-      } else if (order.status === 'PENDING') {
-        hideAll();
-        pendingState?.classList.remove('hidden');
-        const pid = document.getElementById('pending-order-id');
-        if (pid) pid.textContent = order.id;
-      } else {
-        hideAll();
-        errorState?.classList.remove('hidden');
-        const em = document.getElementById('error-message');
-        if (em) em.textContent = 'Status pesanan: ' + order.status + '. Silakan hubungi support.';
-      }
-    } catch (err) {
+    function showError(msg) {
       hideAll();
       errorState?.classList.remove('hidden');
+      var em = document.getElementById('error-message');
+      if (em) em.textContent = msg || 'Pesanan tidak ditemukan.';
+    }
+
+    async function checkOrder() {
+      var response = await fetch('/api/orders/' + encodeURIComponent(orderId));
+      var data = await response.json();
+      if (!response.ok || !data.order) return { error: data.error || 'Pesanan tidak ditemukan.' };
+      return { order: data.order };
+    }
+
+    // First attempt
+    try {
+      var result = await checkOrder();
+      if (result.error) { showError(result.error); return; }
+      if (result.order.status === 'PAID') { showSuccess(result.order); return; }
+      if (result.order.status !== 'PENDING') { showError('Status pesanan: ' + result.order.status); return; }
+
+      // Poll for PENDING orders - check every 3 seconds, up to 10 times
+      for (var i = 1; i <= 10; i++) {
+        showPending(result.order, i);
+        await new Promise(function(r) { setTimeout(r, 3000); });
+        result = await checkOrder();
+        if (result.error) { showError(result.error); return; }
+        if (result.order.status === 'PAID') { showSuccess(result.order); return; }
+        if (result.order.status !== 'PENDING') { showError('Status pesanan: ' + result.order.status); return; }
+      }
+
+      // After 10 attempts, still pending
+      var retryInfo = document.getElementById('pending-retry-info');
+      if (retryInfo) retryInfo.innerHTML = 'Pembayaran sedang diproses. <a href="javascript:location.reload()" class="text-primary underline">Muat ulang</a> atau cek email Anda.';
+    } catch (err) {
+      showError('Terjadi kesalahan. Silakan muat ulang halaman.');
     }
   })();
 </script>
