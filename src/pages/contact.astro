@@ -125,12 +125,12 @@ import Icon from '../components/ui/Icon.astro';
               <h3 class="font-bold text-lg mb-4 text-text-primary">Media Sosial</h3>
               <div class="space-y-3">
                 {[
-                  { name: 'Instagram', icon: 'camera', url: '#' },
-                  { name: 'Twitter / X', icon: 'twitter', url: '#' },
-                  { name: 'YouTube', icon: 'play', url: '#' },
-                  { name: 'TikTok', icon: 'music', url: '#' },
+                  { name: 'Instagram', icon: 'camera', url: '#', key: 'instagram' },
+                  { name: 'Twitter / X', icon: 'twitter', url: '#', key: 'twitter' },
+                  { name: 'YouTube', icon: 'play', url: '#', key: 'youtube' },
+                  { name: 'TikTok', icon: 'music', url: '#', key: 'tiktok' },
                 ].map((social) => (
-                  <a href={social.url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-3 rounded-lg hover:bg-background transition-colors group">
+                  <a href={social.url} target="_blank" rel="noopener noreferrer" data-social={social.key} class="flex items-center gap-3 p-3 rounded-lg hover:bg-background transition-colors group">
                     <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                       <Icon name={social.icon} size={18} class="text-primary" />
                     </div>
@@ -223,4 +223,27 @@ import Icon from '../components/ui/Icon.astro';
       btn.innerHTML = originalHTML;
     }
   });
+</script>
+<script>
+  // Fetch social media links from site settings
+  (async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (!res.ok) return;
+      const data = await res.json();
+      const settings = data.settings || {};
+      const map: Record<string, string> = {
+        instagram: settings.instagram,
+        twitter: settings.twitter || settings.twitter_x,
+        youtube: settings.youtube,
+        tiktok: settings.tiktok,
+      };
+      for (const [key, url] of Object.entries(map)) {
+        if (url) {
+          const el = document.querySelector(`a[data-social="${key}"]`) as HTMLAnchorElement;
+          if (el) el.href = url;
+        }
+      }
+    } catch {}
+  })();
 </script>

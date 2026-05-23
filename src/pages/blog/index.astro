@@ -5,7 +5,7 @@ import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
 // Fetch blog posts from API at build time
-const apiBase = 'https://asridigital.com';
+const apiBase = '';
 let posts = [];
 try {
   const res = await fetch(`${apiBase}/api/blog/posts`);
@@ -176,12 +176,116 @@ function getCategoryMeta(category: string) {
   });
 
   // Load more button handler
-  document.getElementById('load-more')?.addEventListener('click', () => {
-    const btn = document.getElementById('load-more');
-    if (btn) {
-      btn.textContent = 'Semua artikel sudah ditampilkan';
-      (btn as HTMLButtonElement).disabled = true;
-      btn.classList.add('opacity-50', 'cursor-not-allowed');
+  let currentPage = 1;
+  let allLoaded = false;
+
+  function createPostCard(post: any, index: number) {
+    const categoryMeta: Record<string, { label: string; color: string; bgColor: string }> = {
+      'tips': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+      'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+      'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+      'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+      'ai': { label: 'AI', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+      'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+      'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
+    };
+    const iconNames = ['sparkles', 'code', 'video', 'lightbulb', 'rocket', 'star', 'zap'];
+    const iconColors = ['text-primary', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-emerald-500', 'text-rose-500', 'text-cyan-500'];
+
+    const catKey = post.category?.toLowerCase() || 'general';
+    const meta = categoryMeta[catKey] || categoryMeta['general'];
+    const iconName = iconNames[index % iconNames.length];
+    const iconCol = iconColors[index % iconColors.length];
+
+    const card = document.createElement('article');
+    card.className = 'card-hover overflow-hidden group';
+    card.setAttribute('data-category', catKey);
+
+    const imageSection = post.image_url
+      ? `<img src="${post.image_url}" alt="${post.title}" class="w-full h-48 object-cover" loading="lazy" />`
+      : `<div class="w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center">
+           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${iconCol}"><use href="#icon-${iconName}"/></svg>
+         </div>`;
+
+    const publishedDate = new Date(post.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    card.innerHTML = `
+      <div class="relative overflow-hidden">
+        ${imageSection}
+        <div class="absolute top-3 left-3">
+          <span class="px-3 py-1 ${meta.color} text-xs font-medium rounded-full">${meta.label}</span>
+        </div>
+      </div>
+      <div class="p-5">
+        <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
+          <span class="flex items-center gap-1">${post.author_name || 'Admin'}</span>
+          <span>•</span>
+          <span class="flex items-center gap-1">${publishedDate}</span>
+        </div>
+        <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">${post.title}</h2>
+        <p class="text-sm text-text-secondary mb-4 line-clamp-3">${post.excerpt || ''}</p>
+        <a href="/blog/${post.slug}/" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
+          Baca Selengkapnya
+        </a>
+      </div>
+    `;
+    return card;
+  }
+
+  document.getElementById('load-more')?.addEventListener('click', async () => {
+    const btn = document.getElementById('load-more') as HTMLButtonElement;
+    if (!btn || allLoaded) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Memuat...';
+
+    try {
+      currentPage++;
+      const res = await fetch(`/api/blog/posts?page=${currentPage}&limit=6`);
+      const data = await res.json();
+      const newPosts = data.posts || [];
+
+      if (newPosts.length === 0) {
+        allLoaded = true;
+        btn.textContent = 'Semua artikel sudah ditampilkan';
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      const grid = document.getElementById('blog-grid');
+      const existingCount = grid?.querySelectorAll('article').length || 0;
+      newPosts.forEach((post: any, i: number) => {
+        const card = createPostCard(post, existingCount + i);
+        grid?.appendChild(card);
+      });
+
+      // Update filtering to include new articles
+      const allArticles = document.querySelectorAll('article[data-category]');
+      const activeBtn = document.querySelector('.flex.flex-wrap button.bg-primary');
+      const activeCategory = (activeBtn as HTMLElement)?.getAttribute('data-category') || 'all';
+      if (activeCategory !== 'all') {
+        allArticles.forEach(article => {
+          if (activeCategory === 'all' || (article as HTMLElement).getAttribute('data-category') === activeCategory) {
+            (article as HTMLElement).style.display = '';
+          } else {
+            (article as HTMLElement).style.display = 'none';
+          }
+        });
+      }
+
+      if (newPosts.length < 6) {
+        allLoaded = true;
+        btn.textContent = 'Semua artikel sudah ditampilkan';
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Muat Lebih Banyak';
+      }
+    } catch (e) {
+      console.error('Failed to load more posts:', e);
+      btn.disabled = false;
+      btn.textContent = 'Muat Lebih Banyak';
+      currentPage--;
     }
   });
 </script>

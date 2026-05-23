@@ -5,7 +5,7 @@ import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
 export async function getStaticPaths() {
-  const apiBase = 'https://asridigital.com';
+  const apiBase = '';
   try {
     const res = await fetch(`${apiBase}/api/blog/posts`);
     const data = await res.json();

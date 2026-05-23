@@ -307,7 +307,7 @@ export async function onRequest(context: any): Promise<Response> {
   // Handle CORS preflight
   if (method === 'OPTIONS') {
     const origin = request.headers.get('Origin') || '';
-    const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com'];
+    const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com', 'http://localhost:4321', 'http://localhost:4322'];
     const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://asridigital.com';
     return new Response(null, {
       headers: {
@@ -654,11 +654,13 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Email dan password wajib diisi' }, 400);
       }
 
+      const normalizedEmail = sanitizeInput(email).toLowerCase();
+
       // Find user
       const user = await env.DB.prepare(
         'SELECT * FROM users WHERE email = ?'
       )
-        .bind(email)
+        .bind(normalizedEmail)
         .first();
 
       if (!user) {
@@ -715,11 +717,13 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Email wajib diisi' }, 400);
       }
 
-      // Check if user exists
+      const normalizedEmail = sanitizeInput(email).toLowerCase();
+
+      // Find user
       const user = await env.DB.prepare(
-        'SELECT id, email, name FROM users WHERE email = ?'
+        'SELECT * FROM users WHERE email = ?'
       )
-        .bind(email)
+        .bind(normalizedEmail)
         .first();
 
       // Always return success to prevent email enumeration
@@ -2508,13 +2512,17 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
 
   const result = await response.json() as any;
 
-  // Log email
-  await env.DB.prepare(
-    `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
-     VALUES (?, ?, 'ORDER_CONFIRMATION', 'SENT', datetime('now'))`
-  )
-    .bind(order.user_email, subject)
-    .run();
+  // Log email (best effort)
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
+       VALUES (?, ?, 'ORDER_CONFIRMATION', 'SENT', datetime('now'))`
+    )
+      .bind(order.user_email, subject)
+      .run();
+  } catch (logErr) {
+    console.error('Email log insert failed:', logErr);
+  }
 
   return result;
 }
