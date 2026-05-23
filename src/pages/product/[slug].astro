@@ -461,9 +461,9 @@ const tags = parseTags(product?.tags);
 <script define:vars={{ galleryImages, galleryVideos }}>
   let currentImageIndex = 0;
 
-  function changeMainImage(src: string, index: number) {
-    const mainImage = document.getElementById('main-image') as HTMLImageElement;
-    const counter = document.getElementById('image-counter')!;
+  function changeMainImage(src, index) {
+    const mainImage = document.getElementById('main-image');
+    const counter = document.getElementById('image-counter');
 
     mainImage.src = src;
     currentImageIndex = index;
@@ -482,9 +482,9 @@ const tags = parseTags(product?.tags);
     });
   }
 
-  function openVideoModal(videoSrc: string) {
-    const modal = document.getElementById('video-modal')!;
-    const video = document.getElementById('modal-video') as HTMLVideoElement;
+  function openVideoModal(videoSrc) {
+    const modal = document.getElementById('video-modal');
+    const video = document.getElementById('modal-video');
 
     video.src = videoSrc;
     modal.classList.remove('hidden');
@@ -493,8 +493,8 @@ const tags = parseTags(product?.tags);
   }
 
   function closeVideoModal() {
-    const modal = document.getElementById('video-modal')!;
-    const video = document.getElementById('modal-video') as HTMLVideoElement;
+    const modal = document.getElementById('video-modal');
+    const video = document.getElementById('modal-video');
 
     video.pause();
     video.src = '';
@@ -502,9 +502,9 @@ const tags = parseTags(product?.tags);
     modal.classList.remove('flex');
   }
 
-  function toggleFaq(index: number) {
-    const content = document.getElementById(`faq-content-${index}`)!;
-    const icon = document.getElementById(`faq-icon-${index}`)!;
+  function toggleFaq(index) {
+    const content = document.getElementById('faq-content-' + index);
+    const icon = document.getElementById('faq-icon-' + index);
 
     content.classList.toggle('hidden');
     icon.classList.toggle('rotate-180');
@@ -518,10 +518,10 @@ const tags = parseTags(product?.tags);
   });
 
   // Make functions globally available
-  (window as any).changeMainImage = changeMainImage;
-  (window as any).openVideoModal = openVideoModal;
-  (window as any).closeVideoModal = closeVideoModal;
-  (window as any).toggleFaq = toggleFaq;
+  window.changeMainImage = changeMainImage;
+  window.openVideoModal = openVideoModal;
+  window.closeVideoModal = closeVideoModal;
+  window.toggleFaq = toggleFaq;
 
   // Check if user owns this product and show GPT link
   (async function checkProductAccess() {
@@ -533,7 +533,7 @@ const tags = parseTags(product?.tags);
     try {
       // Check if user has access to this product
       const res = await fetch('/api/user/products', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': 'Bearer ' + token }
       });
 
       if (!res.ok) return;
@@ -542,14 +542,14 @@ const tags = parseTags(product?.tags);
       const userProducts = data.products || [];
 
       // Find current product in user's products
-      const ownedProduct = userProducts.find((p: any) => p.slug === currentSlug);
+      const ownedProduct = userProducts.find((p) => p.slug === currentSlug);
 
       if (ownedProduct && ownedProduct.gpt_url && ownedProduct.gpt_url !== '#') {
         // Show GPT access section
         const accessSection = document.getElementById('gpt-access-section');
-        const previewLink = document.getElementById('gpt-preview-link') as HTMLAnchorElement;
+        const previewLink = document.getElementById('gpt-preview-link');
         const demoSection = document.getElementById('gpt-demo-section');
-        const demoLink = document.getElementById('gpt-demo-link') as HTMLAnchorElement;
+        const demoLink = document.getElementById('gpt-demo-link');
         const buyButton = document.getElementById('buy-button');
 
         if (accessSection && previewLink) {

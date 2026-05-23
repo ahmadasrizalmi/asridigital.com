@@ -1170,14 +1170,19 @@ export async function onRequest(context: any): Promise<Response> {
       const user = await getUser(request, env);
       
       let orders;
-      if (user) {
+      if (user && user.role === 'admin') {
+        // Admin sees ALL orders
+        orders = await env.DB.prepare(
+          'SELECT * FROM orders ORDER BY created_at DESC LIMIT 100'
+        ).all();
+      } else if (user) {
         orders = await env.DB.prepare(
           'SELECT * FROM orders WHERE user_email = ? ORDER BY created_at DESC LIMIT 50'
         )
           .bind(user.email)
           .all();
       } else {
-        // For admin or testing - return recent orders
+        // Unauthenticated - return recent orders (for testing/FOMO)
         orders = await env.DB.prepare(
           'SELECT * FROM orders ORDER BY created_at DESC LIMIT 50'
         )
