@@ -25,6 +25,7 @@ import Icon from '../../components/ui/Icon.astro';
             { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
             { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
             { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
             { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
           ].map((link) => (
             <a
@@ -136,7 +137,13 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Harga *</label>
-              <input type="number" id="product-price" class="input" required />
+              <div class="flex items-center gap-3">
+                <input type="number" id="product-price" class="input flex-1" required />
+                <label class="flex items-center gap-2 whitespace-nowrap">
+                  <input type="checkbox" id="product-is-free" class="rounded" onchange="toggleFreeProduct()" />
+                  <span class="text-sm text-text-main">Gratis</span>
+                </label>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Harga Coret</label>
@@ -145,12 +152,7 @@ import Icon from '../../components/ui/Icon.astro';
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Kategori</label>
               <select id="product-category" class="input">
-                <option value="membership">Membership</option>
-                <option value="kreatif">Kreatif</option>
-                <option value="pendidikan">Pendidikan</option>
-                <option value="marketing">Marketing</option>
-                <option value="coding">Coding</option>
-                <option value="bisnis">Bisnis</option>
+                <option value="">Loading...</option>
               </select>
             </div>
           </div>
@@ -361,6 +363,39 @@ import Icon from '../../components/ui/Icon.astro';
   (window as any).addVideo = addVideo;
   (window as any).removeVideo = removeVideo;
 
+  // Toggle free product
+  function toggleFreeProduct() {
+    const priceInput = document.getElementById('product-price') as HTMLInputElement;
+    const isFree = (document.getElementById('product-is-free') as HTMLInputElement).checked;
+    if (isFree) {
+      priceInput.value = '0';
+      priceInput.disabled = true;
+    } else {
+      priceInput.disabled = false;
+      priceInput.value = '';
+    }
+  }
+  (window as any).toggleFreeProduct = toggleFreeProduct;
+
+  // Load categories from API
+  async function loadCategories() {
+    try {
+      const token = getAdminToken();
+      const res = await fetch('/api/categories', {
+        headers: { ...(token ? { 'Authorization': 'Bearer ' + token } : {}) }
+      });
+      const data = await res.json();
+      const categories = data.categories || [];
+      const select = document.getElementById('product-category') as HTMLSelectElement;
+      select.innerHTML = categories.map((c: any) =>
+        '<option value="' + c.slug + '">' + c.name + '</option>'
+      ).join('');
+    } catch (e) {
+      console.error('Error loading categories:', e);
+    }
+  }
+  loadCategories();
+
   async function loadProducts() {
     try {
       const token = getAdminToken();
@@ -388,7 +423,7 @@ import Icon from '../../components/ui/Icon.astro';
             </td>
             <td class="px-6 py-4">
               <div>
-                <p class="font-medium text-text-primary">${formatIDR(product.price)}</p>
+                ${product.price === 0 ? '<span class="badge-success">Gratis</span>' : `<p class="font-medium text-text-primary">${formatIDR(product.price)}</p>`}
                 ${product.compare_at_price ? `<p class="text-xs text-text-muted line-through">${formatIDR(product.compare_at_price)}</p>` : ''}
               </div>
             </td>
@@ -440,6 +475,11 @@ import Icon from '../../components/ui/Icon.astro';
       (document.getElementById('product-active') as HTMLInputElement).checked = product.is_active;
       (document.getElementById('product-featured') as HTMLInputElement).checked = product.is_featured;
 
+      // Handle free product checkbox
+      const isFree = product.price === 0;
+      (document.getElementById('product-is-free') as HTMLInputElement).checked = isFree;
+      (document.getElementById('product-price') as HTMLInputElement).disabled = isFree;
+
       // Load media data
       galleryImages = parseJsonField(product.gallery_images);
       coverImage = product.image_icon || galleryImages[0] || '';
@@ -457,6 +497,7 @@ import Icon from '../../components/ui/Icon.astro';
       (document.getElementById('product-form') as HTMLFormElement).reset();
       (document.getElementById('product-id') as HTMLInputElement).value = '';
       (document.getElementById('product-active') as HTMLInputElement).checked = true;
+      (document.getElementById('product-price') as HTMLInputElement).disabled = false;
       resetMedia();
     }
     

@@ -1616,6 +1616,70 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true });
     }
 
+    // ==================== CATEGORIES (PUBLIC) ====================
+    if (route === '/categories' && method === 'GET') {
+      const categories = await env.DB.prepare(
+        'SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC'
+      ).all();
+      return jsonResponse({ categories: categories.results });
+    }
+
+    // ==================== ADMIN: CATEGORIES LIST ====================
+    if (route === '/admin/categories' && method === 'GET') {
+      const categories = await env.DB.prepare(
+        'SELECT * FROM categories ORDER BY sort_order ASC'
+      ).all();
+      return jsonResponse({ categories: categories.results });
+    }
+
+    // ==================== ADMIN: CREATE CATEGORY ====================
+    if (route === '/admin/categories' && method === 'POST') {
+      const body = await request.json();
+      const { name, slug, description, icon, sort_order, is_active } = body;
+
+      if (!name || !slug) {
+        return jsonResponse({ error: 'Name dan slug wajib diisi' }, 400);
+      }
+
+      const catId = 'cat-' + slug;
+      await env.DB.prepare(
+        `INSERT INTO categories (id, name, slug, description, icon, sort_order, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+      ).bind(catId, name, slug, description || null, icon || null, sort_order || 0, is_active !== false ? 1 : 0).run();
+
+      return jsonResponse({ success: true, category: { id: catId, name, slug } });
+    }
+
+    // ==================== ADMIN: UPDATE CATEGORY ====================
+    if (route.startsWith('/admin/categories/') && method === 'PUT') {
+      const catId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.name !== undefined) { updates.push('name = ?'); values.push(body.name); }
+      if (body.slug !== undefined) { updates.push('slug = ?'); values.push(body.slug); }
+      if (body.description !== undefined) { updates.push('description = ?'); values.push(body.description); }
+      if (body.icon !== undefined) { updates.push('icon = ?'); values.push(body.icon); }
+      if (body.sort_order !== undefined) { updates.push('sort_order = ?'); values.push(body.sort_order); }
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
+
+      if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+
+      updates.push("updated_at = datetime('now')");
+      values.push(catId);
+
+      await env.DB.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: DELETE CATEGORY ====================
+    if (route.startsWith('/admin/categories/') && method === 'DELETE') {
+      const catId = route.split('/')[3];
+      await env.DB.prepare('UPDATE categories SET is_active = 0 WHERE id = ?').bind(catId).run();
+      return jsonResponse({ success: true });
+    }
+
     // ==================== ADMIN: PRODUCTS LIST ====================
     if (route === '/admin/products' && method === 'GET') {
       const products = await env.DB.prepare(
@@ -1863,6 +1927,39 @@ export async function onRequest(context: any): Promise<Response> {
         }
       }
 
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: EDIT ORDER ====================
+    if (route.match(/^\/admin\/orders\/[^/]+$/) && !route.endsWith('/status') && method === 'PUT') {
+      const orderId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.user_name !== undefined) { updates.push('user_name = ?'); values.push(body.user_name); }
+      if (body.user_email !== undefined) { updates.push('user_email = ?'); values.push(body.user_email); }
+      if (body.user_phone !== undefined) { updates.push('user_phone = ?'); values.push(body.user_phone); }
+      if (body.amount !== undefined) { updates.push('amount = ?'); values.push(body.amount); }
+      if (body.payment_method !== undefined) { updates.push('payment_method = ?'); values.push(body.payment_method); }
+      if (body.status !== undefined) {
+        updates.push('status = ?'); values.push(body.status);
+        if (body.status === 'PAID') { updates.push("paid_at = datetime('now')"); }
+      }
+
+      if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+
+      updates.push("updated_at = datetime('now')");
+      values.push(orderId);
+
+      await env.DB.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: DELETE ORDER ====================
+    if (route.match(/^\/admin\/orders\/[^/]+$/) && method === 'DELETE') {
+      const orderId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM orders WHERE id = ?').bind(orderId).run();
       return jsonResponse({ success: true });
     }
 

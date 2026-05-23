@@ -25,6 +25,7 @@ import Icon from '../../components/ui/Icon.astro';
             { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
             { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
             { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
             { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
           ].map((link) => (
             <a
@@ -67,8 +68,9 @@ import Icon from '../../components/ui/Icon.astro';
               <option value="PAID">Lunas</option>
               <option value="PENDING">Pending</option>
               <option value="FAILED">Gagal</option>
+              <option value="CANCELLED">Dibatalkan</option>
             </select>
-            <button onclick="exportOrders()" class="btn-tertiary py-2">
+            <button onclick="window.exportOrders()" class="btn-tertiary py-2">
               <Icon name="download" size={16} />
               Export
             </button>
@@ -112,6 +114,68 @@ import Icon from '../../components/ui/Icon.astro';
     </main>
   </div>
 
+  <!-- Order Detail Modal -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="window.closeDetailModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-surface rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-text-primary">Detail Pesanan</h2>
+        <button onclick="window.closeDetailModal()" class="p-2 hover:bg-background rounded-lg text-text-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="detail-content" class="space-y-3"></div>
+      <div class="mt-6 flex justify-end">
+        <button onclick="window.closeDetailModal()" class="btn-tertiary py-2 px-4">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Order Modal -->
+  <div id="edit-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="window.closeEditModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-surface rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-text-primary">Edit Pesanan</h2>
+        <button onclick="window.closeEditModal()" class="p-2 hover:bg-background rounded-lg text-text-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="edit-form" onsubmit="window.submitEditOrder(event)" class="space-y-4">
+        <input type="hidden" id="edit-order-id" />
+        <div>
+          <label class="block text-sm font-medium text-text-primary mb-1">Nama Pelanggan</label>
+          <input type="text" id="edit-user-name" class="input w-full" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-primary mb-1">Email</label>
+          <input type="email" id="edit-user-email" class="input w-full" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-primary mb-1">No. Telepon</label>
+          <input type="text" id="edit-user-phone" class="input w-full" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-primary mb-1">Jumlah (IDR)</label>
+          <input type="number" id="edit-amount" class="input w-full" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-primary mb-1">Metode Pembayaran</label>
+          <select id="edit-payment-method" class="input w-full">
+            <option value="qris">QRIS</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="ewallet">E-Wallet</option>
+            <option value="credit_card">Kartu Kredit</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="window.closeEditModal()" class="btn-tertiary py-2 px-4">Batal</button>
+          <button type="submit" class="btn-primary py-2 px-4">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('mobile-menu-btn');
@@ -145,15 +209,25 @@ import Icon from '../../components/ui/Icon.astro';
       'PAID': { class: 'badge-success', label: 'Lunas' },
       'PENDING': { class: 'badge-warning', label: 'Pending' },
       'FAILED': { class: 'badge-danger', label: 'Gagal' },
+      'CANCELLED': { class: 'bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium', label: 'Dibatalkan' },
     };
     const s = statusMap[status] || { class: 'bg-gray-100 text-gray-600', label: status };
-    return `<span class="${s.class}">${s.label}</span>`;
+    return '<span class="' + s.class + '">' + s.label + '</span>';
+  }
+
+  function getDetailRow(label: string, value: string) {
+    return '<div class="flex justify-between py-2 border-b border-border last:border-0">' +
+      '<span class="text-sm text-text-secondary">' + label + '</span>' +
+      '<span class="text-sm text-text-primary font-medium text-right">' + value + '</span>' +
+      '</div>';
   }
 
   function renderOrders(orders: any[]) {
-    const table = document.getElementById('orders-table')!;
-    const emptyState = document.getElementById('empty-state')!;
+    const table = document.getElementById('orders-table');
+    const emptyState = document.getElementById('empty-state');
     
+    if (!table || !emptyState) return;
+
     if (orders.length === 0) {
       table.innerHTML = '';
       emptyState.classList.remove('hidden');
@@ -161,53 +235,61 @@ import Icon from '../../components/ui/Icon.astro';
     }
     
     emptyState.classList.add('hidden');
-    table.innerHTML = orders.map(order => `
-      <tr class="hover:bg-background/50">
-        <td class="px-6 py-4">
-          <span class="font-mono text-sm text-text-primary">${order.id.substring(0, 12)}...</span>
-        </td>
-        <td class="px-6 py-4">
-          <div>
-            <p class="text-text-main font-medium">${order.user_name || '-'}</p>
-            <p class="text-xs text-text-muted">${order.user_email}</p>
-          </div>
-        </td>
-        <td class="px-6 py-4 text-text-main">${order.product_title}</td>
-        <td class="px-6 py-4 font-medium text-text-primary">${formatIDR(order.amount)}</td>
-        <td class="px-6 py-4">
-          <span class="px-2 py-1 bg-background rounded text-xs font-medium text-text-secondary">
-            ${(order.payment_method || 'qris').toUpperCase()}
-          </span>
-        </td>
-        <td class="px-6 py-4">${getStatusBadge(order.status)}</td>
-        <td class="px-6 py-4 text-sm text-text-muted">
-          ${new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </td>
-        <td class="px-6 py-4">
-          <div class="flex items-center gap-2">
-            <button onclick="viewOrder('${order.id}')" class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Lihat Detail">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-            ${order.status === 'PENDING' ? `
-              <button onclick="markAsPaid('${order.id}')" class="p-2.5 hover:bg-green-50 rounded-lg text-text-secondary hover:text-green-600" title="Tandai Lunas">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </button>
-            ` : ''}
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    table.innerHTML = orders.map(function(order) {
+      return '<tr class="hover:bg-background/50">' +
+        '<td class="px-6 py-4">' +
+          '<span class="font-mono text-sm text-text-primary">' + order.id.substring(0, 12) + '...</span>' +
+        '</td>' +
+        '<td class="px-6 py-4">' +
+          '<div>' +
+            '<p class="text-text-main font-medium">' + (order.user_name || '-') + '</p>' +
+            '<p class="text-xs text-text-muted">' + order.user_email + '</p>' +
+          '</div>' +
+        '</td>' +
+        '<td class="px-6 py-4 text-text-main">' + order.product_title + '</td>' +
+        '<td class="px-6 py-4 font-medium text-text-primary">' + formatIDR(order.amount) + '</td>' +
+        '<td class="px-6 py-4">' +
+          '<span class="px-2 py-1 bg-background rounded text-xs font-medium text-text-secondary">' +
+            (order.payment_method || 'qris').toUpperCase() +
+          '</span>' +
+        '</td>' +
+        '<td class="px-6 py-4">' +
+          '<select onchange="window.changeStatus(\'' + order.id + '\', this.value)" class="input py-1 text-xs">' +
+            '<option value="PENDING"' + (order.status === 'PENDING' ? ' selected' : '') + '>Pending</option>' +
+            '<option value="PAID"' + (order.status === 'PAID' ? ' selected' : '') + '>Lunas</option>' +
+            '<option value="FAILED"' + (order.status === 'FAILED' ? ' selected' : '') + '>Gagal</option>' +
+            '<option value="CANCELLED"' + (order.status === 'CANCELLED' ? ' selected' : '') + '>Dibatalkan</option>' +
+          '</select>' +
+        '</td>' +
+        '<td class="px-6 py-4 text-sm text-text-muted">' +
+          new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) +
+        '</td>' +
+        '<td class="px-6 py-4">' +
+          '<div class="flex items-center gap-1">' +
+            '<button onclick="window.viewOrder(\'' + order.id + '\')" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Lihat Detail">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
+            '</button>' +
+            '<button onclick="window.editOrder(\'' + order.id + '\')" class="p-2 hover:bg-blue-50 rounded-lg text-text-secondary hover:text-blue-600" title="Edit">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+            '</button>' +
+            '<button onclick="window.deleteOrder(\'' + order.id + '\')" class="p-2 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600" title="Hapus">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+            '</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
   }
 
   async function loadOrders() {
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`${API_BASE}/orders`, {
+      const response = await fetch(API_BASE + '/orders', {
         headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
         }
       });
-      const data = await response.json() as any;
+      const data = await response.json();
       allOrders = data.orders || [];
       renderOrders(allOrders);
     } catch (error) {
@@ -216,23 +298,161 @@ import Icon from '../../components/ui/Icon.astro';
   }
 
   function filterOrders() {
-    const status = (document.getElementById('status-filter') as HTMLSelectElement).value;
+    const el = document.getElementById('status-filter') as HTMLSelectElement;
+    const status = el.value;
     if (status === 'all') {
       renderOrders(allOrders);
     } else {
-      renderOrders(allOrders.filter(o => o.status === status));
+      renderOrders(allOrders.filter(function(o) { return o.status === status; }));
     }
   }
 
   async function viewOrder(orderId: string) {
     try {
-      const response = await fetch(`${API_BASE}/orders/${orderId}`);
-      const data = await response.json() as any;
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch(API_BASE + '/orders/' + orderId, {
+        headers: {
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+        }
+      });
+      const data = await response.json();
       const order = data.order;
-      
-      alert(`Order Details:\n\nID: ${order.id}\nCustomer: ${order.user_name} (${order.user_email})\nProduct: ${order.product_title}\nAmount: ${formatIDR(order.amount)}\nStatus: ${order.status}\nDate: ${new Date(order.created_at).toLocaleString('id-ID')}`);
+
+      const content = document.getElementById('detail-content');
+      if (!content) return;
+
+      content.innerHTML =
+        getDetailRow('Order ID', '<span class="font-mono text-xs">' + order.id + '</span>') +
+        getDetailRow('Nama', order.user_name || '-') +
+        getDetailRow('Email', order.user_email || '-') +
+        getDetailRow('Telepon', order.user_phone || '-') +
+        getDetailRow('Produk', order.product_title || '-') +
+        getDetailRow('Jumlah', formatIDR(order.amount)) +
+        getDetailRow('Metode Pembayaran', (order.payment_method || 'qris').toUpperCase()) +
+        getDetailRow('Status', getStatusBadge(order.status)) +
+        getDetailRow('Tanggal', new Date(order.created_at).toLocaleString('id-ID')) +
+        (order.paid_at ? getDetailRow('Dibayar', new Date(order.paid_at).toLocaleString('id-ID')) : '') +
+        (order.payment_reference ? getDetailRow('Ref. Pembayaran', order.payment_reference) : '');
+
+      document.getElementById('detail-modal')?.classList.remove('hidden');
     } catch (error) {
       console.error('Error viewing order:', error);
+      alert('Gagal memuat detail pesanan.');
+    }
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detail-modal')?.classList.add('hidden');
+  }
+
+  async function editOrder(orderId: string) {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch(API_BASE + '/orders/' + orderId, {
+        headers: {
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+        }
+      });
+      const data = await response.json();
+      const order = data.order;
+
+      (document.getElementById('edit-order-id') as HTMLInputElement).value = order.id;
+      (document.getElementById('edit-user-name') as HTMLInputElement).value = order.user_name || '';
+      (document.getElementById('edit-user-email') as HTMLInputElement).value = order.user_email || '';
+      (document.getElementById('edit-user-phone') as HTMLInputElement).value = order.user_phone || '';
+      (document.getElementById('edit-amount') as HTMLInputElement).value = order.amount || '';
+      (document.getElementById('edit-payment-method') as HTMLSelectElement).value = order.payment_method || 'qris';
+
+      document.getElementById('edit-modal')?.classList.remove('hidden');
+    } catch (error) {
+      console.error('Error loading order for edit:', error);
+      alert('Gagal memuat data pesanan.');
+    }
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal')?.classList.add('hidden');
+  }
+
+  async function submitEditOrder(e: Event) {
+    e.preventDefault();
+    const orderId = (document.getElementById('edit-order-id') as HTMLInputElement).value;
+    const token = localStorage.getItem('admin_token');
+    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
+
+    const body = {
+      user_name: (document.getElementById('edit-user-name') as HTMLInputElement).value,
+      user_email: (document.getElementById('edit-user-email') as HTMLInputElement).value,
+      user_phone: (document.getElementById('edit-user-phone') as HTMLInputElement).value,
+      amount: Number((document.getElementById('edit-amount') as HTMLInputElement).value),
+      payment_method: (document.getElementById('edit-payment-method') as HTMLSelectElement).value,
+    };
+
+    try {
+      const response = await fetch(API_BASE + '/admin/orders/' + orderId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        alert('Pesanan berhasil diperbarui!');
+        closeEditModal();
+        loadOrders();
+      } else {
+        alert(result.error || 'Gagal memperbarui pesanan');
+      }
+    } catch (error) {
+      console.error('Error editing order:', error);
+      alert('Terjadi kesalahan.');
+    }
+  }
+
+  async function deleteOrder(orderId: string) {
+    if (!confirm('Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.')) return;
+
+    const token = localStorage.getItem('admin_token');
+    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
+
+    try {
+      const response = await fetch(API_BASE + '/admin/orders/' + orderId, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      const result = await response.json();
+      if (response.ok) {
+        alert('Pesanan berhasil dihapus!');
+        loadOrders();
+      } else {
+        alert(result.error || 'Gagal menghapus pesanan');
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert('Terjadi kesalahan.');
+    }
+  }
+
+  async function changeStatus(orderId: string, newStatus: string) {
+    const token = localStorage.getItem('admin_token');
+    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
+
+    try {
+      const response = await fetch(API_BASE + '/admin/orders/' + orderId + '/status', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        loadOrders();
+      } else {
+        alert(result.error || 'Gagal mengubah status');
+        loadOrders();
+      }
+    } catch (error) {
+      console.error('Error changing status:', error);
+      alert('Terjadi kesalahan.');
+      loadOrders();
     }
   }
 
@@ -241,12 +461,12 @@ import Icon from '../../components/ui/Icon.astro';
     const token = localStorage.getItem('admin_token');
     if (!token) { alert('Session expired. Silakan login kembali.'); return; }
     try {
-      const response = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
+      const response = await fetch(API_BASE + '/admin/orders/' + orderId + '/status', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ status: 'PAID' })
       });
-      const result = await response.json() as any;
+      const result = await response.json();
       if (response.ok) {
         alert('Pesanan berhasil ditandai LUNAS!');
         loadOrders();
@@ -262,22 +482,24 @@ import Icon from '../../components/ui/Icon.astro';
   function exportOrders() {
     const csv = [
       ['Order ID', 'Nama', 'Email', 'Produk', 'Jumlah', 'Status', 'Tanggal'].join(','),
-      ...allOrders.map(o => [
-        o.id,
-        `"${o.user_name || ''}"`,
-        o.user_email,
-        `"${o.product_title}"`,
-        o.amount,
-        o.status,
-        new Date(o.created_at).toLocaleDateString('id-ID')
-      ].join(','))
+      ...allOrders.map(function(o) {
+        return [
+          o.id,
+          '"' + (o.user_name || '') + '"',
+          o.user_email,
+          '"' + o.product_title + '"',
+          o.amount,
+          o.status,
+          new Date(o.created_at).toLocaleDateString('id-ID')
+        ].join(',');
+      })
     ].join('\n');
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = 'orders-' + new Date().toISOString().split('T')[0] + '.csv';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -288,7 +510,13 @@ import Icon from '../../components/ui/Icon.astro';
   // Expose to global scope for onclick handlers
   (window as any).exportOrders = exportOrders;
   (window as any).viewOrder = viewOrder;
+  (window as any).editOrder = editOrder;
+  (window as any).deleteOrder = deleteOrder;
+  (window as any).changeStatus = changeStatus;
   (window as any).markAsPaid = markAsPaid;
+  (window as any).closeDetailModal = closeDetailModal;
+  (window as any).closeEditModal = closeEditModal;
+  (window as any).submitEditOrder = submitEditOrder;
 
   // Load on page load
   loadOrders();
