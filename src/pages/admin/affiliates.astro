@@ -79,7 +79,7 @@ import Icon from '../../components/ui/Icon.astro';
               </div>
               <div>
                 <p class="text-sm text-text-muted">Total Affiliate</p>
-                <p id="stat-affiliates" class="text-xl font-bold text-text-primary">3</p>
+                <p id="stat-affiliates" class="text-xl font-bold text-text-primary">-</p>
               </div>
             </div>
           </div>
@@ -90,7 +90,7 @@ import Icon from '../../components/ui/Icon.astro';
               </div>
               <div>
                 <p class="text-sm text-text-muted">Total Komisi</p>
-                <p id="stat-commission" class="text-xl font-bold text-text-primary">Rp 0</p>
+                <p id="stat-commission" class="text-xl font-bold text-text-primary">-</p>
               </div>
             </div>
           </div>
@@ -100,8 +100,8 @@ import Icon from '../../components/ui/Icon.astro';
                 <Icon name="link" size={20} class="text-amber-600" />
               </div>
               <div>
-                <p class="text-sm text-text-muted">Total Referral</p>
-                <p id="stat-referrals" class="text-xl font-bold text-text-primary">12</p>
+                <p class="text-sm text-text-muted">Total Transaksi</p>
+                <p id="stat-transactions" class="text-xl font-bold text-text-primary">-</p>
               </div>
             </div>
           </div>
@@ -148,20 +148,14 @@ import Icon from '../../components/ui/Icon.astro';
         <form id="affiliate-form" class="p-6 space-y-4">
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Pilih User</label>
-            <select class="input" id="affiliate-user">
-              <option value="">Pilih user...</option>
-              <!-- Will be populated from API -->
+            <select class="input" id="affiliate-user" required>
+              <option value="">Memuat daftar user...</option>
             </select>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Kode Affiliate</label>
-            <input type="text" class="input" id="affiliate-code" placeholder="Contoh: AHMAD20" />
-          </div>
-          
-          <div>
             <label class="block text-sm font-medium text-text-main mb-2">Komisi (%)</label>
-            <input type="number" class="input" id="affiliate-commission" value="15" min="5" max="50" />
+            <input type="number" class="input" id="affiliate-commission" value="15" min="1" max="100" required />
           </div>
           
           <div class="flex justify-end gap-3 pt-4 border-t border-border">
@@ -169,6 +163,21 @@ import Icon from '../../components/ui/Icon.astro';
             <button type="submit" class="btn-primary">Simpan</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-md w-full p-6">
+        <h2 class="text-xl font-bold text-text-primary mb-2">Hapus Affiliate?</h2>
+        <p class="text-text-secondary mb-1">Anda yakin ingin menghapus affiliate <strong id="delete-affiliate-name"></strong>?</p>
+        <p class="text-sm text-text-muted mb-6">Tindakan ini tidak dapat dibatalkan.</p>
+        <div class="flex justify-end gap-3">
+          <button onclick="closeDeleteModal()" class="btn-tertiary">Batal</button>
+          <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">Hapus</button>
+        </div>
       </div>
     </div>
   </div>
@@ -196,6 +205,11 @@ import Icon from '../../components/ui/Icon.astro';
     return localStorage.getItem('admin_token');
   }
 
+  function authHeaders(): Record<string, string> {
+    const token = getAdminToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  }
+
   function formatIDR(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -204,49 +218,68 @@ import Icon from '../../components/ui/Icon.astro';
     }).format(amount);
   }
 
+  // --- Modal management ---
   function openModal() {
     document.getElementById('affiliate-modal')!.classList.remove('hidden');
+    loadUsers();
   }
   (window as any).openModal = openModal;
 
   function closeModal() {
     document.getElementById('affiliate-modal')!.classList.add('hidden');
+    const form = document.getElementById('affiliate-form') as HTMLFormElement;
+    form?.reset();
+    (document.getElementById('affiliate-commission') as HTMLInputElement)!.value = '15';
   }
   (window as any).closeModal = closeModal;
 
+  function openDeleteModal(userId: number, name: string) {
+    document.getElementById('delete-affiliate-name')!.textContent = name;
+    document.getElementById('delete-modal')!.classList.remove('hidden');
+    const confirmBtn = document.getElementById('confirm-delete-btn')!;
+    const newBtn = confirmBtn.cloneNode(true) as HTMLElement;
+    newBtn.addEventListener('click', () => deleteAffiliate(userId));
+    confirmBtn.parentNode!.replaceChild(newBtn, confirmBtn);
+  }
+  (window as any).openDeleteModal = openDeleteModal;
+
+  function closeDeleteModal() {
+    document.getElementById('delete-modal')!.classList.add('hidden');
+  }
+  (window as any).closeDeleteModal = closeDeleteModal;
+
+  // --- Copy referral code ---
   async function copyReferralCode(code: string) {
     try {
       await navigator.clipboard.writeText(code);
-      alert(`Kode referral "${code}" berhasil disalin!`);
     } catch {
-      // Fallback for older browsers
       const textarea = document.createElement('textarea');
       textarea.value = code;
       document.body.appendChild(textarea);
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      alert(`Kode referral "${code}" berhasil disalin!`);
     }
+    showToast(`Kode referral "${code}" berhasil disalin!`);
   }
   (window as any).copyReferralCode = copyReferralCode;
 
-  function viewAffiliateDetails(affiliate: any) {
-    const details = [
-      `Nama: ${affiliate.name || '-'}`,
-      `Email: ${affiliate.email || '-'}`,
-      `Kode Referral: ${affiliate.code || '-'}`,
-      `Komisi: ${affiliate.commission || 0}%`,
-      `Total Referral: ${affiliate.totalReferrals || 0}`,
-      `Total Komisi: ${formatIDR(affiliate.totalCommission || 0)}`,
-      `Status: ${affiliate.status || '-'}`,
-    ].join('\n');
-    alert(details);
+  // --- Toast notification ---
+  function showToast(message: string, isError = false) {
+    const existing = document.getElementById('toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.className = `fixed bottom-4 right-4 z-[60] px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white transition-opacity ${isError ? 'bg-red-600' : 'bg-green-600'}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
   }
-  (window as any).viewAffiliateDetails = viewAffiliateDetails;
 
   let allAffiliates: any[] = [];
 
+  // --- Load affiliates from API ---
   async function loadAffiliates() {
     const table = document.getElementById('affiliates-table')!;
     const token = getAdminToken();
@@ -256,8 +289,7 @@ import Icon from '../../components/ui/Icon.astro';
     }
 
     try {
-      // Try fetching admin stats for any affiliate-related data
-      const res = await fetch(`${API_BASE}/admin/stats`, {
+      const res = await fetch(`${API_BASE}/admin/affiliates`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -267,25 +299,20 @@ import Icon from '../../components/ui/Icon.astro';
         return;
       }
 
-      if (!res.ok) throw new Error('Failed to fetch admin stats');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json() as any;
 
-      // Extract affiliate data from stats if available
-      const affiliates = data.affiliates || data.stats?.affiliates || [];
-      allAffiliates = Array.isArray(affiliates) ? affiliates : [];
+      allAffiliates = data.affiliates || [];
+      const stats = data.stats || {};
 
-      // Update summary stats
-      const totalAffiliates = allAffiliates.length;
-      const totalCommission = allAffiliates.reduce((sum: number, a: any) => sum + (a.totalCommission || a.total_commission || 0), 0);
-      const totalReferrals = allAffiliates.reduce((sum: number, a: any) => sum + (a.totalReferrals || a.total_referrals || 0), 0);
-
+      // Update stats from API response
       const statAffEl = document.getElementById('stat-affiliates');
       const statCommEl = document.getElementById('stat-commission');
-      const statRefEl = document.getElementById('stat-referrals');
+      const statTransEl = document.getElementById('stat-transactions');
 
-      if (statAffEl) statAffEl.textContent = totalAffiliates.toString();
-      if (statCommEl) statCommEl.textContent = formatIDR(totalCommission);
-      if (statRefEl) statRefEl.textContent = totalReferrals.toString();
+      if (statAffEl) statAffEl.textContent = (stats.total_affiliates ?? allAffiliates.length).toString();
+      if (statCommEl) statCommEl.textContent = formatIDR(stats.total_commission ?? 0);
+      if (statTransEl) statTransEl.textContent = (stats.total_transactions ?? 0).toString();
 
       renderAffiliateTable();
     } catch (error) {
@@ -294,6 +321,7 @@ import Icon from '../../components/ui/Icon.astro';
     }
   }
 
+  // --- Render affiliate table ---
   function renderAffiliateTable() {
     const table = document.getElementById('affiliates-table')!;
 
@@ -311,20 +339,19 @@ import Icon from '../../components/ui/Icon.astro';
     }
 
     table.innerHTML = allAffiliates.map((a: any) => {
-      const name = a.name || a.user_name || '-';
-      const email = a.email || a.user_email || '-';
-      const code = a.code || a.referral_code || '-';
-      const commission = a.commission || a.commission_rate || 0;
-      const referrals = a.totalReferrals || a.total_referrals || 0;
-      const totalComm = a.totalCommission || a.total_commission || 0;
-      const status = a.status || 'active';
-      const isActive = status === 'active' || status === 'Aktif' || a.is_active;
+      const name = a.user_name || a.name || '-';
+      const email = a.user_email || a.email || '-';
+      const code = a.referral_code || a.code || '-';
+      const commission = a.commission_percent || a.commission || 0;
+      const referrals = a.total_referrals ?? a.totalReferrals ?? 0;
+      const totalComm = a.total_commission ?? a.totalCommission ?? 0;
+      const userId = a.user_id || a.id;
+      const isActive = a.is_active !== false;
       const badge = isActive
         ? '<span class="badge-success">Aktif</span>'
-        : '<span class="badge-warning">Pending</span>';
+        : '<span class="badge-warning">Nonaktif</span>';
 
-      // Encode affiliate data for the view button
-      const affJson = JSON.stringify(a).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const nameEsc = name.replace(/'/g, "\\'");
 
       return `
         <tr class="hover:bg-background/50">
@@ -346,8 +373,8 @@ import Icon from '../../components/ui/Icon.astro';
               <button onclick="copyReferralCode('${code}')" class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Salin kode">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
               </button>
-              <button onclick='viewAffiliateDetails(${affJson})' class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Lihat detail">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <button onclick="openDeleteModal(${userId}, '${nameEsc}')" class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-red-600" title="Hapus affiliate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
               </button>
             </div>
           </td>
@@ -355,20 +382,84 @@ import Icon from '../../components/ui/Icon.astro';
     }).join('');
   }
 
-  // Form submit handler
+  // --- Load users for dropdown ---
+  async function loadUsers() {
+    const select = document.getElementById('affiliate-user') as HTMLSelectElement;
+    const token = getAdminToken();
+    if (!token || !select) return;
+
+    select.innerHTML = '<option value="">Memuat daftar user...</option>';
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as any;
+      const users: any[] = data.users || [];
+
+      // Filter out users who are already affiliates
+      const affiliateUserIds = new Set(allAffiliates.map((a: any) => a.user_id));
+      const availableUsers = users.filter((u: any) => !affiliateUserIds.has(u.id));
+
+      select.innerHTML = '<option value="">Pilih user...</option>';
+      availableUsers.forEach((user: any) => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `${user.name || user.email || 'User #' + user.id} (${user.email || '-'})`;
+        select.appendChild(option);
+      });
+
+      if (availableUsers.length === 0) {
+        select.innerHTML = '<option value="">Semua user sudah menjadi affiliate</option>';
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      select.innerHTML = '<option value="">Gagal memuat daftar user</option>';
+    }
+  }
+
+  // --- Delete affiliate ---
+  async function deleteAffiliate(userId: number) {
+    const token = getAdminToken();
+    if (!token) {
+      window.location.href = '/admin/login';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/affiliates/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as any;
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      closeDeleteModal();
+      showToast('Affiliate berhasil dihapus!');
+      loadAffiliates();
+    } catch (error: any) {
+      console.error('Error deleting affiliate:', error);
+      showToast(error.message || 'Gagal menghapus affiliate.', true);
+    }
+  }
+
+  // --- Form submit handler ---
   document.getElementById('affiliate-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const userSelect = document.getElementById('affiliate-user') as HTMLSelectElement;
-    const codeInput = document.getElementById('affiliate-code') as HTMLInputElement;
     const commissionInput = document.getElementById('affiliate-commission') as HTMLInputElement;
 
     const userId = userSelect?.value;
-    const code = codeInput?.value?.trim();
     const commission = commissionInput?.value;
 
-    if (!userId || !code) {
-      alert('Harap isi semua field yang diperlukan.');
+    if (!userId) {
+      showToast('Harap pilih user.', true);
       return;
     }
 
@@ -379,42 +470,35 @@ import Icon from '../../components/ui/Icon.astro';
     }
 
     try {
-      // Try to create affiliate via API
       const res = await fetch(`${API_BASE}/admin/affiliates`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ userId, code: code.toUpperCase(), commission: Number(commission) })
+        body: JSON.stringify({
+          user_id: Number(userId),
+          commission_percent: Number(commission)
+        })
       });
 
-      if (res.ok) {
-        alert('Affiliate berhasil ditambahkan!');
-        closeModal();
-        loadAffiliates();
-      } else if (res.status === 404) {
-        alert('Endpoint belum tersedia. Fitur tambah affiliate akan segera hadir.');
-        closeModal();
-      } else {
-        const data = await res.json() as any;
-        alert(data.error || 'Gagal menambahkan affiliate.');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as any;
+        throw new Error(data.error || `HTTP ${res.status}`);
       }
-    } catch (error) {
-      alert('Fitur tambah affiliate belum tersedia. Silakan hubungi developer.');
+
+      showToast('Affiliate berhasil ditambahkan!');
       closeModal();
+      loadAffiliates();
+    } catch (error: any) {
+      console.error('Error creating affiliate:', error);
+      showToast(error.message || 'Gagal menambahkan affiliate.', true);
     }
   });
 
-  // Load on page ready
+  // --- Init ---
   const existingToken = getAdminToken();
   if (existingToken) {
-    // Expose to global scope for onclick handlers
-    (window as any).openModal = openModal;
-    (window as any).closeModal = closeModal;
-    (window as any).copyReferralCode = copyReferralCode;
-    (window as any).viewAffiliateDetails = viewAffiliateDetails;
-
     loadAffiliates();
   } else {
     window.location.href = '/admin/login';

@@ -23,6 +23,7 @@ import Icon from '../../components/ui/Icon.astro';
             { icon: 'sparkles', label: 'Produk', href: '/admin/products' },
             { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders' },
             { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
             { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
             { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
             { icon: 'settings', label: 'Pengaturan', href: '/admin/settings', active: true },
@@ -277,10 +278,20 @@ import Icon from '../../components/ui/Icon.astro';
         if (s.site_name) document.getElementById('setting-site-name').value = s.site_name;
         if (s.site_description) document.getElementById('setting-site-description').value = s.site_description;
         if (s.site_url) document.getElementById('setting-site-url').value = s.site_url;
+        if (s.logo_url) document.getElementById('setting-logo-url').value = s.logo_url;
         if (s.whatsapp_number) document.getElementById('setting-whatsapp').value = s.whatsapp_number;
         if (s.email) document.getElementById('setting-email').value = s.email;
+        if (s.dompetx_api_key) document.getElementById('setting-dompetx-key').value = s.dompetx_api_key;
+        if (s.dompetx_webhook_secret) document.getElementById('setting-dompetx-webhook').value = s.dompetx_webhook_secret;
         if (s.commission_percent) document.getElementById('setting-commission').value = s.commission_percent;
+        if (s.resend_api_key) document.getElementById('setting-resend-key').value = s.resend_api_key;
+        if (s.from_email) document.getElementById('setting-from-email').value = s.from_email;
+        if (s.from_name) document.getElementById('setting-from-name').value = s.from_name;
         if (s.fomo_enabled) document.getElementById('setting-fomo-enabled').checked = s.fomo_enabled === 'true';
+        if (s.auto_email) document.getElementById('setting-auto-email').checked = s.auto_email === 'true';
+        if (s.instagram) document.getElementById('setting-instagram').value = s.instagram;
+        if (s.tiktok) document.getElementById('setting-tiktok').value = s.tiktok;
+        if (s.youtube) document.getElementById('setting-youtube').value = s.youtube;
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -292,11 +303,20 @@ import Icon from '../../components/ui/Icon.astro';
       site_name: document.getElementById('setting-site-name').value,
       site_description: document.getElementById('setting-site-description').value,
       site_url: document.getElementById('setting-site-url').value,
+      logo_url: document.getElementById('setting-logo-url').value,
       whatsapp_number: document.getElementById('setting-whatsapp').value,
       email: document.getElementById('setting-email').value,
+      dompetx_api_key: document.getElementById('setting-dompetx-key').value,
+      dompetx_webhook_secret: document.getElementById('setting-dompetx-webhook').value,
       commission_percent: document.getElementById('setting-commission').value,
+      resend_api_key: document.getElementById('setting-resend-key').value,
+      from_email: document.getElementById('setting-from-email').value,
+      from_name: document.getElementById('setting-from-name').value,
       fomo_enabled: document.getElementById('setting-fomo-enabled').checked.toString(),
       auto_email: document.getElementById('setting-auto-email').checked.toString(),
+      instagram: document.getElementById('setting-instagram').value,
+      tiktok: document.getElementById('setting-tiktok').value,
+      youtube: document.getElementById('setting-youtube').value,
     };
     
     try {

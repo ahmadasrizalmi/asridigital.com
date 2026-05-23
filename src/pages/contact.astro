@@ -86,6 +86,12 @@ import Icon from '../components/ui/Icon.astro';
                   <span class="font-medium">Pesan berhasil dikirim! Kami akan merespons dalam 24-48 jam.</span>
                 </div>
               </div>
+              <div id="form-error" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div class="flex items-center gap-2">
+                  <Icon name="alert-circle" size={20} />
+                  <span id="form-error-msg" class="font-medium">Terjadi kesalahan. Silakan coba lagi.</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -174,17 +180,47 @@ import Icon from '../components/ui/Icon.astro';
 <script>
   const form = document.getElementById('contact-form') as HTMLFormElement;
   const success = document.getElementById('form-success');
+  const errorDiv = document.getElementById('form-error');
+  const errorMsg = document.getElementById('form-error-msg');
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // Simulate form submission
     const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const originalHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = 'Mengirim...';
+    errorDiv?.classList.add('hidden');
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const formData = new FormData(form);
+    const body = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      subject: formData.get('subject') as string,
+      message: formData.get('message') as string,
+    };
 
-    form.classList.add('hidden');
-    success?.classList.remove('hidden');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        form.classList.add('hidden');
+        success?.classList.remove('hidden');
+      } else {
+        if (errorMsg) errorMsg.textContent = data.message || 'Terjadi kesalahan. Silakan coba lagi.';
+        errorDiv?.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    } catch (err) {
+      if (errorMsg) errorMsg.textContent = 'Tidak dapat menghubungi server. Periksa koneksi Anda.';
+      errorDiv?.classList.remove('hidden');
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
   });
 </script>

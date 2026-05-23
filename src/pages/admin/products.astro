@@ -250,6 +250,11 @@ import Icon from '../../components/ui/Icon.astro';
 </BaseLayout>
 
 <script>
+  // Auth guard
+  if (!localStorage.getItem('admin_token')) {
+    window.location.href = '/admin/login';
+  }
+
   const API_BASE = '/api';
 
   function getAdminToken(): string | null {
@@ -381,7 +386,7 @@ import Icon from '../../components/ui/Icon.astro';
   async function loadCategories() {
     try {
       const token = getAdminToken();
-      const res = await fetch('/api/categories', {
+      const res = await fetch('/api/admin/categories', {
         headers: { ...(token ? { 'Authorization': 'Bearer ' + token } : {}) }
       });
       const data = await res.json();

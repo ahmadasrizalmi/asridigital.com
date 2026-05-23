@@ -456,28 +456,6 @@ import Icon from '../../components/ui/Icon.astro';
     }
   }
 
-  async function markAsPaid(orderId: string) {
-    if (!confirm('Tandai pesanan ini sebagai LUNAS?')) return;
-    const token = localStorage.getItem('admin_token');
-    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
-    try {
-      const response = await fetch(API_BASE + '/admin/orders/' + orderId + '/status', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ status: 'PAID' })
-      });
-      const result = await response.json();
-      if (response.ok) {
-        alert('Pesanan berhasil ditandai LUNAS!');
-        loadOrders();
-      } else {
-        alert(result.error || 'Gagal update status');
-      }
-    } catch (error) {
-      console.error('Error updating order:', error);
-      alert('Terjadi kesalahan.');
-    }
-  }
 
   function exportOrders() {
     const csv = [
@@ -507,13 +485,17 @@ import Icon from '../../components/ui/Icon.astro';
   // Event listeners
   document.getElementById('status-filter')?.addEventListener('change', filterOrders);
 
+  // Auth guard
+  if (!localStorage.getItem('admin_token')) {
+    window.location.href = '/admin/login';
+  }
+
   // Expose to global scope for onclick handlers
   (window as any).exportOrders = exportOrders;
   (window as any).viewOrder = viewOrder;
   (window as any).editOrder = editOrder;
   (window as any).deleteOrder = deleteOrder;
   (window as any).changeStatus = changeStatus;
-  (window as any).markAsPaid = markAsPaid;
   (window as any).closeDetailModal = closeDetailModal;
   (window as any).closeEditModal = closeEditModal;
   (window as any).submitEditOrder = submitEditOrder;

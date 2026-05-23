@@ -619,7 +619,7 @@ export async function onRequest(context: any): Promise<Response> {
       const existingUser = await env.DB.prepare(
         'SELECT id FROM users WHERE email = ?'
       )
-        .bind(email)
+        .bind(sanitizedEmail)
         .first();
 
       if (existingUser) {
@@ -634,11 +634,11 @@ export async function onRequest(context: any): Promise<Response> {
       await env.DB.prepare(
         'INSERT INTO users (id, email, name, password, is_all_access, created_at, updated_at) VALUES (?, ?, ?, ?, 0, datetime("now"), datetime("now"))'
       )
-        .bind(userId, email, name, passwordHash)
+        .bind(userId, sanitizedEmail, sanitizedName, passwordHash)
         .run();
 
       // Create JWT token
-      const token = await createJWT({ userId, email, name, role: 'user' }, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const token = await createJWT({ userId, email: sanitizedEmail, name: sanitizedName, role: 'user' }, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
 
       return jsonResponse({
         success: true,
@@ -1182,9 +1182,9 @@ export async function onRequest(context: any): Promise<Response> {
           .bind(user.email)
           .all();
       } else {
-        // Unauthenticated - return recent orders (for testing/FOMO)
+        // Unauthenticated - return only minimal FOMO data (no PII leak)
         orders = await env.DB.prepare(
-          'SELECT * FROM orders ORDER BY created_at DESC LIMIT 50'
+          "SELECT id, product_title, amount, status, created_at, SUBSTR(user_name, 1, 1) || '***' as user_name FROM orders WHERE status = 'PAID' ORDER BY created_at DESC LIMIT 10"
         )
           .all();
       }
@@ -1219,6 +1219,23 @@ export async function onRequest(context: any): Promise<Response> {
     if (route === '/webhook/dompetx' && method === 'POST') {
       const rawBody = await request.text();
       let body: any;
+      
+      // Verify webhook signature if secret is configured
+      if (env.DOMPETX_WEBHOOK_SECRET) {
+        const signature = request.headers.get('X-Dompay-Signature') || request.headers.get('X-Signature') || '';
+        const timestamp = request.headers.get('X-Dompay-Timestamp') || request.headers.get('X-Timestamp') || '';
+        if (signature) {
+          const encoder = new TextEncoder();
+          const key = await crypto.subtle.importKey('raw', encoder.encode(env.DOMPETX_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+          const dataToSign = timestamp ? timestamp + rawBody : rawBody;
+          const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(dataToSign));
+          const expectedSig = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+          if (expectedSig !== signature.replace('sha256=', '')) {
+            console.error('WEBHOOK: Invalid signature');
+            return jsonResponse({ error: 'Invalid signature' }, 401);
+          }
+        }
+      }
       
       try {
         body = JSON.parse(rawBody);
@@ -2224,6 +2241,156 @@ export async function onRequest(context: any): Promise<Response> {
         console.error('Error updating admin:', error);
         return jsonResponse({ error: error.message || 'Update failed' }, 500);
       }
+    }
+
+    // ==================== CONTACT FORM ====================
+    if (route === '/contact' && method === 'POST') {
+      const body = await request.json();
+      const { name, email, subject, message } = body;
+
+      if (!name || !email || !message) {
+        return jsonResponse({ error: 'Nama, email, dan pesan wajib diisi' }, 400);
+      }
+
+      const sanitizedName = sanitizeInput(name);
+      const sanitizedEmail = sanitizeInput(email).toLowerCase();
+      const sanitizedSubject = sanitizeInput(subject || 'Pesan dari Kontak');
+      const sanitizedMessage = sanitizeInput(message);
+
+      if (!isValidEmail(sanitizedEmail)) {
+        return jsonResponse({ error: 'Format email tidak valid' }, 400);
+      }
+
+      // Store in DB
+      try {
+        await env.DB.prepare(
+          `INSERT INTO contact_messages (id, name, email, subject, message, is_read, created_at)
+           VALUES (?, ?, ?, ?, ?, 0, datetime('now'))`
+        ).bind(generateId(), sanitizedName, sanitizedEmail, sanitizedSubject, sanitizedMessage).run();
+      } catch (dbErr) {
+        // Table might not exist, create it
+        try {
+          await env.DB.prepare(
+            `CREATE TABLE IF NOT EXISTS contact_messages (
+              id TEXT PRIMARY KEY, name TEXT, email TEXT, subject TEXT, message TEXT, is_read INTEGER DEFAULT 0, created_at TEXT
+            )`
+          ).run();
+          await env.DB.prepare(
+            `INSERT INTO contact_messages (id, name, email, subject, message, is_read, created_at)
+             VALUES (?, ?, ?, ?, ?, 0, datetime('now'))`
+          ).bind(generateId(), sanitizedName, sanitizedEmail, sanitizedSubject, sanitizedMessage).run();
+        } catch (e) {
+          console.error('Contact form DB error:', e);
+        }
+      }
+
+      // Send email notification
+      try {
+        if (env.RESEND_API_KEY && !env.RESEND_API_KEY.startsWith('re_your_')) {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_API_KEY}` },
+            body: JSON.stringify({
+              from: 'Asri Digital <noreply@asridigital.com>',
+              to: 'ahmadasrizalmi@gmail.com',
+              subject: `[Kontak] ${sanitizedSubject} - dari ${sanitizedName}`,
+              html: `<p><strong>Dari:</strong> ${sanitizedName} (${sanitizedEmail})</p><p><strong>Pesan:</strong></p><p>${sanitizedMessage.replace(/\n/g, '<br>')}</p>`
+            })
+          });
+        }
+      } catch (emailErr) {
+        console.error('Contact email error:', emailErr);
+      }
+
+      return jsonResponse({ success: true, message: 'Pesan berhasil dikirim' });
+    }
+
+    // ==================== ADMIN: CONTACT MESSAGES ====================
+    if (route === '/admin/contacts' && method === 'GET') {
+      try {
+        const messages = await env.DB.prepare(
+          'SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 100'
+        ).all();
+        return jsonResponse({ messages: messages.results || [] });
+      } catch (e) {
+        return jsonResponse({ messages: [] });
+      }
+    }
+
+    if (route.startsWith('/admin/contacts/') && method === 'PUT') {
+      const msgId = route.split('/')[3];
+      await env.DB.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').bind(msgId).run();
+      return jsonResponse({ success: true });
+    }
+
+    if (route.startsWith('/admin/contacts/') && method === 'DELETE') {
+      const msgId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM contact_messages WHERE id = ?').bind(msgId).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: AFFILIATES CRUD ====================
+    if (route === '/admin/affiliates' && method === 'GET') {
+      try {
+        const affiliates = await env.DB.prepare(
+          `SELECT u.id, u.email, u.name, u.created_at,
+            (SELECT COUNT(*) FROM affiliate_transactions WHERE referrer_user_id = u.id) as total_transactions,
+            (SELECT COALESCE(SUM(commission_amount), 0) FROM affiliate_transactions WHERE referrer_user_id = u.id) as total_commission,
+            (SELECT COALESCE(SUM(commission_amount), 0) FROM affiliate_transactions WHERE referrer_user_id = u.id AND status = 'PAID') as paid_commission
+           FROM users u WHERE u.role = 'affiliate' OR u.id IN (SELECT DISTINCT referrer_user_id FROM affiliate_transactions)
+           ORDER BY total_commission DESC`
+        ).all();
+
+        const stats = await env.DB.prepare(
+          `SELECT COUNT(DISTINCT referrer_user_id) as total_affiliates,
+            COALESCE(SUM(commission_amount), 0) as total_commission,
+            COUNT(*) as total_transactions
+           FROM affiliate_transactions`
+        ).first();
+
+        return jsonResponse({ affiliates: affiliates.results || [], stats: stats || { total_affiliates: 0, total_commission: 0, total_transactions: 0 } });
+      } catch (e) {
+        console.error('Affiliates error:', e);
+        return jsonResponse({ affiliates: [], stats: { total_affiliates: 0, total_commission: 0, total_transactions: 0 } });
+      }
+    }
+
+    if (route === '/admin/affiliates' && method === 'POST') {
+      const body = await request.json();
+      const { user_id, commission_percent } = body;
+
+      if (!user_id) {
+        return jsonResponse({ error: 'User ID wajib diisi' }, 400);
+      }
+
+      // Set user role to affiliate
+      await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?')
+        .bind('affiliate', user_id).run();
+
+      // Update commission percent in settings if provided
+      if (commission_percent) {
+        await env.DB.prepare(
+          `INSERT INTO site_settings (key, value, updated_at) VALUES ('commission_percent', ?, datetime('now'))
+           ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')`
+        ).bind(String(commission_percent), String(commission_percent)).run();
+      }
+
+      return jsonResponse({ success: true });
+    }
+
+    if (route.startsWith('/admin/affiliates/') && method === 'DELETE') {
+      const userId = route.split('/')[3];
+      await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?')
+        .bind('user', userId).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: USERS LIST (for affiliate dropdown) ====================
+    if (route === '/admin/users' && method === 'GET') {
+      const users = await env.DB.prepare(
+        'SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC LIMIT 100'
+      ).all();
+      return jsonResponse({ users: users.results || [] });
     }
 
     // ==================== DEFAULT 404 ====================

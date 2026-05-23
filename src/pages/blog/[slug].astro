@@ -184,11 +184,11 @@ const { slug } = Astro.params;
   }
 
   const categoryColors = {
-    'AI': { bg: 'rgba(92,122,54,0.15)', color: '#fff' },
-    'Tips & Trik': { bg: 'rgba(220,38,38,0.15)', color: '#fff' },
-    'Tutorial': { bg: 'rgba(59,130,246,0.15)', color: '#fff' },
-    'Studi Kasus': { bg: 'rgba(245,158,11,0.15)', color: '#fff' },
-    'Productivity': { bg: 'rgba(147,51,234,0.15)', color: '#fff' },
+    'tips': { bg: 'rgba(92,122,54,0.15)', color: '#5C7A36' },
+    'tutorial': { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
+    'studi-kasus': { bg: 'rgba(168,85,247,0.15)', color: '#a855f7' },
+    'berita': { bg: 'rgba(249,115,22,0.15)', color: '#f97316' },
+    'news': { bg: 'rgba(249,115,22,0.15)', color: '#f97316' },
   };
 
   async function waitForMarked(maxWait = 5000) {
@@ -237,7 +237,7 @@ const { slug } = Astro.params;
       h.id = id;
       const isH3 = h.tagName === 'H3';
       const style = isH3 ? 'padding-left:16px;font-size:13px;' : 'font-size:14px;font-weight:600;';
-      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#5C7A36'" onmouseout="this.style.style='#525252'">${h.textContent}</a>`;
+      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#5C7A36'" onmouseout="this.style.color='#525252'">${h.textContent}</a>`;
     });
     if (tocList) tocList.innerHTML = html;
     if (tocMobileList) tocMobileList.innerHTML = html;
