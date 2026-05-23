@@ -973,9 +973,9 @@ export async function onRequest(context: any): Promise<Response> {
           const dompetxData = await dompetxResponse.json() as any;
           console.log('DOMPETX: Response', JSON.stringify(dompetxData));
 
-          // DompetX returns payment_link (not checkout_url)
-          if (dompetxData.payment_link || dompetxData.id) {
-            paymentUrl = dompetxData.payment_link;
+          // DompetX returns payment_url
+          if (dompetxData.payment_url || dompetxData.id) {
+            paymentUrl = dompetxData.payment_url;
             paymentData = dompetxData;
 
             // Update order with DompetX reference
