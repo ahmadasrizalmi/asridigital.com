@@ -157,7 +157,7 @@ const orderId = url.searchParams.get('order') || '';
 <script is:inline>
   (async function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('order');
+    const orderId = urlParams.get('order') || localStorage.getItem('last_order_id') || '';
 
     const loadingState = document.getElementById('loading-state');
     const successState = document.getElementById('success-state');
@@ -176,6 +176,10 @@ const orderId = url.searchParams.get('order') || '';
       errorState?.classList.remove('hidden');
       return;
     }
+
+    // Clear saved order ID after using it
+    localStorage.removeItem('last_order_id');
+    localStorage.removeItem('last_order_code');
 
     try {
       const response = await fetch('/api/orders/' + encodeURIComponent(orderId));

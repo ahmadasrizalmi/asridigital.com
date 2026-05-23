@@ -474,6 +474,9 @@ const productSlug = 'loading';
 
       if (result.success) {
         if (result.paymentUrl) {
+          // Save order ID to localStorage so success page can find it after DompetX redirect
+          localStorage.setItem('last_order_id', result.orderId);
+          localStorage.setItem('last_order_code', result.orderCode || '');
           window.location.href = result.paymentUrl;
         } else {
           // Free order or direct success
