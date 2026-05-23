@@ -4,19 +4,7 @@ import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
-export async function getStaticPaths() {
-  const apiBase = '';
-  try {
-    const res = await fetch(`${apiBase}/api/blog/posts`);
-    const data = await res.json();
-    const posts = data.posts || [];
-    return posts.map((post: any) => ({
-      params: { slug: post.slug },
-    }));
-  } catch (e) {
-    return [];
-  }
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
 ---

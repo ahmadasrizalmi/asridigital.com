@@ -11,21 +11,7 @@ interface Feature {
   description: string;
 }
 
-export async function getStaticPaths() {
-  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-
-  try {
-    const res = await fetch(`${apiBase}/api/products`);
-    const data = await res.json() as any;
-    const products = data.products || [];
-
-    return products.map((p: any) => ({
-      params: { slug: p.slug },
-    }));
-  } catch {
-    return [];
-  }
-}
+export const prerender = false;
 
 const productSlug = Astro.params.slug || '';
 const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
