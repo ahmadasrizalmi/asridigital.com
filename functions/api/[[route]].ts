@@ -933,7 +933,7 @@ export async function onRequest(context: any): Promise<Response> {
           const requestBodyObj = {
             amount: finalAmount,
             currency: 'IDR',
-            reference: orderCode,
+            reference: orderId,  // Use orderId (UUID) so webhook can look it up directly
             metadata: {
               order_id: orderId,
               product_slug: productSlug,
@@ -1185,11 +1185,12 @@ export async function onRequest(context: any): Promise<Response> {
 
       console.log('WEBHOOK: Processing', { eventType, orderCode, dompetxId, status: checkoutStatus });
 
-      // Find order by orderCode or dompetx_id
+      // Find order by reference (orderId UUID) or dompetx_id
       let order: any = null;
       if (orderCode) {
-        order = await env.DB.prepare('SELECT * FROM orders WHERE id LIKE ? OR id = ?')
-          .bind(`%${orderCode}%`, orderCode).first();
+        // reference is now orderId (UUID), direct lookup
+        order = await env.DB.prepare('SELECT * FROM orders WHERE id = ?')
+          .bind(orderCode).first();
       }
       if (!order && dompetxId) {
         order = await env.DB.prepare('SELECT * FROM orders WHERE dompetx_id = ?')
