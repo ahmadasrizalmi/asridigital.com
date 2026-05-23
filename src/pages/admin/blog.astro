@@ -405,7 +405,7 @@ import Icon from '../../components/ui/Icon.astro';
     const content = (document.getElementById('blog-content') as HTMLTextAreaElement).value;
     const image_url = (document.getElementById('blog-image-url') as HTMLInputElement).value;
 
-    const body = { title, slug, content, excerpt, image_url, category, tags, author_name: 'Admin', is_published: 0 };
+    const body = { title, slug, content, excerpt, image_url, category, tags, author_name: 'Admin', is_published: false };
 
     try {
       const url = currentEditId ? `/api/admin/blog/${currentEditId}` : '/api/admin/blog';

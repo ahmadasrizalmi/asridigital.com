@@ -262,7 +262,12 @@ import Icon from '../../components/ui/Icon.astro';
 
 <script>
   const API_BASE = '/api';
-  
+
+  // Auth guard
+  if (!localStorage.getItem('admin_token')) {
+    window.location.href = '/admin/login';
+  }
+
   async function loadSettings() {
     try {
       const token = localStorage.getItem('admin_token');

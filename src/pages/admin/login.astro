@@ -100,11 +100,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           const data = await res.json();
 
           if (res.ok && data.token) {
-            localStorage.setItem('admin_token', data.token);
-            if (data.user) {
-              localStorage.setItem('admin_user', JSON.stringify(data.user));
+            // Verify admin role before storing token
+            const meRes = await fetch('/api/auth/me', {
+              headers: { 'Authorization': 'Bearer ' + data.token }
+            });
+            const meData = await meRes.json();
+
+            if (meData.user && meData.user.role === 'admin') {
+              localStorage.setItem('admin_token', data.token);
+              if (data.user) {
+                localStorage.setItem('admin_user', JSON.stringify(data.user));
+              }
+              window.location.href = '/admin';
+            } else {
+              errorEl.textContent = 'Akses ditolak. Hanya admin yang bisa masuk.';
+              errorEl.classList.remove('hidden');
             }
-            window.location.href = '/admin';
           } else {
             errorEl.textContent = data.error || data.message || 'Email atau password salah';
             errorEl.classList.remove('hidden');

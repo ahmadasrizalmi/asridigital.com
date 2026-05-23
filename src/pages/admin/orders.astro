@@ -307,16 +307,10 @@ import Icon from '../../components/ui/Icon.astro';
     }
   }
 
-  async function viewOrder(orderId: string) {
+  function viewOrder(orderId: string) {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(API_BASE + '/orders/' + orderId, {
-        headers: {
-          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
-        }
-      });
-      const data = await response.json();
-      const order = data.order;
+      const order = allOrders.find(function(o) { return o.id === orderId; });
+      if (!order) { alert('Pesanan tidak ditemukan.'); return; }
 
       const content = document.getElementById('detail-content');
       if (!content) return;
@@ -345,16 +339,10 @@ import Icon from '../../components/ui/Icon.astro';
     document.getElementById('detail-modal')?.classList.add('hidden');
   }
 
-  async function editOrder(orderId: string) {
+  function editOrder(orderId: string) {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(API_BASE + '/orders/' + orderId, {
-        headers: {
-          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
-        }
-      });
-      const data = await response.json();
-      const order = data.order;
+      const order = allOrders.find(function(o) { return o.id === orderId; });
+      if (!order) { alert('Pesanan tidak ditemukan.'); return; }
 
       (document.getElementById('edit-order-id') as HTMLInputElement).value = order.id;
       (document.getElementById('edit-user-name') as HTMLInputElement).value = order.user_name || '';
