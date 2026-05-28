@@ -229,6 +229,42 @@ import Icon from '../../components/ui/Icon.astro';
           </div>
         </div>
         
+        <!-- Tracking & Analytics -->
+        <div class="card p-6 mb-6">
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="target" size={20} class="text-primary" />
+            Tracking & Analytics
+          </h2>
+          <p class="text-sm text-text-muted mb-4">Isi ID tracking untuk mengaktifkan Google Tag Manager, Meta Pixel, dan Google Ads conversion tracking. Kosongkan jika belum punya.</p>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Google Tag Manager ID</label>
+              <input type="text" id="setting-gtm-id" class="input" placeholder="GTM-XXXXXXX" />
+              <p class="text-xs text-text-muted mt-1">Format: GTM-XXXXXXX — dari tagmanager.google.com</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Meta Pixel ID</label>
+              <input type="text" id="setting-meta-pixel-id" class="input" placeholder="1234567890123456" />
+              <p class="text-xs text-text-muted mt-1">Angka saja — dari Meta Events Manager</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-2">Google Ads Conversion ID</label>
+                <input type="text" id="setting-google-ads-id" class="input" placeholder="AW-XXXXXXXXX" />
+                <p class="text-xs text-text-muted mt-1">Format: AW-XXXXXXXXX</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-main mb-2">Google Ads Conversion Label</label>
+                <input type="text" id="setting-google-ads-label" class="input" placeholder="AbCdEfGhIjK" />
+                <p class="text-xs text-text-muted mt-1">Dari Google Ads > Conversion goals</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Save Button -->
         <div class="flex justify-end gap-3">
           <button onclick="resetSettings()" class="btn-tertiary">
@@ -297,6 +333,10 @@ import Icon from '../../components/ui/Icon.astro';
         if (s.instagram) document.getElementById('setting-instagram').value = s.instagram;
         if (s.tiktok) document.getElementById('setting-tiktok').value = s.tiktok;
         if (s.youtube) document.getElementById('setting-youtube').value = s.youtube;
+        if (s.gtm_id) document.getElementById('setting-gtm-id').value = s.gtm_id;
+        if (s.meta_pixel_id) document.getElementById('setting-meta-pixel-id').value = s.meta_pixel_id;
+        if (s.google_ads_id) document.getElementById('setting-google-ads-id').value = s.google_ads_id;
+        if (s.google_ads_label) document.getElementById('setting-google-ads-label').value = s.google_ads_label;
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -322,6 +362,10 @@ import Icon from '../../components/ui/Icon.astro';
       instagram: document.getElementById('setting-instagram').value,
       tiktok: document.getElementById('setting-tiktok').value,
       youtube: document.getElementById('setting-youtube').value,
+      gtm_id: document.getElementById('setting-gtm-id').value,
+      meta_pixel_id: document.getElementById('setting-meta-pixel-id').value,
+      google_ads_id: document.getElementById('setting-google-ads-id').value,
+      google_ads_label: document.getElementById('setting-google-ads-label').value,
     };
     
     try {

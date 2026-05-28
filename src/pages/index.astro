@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import ProductCard from '../components/marketing/ProductCard.astro';
+import FeaturedProductCard from '../components/marketing/FeaturedProductCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
 import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
@@ -104,7 +105,7 @@ function normalizeProduct(raw: any): Product {
 
 try {
   const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-  const response = await fetch(`${apiBase}/api/products?limit=12`);
+  const response = await fetch(`${apiBase}/api/products?limit=100`);
   if (response.ok) {
     const data = await response.json() as any;
     const dbProducts = (data.products || [])
@@ -336,32 +337,117 @@ const stats = [
       </div>
     </section>
 
-    {/* PRODUCT GRID */}
-    <section id="produk" class="py-20 bg-surface scroll-mt-20">
+    {/* PRODUCT SECTION */}
+    <section id="produk" class="py-12 sm:py-20 bg-surface scroll-mt-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
-            <Icon name="sparkles" size={16} class="text-primary" />
-            <span class="text-sm text-primary font-medium">Koleksi GPT</span>
+
+        {/* Search Bar */}
+        <div class="max-w-lg mx-auto mb-8">
+          <div class="relative">
+            <Icon name="search" size={18} class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              id="product-search"
+              placeholder="Cari GPT, tools, atau kebutuhan..."
+              class="w-full pl-11 pr-10 py-3.5 bg-white border border-border rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all shadow-sm"
+            />
+            <button id="search-clear" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary hidden" aria-label="Clear">
+              <Icon name="x" size={16} />
+            </button>
           </div>
-          <h2 class="text-4xl font-extrabold mb-4 text-text-primary">
-            Pilih GPT Sesuai <span class="text-primary">Kebutuhan</span>
-          </h2>
-          <p class="text-text-secondary text-lg max-w-2xl mx-auto">
-            Setiap Custom GPT dirancang khusus untuk membantu produktivitas Anda.
-          </p>
         </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        {/* Category Icons — auto-detected, horizontal scroll on mobile */}
+        <div class="mb-10 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div class="flex gap-3 sm:gap-4 sm:flex-wrap sm:justify-center min-w-max sm:min-w-0" id="category-filters">
+            {/* Categories will be generated dynamically by JS */}
+            <button class="category-icon-btn flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border active min-w-[72px]" data-category="semua">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary">
+                <Icon name="layers" size={20} />
+              </div>
+              <span class="text-xs font-medium text-text-secondary">Semua</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Featured Slider */}
+        <div class="mb-12" id="featured-section">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
+              <Icon name="star" size={18} class="text-amber-400 fill-amber-400" />
+              Produk Unggulan
+            </h3>
+          </div>
+          <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory pl-4 sm:pl-0 pr-4" id="featured-slider">
+            {products.filter(p => p.isFeatured).map((product, i) => (
+              <div class="snap-start shrink-0 w-[300px] sm:w-[360px]" data-featured>
+                <FeaturedProductCard product={product} />
+              </div>
+            ))}
+            {/* Show first non-featured if not enough featured */}
+            {products.filter(p => !p.isFeatured).slice(0, Math.max(0, 3 - products.filter(p => p.isFeatured).length)).map((product) => (
+              <div class="snap-start shrink-0 w-[300px] sm:w-[360px]" data-featured>
+                <FeaturedProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* All Products Grid */}
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-text-primary" id="grid-title">Semua Produk</h3>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-text-muted" id="product-count"></span>
+            {/* Sort Dropdown */}
+            <div class="relative">
+              <select id="sort-select" class="appearance-none bg-white border border-border rounded-lg px-3 py-1.5 pr-8 text-xs sm:text-sm text-text-secondary focus:outline-none focus:ring-1 focus:ring-primary/30 cursor-pointer">
+                <option value="default">Urutkan</option>
+                <option value="price-asc">Harga ↑</option>
+                <option value="price-desc">Harga ↓</option>
+                <option value="name-asc">A-Z</option>
+                <option value="featured">Populer</option>
+              </select>
+              <Icon name="chevron-down" size={14} class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="product-grid" style="grid-auto-rows: 1fr;">
           {products.map((product, i) => (
-            <div class="animate-slide-up" style={`animation-delay: ${i * 0.1}s`}>
+            <div class="product-card h-full animate-slide-up" data-category={product.category} data-title={product.title?.toLowerCase()} data-tags={product.tags?.join(',').toLowerCase()} data-price={product.price} data-featured={product.isFeatured ? '1' : '0'} style={`animation-delay: ${i * 0.05}s`}>
               <ProductCard product={product} />
             </div>
           ))}
         </div>
-        
+
+        {/* Load More */}
+        <div id="load-more-wrap" class="text-center mt-10 hidden">
+          <button id="load-more-btn" class="btn-secondary">
+            <Icon name="refresh-cw" size={16} />
+            <span id="load-more-text">Load Produk Lainnya</span>
+          </button>
+        </div>
+
+        {/* Empty state */}
+        <div id="no-results" class="hidden text-center py-16">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-background flex items-center justify-center">
+            <Icon name="search" size={28} class="text-text-muted" />
+          </div>
+          <h3 class="text-lg font-semibold text-text-primary mb-2">Tidak ditemukan</h3>
+          <p class="text-sm text-text-secondary mb-4">Coba kata kunci atau kategori lain</p>
+          <button id="reset-filters" class="btn-secondary text-sm">
+            <Icon name="refresh-cw" size={14} />
+            Reset Filter
+          </button>
+        </div>
+
+        {/* Results count when filtering */}
+        <p id="filter-status" class="text-center text-sm text-text-muted mt-6 hidden">
+          Menampilkan <span id="filter-count">0</span> produk
+        </p>
+
         {/* CTA Below Products */}
-        <div class="text-center mt-12">
+        <div class="text-center mt-12" id="cta-below">
           <p class="text-text-muted mb-4">Ingin akses semua produk di atas?</p>
           <a href="#all-access" class="btn-secondary">
             <Icon name="crown" size={18} />
@@ -451,6 +537,8 @@ const stats = [
   }
 
   // Dynamic product loading - fetch fresh products from API
+  let allProducts = []; // Store all products for filtering
+
   function formatIDR(amount) {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -459,53 +547,343 @@ const stats = [
     }).format(amount);
   }
 
-  function renderProductCard(product) {
+  function renderFeaturedCard(product) {
     const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
     const isFree = product.price === 0;
     const discount = hasDiscount ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
-    const tags = (() => { try { return Array.isArray(product.tags) ? product.tags : JSON.parse(product.tags || '[]'); } catch { return []; } })();
-    const desc = product.short_description || product.description || '';
 
     let badges = '';
-    if (isFree) badges += '<span class="badge-success">GRATIS</span>';
-    else if (hasDiscount) badges += `<span class="badge-danger">HEMAT ${discount}%</span>`;
-    if (product.is_featured) badges += '<span class="badge-warning">POPULER</span>';
+    if (hasDiscount && !isFree) badges += `<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">-${discount}%</span></div>`;
+    if (isFree) badges += `<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">GRATIS</span></div>`;
+    if (product.is_featured) badges += `<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg> Best Seller</span></div>`;
 
     let priceHtml;
     if (isFree) {
-      priceHtml = '<span class="text-2xl font-bold text-green-600">Gratis</span>';
+      priceHtml = '<span class="text-xl font-bold text-green-600">Gratis</span>';
+    } else if (hasDiscount) {
+      priceHtml = `<div class="flex flex-col"><span class="text-sm text-text-muted line-through leading-none mb-1">${formatIDR(product.compare_at_price)}</span><span class="text-xl font-bold text-text-primary leading-tight">${formatIDR(product.price)}</span></div>`;
     } else {
-      priceHtml = `<span class="text-2xl font-bold text-text-primary">${formatIDR(product.price)}</span>`;
-      if (hasDiscount) priceHtml += `<span class="text-sm text-text-muted line-through">${formatIDR(product.compare_at_price)}</span>`;
+      priceHtml = `<span class="text-xl font-bold text-text-primary leading-tight">${formatIDR(product.price)}</span>`;
     }
 
-    const tagsHtml = tags.slice(0, 3).map(t => `<span class="text-xs text-text-muted">#${t}</span>`).join('');
+    const desc = product.short_description || product.description || '';
 
     return `
-      <div class="card-hover group">
-        <div class="relative h-48 overflow-hidden bg-background">
+      <div class="card-hover group flex flex-col h-full overflow-hidden rounded-xl border border-border bg-white" data-slug="${product.slug}">
+        <div class="relative aspect-[4/3] overflow-hidden bg-background shrink-0">
           <img src="${product.image_icon || '/images/placeholder.jpg'}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <div class="absolute top-3 left-3 flex gap-2">${badges}</div>
-          <div class="absolute bottom-3 left-3"><span class="badge-muted">${product.category || 'produk'}</span></div>
+          ${badges}
         </div>
-        <div class="p-5">
-          ${tagsHtml ? `<div class="flex flex-wrap gap-1.5 mb-3">${tagsHtml}</div>` : ''}
-          <h3 class="font-semibold text-lg mb-2 text-text-primary group-hover:text-primary transition-colors line-clamp-2">${product.title}</h3>
-          <p class="text-sm text-text-secondary mb-4 line-clamp-2">${desc}</p>
-          <div class="mt-auto pt-4 border-t border-border">
-            <div class="flex items-baseline gap-2 mb-4">${priceHtml}</div>
-            <div class="flex gap-2">
-              <a href="/product/${product.slug}" class="btn-tertiary flex-1 justify-center text-sm">Detail</a>
-              <a href="/checkout?product=${product.slug}" class="${isFree ? 'btn-secondary' : 'btn-primary'} flex-1 justify-center text-sm">${isFree ? 'Ambil Gratis' : 'Beli'}</a>
-            </div>
+        <div class="p-4 sm:p-5 flex flex-col flex-1">
+          <h3 class="font-bold text-base sm:text-lg text-text-primary group-hover:text-primary transition-colors line-clamp-2 leading-tight mb-2">${product.title}</h3>
+          <p class="text-sm text-text-muted line-clamp-2 leading-relaxed mb-3">${desc}</p>
+          <div class="border-t border-gray-100 my-2.5"></div>
+          <div class="mb-3">${priceHtml}</div>
+          <div class="border-t border-gray-100 my-2"></div>
+          <div class="flex gap-2 mt-auto pt-1">
+            <a href="/product/${product.slug}" class="btn-tertiary flex-1 justify-center text-xs sm:text-sm py-2.5">Detail</a>
+            <a href="/checkout?product=${product.slug}" class="buy-btn ${isFree ? 'btn-secondary' : 'btn-primary'} flex-1 justify-center text-xs sm:text-sm py-2.5">${isFree ? 'Gratis' : 'Beli'}</a>
           </div>
         </div>
       </div>`;
   }
 
+  function renderProductCard(product) {
+    const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+    const isFree = product.price === 0;
+    const discount = hasDiscount ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
+
+    let badges = '';
+    if (hasDiscount && !isFree) badges += `<div class="absolute top-2 left-2 sm:top-3 sm:left-3"><span class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-red-500 text-white text-[10px] sm:text-xs font-bold shadow-sm">-${discount}%</span></div>`;
+    if (isFree) badges += `<div class="absolute top-2 left-2 sm:top-3 sm:left-3"><span class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-green-500 text-white text-[10px] sm:text-xs font-bold shadow-sm">GRATIS</span></div>`;
+    if (product.is_featured) badges += `<div class="absolute top-2 right-2 sm:top-3 sm:right-3"><span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md bg-amber-400 text-amber-900 text-[10px] sm:text-xs font-bold shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg><span class="hidden sm:inline">Best</span></span></div>`;
+
+    let priceHtml;
+    if (isFree) {
+      priceHtml = '<span class="text-sm sm:text-xl font-bold text-green-600">Gratis</span>';
+    } else if (hasDiscount) {
+      priceHtml = `<div class="flex flex-col"><span class="text-sm text-text-muted line-through leading-none mb-0.5">${formatIDR(product.compare_at_price)}</span><span class="text-sm sm:text-xl font-bold text-text-primary leading-tight">${formatIDR(product.price)}</span></div>`;
+    } else {
+      priceHtml = `<span class="text-sm sm:text-xl font-bold text-text-primary leading-tight">${formatIDR(product.price)}</span>`;
+    }
+
+    const desc = product.short_description || product.description || '';
+
+    return `
+      <div class="card-hover group flex flex-col h-full" data-slug="${product.slug}">
+        <div class="relative aspect-square overflow-hidden bg-background shrink-0">
+          <img src="${product.image_icon || '/images/placeholder.jpg'}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          ${badges}
+        </div>
+        <div class="p-2.5 sm:p-4 flex flex-col flex-1">
+          <h3 class="font-semibold text-xs sm:text-base text-text-primary group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[2.5em] mb-0.5 sm:mb-1.5">${product.title}</h3>
+          <p class="text-[10px] sm:text-xs text-text-muted line-clamp-3 sm:line-clamp-2 leading-relaxed h-[3.3em] sm:h-[2.5em]">${desc}</p>
+          <div class="border-t border-gray-100 my-2 sm:my-2.5"></div>
+          <div class="mb-2 sm:mb-3">${priceHtml}</div>
+          <div class="border-t border-gray-100 my-1.5 sm:my-2"></div>
+          <div class="flex gap-1.5 sm:gap-2 mt-auto pt-1">
+            <a href="/product/${product.slug}" class="btn-tertiary flex-1 justify-center text-[10px] sm:text-xs py-1.5 sm:py-2">Detail</a>
+            <a href="/checkout?product=${product.slug}" class="buy-btn ${isFree ? 'btn-secondary' : 'btn-primary'} flex-1 justify-center text-[10px] sm:text-xs py-1.5 sm:py-2">${isFree ? 'Gratis' : 'Beli'}</a>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // === SEARCH & FILTER LOGIC ===
+  let activeCategory = 'semua';
+  let searchQuery = '';
+  let sortMode = 'default';
+  const ITEMS_PER_PAGE = 12;
+  let currentPage = 1;
+
+  // Category icon/color mapping
+  const categoryMeta = {
+    marketing:   { icon: 'trending-up', color: 'bg-blue-50 text-blue-600' },
+    coding:      { icon: 'code',        color: 'bg-violet-50 text-violet-600' },
+    kreatif:     { icon: 'sparkles',    color: 'bg-amber-50 text-amber-600' },
+    pendidikan:  { icon: 'book-open',   color: 'bg-emerald-50 text-emerald-600' },
+    membership:  { icon: 'crown',       color: 'bg-rose-50 text-rose-600' },
+  };
+  // Icon SVG paths (subset of Icon.astro)
+  const iconPaths = {
+    'trending-up': 'M23 6L13.5 15.5L8.5 10.5L1 18 M17 6H23V12',
+    code: 'M16 18L22 12L16 6 M8 6L2 12L8 18',
+    sparkles: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z',
+    'book-open': 'M2 3H8A4 4 0 0 1 12 7A4 4 0 0 1 16 3H22V21H16A4 4 0 0 0 12 17A4 4 0 0 0 8 21H2V3Z M12 7V17',
+    crown: 'M2 4L3.5 18.5L12 15L20.5 18.5L22 4L17 9L12 4L7 9L2 4Z M12 15V22',
+    layers: 'M12 2L2 7L12 12L22 7L12 2Z M2 17L12 22L22 17 M2 12L12 17L22 12',
+  };
+
+  // Auto-detect categories from products and render category icons
+  function renderCategoryIcons(products) {
+    const container = document.getElementById('category-filters');
+    if (!container) return;
+
+    // Collect unique categories
+    const cats = new Set();
+    products.forEach(p => { if (p.category) cats.add(p.category.toLowerCase()); });
+
+    // Capitalize helper
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+    // Build HTML — "Semua" first
+    let html = `<button class="category-icon-btn flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border active min-w-[72px]" data-category="semua">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${iconPaths.layers}"/></svg>
+      </div>
+      <span class="text-xs font-medium text-text-secondary">Semua</span>
+    </button>`;
+
+    cats.forEach(cat => {
+      const meta = categoryMeta[cat] || { icon: 'layers', color: 'bg-gray-50 text-gray-600' };
+      const path = iconPaths[meta.icon] || iconPaths.layers;
+      html += `<button class="category-icon-btn flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border border-transparent bg-white/60 hover:bg-white hover:shadow-sm transition-all min-w-[72px]" data-category="${cat}">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center ${meta.color}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>
+        </div>
+        <span class="text-xs font-medium text-text-secondary">${cap(cat)}</span>
+      </button>`;
+    });
+
+    container.innerHTML = html;
+
+    // Re-bind click events
+    container.querySelectorAll('.category-icon-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.category-icon-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCategory = btn.dataset.category;
+        currentPage = 1;
+        filterAndRender();
+      });
+    });
+  }
+
+  // Sort products in grid
+  function sortCards() {
+    const grid = document.getElementById('product-grid');
+    if (!grid) return;
+
+    const cards = Array.from(grid.querySelectorAll('.product-card'));
+
+    cards.sort((a, b) => {
+      switch (sortMode) {
+        case 'price-asc': return (parseFloat(a.dataset.price) || 0) - (parseFloat(b.dataset.price) || 0);
+        case 'price-desc': return (parseFloat(b.dataset.price) || 0) - (parseFloat(a.dataset.price) || 0);
+        case 'name-asc': return (a.dataset.title || '').localeCompare(b.dataset.title || '');
+        case 'featured': return (b.dataset.featured || '0').localeCompare(a.dataset.featured || '0');
+        default: return 0;
+      }
+    });
+
+    cards.forEach(card => grid.appendChild(card));
+  }
+
+  function filterAndRender() {
+    const grid = document.getElementById('product-grid');
+    const noResults = document.getElementById('no-results');
+    const filterStatus = document.getElementById('filter-status');
+    const filterCount = document.getElementById('filter-count');
+    const loadMoreWrap = document.getElementById('load-more-wrap');
+    const loadMoreText = document.getElementById('load-more-text');
+    const featuredSection = document.getElementById('featured-section');
+    const ctaBelow = document.getElementById('cta-below');
+    const gridTitle = document.getElementById('grid-title');
+    const productCount = document.getElementById('product-count');
+    if (!grid) return;
+
+    // Apply sort first
+    sortCards();
+
+    const cards = grid.querySelectorAll('.product-card');
+    let visibleCount = 0;
+    let shownCount = 0;
+    const isFiltered = activeCategory !== 'semua' || searchQuery;
+
+    cards.forEach(card => {
+      const category = (card.dataset.category || '').toLowerCase();
+      const title = (card.dataset.title || '').toLowerCase();
+      const tags = (card.dataset.tags || '').toLowerCase();
+      const desc = card.querySelector('.text-text-muted')?.textContent?.toLowerCase() || '';
+
+      const matchCategory = activeCategory === 'semua' || category === activeCategory;
+      const matchSearch = !searchQuery ||
+        title.includes(searchQuery) ||
+        tags.includes(searchQuery) ||
+        desc.includes(searchQuery) ||
+        category.includes(searchQuery);
+
+      if (matchCategory && matchSearch) {
+        visibleCount++;
+        if (!isFiltered && visibleCount > ITEMS_PER_PAGE * currentPage) {
+          card.style.display = 'none';
+        } else {
+          card.style.display = '';
+          shownCount++;
+        }
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    // Empty state
+    if (noResults) noResults.classList.toggle('hidden', visibleCount > 0);
+
+    // Filter status
+    if (filterStatus) {
+      filterStatus.classList.toggle('hidden', !isFiltered);
+      if (filterCount) filterCount.textContent = visibleCount;
+    }
+
+    // Product count
+    if (productCount) {
+      productCount.textContent = isFiltered ? '' : `${visibleCount} produk`;
+    }
+
+    // Grid title
+    if (gridTitle) {
+      if (activeCategory !== 'semua') {
+        const cap = activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
+        gridTitle.textContent = cap;
+      } else {
+        gridTitle.textContent = searchQuery ? `Hasil: "${searchQuery}"` : 'Semua Produk';
+      }
+    }
+
+    // Load more button
+    if (loadMoreWrap) {
+      const remaining = visibleCount - ITEMS_PER_PAGE * currentPage;
+      const hasMore = !isFiltered && remaining > 0;
+      loadMoreWrap.classList.toggle('hidden', !hasMore);
+      if (loadMoreText) loadMoreText.textContent = `Load ${Math.min(remaining, ITEMS_PER_PAGE)} Produk Lagi`;
+    }
+
+    // Featured section — hide when filtering
+    if (featuredSection) {
+      featuredSection.style.display = isFiltered ? 'none' : '';
+    }
+
+    // CTA
+    if (ctaBelow) ctaBelow.style.display = visibleCount > 0 ? '' : 'none';
+  }
+
+  // Search input
+  const searchInput = document.getElementById('product-search');
+  const searchClear = document.getElementById('search-clear');
+  if (searchInput) {
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        if (searchClear) searchClear.classList.toggle('hidden', !searchQuery);
+        currentPage = 1;
+        filterAndRender();
+      }, 200);
+    });
+  }
+  if (searchClear) {
+    searchClear.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      searchQuery = '';
+      searchClear.classList.add('hidden');
+      currentPage = 1;
+      filterAndRender();
+      searchInput?.focus();
+    });
+  }
+
+  // Sort dropdown
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      sortMode = sortSelect.value;
+      filterAndRender();
+    });
+  }
+
+  // Load More button
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => {
+      currentPage++;
+      filterAndRender();
+    });
+  }
+
+  // Reset filters button
+  const resetBtn = document.getElementById('reset-filters');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      searchQuery = '';
+      activeCategory = 'semua';
+      currentPage = 1;
+      sortMode = 'default';
+      if (sortSelect) sortSelect.value = 'default';
+      document.querySelectorAll('.category-icon-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.category-icon-btn[data-category="semua"]')?.classList.add('active');
+      if (searchClear) searchClear.classList.add('hidden');
+      filterAndRender();
+    });
+  }
+
+  // Auto-detect categories from URL hash
+  function checkUrlCategory() {
+    const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const cat = params.get('category');
+    if (cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.category-icon-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.category === cat);
+      });
+      filterAndRender();
+    }
+  }
+
   async function loadFreshProducts() {
     try {
-      const response = await fetch('/api/products?limit=12');
+      const response = await fetch('/api/products?limit=100');
       if (!response.ok) return;
       const data = await response.json();
       if (!data.products || data.products.length === 0) return;
@@ -514,16 +892,81 @@ const stats = [
       const filtered = data.products.filter(p => p.slug !== allAccessSlug);
       if (filtered.length === 0) return;
 
-      const grid = document.querySelector('#produk .grid');
+      const grid = document.getElementById('product-grid');
+      const featuredSlider = document.getElementById('featured-slider');
       if (!grid) return;
 
-      grid.innerHTML = filtered.map((p, i) =>
-        `<div class="animate-slide-up" style="animation-delay: ${i * 0.1}s">${renderProductCard(p)}</div>`
-      ).join('');
+      allProducts = filtered;
+
+      // Auto-detect and render category icons
+      renderCategoryIcons(filtered);
+
+      // Update featured slider
+      if (featuredSlider) {
+        const featured = filtered.filter(p => p.is_featured);
+        const fillers = filtered.filter(p => !p.is_featured).slice(0, Math.max(0, 3 - featured.length));
+        const sliderProducts = [...featured, ...fillers];
+
+        if (sliderProducts.length > 0) {
+          featuredSlider.innerHTML = sliderProducts.map(p =>
+            `<div class="snap-start shrink-0 w-[300px] sm:w-[360px]">${renderFeaturedCard(p)}</div>`
+          ).join('');
+        }
+      }
+
+      // Update product grid
+      grid.innerHTML = filtered.map((p, i) => {
+        const tags = (() => { try { return Array.isArray(p.tags) ? p.tags : JSON.parse(p.tags || '[]'); } catch { return []; } })();
+        return `<div class="product-card h-full animate-slide-up" data-category="${(p.category || 'produk').toLowerCase()}" data-title="${(p.title || '').toLowerCase()}" data-tags="${tags.join(',').toLowerCase()}" data-price="${p.price}" data-featured="${p.is_featured ? '1' : '0'}" style="animation-delay: ${i * 0.05}s">${renderProductCard(p)}</div>`;
+      }).join('');
+
+      filterAndRender();
     } catch (err) {
       console.log('Dynamic product load failed, using static fallback:', err);
     }
   }
 
-  loadFreshProducts();
+  loadFreshProducts().then(() => checkUrlCategory());
+
+  // === CHECK PURCHASED PRODUCTS ===
+  (async function checkPurchased() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    try {
+      // Check if user is all-access
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const isAllAccess = user?.is_all_access === true || user?.is_all_access === 1;
+
+      const res = await fetch('/api/user/products', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!data.products || data.products.length === 0) return;
+
+      const purchasedSlugs = new Set(data.products.map((p: any) => p.slug));
+
+      // Update all buy buttons
+      document.querySelectorAll('[data-slug]').forEach(card => {
+        const slug = card.getAttribute('data-slug');
+        if (!slug) return;
+
+        const isOwned = isAllAccess || purchasedSlugs.has(slug);
+        if (!isOwned) return;
+
+        const btnContainer = card.querySelector('.buy-btn')?.parentElement;
+        if (!btnContainer) return;
+
+        // Replace BOTH buttons with single "Akses Produk" button
+        btnContainer.innerHTML = `
+          <a href="/dashboard" class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] sm:text-xs py-1.5 sm:py-2 px-3 rounded-lg border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 hover:border-gray-400 font-medium transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15"/><path d="M10 17L15 12L10 7"/><path d="M15 12H3"/></svg>
+            Akses Produk
+          </a>`;
+      });
+    } catch (err) {
+      // Silently fail — not critical
+    }
+  })();
 </script>

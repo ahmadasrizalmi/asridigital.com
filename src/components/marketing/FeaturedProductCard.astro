@@ -1,0 +1,114 @@
+---
+import Icon from '../ui/Icon.astro';
+import type { Product } from '../../types';
+import { formatIDR, parseTags } from '../../lib/utils';
+
+interface Props {
+  product: Product;
+}
+
+const rawProduct = Astro.props.product as any;
+const product = {
+  ...rawProduct,
+  shortDescription: rawProduct.shortDescription ?? rawProduct.short_description ?? null,
+  compareAtPrice: rawProduct.compareAtPrice ?? rawProduct.compare_at_price ?? null,
+  imageIcon: rawProduct.imageIcon ?? rawProduct.image_icon ?? null,
+  isFeatured: rawProduct.isFeatured ?? rawProduct.is_featured ?? false,
+};
+const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+const isFree = product.price === 0;
+const discount = hasDiscount 
+  ? Math.round((1 - product.price / product.compareAtPrice!) * 100) 
+  : 0;
+---
+
+<div class="card-hover group flex flex-col h-full overflow-hidden rounded-xl border border-border bg-white" data-slug={product.slug}>
+  {/* Product Image — landscape ratio */}
+  <div class="relative aspect-[4/3] overflow-hidden bg-background shrink-0">
+    <img 
+      src={product.imageIcon || '/images/placeholder.jpg'} 
+      alt={product.title}
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      loading="lazy"
+    />
+    
+    {/* Badges */}
+    {hasDiscount && !isFree && (
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">
+          -{discount}%
+        </span>
+      </div>
+    )}
+    {isFree && (
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">
+          GRATIS
+        </span>
+      </div>
+    )}
+    {product.isFeatured && (
+      <div class="absolute top-3 right-3">
+        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm">
+          <Icon name="star" size={12} class="fill-current" />
+          Best Seller
+        </span>
+      </div>
+    )}
+  </div>
+  
+  {/* Product Info — larger text */}
+  <div class="p-4 sm:p-5 flex flex-col flex-1">
+    {/* Title */}
+    <h3 class="font-bold text-base sm:text-lg text-text-primary group-hover:text-primary transition-colors line-clamp-2 leading-tight mb-2">
+      {product.title}
+    </h3>
+    
+    {/* Description */}
+    <p class="text-sm text-text-muted line-clamp-2 leading-relaxed mb-3">
+      {product.shortDescription || product.description}
+    </p>
+    
+    {/* Divider */}
+    <div class="border-t border-gray-100 my-2.5"></div>
+    
+    {/* Price — vertical stacked */}
+    <div class="mb-3">
+      {isFree ? (
+        <span class="text-xl font-bold text-green-600">Gratis</span>
+      ) : (
+        <div class="flex flex-col">
+          {hasDiscount && (
+            <span class="text-sm text-text-muted line-through leading-none mb-1">
+              {formatIDR(product.compareAtPrice!)}
+            </span>
+          )}
+          <span class="text-xl font-bold text-text-primary leading-tight">
+            {formatIDR(product.price)}
+          </span>
+        </div>
+      )}
+    </div>
+    
+    {/* Divider */}
+    <div class="border-t border-gray-100 my-2"></div>
+    
+    {/* Actions */}
+    <div class="flex gap-2 mt-auto pt-1">
+      <a 
+        href={`/product/${product.slug}`}
+        class="btn-tertiary flex-1 justify-center text-xs sm:text-sm py-2.5"
+      >
+        <Icon name="eye" size={14} />
+        Detail
+      </a>
+      <a 
+        href={`/checkout?product=${product.slug}`}
+        class={`buy-btn flex-1 justify-center text-xs sm:text-sm py-2.5 ${isFree ? 'btn-secondary' : 'btn-primary'}`}
+      >
+        <Icon name={isFree ? 'gift' : 'shopping-cart'} size={14} />
+        {isFree ? 'Gratis' : 'Beli'}
+      </a>
+    </div>
+  </div>
+</div>

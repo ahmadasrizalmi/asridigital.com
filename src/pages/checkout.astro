@@ -464,6 +464,16 @@ const productSlug = 'loading';
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="animate-spin">⏳</span> Memproses...';
 
+    // Tracking: InitiateCheckout
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('initiate_checkout', {
+        content_name: productSlug,
+        content_type: 'product',
+        value: basePrice - discount,
+        currency: 'IDR'
+      });
+    }
+
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',

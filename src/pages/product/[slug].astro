@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Icon from '../../components/ui/Icon.astro';
 import ProductCard from '../../components/marketing/ProductCard.astro';
-import { formatIDR, parseTags } from '../../lib/utils';
+import { formatIDR, formatDescription, parseTags } from '../../lib/utils';
 
 interface Feature {
   icon?: string;
@@ -47,6 +47,14 @@ try {
       if (relatedResponse.ok) {
         const relatedData = await relatedResponse.json();
         relatedProducts = (relatedData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
+      }
+    }
+    // Fallback: if no same-category products, show other products
+    if (relatedProducts.length === 0) {
+      const fallbackResponse = await fetch(`${apiBase}/api/products?limit=4`);
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json();
+        relatedProducts = (fallbackData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
       }
     }
   } else {
@@ -272,7 +280,7 @@ const tags = parseTags(product?.tags);
 
           <!-- Description -->
           <div class="prose prose-sm max-w-none text-text-secondary">
-            <p>{product?.description}</p>
+            <Fragment set:html={formatDescription(product?.description || '')} />
           </div>
 
           <!-- GPT URL - Only shown to authenticated owners -->
@@ -431,12 +439,12 @@ const tags = parseTags(product?.tags);
 
       <!-- Related Products -->
       {relatedProducts.length > 0 && (
-        <section>
+        <section class="pb-8">
           <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
             <Icon name="sparkles" size={24} class="text-primary" />
             Produk Lainnya
           </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {relatedProducts.map((relatedProduct: any) => (
               <ProductCard product={relatedProduct} />
             ))}
@@ -523,6 +531,15 @@ const tags = parseTags(product?.tags);
   window.closeVideoModal = closeVideoModal;
   window.toggleFaq = toggleFaq;
 
+  // Tracking: ViewContent
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('view_content', {
+      content_name: document.title,
+      content_type: 'product',
+      content_ids: [window.location.pathname.split('/').filter(Boolean).pop()]
+    });
+  }
+
   // Check if user owns this product and show GPT link
   (async function checkProductAccess() {
     const token = document.cookie.split('; ').find(c => c.startsWith('token='))?.split('=')[1];
@@ -562,12 +579,12 @@ const tags = parseTags(product?.tags);
           demoSection.classList.remove('hidden');
         }
 
-        // Change buy button to "Sudah Dibeli" style
+        // Change buy button to "Akses Produk" style
         if (buyButton) {
           buyButton.classList.remove('btn-primary');
-          buyButton.classList.add('btn-tertiary', 'opacity-60', 'cursor-default');
-          buyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sudah Dibeli';
-          buyButton.removeAttribute('href');
+          buyButton.classList.add('border-2', 'border-green-500', 'text-green-700', 'bg-green-50', 'hover:bg-green-100');
+          buyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15"/><path d="M10 17L15 12L10 7"/><path d="M15 12H3"/></svg> Akses Produk';
+          buyButton.setAttribute('href', '/dashboard');
         }
       }
     } catch (e) {

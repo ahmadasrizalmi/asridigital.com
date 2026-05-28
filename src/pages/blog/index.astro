@@ -5,7 +5,7 @@ import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
 // Fetch blog posts from API at build time
-const apiBase = '';
+const apiBase = 'https://asridigital.com';
 let posts = [];
 try {
   const res = await fetch(`${apiBase}/api/blog/posts`);

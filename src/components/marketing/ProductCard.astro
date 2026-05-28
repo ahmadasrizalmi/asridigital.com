@@ -23,9 +23,9 @@ const discount = hasDiscount
   : 0;
 ---
 
-<div class="card-hover group">
+<div class="card-hover group flex flex-col h-full" data-slug={product.slug}>
   {/* Product Image */}
-  <div class="relative h-48 overflow-hidden bg-background">
+  <div class="relative aspect-square overflow-hidden bg-background shrink-0">
     <img 
       src={product.imageIcon || '/images/placeholder.jpg'} 
       alt={product.title}
@@ -33,101 +33,91 @@ const discount = hasDiscount
       loading="lazy"
     />
     
-    {/* Badges */}
-    <div class="absolute top-3 left-3 flex gap-2">
-      {isFree && (
-        <span class="badge-success">
+    {/* Badges — max 2: promo + best seller */}
+    {hasDiscount && !isFree && (
+      <div class="absolute top-2 left-2 sm:top-3 sm:left-3">
+        <span class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-red-500 text-white text-[10px] sm:text-xs font-bold shadow-sm">
+          -{discount}%
+        </span>
+      </div>
+    )}
+    {isFree && (
+      <div class="absolute top-2 left-2 sm:top-3 sm:left-3">
+        <span class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-green-500 text-white text-[10px] sm:text-xs font-bold shadow-sm">
           GRATIS
         </span>
-      )}
-      {hasDiscount && !isFree && (
-        <span class="badge-danger">
-          HEMAT {discount}%
+      </div>
+    )}
+    {product.isFeatured && (
+      <div class="absolute top-2 right-2 sm:top-3 sm:right-3">
+        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md bg-amber-400 text-amber-900 text-[10px] sm:text-xs font-bold shadow-sm">
+          <Icon name="star" size={10} class="fill-current" />
+          <span class="hidden sm:inline">Best</span>
         </span>
-      )}
-      {product.isFeatured && (
-        <span class="badge-warning">
-          <Icon name="star" size={12} />
-          POPULER
-        </span>
-      )}
-    </div>
-    
-    {/* Category Badge */}
-    <div class="absolute bottom-3 left-3">
-      <span class="badge-muted">
-        {product.category}
-      </span>
-    </div>
+      </div>
+    )}
   </div>
   
   {/* Product Info */}
-  <div class="p-5">
-    {/* Tags */}
-    {tags.length > 0 && (
-      <div class="flex flex-wrap gap-1.5 mb-3">
-        {tags.slice(0, 3).map((tag) => (
-          <span class="text-xs text-text-muted">
-            #{tag}
-          </span>
-        ))}
-      </div>
-    )}
-    
-    {/* Title */}
-    <h3 class="font-semibold text-lg mb-2 text-text-primary group-hover:text-primary transition-colors line-clamp-2">
+  <div class="p-2.5 sm:p-4 flex flex-col flex-1">
+    {/* Title — fixed 2-line height for alignment */}
+    <h3 class="font-semibold text-xs sm:text-base text-text-primary group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[2.5em] mb-0.5 sm:mb-1.5">
       {product.title}
     </h3>
     
-    {/* Description */}
-    <p class="text-sm text-text-secondary mb-4 line-clamp-2">
+    {/* Description — fixed 3-line height for alignment */}
+    <p class="text-[10px] sm:text-xs text-text-muted line-clamp-3 sm:line-clamp-2 leading-relaxed h-[3.3em] sm:h-[2.5em]">
       {product.shortDescription || product.description}
     </p>
     
-    {/* Price & Actions */}
-    <div class="mt-auto pt-4 border-t border-border">
-      <div class="flex items-baseline gap-2 mb-4">
-        {isFree ? (
-          <span class="text-2xl font-bold text-green-600">
-            Gratis
-          </span>
-        ) : (
-          <>
-            <span class="text-2xl font-bold text-text-primary">
-              {formatIDR(product.price)}
+    {/* Divider */}
+    <div class="border-t border-gray-100 my-2 sm:my-2.5"></div>
+    
+    {/* Price — vertical stacked, same size */}
+    <div class="mb-2 sm:mb-3">
+      {isFree ? (
+        <span class="text-sm sm:text-xl font-bold text-green-600">
+          Gratis
+        </span>
+      ) : (
+        <div class="flex flex-col">
+          {hasDiscount && (
+            <span class="text-sm text-text-muted line-through leading-none mb-0.5">
+              {formatIDR(product.compareAtPrice!)}
             </span>
-            {hasDiscount && (
-              <span class="text-sm text-text-muted line-through">
-                {formatIDR(product.compareAtPrice!)}
-              </span>
-            )}
-          </>
-        )}
-      </div>
-      
-      <div class="flex gap-2">
-        <a 
-          href={`/product/${product.slug}`}
-          class="btn-tertiary flex-1 justify-center text-sm"
-        >
-          <Icon name="eye" size={16} />
-          Detail
-        </a>
-        
-        <a 
-          href={`/checkout?product=${product.slug}`}
-          class={`flex-1 justify-center text-sm ${isFree ? 'btn-secondary' : 'btn-primary'}`}
-        >
-          <Icon name={isFree ? 'gift' : 'shopping-cart'} size={16} />
-          {isFree ? 'Ambil Gratis' : 'Beli'}
-        </a>
-      </div>
-      
-      {/* All-Access Badge */}
-      <div class="mt-3 flex items-center gap-1.5 text-xs text-text-muted">
-        <Icon name="crown" size={14} class="text-amber-500" />
-        <span>Tersedia di All-Access Pass</span>
-      </div>
+          )}
+          <span class="text-sm sm:text-xl font-bold text-text-primary leading-tight">
+            {formatIDR(product.price)}
+          </span>
+        </div>
+      )}
+    </div>
+    
+    {/* Divider */}
+    <div class="border-t border-gray-100 my-1.5 sm:my-2"></div>
+    
+    {/* Actions — 2 buttons */}
+    <div class="flex gap-1.5 sm:gap-2 mt-auto pt-1">
+      <a 
+        href={`/product/${product.slug}`}
+        class="inline-flex items-center justify-center gap-1 flex-1 text-[10px] sm:text-xs py-1 sm:py-2 px-1.5 sm:px-3 rounded-lg bg-surface border border-border text-text-main shadow-card hover:border-text-muted transition-all"
+      >
+        <Icon name="eye" size={11} />
+        Detail
+      </a>
+      <a 
+        href={`/checkout?product/${product.slug}`}
+        class={`buy-btn inline-flex items-center justify-center gap-1 flex-1 text-[10px] sm:text-xs py-1 sm:py-2 px-1.5 sm:px-3 rounded-lg transition-all ${isFree ? 'bg-transparent border-2 border-text-primary text-text-primary hover:bg-text-primary hover:text-white' : 'bg-primary text-white shadow-btn-primary hover:bg-primary-hover'}`}
+      >
+        <Icon name={isFree ? 'gift' : 'shopping-cart'} size={11} />
+        {isFree ? 'Gratis' : 'Beli'}
+      </a>
+    </div>
+    
+    {/* All-Access Badge — desktop only */}
+    <div class="mt-2 sm:mt-3 hidden sm:flex items-center gap-1.5 text-xs text-text-muted">
+      <Icon name="crown" size={14} class="text-amber-500" />
+      <span>Tersedia di All-Access Pass</span>
     </div>
   </div>
 </div>

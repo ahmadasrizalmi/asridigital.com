@@ -36,13 +36,27 @@ const navLinks = [
 
       <!-- Auth Buttons - Desktop -->
       <div class="hidden md:flex items-center gap-3">
-        <a href="/dashboard" class="btn-tertiary text-sm px-4 py-2">
-          <Icon name="user" size={16} />
-          Login
-        </a>
-        <a href="/#produk" class="btn-primary text-sm px-4 py-2">
-          Mulai Gratis
-        </a>
+        <!-- Default: Login buttons -->
+        <div id="auth-guest-desktop" class="flex items-center gap-3">
+          <a href="/dashboard" class="btn-tertiary text-sm px-4 py-2">
+            <Icon name="user" size={16} />
+            Login
+          </a>
+          <a href="/#produk" class="btn-primary text-sm px-4 py-2">
+            Mulai Gratis
+          </a>
+        </div>
+        <!-- Logged in: Dashboard + Logout -->
+        <div id="auth-user-desktop" class="hidden items-center gap-3">
+          <a href="/dashboard" class="btn-tertiary text-sm px-4 py-2">
+            <Icon name="user" size={16} />
+            <span id="header-user-name-desktop">Dashboard</span>
+          </a>
+          <button id="header-logout-desktop" class="btn-primary text-sm px-4 py-2">
+            <Icon name="log-out" size={16} />
+            Logout
+          </button>
+        </div>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -75,13 +89,27 @@ const navLinks = [
 
         <hr style="border:none;border-top:1px solid #E5E5E5;margin:16px 0;" />
 
-        <a href="/dashboard" class="btn-tertiary justify-center w-full">
-          <Icon name="user" size={18} />
-          Login
-        </a>
-        <a href="/#produk" class="btn-primary justify-center w-full">
-          Mulai Gratis
-        </a>
+        <!-- Default: Login buttons -->
+        <div id="auth-guest-mobile" style="display:flex;flex-direction:column;gap:8px;">
+          <a href="/dashboard" class="btn-tertiary justify-center w-full">
+            <Icon name="user" size={18} />
+            Login
+          </a>
+          <a href="/#produk" class="btn-primary justify-center w-full">
+            Mulai Gratis
+          </a>
+        </div>
+        <!-- Logged in: Dashboard + Logout -->
+        <div id="auth-user-mobile" style="display:none;flex-direction:column;gap:8px;">
+          <a href="/dashboard" class="btn-tertiary justify-center w-full">
+            <Icon name="user" size={18} />
+            <span id="header-user-name-mobile">Dashboard</span>
+          </a>
+          <button id="header-logout-mobile" class="btn-primary justify-center w-full">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
+        </div>
       </nav>
     </div>
   </div>
@@ -115,5 +143,67 @@ const navLinks = [
   // Close on escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeMenu();
+  });
+
+  // Auth state check
+  function syncHeaderAuth() {
+    const token = localStorage.getItem('auth_token');
+    const userStr = localStorage.getItem('user');
+
+    // Desktop elements
+    const guestDesktop = document.getElementById('auth-guest-desktop');
+    const userDesktop = document.getElementById('auth-user-desktop');
+    const nameDesktop = document.getElementById('header-user-name-desktop');
+    // Mobile elements
+    const guestMobile = document.getElementById('auth-guest-mobile');
+    const userMobile = document.getElementById('auth-user-mobile');
+    const nameMobile = document.getElementById('header-user-name-mobile');
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        const userName = user.name || 'Dashboard';
+
+        // Desktop
+        if (guestDesktop) guestDesktop.style.display = 'none';
+        if (userDesktop) {
+          userDesktop.style.display = 'flex';
+          userDesktop.classList.remove('hidden');
+        }
+        if (nameDesktop) nameDesktop.textContent = userName;
+
+        // Mobile
+        if (guestMobile) guestMobile.style.display = 'none';
+        if (userMobile) userMobile.style.display = 'flex';
+        if (nameMobile) nameMobile.textContent = userName;
+      } catch {}
+    } else {
+      // Not logged in — show guest buttons
+      if (guestDesktop) guestDesktop.style.display = 'flex';
+      if (userDesktop) userDesktop.style.display = 'none';
+      if (guestMobile) guestMobile.style.display = 'flex';
+      if (userMobile) userMobile.style.display = 'none';
+    }
+  }
+
+  // Initial check
+  syncHeaderAuth();
+
+  // Listen for auth changes (dispatched from login/logout)
+  window.addEventListener('auth-changed', () => syncHeaderAuth());
+
+  // Logout handlers (desktop + mobile)
+  document.getElementById('header-logout-desktop')?.addEventListener('click', () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    window.dispatchEvent(new Event('auth-changed'));
+    window.location.href = '/';
+  });
+
+  document.getElementById('header-logout-mobile')?.addEventListener('click', () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    window.dispatchEvent(new Event('auth-changed'));
+    window.location.href = '/';
   });
 </script>

@@ -6,7 +6,7 @@ interface Env {
   DOMPETX_API_KEY: string;
   DOMPETX_WEBHOOK_SECRET: string;
   DOMPETX_API_URL: string;
-  RESEND_API_KEY: string;
+  RESEND_KEY: string;
   JWT_SECRET: string;
   APP_URL: string;
 }
@@ -526,11 +526,12 @@ export async function onRequest(context: any): Promise<Response> {
               if (paidOrder) {
                 let user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email).first();
                 let magicToken = '';
+                let newUserPassword = '';
 
                 if (!user) {
                   const userId = generateId();
-                  const randomPassword = crypto.randomUUID().slice(0, 12);
-                  const passwordHash = await hashPassword(randomPassword);
+                  newUserPassword = crypto.randomUUID().slice(0, 12);
+                  const passwordHash = await hashPassword(newUserPassword);
                   try {
                     await env.DB.prepare(
                       'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
@@ -554,7 +555,7 @@ export async function onRequest(context: any): Promise<Response> {
                   );
                 }
 
-                await sendOrderConfirmationEmail(env, paidOrder, magicToken);
+                await sendOrderConfirmationEmail(env, paidOrder, magicToken, newUserPassword || undefined);
               }
 
               order.status = 'PAID';
@@ -744,14 +745,14 @@ export async function onRequest(context: any): Promise<Response> {
 
       // Send reset email
       try {
-        if (env.RESEND_API_KEY && !env.RESEND_API_KEY.startsWith('re_your_')) {
+        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
           const resetUrl = `${env.APP_URL}/reset-password?token=${resetToken}`;
           
           await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${env.RESEND_API_KEY}`
+              'Authorization': `Bearer ${env.RESEND_KEY}`
             },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
@@ -1306,11 +1307,12 @@ export async function onRequest(context: any): Promise<Response> {
           .first();
 
         let magicToken = '';
+        let newUserPassword = '';
         if (!user) {
           // Create new user with random password
           const userId = generateId();
-          const randomPassword = crypto.randomUUID().slice(0, 12);
-          const passwordHash = await hashPassword(randomPassword);
+          newUserPassword = crypto.randomUUID().slice(0, 12);
+          const passwordHash = await hashPassword(newUserPassword);
 
           try {
             await env.DB.prepare(
@@ -1379,7 +1381,7 @@ export async function onRequest(context: any): Promise<Response> {
 
         // Send confirmation email with magic link
         try {
-          await sendOrderConfirmationEmail(env, order, magicToken);
+          await sendOrderConfirmationEmail(env, order, magicToken, newUserPassword || undefined);
         } catch (emailError) {
           console.error('Email error:', emailError);
         }
@@ -1396,6 +1398,48 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       return jsonResponse({ success: true });
+    }
+
+    // ==================== WEBHOOK RESEND (email delivery tracking) ====================
+    if (route === '/webhooks/resend' && method === 'POST') {
+      try {
+        const rawBody = await request.text();
+        const body = JSON.parse(rawBody);
+        const eventType = body.type || '';
+        const data = body.data || {};
+
+        console.log('RESEND WEBHOOK:', eventType, JSON.stringify(data).substring(0, 300));
+
+        // Update email_logs based on delivery status
+        if (data.email_id || data.to) {
+          const statusMap: Record<string, string> = {
+            'email.sent': 'SENT',
+            'email.delivered': 'DELIVERED',
+            'email.delivery_delayed': 'DELAYED',
+            'email.bounced': 'BOUNCED',
+            'email.complained': 'COMPLAINED',
+          };
+          const newStatus = statusMap[eventType] || eventType;
+
+          // Try to find and update the email log
+          if (data.to && Array.isArray(data.to)) {
+            for (const toEmail of data.to) {
+              await env.DB.prepare(
+                `UPDATE email_logs SET status = ?, resend_id = ? WHERE to_email = ? AND type = 'ORDER_CONFIRMATION' ORDER BY sent_at DESC LIMIT 1`
+              ).bind(newStatus, data.email_id || null, toEmail).run();
+            }
+          } else if (data.to && typeof data.to === 'string') {
+            await env.DB.prepare(
+              `UPDATE email_logs SET status = ?, resend_id = ? WHERE to_email = ? AND type = 'ORDER_CONFIRMATION' ORDER BY sent_at DESC LIMIT 1`
+            ).bind(newStatus, data.email_id || null, data.to).run();
+          }
+        }
+
+        return jsonResponse({ received: true });
+      } catch (webhookErr) {
+        console.error('Resend webhook error:', webhookErr);
+        return jsonResponse({ error: 'Webhook processing failed' }, 500);
+      }
     }
 
     // ==================== USER PRODUCTS ====================
@@ -1887,6 +1931,22 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true });
     }
 
+    // ==================== PUBLIC: TRACKING CONFIG ====================
+    if (route === '/tracking-config' && method === 'GET') {
+      const keys = ['gtm_id', 'meta_pixel_id', 'google_ads_id', 'google_ads_label'];
+      const placeholders = keys.map(() => '?').join(',');
+      const settings = await env.DB.prepare(
+        `SELECT key, value FROM site_settings WHERE key IN (${placeholders})`
+      ).bind(...keys).all();
+
+      const config: any = {};
+      settings.results.forEach((s: any) => {
+        if (s.value && s.value.trim()) config[s.key] = s.value.trim();
+      });
+
+      return jsonResponse(config);
+    }
+
     // ==================== ADMIN: SETTINGS ====================
     if (route === '/admin/settings' && method === 'GET') {
       const settings = await env.DB.prepare(
@@ -2290,10 +2350,10 @@ export async function onRequest(context: any): Promise<Response> {
 
       // Send email notification
       try {
-        if (env.RESEND_API_KEY && !env.RESEND_API_KEY.startsWith('re_your_')) {
+        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
           await fetch('https://api.resend.com/emails', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_API_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
               to: 'ahmadasrizalmi@gmail.com',
@@ -2408,8 +2468,8 @@ export async function onRequest(context: any): Promise<Response> {
 }
 
 // Email helper function
-async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: string) {
-  if (!env.RESEND_API_KEY || env.RESEND_API_KEY.startsWith('re_your_')) {
+async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: string, userPassword?: string) {
+  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) {
     console.log('Resend API key not configured, skipping email');
     return;
   }
@@ -2480,6 +2540,18 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
             </a>
           </div>
           
+          ${userPassword ? `
+          <!-- Login Credentials -->
+          <div style="background-color: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin: 16px 0;">
+            <p style="color: #92400e; font-size: 14px; font-weight: 600; margin: 0 0 8px;">🔐 Info Login Anda</p>
+            <p style="color: #78350f; font-size: 13px; margin: 0; line-height: 1.6;">
+              <strong>Email:</strong> ${order.user_email}<br/>
+              <strong>Password:</strong> <code style="background: #fef3c7; padding: 2px 6px; border-radius: 4px;">${userPassword}</code>
+            </p>
+            <p style="color: #92400e; font-size: 12px; margin: 8px 0 0;">Simpan info ini atau ganti password Anda di Dashboard.</p>
+          </div>
+          ` : ''}
+          
           <p style="color: #737373; font-size: 14px; text-align: center;">
             Jika ada pertanyaan, balas email ini atau hubungi kami via WhatsApp.
           </p>
@@ -2500,7 +2572,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.RESEND_API_KEY}`
+      'Authorization': `Bearer ${env.RESEND_KEY}`
     },
     body: JSON.stringify({
       from: 'Asri Digital <noreply@asridigital.com>',
@@ -2512,16 +2584,23 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
 
   const result = await response.json() as any;
 
-  // Log email (best effort)
+  // Log email (best effort) — check response status
+  const emailStatus = response.ok ? 'SENT' : 'FAILED';
+  const errorMsg = response.ok ? null : (result?.message || result?.error || `HTTP ${response.status}`);
+  
   try {
     await env.DB.prepare(
-      `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
-       VALUES (?, ?, 'ORDER_CONFIRMATION', 'SENT', datetime('now'))`
+      `INSERT INTO email_logs (to_email, subject, type, status, error_message, sent_at)
+       VALUES (?, ?, 'ORDER_CONFIRMATION', ?, ?, datetime('now'))`
     )
-      .bind(order.user_email, subject)
+      .bind(order.user_email, subject, emailStatus, errorMsg)
       .run();
   } catch (logErr) {
     console.error('Email log insert failed:', logErr);
+  }
+
+  if (!response.ok) {
+    console.error(`Email send failed: ${response.status} - ${JSON.stringify(result)}`);
   }
 
   return result;

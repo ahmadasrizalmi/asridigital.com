@@ -202,6 +202,17 @@ const orderId = url.searchParams.get('order') || '';
         var dashBtn = document.getElementById('dashboard-btn');
         if (dashBtn) dashBtn.href = order.dashboardUrl;
       }
+
+      // Tracking: Purchase
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('purchase', {
+          content_name: order.product_title || 'product',
+          content_type: 'product',
+          value: order.amount || 0,
+          currency: 'IDR',
+          order_id: order.id
+        });
+      }
     }
 
     function showPending(order, attempt) {
