@@ -29,7 +29,7 @@ const catMap: Record<string, string> = {
 const filterCat = catMap[product.category.toLowerCase()] || 'tools';
 ---
 
-<a href={`/product/${product.slug}`} class="product-card bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full" data-category={filterCat} data-title={product.title.toLowerCase()} data-slug={product.slug}>
+<a href={`/product/${product.slug}`} class="product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full" data-category={filterCat} data-title={product.title.toLowerCase()} data-slug={product.slug}>
   <div class="relative overflow-hidden aspect-square bg-slate-50">
     <img
       src={product.imageIcon || '/images/placeholder.jpg'}
@@ -58,7 +58,7 @@ const filterCat = catMap[product.category.toLowerCase()] || 'tools';
     <p class="text-slate-500 text-sm mb-6 flex-grow leading-relaxed line-clamp-2">
       {product.shortDescription || product.description}
     </p>
-    <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
+          <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-300">
       {isFree ? (
         <span class="text-xl font-bold text-slate-900">Gratis</span>
       ) : (
