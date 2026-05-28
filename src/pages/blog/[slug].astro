@@ -39,7 +39,7 @@ const { slug } = Astro.params;
 
       <!-- Hero Header -->
       <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#1a2e0a 0%,#2d4a1a 50%,#5C7A36 100%);">
-        <div style="position:absolute;inset:0;background:url('https://picsum.photos/seed/asridigital-blog/1200/600') center/cover;opacity:0.15;"></div>
+        <div id="hero-bg-image" style="position:absolute;inset:0;opacity:0.15;"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
         <div style="position:relative;max-width:800px;margin:0 auto;padding:80px 16px 32px;">
           <!-- Breadcrumb -->
@@ -50,13 +50,7 @@ const { slug } = Astro.params;
             <span>›</span>
             <span id="breadcrumb-title" style="color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
           </nav>
-          <!-- Category + Date + Reading Time -->
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <span id="post-category" style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.2);color:#fff;"></span>
-            <span id="post-date" style="font-size:13px;color:rgba(255,255,255,0.8);"></span>
-            <span style="color:rgba(255,255,255,0.4);">•</span>
-            <span id="reading-time" style="font-size:13px;color:rgba(255,255,255,0.8);"></span>
-          </div>
+          <!-- Category + Date + Reading Time removed per request -->
           <!-- Title -->
           <h1 id="post-title" style="font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;color:#fff;line-height:1.25;margin-bottom:16px;"></h1>
           <!-- Author -->
@@ -308,16 +302,16 @@ const { slug } = Astro.params;
       document.title = `${post.title} - Blog Asri Digital`;
       document.getElementById('breadcrumb-title').textContent = post.title;
 
-      const catEl = document.getElementById('post-category');
-      catEl.textContent = post.category;
-
-      document.getElementById('post-date').textContent = formatDate(post.published_at);
-      document.getElementById('reading-time').textContent = calcReadingTime(post.content);
       document.getElementById('post-title').textContent = post.title;
       document.getElementById('post-author').textContent = post.author_name || 'Admin Asri Digital';
       document.getElementById('author-box-name').textContent = post.author_name || 'Admin Asri Digital';
 
       if (post.image_url) {
+        // Set hero background image
+        const heroBg = document.getElementById('hero-bg-image');
+        if (heroBg) {
+          heroBg.style.background = `url('${post.image_url}') center/cover`;
+        }
         const container = document.getElementById('post-image-container');
         const img = document.getElementById('post-image');
         img.src = `${post.image_url}?v=${Date.now()}`;

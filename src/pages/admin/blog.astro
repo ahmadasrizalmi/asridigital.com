@@ -149,6 +149,13 @@ import Icon from '../../components/ui/Icon.astro';
 
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Konten *</label>
+            <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+              <button type="button" onclick="insertMd('**','**','teks tebal')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">B</button>
+              <button type="button" onclick="insertMd('## ','','Heading')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">H</button>
+              <button type="button" onclick="insertMd('[','](url)','link text')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">🔗</button>
+              <button type="button" onclick="insertMd('![','](url)','alt text')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">🖼️</button>
+              <button type="button" onclick="insertMd('- ','','list item')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">• List</button>
+            </div>
             <textarea class="input font-mono" id="blog-content" rows="12" required placeholder="Tulis konten artikel dalam format Markdown..."></textarea>
           </div>
           
@@ -288,6 +295,18 @@ import Icon from '../../components/ui/Icon.astro';
       console.error('Failed to load posts:', err);
     }
   }
+
+  function insertMd(before: string, after: string, placeholder: string) {
+    const ta = document.getElementById('blog-content') as HTMLTextAreaElement;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || placeholder;
+    ta.value = ta.value.substring(0, start) + before + selected + after + ta.value.substring(end);
+    ta.focus();
+    ta.setSelectionRange(start + before.length, start + before.length + selected.length);
+  }
+  (window as any).insertMd = insertMd;
 
   function escapeHtml(str: string): string {
     const div = document.createElement('div');
