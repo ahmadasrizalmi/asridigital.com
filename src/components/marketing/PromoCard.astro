@@ -1,27 +1,72 @@
 ---
-// PromoCard.astro — Lifetime All-Access Pass with dark carbon design
+// PromoCard.astro — Lifetime All-Access Pass
+// ALL data fetched from D1 via API (products + site_settings)
 ---
 
 <section id="all-access" class="py-20 bg-carbon text-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-10">
+    <div class="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-10" id="promo-card">
       <div class="md:w-1/2">
-        <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full mb-6 border border-emerald-500/30">BEST VALUE</span>
-        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Miliki Semua Aset & Tools Selamanya.</h2>
-        <p class="text-slate-300 text-lg mb-8 leading-relaxed">Akses ke seluruh aplikasi, data riset, dan Custom GPT yang ada sekarang, <span class="text-white font-semibold">plus semua produk baru</span> yang akan kami rilis di masa depan. Bayar sekali, pakai seumur hidup.</p>
-        
+        <span id="promo-badge" class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full mb-6 border border-emerald-500/30">BEST VALUE</span>
+        <h2 id="promo-title" class="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Loading...</h2>
+        <p id="promo-desc" class="text-slate-300 text-lg mb-8 leading-relaxed">Loading...</p>
+
         <div class="flex items-end mb-8">
-          <span class="text-5xl font-extrabold tracking-tight">Rp 299.000</span>
-          <span class="ml-4 mb-2 text-slate-400 line-through">Rp 750.000</span>
+          <span id="promo-price" class="text-5xl font-extrabold tracking-tight">-</span>
+          <span id="promo-compare" class="ml-4 mb-2 text-slate-400 line-through"></span>
         </div>
-        
-        <a href="/checkout?product=lifetime-all-access-pass" class="inline-block bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-900 font-bold px-8 py-4 rounded-xl hover:shadow-[0_0_20px_rgba(52,211,153,0.3)] transition-all transform hover:-translate-y-1">
-          Amankan All-Access Pass Sekarang
+
+        <a id="promo-cta" href="/checkout?product=lifetime-all-access-pass" class="inline-block bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-900 font-bold px-8 py-4 rounded-xl hover:shadow-[0_0_20px_rgba(52,211,153,0.3)] transition-all transform hover:-translate-y-1">
+          Loading...
         </a>
       </div>
       <div class="md:w-1/2 flex justify-center">
-        <img src="https://res.cloudinary.com/daj8fzinf/image/upload/q_auto,f_auto/v1779954362/Gemini_Generated_Image_1gaq4b1gaq4b1gaq_ok_qdxml6.png" alt="Lifetime All-Access" class="w-full max-w-md rounded-2xl shadow-float rotate-2 hover:rotate-0 transition-transform duration-500" loading="lazy" />
+        <img id="promo-image" src="/images/placeholder.jpg" alt="Lifetime All-Access" class="w-full max-w-md rounded-2xl shadow-float rotate-2 hover:rotate-0 transition-transform duration-500" loading="lazy" />
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+  }
+
+  async function loadPromoData() {
+    try {
+      // Fetch settings + all-access product in parallel
+      const [settingsRes, productsRes] = await Promise.all([
+        fetch('/api/site-settings?keys=promo_badge_text,promo_title,promo_description,promo_cta_text,promo_compare_price'),
+        fetch('/api/products?limit=100')
+      ]);
+
+      const settings = await settingsRes.json();
+      const productsData = await productsRes.json();
+      const allAccess = (productsData.products || []).find((p: any) => p.slug === 'lifetime-all-access-pass');
+
+      // Apply settings
+      if (settings.promo_badge_text) document.getElementById('promo-badge')!.textContent = settings.promo_badge_text;
+      if (settings.promo_title) document.getElementById('promo-title')!.textContent = settings.promo_title;
+      if (settings.promo_description) document.getElementById('promo-desc')!.textContent = settings.promo_description;
+      if (settings.promo_cta_text) document.getElementById('promo-cta')!.textContent = settings.promo_cta_text;
+
+      // Apply product data
+      if (allAccess) {
+        document.getElementById('promo-price')!.textContent = formatIDR(allAccess.price);
+        if (allAccess.compare_at_price) {
+          document.getElementById('promo-compare')!.textContent = formatIDR(allAccess.compare_at_price);
+        }
+        if (allAccess.image_icon) {
+          (document.getElementById('promo-image') as HTMLImageElement).src = allAccess.image_icon;
+        }
+        document.getElementById('promo-cta')!.setAttribute('href', `/checkout?product=${allAccess.slug}`);
+      } else if (settings.promo_compare_price) {
+        document.getElementById('promo-compare')!.textContent = formatIDR(parseInt(settings.promo_compare_price));
+      }
+    } catch (err) {
+      console.error('PromoCard load failed:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadPromoData);
+</script>

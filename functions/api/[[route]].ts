@@ -2029,6 +2029,45 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true });
     }
 
+    // ==================== PUBLIC: SITE SETTINGS ====================
+    if (route === '/site-settings' && method === 'GET') {
+      try {
+        const keysParam = url.searchParams.get('keys');
+        let query = 'SELECT key, value FROM site_settings';
+        let params: any[] = [];
+
+        if (keysParam) {
+          const keys = keysParam.split(',').map(k => k.trim()).filter(Boolean);
+          if (keys.length > 0) {
+            const placeholders = keys.map(() => '?').join(',');
+            query += ` WHERE key IN (${placeholders})`;
+            params = keys;
+          }
+        }
+
+        const settings = await env.DB.prepare(query).bind(...params).all();
+        const result: Record<string, string> = {};
+        (settings.results || []).forEach((s: any) => {
+          if (s.value && s.value.trim()) result[s.key] = s.value.trim();
+        });
+        return jsonResponse(result);
+      } catch (e) {
+        return jsonResponse({});
+      }
+    }
+
+    // ==================== PUBLIC: CATEGORIES ====================
+    if (route === '/categories' && method === 'GET') {
+      try {
+        const categories = await env.DB.prepare(
+          'SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC'
+        ).all();
+        return jsonResponse({ categories: categories.results });
+      } catch (e) {
+        return jsonResponse({ categories: [] });
+      }
+    }
+
     // ==================== PUBLIC: TRACKING CONFIG ====================
     if (route === '/tracking-config' && method === 'GET') {
       const keys = ['gtm_id', 'meta_pixel_id', 'google_ads_id', 'google_ads_label'];

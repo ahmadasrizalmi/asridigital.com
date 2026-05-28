@@ -13,16 +13,16 @@
 
   <!-- Hero Content Block -->
   <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-    <div class="max-w-xl" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:2rem 2.5rem;border-radius:1.5rem;border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 24px -4px rgba(0,0,0,0.04);">
-      <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-6">
-        Solusi Digital Instan untuk Kerja Lebih Cepat.
+    <div id="hero-glass-card" class="max-w-xl" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:2rem 2.5rem;border-radius:1.5rem;border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 24px -4px rgba(0,0,0,0.04);">
+      <h1 id="hero-main-title" class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-6">
+        Loading...
       </h1>
-      <p class="text-lg text-slate-600 mb-8 leading-relaxed">
-        Temukan aplikasi praktis, data riset tren terupdate, dan asisten AI kustom yang siap pakai hari ini. Sekali bayar, tanpa biaya langganan bulanan.
+      <p id="hero-main-subtitle" class="text-lg text-slate-600 mb-8 leading-relaxed">
+        Loading...
       </p>
       <div class="flex flex-col sm:flex-row gap-4">
-        <a href="#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center px-8 py-3.5 rounded-full font-bold shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
-          Lihat Semua Produk
+        <a id="hero-main-cta" href="#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center px-8 py-3.5 rounded-full font-bold shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
+          Loading...
         </a>
       </div>
     </div>
@@ -94,8 +94,21 @@
 
   async function init() {
     try {
-      const res = await fetch('/api/hero-slides');
-      const json = await res.json();
+      // Fetch hero content + slides in parallel
+      const [settingsRes, slidesRes] = await Promise.all([
+        fetch('/api/site-settings?keys=hero_title,hero_subtitle,hero_cta_text,hero_cta_link'),
+        fetch('/api/hero-slides')
+      ]);
+
+      // Apply hero content from site_settings
+      const settings = await settingsRes.json();
+      if (settings.hero_title) document.getElementById('hero-main-title')!.textContent = settings.hero_title;
+      if (settings.hero_subtitle) document.getElementById('hero-main-subtitle')!.textContent = settings.hero_subtitle;
+      if (settings.hero_cta_text) document.getElementById('hero-main-cta')!.textContent = settings.hero_cta_text;
+      if (settings.hero_cta_link) document.getElementById('hero-main-cta')!.setAttribute('href', settings.hero_cta_link);
+
+      // Apply slider slides from hero_slides
+      const json = await slidesRes.json();
       DATA.push(...((json.slides || []) as Slide[]));
 
       if (DATA.length === 0) return;
