@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
 import Icon from '../components/ui/Icon.astro';
 
 // Get order ID from URL
@@ -153,6 +154,7 @@ const orderId = url.searchParams.get('order') || '';
       </div>
     </div>
   </main>
+  <Footer />
 </BaseLayout>
 
 <script is:inline>

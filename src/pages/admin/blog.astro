@@ -211,23 +211,18 @@ import Icon from '../../components/ui/Icon.astro';
   });
 
   async function loadPosts() {
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
+    /* auth handled by admin-utils.js */
 
     const tbody = document.getElementById('blog-table')!;
     tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Loading...</td></tr>';
 
     try {
-      const res = await fetch('/api/admin/blog', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await adminFetch('/api/admin/blog');
       if (res.status === 401 || res.status === 403) {
         window.location.href = '/admin/login';
         return;
       }
+      if (!res.ok) { showToast('Gagal memuat artikel', 'error'); return; }
       const data = await res.json();
       const posts = data.posts || [];
 
@@ -317,17 +312,10 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function deletePost(id: number) {
     if (!confirm('Yakin ingin menghapus artikel ini?')) return;
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
+    /* auth handled by admin-utils.js */
 
     try {
-      const res = await fetch(`/api/admin/blog/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await adminFetch(`/api/admin/blog/${id}`, { method: 'DELETE' });
       if (res.ok) {
         loadPosts();
       } else {
@@ -341,11 +329,7 @@ import Icon from '../../components/ui/Icon.astro';
 
   document.getElementById('blog-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
+    /* auth handled by admin-utils.js */
 
     const title = (document.getElementById('blog-title') as HTMLInputElement).value;
     const slug = (document.getElementById('blog-slug') as HTMLInputElement).value;
@@ -362,12 +346,9 @@ import Icon from '../../components/ui/Icon.astro';
       const url = currentEditId ? `/api/admin/blog/${currentEditId}` : '/api/admin/blog';
       const method = currentEditId ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
 
@@ -408,12 +389,9 @@ import Icon from '../../components/ui/Icon.astro';
       const url = currentEditId ? `/api/admin/blog/${currentEditId}` : '/api/admin/blog';
       const method = currentEditId ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
 
