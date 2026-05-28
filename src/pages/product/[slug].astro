@@ -82,7 +82,7 @@ const categoryBadge: Record<string, string> = {
 const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.category || 'DIGITAL').toUpperCase();
 ---
 
-<BaseLayout title={`${product.title} - Asri Digital`} description={product.short_description || product.description}>
+<BaseLayout title={`${product.title} - Asri Digital`} description={product.short_description || product.description} ogImage={product.image_icon ? (product.image_icon.startsWith('http') ? product.image_icon : `https://asridigital.com${product.image_icon}`) : undefined}>
   <Header />
 
   <main class="pt-28 pb-20">

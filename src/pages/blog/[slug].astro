@@ -300,6 +300,44 @@ const { slug } = Astro.params;
       const relatedPosts = data.relatedPosts || [];
 
       document.title = `${post.title} - Blog Asri Digital`;
+
+      // Update meta tags for SEO/social sharing
+      const setMeta = (attr, key, val) => {
+        if (!val) return;
+        let el = document.querySelector(`meta[${attr}="${key}"]`);
+        if (!el) { el = document.createElement('meta'); el.setAttribute(attr, key); document.head.appendChild(el); }
+        el.setAttribute('content', val);
+      };
+      const desc = post.excerpt || post.title;
+      const img = post.image_url || '';
+      const postUrl = window.location.href;
+      setMeta('property', 'og:title', post.title);
+      setMeta('property', 'og:description', desc);
+      setMeta('property', 'og:image', img);
+      setMeta('property', 'og:url', postUrl);
+      setMeta('property', 'og:type', 'article');
+      setMeta('name', 'twitter:title', post.title);
+      setMeta('name', 'twitter:description', desc);
+      setMeta('name', 'twitter:image', img);
+      setMeta('name', 'description', desc);
+
+      // Inject JSON-LD Article schema
+      const existingLd = document.getElementById('blog-article-jsonld');
+      if (existingLd) existingLd.remove();
+      const ldScript = document.createElement('script');
+      ldScript.id = 'blog-article-jsonld';
+      ldScript.type = 'application/ld+json';
+      ldScript.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        description: post.excerpt || '',
+        image: post.image_url || '',
+        author: { '@type': 'Person', name: post.author_name || 'Admin Asri Digital' },
+        datePublished: post.published_at || '',
+        publisher: { '@type': 'Organization', name: 'Asri Digital' }
+      });
+      document.head.appendChild(ldScript);
       document.getElementById('breadcrumb-title').textContent = post.title;
 
       document.getElementById('post-title').textContent = post.title;
