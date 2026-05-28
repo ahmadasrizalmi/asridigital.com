@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import { formatIDR } from '../../lib/utils';
+import { markdownToHtml } from '../../lib/markdown';
 
 export async function getStaticPaths() {
   const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
@@ -204,12 +205,11 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
         </div>
       </div>
 
-      <!-- Description -->
+      <!-- Description (Markdown rendered) -->
       <div class="mt-20 border-t border-slate-200 pt-12">
         <div class="max-w-3xl">
           <h3 class="text-2xl font-bold text-slate-900 mb-6">Deskripsi Lengkap</h3>
-          <div class="prose prose-slate text-slate-600 space-y-4">
-            <p>{product.description}</p>
+          <div class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:text-slate-600 prose-li:leading-relaxed prose-strong:text-slate-800 prose-ol:space-y-1 prose-ul:space-y-1" set:html={markdownToHtml(product.description)}>
           </div>
         </div>
       </div>

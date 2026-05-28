@@ -126,8 +126,9 @@ import Icon from '../../components/ui/Icon.astro';
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi</label>
-            <textarea id="product-description" class="input" rows="3"></textarea>
+            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi <span class="text-xs text-text-muted font-normal">(mendukung Markdown)</span></label>
+            <textarea id="product-description" class="input font-mono text-sm" rows="8" placeholder="## Fitur Utama&#10;&#10;- **Fitur 1:** Deskripsi fitur&#10;- **Fitur 2:** Deskripsi fitur&#10;&#10;## Cara Instalasi&#10;1. Langkah pertama&#10;2. Langkah kedua"></textarea>
+            <p class="text-xs text-text-muted mt-1">Gunakan Markdown: **teks tebal**, - daftar, 1. daftar bernomor, ## heading</p>
           </div>
           
           <div>
