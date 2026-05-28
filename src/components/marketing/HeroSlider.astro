@@ -1,261 +1,183 @@
 ---
-// HeroSlider.astro — Dynamic hero slider managed via admin panel
+// HeroSlider.astro — Enterprise-grade hero slider
 ---
 
-<section id="hero-slider" class="relative w-full">
-  <!-- Loading skeleton -->
-  <div id="hero-loading" class="w-full bg-background flex items-center justify-center" style="min-height: 420px;">
-    <div class="text-text-muted text-sm">Loading...</div>
+<section id="hero-slider" class="relative w-full bg-white">
+  <!-- Loading -->
+  <div id="hero-loading" class="flex items-center justify-center h-[420px] bg-gray-50">
+    <div class="text-gray-400 text-sm">Loading...</div>
   </div>
 
-  <!-- Fallback static content (shown if no slides) -->
-  <div id="hero-fallback" class="hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
-      <div class="max-w-2xl">
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary leading-tight mb-4">
-          Custom GPT untuk<br/>Profesional Indonesia
-        </h1>
-        <p class="text-base sm:text-lg text-text-secondary mb-8 max-w-lg">
-          Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. Bayar sekali, akses seumur hidup.
-        </p>
-        <a href="/#produk" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-xl hover:bg-primary/90 transition-all shadow-btn-primary text-base sm:text-lg">
-          Mulai Gratis
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      </div>
+  <!-- Fallback -->
+  <div id="hero-fallback" class="hidden max-w-7xl mx-auto px-6 py-16 sm:py-20 lg:py-24">
+    <div class="max-w-2xl">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+        Custom GPT untuk Profesional Indonesia
+      </h1>
+      <p class="text-base sm:text-lg text-gray-600 mb-8">Bayar sekali, akses seumur hidup.</p>
+      <a href="/#produk" class="inline-flex items-center gap-2 bg-teal-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-teal-700 transition-all">
+        Mulai Gratis
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
     </div>
   </div>
 
-  <!-- Slider container — hidden until JS loads slides -->
-  <div id="hero-slides-container" class="hidden"></div>
+  <!-- Slider viewport — clips overflow -->
+  <div id="slider-viewport" class="hidden relative overflow-hidden">
+    <!-- Slide wrapper — handles height -->
+    <div id="slide-wrapper">
+      <!-- Slides injected by JS -->
+    </div>
 
-  <style>
-    @media (min-width: 1024px) {
-      .lg-flex { display: flex !important; }
-    }
-  </style>
-
-  <!-- Dot indicators -->
-  <div id="hero-dots" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+    <!-- Prev/Next arrows (desktop only) -->
+    <button id="slider-prev" class="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors" aria-label="Previous">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button id="slider-next" class="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors" aria-label="Next">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
   </div>
+
+  <!-- Dots -->
+  <div id="slider-dots" class="hidden absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2"></div>
 </section>
 
 <script>
   interface HeroSlide {
-    id: string;
-    title: string;
-    subtitle: string | null;
-    cta_text: string | null;
-    cta_link: string | null;
-    image_desktop: string;
-    image_mobile: string;
-    link_type: string;
-    link_target: string | null;
-    badge_text: string | null;
-    badge_color: string;
-    sort_order: number;
-    is_active: number;
+    id: string; title: string; subtitle: string | null;
+    cta_text: string | null; cta_link: string | null;
+    image_desktop: string; image_mobile: string;
+    link_type: string; link_target: string | null;
+    badge_text: string | null; badge_color: string;
+    sort_order: number; is_active: number;
   }
 
+  const slides: HeroSlide[] = [];
   let currentSlide = 0;
-  let slides: HeroSlide[] = [];
-  let autoplayTimer: ReturnType<typeof setInterval> | null = null;
-  const AUTOPLAY_INTERVAL = 5000;
+  let timer: ReturnType<typeof setInterval> | null = null;
 
-  function getBadgeColorClasses(color: string): string {
-    const map: Record<string, string> = {
-      primary: 'bg-primary text-white',
-      amber: 'bg-amber-400 text-amber-900',
-      green: 'bg-green-500 text-white',
-      red: 'bg-red-500 text-white',
-    };
-    return map[color] || map.primary;
+  const badgeColors: Record<string,string> = {
+    primary: 'bg-teal-600 text-white',
+    amber: 'bg-amber-400 text-amber-900',
+    green: 'bg-green-500 text-white',
+    red: 'bg-red-500 text-white',
+  };
+
+  function href(s: HeroSlide): string {
+    if (s.cta_link) return s.cta_link;
+    if (s.link_type === 'product' && s.link_target) return '/product/' + s.link_target;
+    if (s.link_type === 'blog' && s.link_target) return '/blog/' + s.link_target;
+    if (s.link_type === 'page' && s.link_target) return '/' + s.link_target;
+    return s.link_target || '#';
   }
 
-  function getLinkHref(slide: HeroSlide): string {
-    if (slide.cta_link) return slide.cta_link;
-    switch (slide.link_type) {
-      case 'product': return slide.link_target ? `/product/${slide.link_target}` : '#';
-      case 'blog': return slide.link_target ? `/blog/${slide.link_target}` : '/blog';
-      case 'page': return slide.link_target ? `/${slide.link_target}` : '#';
-      case 'custom': return slide.link_target || '#';
-      default: return '#';
-    }
-  }
+  function renderAll(): void {
+    const wrapper = document.getElementById('slide-wrapper')!;
+    wrapper.innerHTML = slides.map((s, i) => {
+      const active = i === 0;
+      const badge = s.badge_text ? `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm ${badgeColors[s.badge_color]||badgeColors.primary}">${s.badge_text}</span>` : '';
+      const cta = s.cta_text ? `<a href="${href(s)}" class="inline-flex items-center gap-2 bg-teal-600 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-teal-700 transition-all shadow-lg text-sm sm:text-base">${s.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>` : '';
+      const badgeDiv = badge ? `<div class="mb-3">${badge}</div>` : '';
+      const sub = s.subtitle ? `<p class="text-sm sm:text-base lg:text-lg text-gray-500 mb-6 max-w-lg">${s.subtitle}</p>` : '';
+      const arrows = `<div class="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white/90 shadow-lg border border-gray-200 hover:bg-white transition cursor-pointer" onclick="sliderPrev()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div><div class="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white/90 shadow-lg border border-gray-200 hover:bg-white transition cursor-pointer" onclick="sliderNext()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>`;
 
-  function renderSlide(slide: HeroSlide, index: number): string {
-    const linkHref = getLinkHref(slide);
-    const badgeHtml = slide.badge_text
-      ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm ${getBadgeColorClasses(slide.badge_color)}">${slide.badge_text}</span>`
-      : '';
-
-    const ctaHtml = slide.cta_text
-      ? `<a href="${linkHref}" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-primary/90 transition-all shadow-lg text-sm sm:text-base">
-          ${slide.cta_text}
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>`
-      : '';
-
-    const isActive = index === 0;
-
-    return `
-      <!-- MOBILE: full-screen portrait -->
-      <div class="hero-slide-mobile ${isActive ? '' : 'hidden'}" data-index="${index}" style="position:relative;width:100%;min-height:100vh;display:flex;flex-direction:column;">
-        <img src="${slide.image_mobile}" alt="${slide.title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;" loading="${index === 0 ? 'eager' : 'lazy'}" />
-        <div style="position:relative;z-index:10;display:flex;flex-direction:column;flex:1;padding:20px 20px 16px;min-height:100vh;">
-          <div>
-            ${badgeHtml ? `<div style="margin-bottom:12px;">${badgeHtml}</div>` : ''}
-            <h2 style="font-size:28px;line-height:1.15;font-weight:800;color:#000;margin:0 0 8px;">${slide.title}</h2>
-            ${slide.subtitle ? `<p style="font-size:14px;color:rgba(0,0,0,0.7);margin:0 0 16px;max-width:28rem;">${slide.subtitle}</p>` : ''}
-          </div>
-          <div style="margin-top:auto;padding-bottom:8px;">
-            ${slide.cta_text ? `<a href="${linkHref}" style="display:inline-flex;align-items:center;gap:8px;background:#0d9488;color:#fff;font-weight:700;padding:12px 24px;border-radius:12px;font-size:14px;text-decoration:none;">${slide.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>` : ''}
-          </div>
-        </div>
-      </div>
-
-      <!-- DESKTOP: text left + image right -->
-      <div class="hero-slide-desktop ${isActive ? '' : 'hidden'}" data-index="${index}" style="position:relative;width:100%;min-height:480px;display:flex;">
-        <div style="flex:1;display:flex;align-items:center;">
-          <div style="max-width:1280px;margin:0 auto;width:100%;padding:64px 24px;">
-            <div style="max-width:36rem;">
-              ${badgeHtml ? `<div style="margin-bottom:16px;">${badgeHtml}</div>` : ''}
-              <h2 style="font-size:2.25rem;font-weight:800;color:#171717;line-height:1.2;margin:0 0 16px;">${slide.title}</h2>
-              ${slide.subtitle ? `<p style="font-size:1.125rem;color:#525252;margin:0 0 32px;max-width:32rem;">${slide.subtitle}</p>` : ''}
-              <div>${ctaHtml}</div>
+      return `
+        <div class="hero-slide ${active?'':'absolute top-0 left-0 w-full opacity-0 pointer-events-none'}" data-idx="${i}" style="transition:opacity 0.5s ease-in-out;">
+          <!-- Mobile -->
+          <div class="sm:hidden relative" style="height:100svh;">
+            <img src="${s.image_mobile}" alt="${s.title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;" loading="${i===0?'eager':'lazy'}" />
+            <div class="relative z-10 flex flex-col justify-between h-full p-6" style="padding-top:40px;padding-bottom:48px;">
+              <div>${badgeDiv}<h2 class="text-3xl font-extrabold text-gray-900 leading-tight mb-2">${s.title}</h2>${sub}</div>
+              <div>${cta}</div>
             </div>
+            ${arrows}
           </div>
-        </div>
-        <div style="display:none;align-items:center;justify-content:center;width:45%;padding-right:32px;" class="lg-flex">
-          <img src="${slide.image_desktop}" alt="${slide.title}" style="width:100%;max-height:360px;object-fit:contain;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);" loading="${index === 0 ? 'eager' : 'lazy'}" />
-        </div>
-      </div>
-    `;
+          <!-- Tablet -->
+          <div class="hidden sm:flex lg:hidden relative bg-gray-50" style="height:420px;">
+            <div class="flex-1 flex items-center"><div class="px-10 py-10 max-w-lg">${badgeDiv}<h2 class="text-3xl font-extrabold text-gray-900 leading-tight mb-3">${s.title}</h2>${sub}<div>${cta}</div></div></div>
+            <div class="w-2/5"><img src="${s.image_desktop}" alt="${s.title}" class="w-full h-full object-cover" loading="${i===0?'eager':'lazy'}" /></div>
+            ${arrows}
+          </div>
+          <!-- Desktop -->
+          <div class="hidden lg:flex relative bg-gray-50" style="height:480px;">
+            <div class="flex-1 flex items-center"><div class="pl-16 xl:pl-24 pr-8 max-w-xl">${badgeDiv}<h2 class="text-4xl xl:text-5xl font-extrabold text-gray-900 leading-tight mb-4">${s.title}</h2>${sub}<div>${cta}</div></div></div>
+            <div class="w-2/5 xl:w-[45%] flex items-center justify-center p-8"><img src="${s.image_desktop}" alt="${s.title}" class="w-full max-h-[420px] object-contain rounded-2xl shadow-2xl" loading="${i===0?'eager':'lazy'}" /></div>
+            ${arrows}
+          </div>
+        </div>`;
+    }).join('');
   }
 
-  function goToSlide(index: number) {
-    if (index === currentSlide || slides.length === 0) return;
-
-    // Update mobile slides
-    document.querySelectorAll('.hero-slide-mobile').forEach((s, i) => {
-      if (i === index) {
-        (s as HTMLElement).classList.remove('hidden');
+  function go(idx: number) {
+    if (idx === currentSlide) return;
+    const all = document.querySelectorAll('.hero-slide');
+    all.forEach((el, i) => {
+      if (i === idx) {
+        el.classList.remove('absolute','top-0','left-0','w-full','opacity-0','pointer-events-none');
+        (el as HTMLElement).style.opacity = '1';
       } else {
-        (s as HTMLElement).classList.add('hidden');
+        (el as HTMLElement).style.opacity = '0';
+        el.classList.add('absolute','top-0','left-0','w-full','pointer-events-none');
       }
     });
-
-    // Update desktop slides
-    document.querySelectorAll('.hero-slide-desktop').forEach((s, i) => {
-      if (i === index) {
-        (s as HTMLElement).classList.remove('hidden');
-      } else {
-        (s as HTMLElement).classList.add('hidden');
-      }
+    // dots
+    document.querySelectorAll('#slider-dots button').forEach((d, i) => {
+      (d as HTMLElement).style.background = i === idx ? '#171717' : 'rgba(115,115,115,0.4)';
     });
-
-    // Update dots
-    const dots = document.querySelectorAll('#hero-dots button');
-    dots.forEach((d, i) => {
-      if (i === index) {
-        d.classList.remove('bg-text-muted/40');
-        d.classList.add('bg-text-primary');
-      } else {
-        d.classList.remove('bg-text-primary');
-        d.classList.add('bg-text-muted/40');
-      }
-    });
-
-    currentSlide = index;
+    currentSlide = idx;
   }
 
-  function nextSlide() {
-    goToSlide((currentSlide + 1) % slides.length);
+  (window as any).sliderPrev = function() { go((currentSlide - 1 + slides.length) % slides.length); resetTimer(); };
+  (window as any).sliderNext = function() { go((currentSlide + 1) % slides.length); resetTimer(); };
+
+  function autoPlay() { timer = setInterval(() => go((currentSlide+1)%slides.length), 5000); }
+  function resetTimer() { if(timer) clearInterval(timer); autoPlay(); }
+
+  function renderDots(n: number) {
+    const c = document.getElementById('slider-dots')!;
+    if (n <= 1) { c.classList.add('hidden'); return; }
+    c.classList.remove('hidden');
+    c.innerHTML = Array.from({length:n}, (_,i) => `<button onclick="go(${i});resetTimer()" style="width:10px;height:10px;border-radius:50%;background:${i===0?'#171717':'rgba(115,115,115,0.4)'};transition:background 0.3s;" aria-label="Slide ${i+1}"></button>`).join('');
   }
 
-  function startAutoplay() {
-    stopAutoplay();
-    autoplayTimer = setInterval(nextSlide, AUTOPLAY_INTERVAL);
-  }
+  (window as any).go = go;
+  (window as any).resetTimer = resetTimer;
 
-  function stopAutoplay() {
-    if (autoplayTimer) {
-      clearInterval(autoplayTimer);
-      autoplayTimer = null;
-    }
-  }
-
-  function renderDots(count: number) {
-    const container = document.getElementById('hero-dots');
-    if (!container || count <= 1) {
-      if (container) container.classList.add('hidden');
-      return;
-    }
-    container.classList.remove('hidden');
-    container.innerHTML = Array.from({ length: count }, (_, i) =>
-      `<button style="width:10px;height:10px;border-radius:50%;transition:all;${i === 0 ? 'background:#171717;' : 'background:rgba(115,115,115,0.4);'}" data-index="${i}" aria-label="Slide ${i + 1}"></button>`
-    ).join('');
-
-    container.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.getAttribute('data-index') || '0');
-        goToSlide(idx);
-        startAutoplay();
-      });
-    });
-  }
-
-  async function initHeroSlider() {
+  async function init() {
     try {
       const res = await fetch('/api/hero-slides');
       const data = await res.json();
-      slides = data.slides || [];
+      const fetched = (data.slides || []) as HeroSlide[];
+      slides.push(...fetched);
 
-      const loading = document.getElementById('hero-loading');
-      const fallback = document.getElementById('hero-fallback');
-      const container = document.getElementById('hero-slides-container');
-
-      if (loading) loading.classList.add('hidden');
+      document.getElementById('hero-loading')!.classList.add('hidden');
 
       if (slides.length === 0) {
-        fallback?.classList.remove('hidden');
+        document.getElementById('hero-fallback')!.classList.remove('hidden');
         return;
       }
 
-      container?.classList.remove('hidden');
-      container!.innerHTML = slides.map((s, i) => renderSlide(s, i)).join('');
+      document.getElementById('slider-viewport')!.classList.remove('hidden');
+      renderAll();
       renderDots(slides.length);
-      startAutoplay();
+      autoPlay();
 
-      // Pause on hover
-      const heroSection = document.getElementById('hero-slider');
-      heroSection?.addEventListener('mouseenter', stopAutoplay);
-      heroSection?.addEventListener('mouseleave', startAutoplay);
+      // Touch swipe
+      let x0 = 0;
+      const vp = document.getElementById('slider-viewport')!;
+      vp.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; if(timer) clearInterval(timer); }, {passive:true});
+      vp.addEventListener('touchend', e => {
+        const dx = x0 - e.changedTouches[0].clientX;
+        if (Math.abs(dx) > 50) { dx > 0 ? (window as any).sliderNext() : (window as any).sliderPrev(); }
+        else autoPlay();
+      }, {passive:true});
 
-      // Touch/swipe support
-      let touchStartX = 0;
-      heroSection?.addEventListener('touchstart', (e) => {
-        touchStartX = (e as TouchEvent).touches[0].clientX;
-        stopAutoplay();
-      }, { passive: true });
-      heroSection?.addEventListener('touchend', (e) => {
-        const diff = touchStartX - (e as TouchEvent).changedTouches[0].clientX;
-        if (Math.abs(diff) > 50) {
-          if (diff > 0) {
-            goToSlide((currentSlide + 1) % slides.length);
-          } else {
-            goToSlide((currentSlide - 1 + slides.length) % slides.length);
-          }
-        }
-        startAutoplay();
-      }, { passive: true });
-
-    } catch (err) {
-      console.error('Hero slider load failed:', err);
-      document.getElementById('hero-loading')?.classList.add('hidden');
-      document.getElementById('hero-fallback')?.classList.remove('hidden');
+    } catch(err) {
+      console.error('Hero slider failed:', err);
+      document.getElementById('hero-loading')!.classList.add('hidden');
+      document.getElementById('hero-fallback')!.classList.remove('hidden');
     }
   }
 
-  document.addEventListener('DOMContentLoaded', initHeroSlider);
+  document.addEventListener('DOMContentLoaded', init);
 </script>
