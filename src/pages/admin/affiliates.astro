@@ -211,14 +211,6 @@ import Icon from '../../components/ui/Icon.astro';
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 
-  function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
   // --- Modal management ---
   function openModal() {
     document.getElementById('affiliate-modal')!.classList.remove('hidden');
@@ -290,7 +282,6 @@ import Icon from '../../components/ui/Icon.astro';
 
       renderAffiliateTable();
     } catch (error) {
-      console.error('Error loading affiliates:', error);
       table.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Gagal memuat data affiliate.</td></tr>`;
     }
   }
@@ -386,7 +377,6 @@ import Icon from '../../components/ui/Icon.astro';
         select.innerHTML = '<option value="">Semua user sudah menjadi affiliate</option>';
       }
     } catch (error) {
-      console.error('Error loading users:', error);
       select.innerHTML = '<option value="">Gagal memuat daftar user</option>';
     }
   }
@@ -407,7 +397,6 @@ import Icon from '../../components/ui/Icon.astro';
       showToast('Affiliate berhasil dihapus!');
       loadAffiliates();
     } catch (error: any) {
-      console.error('Error deleting affiliate:', error);
       showToast(error.message || 'Gagal menghapus affiliate.', 'error');
     }
   }
@@ -444,7 +433,6 @@ import Icon from '../../components/ui/Icon.astro';
       closeModal();
       loadAffiliates();
     } catch (error: any) {
-      console.error('Error creating affiliate:', error);
       showToast(error.message || 'Gagal menambahkan affiliate.', 'error');
     }
   });

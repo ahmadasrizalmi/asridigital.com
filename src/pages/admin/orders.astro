@@ -208,14 +208,6 @@ import Icon from '../../components/ui/Icon.astro';
   let orderCurrentPage = 1;
   const ORDERS_PER_PAGE = 20;
 
-  function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
   function getStatusBadge(status: string) {
     const statusMap: Record<string, { class: string; label: string }> = {
       'PAID': { class: 'badge-success', label: 'Lunas' },
@@ -305,7 +297,6 @@ import Icon from '../../components/ui/Icon.astro';
       if (searchInput) searchInput.value = '';
       applyOrderFilters();
     } catch (error) {
-      console.error('Error loading orders:', error);
     }
   }
 
@@ -364,7 +355,6 @@ import Icon from '../../components/ui/Icon.astro';
 
       document.getElementById('detail-modal')?.classList.remove('hidden');
     } catch (error) {
-      console.error('Error viewing order:', error);
       showToast('Gagal memuat detail pesanan.', 'error');
     }
   }
@@ -387,7 +377,6 @@ import Icon from '../../components/ui/Icon.astro';
 
       document.getElementById('edit-modal')?.classList.remove('hidden');
     } catch (error) {
-      console.error('Error loading order for edit:', error);
       showToast('Gagal memuat data pesanan.', 'error');
     }
   }
@@ -422,7 +411,6 @@ import Icon from '../../components/ui/Icon.astro';
         showToast(result.error || 'Gagal memperbarui pesanan', 'error');
       }
     } catch (error) {
-      console.error('Error editing order:', error);
       if (error.message !== 'Auth expired') showToast('Terjadi kesalahan.', 'error');
     }
   }
@@ -442,7 +430,6 @@ import Icon from '../../components/ui/Icon.astro';
         showToast(result.error || 'Gagal menghapus pesanan', 'error');
       }
     } catch (error) {
-      console.error('Error deleting order:', error);
       if (error.message !== 'Auth expired') showToast('Terjadi kesalahan.', 'error');
     }
   }
@@ -461,7 +448,6 @@ import Icon from '../../components/ui/Icon.astro';
         loadOrders();
       }
     } catch (error) {
-      console.error('Error changing status:', error);
       if (error.message !== 'Auth expired') showToast('Terjadi kesalahan.', 'error');
       loadOrders();
     }

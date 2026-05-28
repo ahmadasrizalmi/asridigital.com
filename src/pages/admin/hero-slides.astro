@@ -215,14 +215,6 @@ import Icon from '../../components/ui/Icon.astro';
     return localStorage.getItem('admin_token');
   }
 
-  function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
   interface HeroSlide {
     id: string;
     title: string;
@@ -319,7 +311,6 @@ import Icon from '../../components/ui/Icon.astro';
       const data = await res.json() as any;
       renderSlides(data.slides || []);
     } catch (err) {
-      console.error('Error loading slides:', err);
       document.getElementById('slides-container')!.innerHTML = '<div class="text-center py-12 text-red-500">Gagal memuat slides</div>';
     }
   }

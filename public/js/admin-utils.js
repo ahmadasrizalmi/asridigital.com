@@ -80,11 +80,21 @@
     return response;
   }
 
+  // Format number as Indonesian Rupiah
+  function formatIDR(amount) {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
   // Expose globally
-  window.adminUtils = { showToast, checkAuth, adminFetch, API_BASE };
+  window.adminUtils = { showToast, checkAuth, adminFetch, formatIDR, API_BASE };
   window.showToast = showToast;
   window.checkAuth = checkAuth;
   window.adminFetch = adminFetch;
+  window.formatIDR = formatIDR;
 
   // Auto-check auth on page load
   checkAuth();

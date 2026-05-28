@@ -55,17 +55,20 @@ import Icon from '../../components/ui/Icon.astro';
     <main class="flex-1 bg-background">
       <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
               <Icon name="menu" size={24} class="text-text-secondary" />
             </button>
             <h1 class="text-xl font-bold text-text-primary">Kelola Kategori</h1>
           </div>
           
-          <button onclick="openModal()" class="btn-primary">
-            <Icon name="plus" size={18} />
-            Tambah Kategori
-          </button>
+          <div class="flex items-center gap-3">
+            <input type="text" id="category-search" class="input w-48 sm:w-64" placeholder="Cari kategori..." />
+            <button onclick="openModal()" class="btn-primary">
+              <Icon name="plus" size={18} />
+              Tambah Kategori
+            </button>
+          </div>
         </div>
       </header>
       
@@ -92,6 +95,14 @@ import Icon from '../../components/ui/Icon.astro';
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        <div id="category-pagination" class="flex items-center justify-between px-4 py-3 border-t border-border">
+          <span id="category-page-info" class="text-sm text-text-muted"></span>
+          <div class="flex items-center gap-2">
+            <button id="cat-prev" class="btn-tertiary text-sm" onclick="catPrevPage()">← Prev</button>
+            <span id="cat-page-num" class="text-sm text-text-secondary px-2"></span>
+            <button id="cat-next" class="btn-tertiary text-sm" onclick="catNextPage()">Next →</button>
           </div>
         </div>
       </div>
@@ -185,6 +196,10 @@ import Icon from '../../components/ui/Icon.astro';
       .trim();
   }
 
+  let allCategories: any[] = [];
+  let catPage = 1;
+  const catPageSize = 20;
+
   async function loadCategories() {
     const table = document.getElementById('categories-table');
     try {
@@ -192,20 +207,42 @@ import Icon from '../../components/ui/Icon.astro';
       if (res.status === 401 || res.status === 403) return;
       if (!res.ok) throw new Error('Failed to fetch categories');
       const data = await res.json();
-      const categories = data.categories || [];
+      allCategories = data.categories || [];
+      catPage = 1;
+      renderCategoryPage();
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Gagal memuat data kategori.</td></tr>';
+    }
+  }
 
-      if (categories.length === 0) {
-        table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-text-muted">Belum ada kategori.</td></tr>';
-        return;
-      }
+  function getFilteredCategories() {
+    const q = (document.getElementById('category-search') as HTMLInputElement)?.value?.toLowerCase() || '';
+    if (!q) return allCategories;
+    return allCategories.filter((c: any) =>
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.slug || '').toLowerCase().includes(q) ||
+      (c.description || '').toLowerCase().includes(q)
+    );
+  }
 
-      table.innerHTML = categories.map(function(c) {
-        const iconDisplay = c.icon ? '<span class="text-2xl">' + c.icon + '</span>' : '<span class="text-text-muted">-</span>';
-        const descDisplay = c.description ? '<span class="text-sm text-text-secondary line-clamp-2 max-w-xs">' + c.description + '</span>' : '<span class="text-text-muted">-</span>';
-        const statusBadge = c.is_active
+  function renderCategoryPage() {
+    const table = document.getElementById('categories-table');
+    const filtered = getFilteredCategories();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / catPageSize));
+    if (catPage > totalPages) catPage = totalPages;
+    const start = (catPage - 1) * catPageSize;
+    const pageItems = filtered.slice(start, start + catPageSize);
+
+    if (filtered.length === 0) {
+      table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-text-muted">Tidak ada kategori ditemukan.</td></tr>';
+    } else {
+      table.innerHTML = pageItems.map(function(c) {
+        var iconDisplay = c.icon ? '<span class="text-2xl">' + c.icon + '</span>' : '<span class="text-text-muted">-</span>';
+        var descDisplay = c.description ? '<span class="text-sm text-text-secondary line-clamp-2 max-w-xs">' + c.description + '</span>' : '<span class="text-text-muted">-</span>';
+        var statusBadge = c.is_active
           ? '<span class="badge-success">Aktif</span>'
           : '<span class="badge-error">Nonaktif</span>';
-
         return '<tr class="hover:bg-background/50">' +
           '<td class="px-6 py-4 font-medium text-text-primary">' + c.name + '</td>' +
           '<td class="px-6 py-4"><code class="text-xs bg-background px-2 py-1 rounded">' + c.slug + '</code></td>' +
@@ -228,12 +265,22 @@ import Icon from '../../components/ui/Icon.astro';
           '</td>' +
         '</tr>';
       }).join('');
-    } catch (error) {
-      console.error('Error loading categories:', error);
-      table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Gagal memuat data kategori.</td></tr>';
     }
+
+    var info = document.getElementById('category-page-info')!;
+    var pageNum = document.getElementById('cat-page-num')!;
+    info.textContent = filtered.length > 0 ? 'Menampilkan ' + (start + 1) + '-' + Math.min(start + catPageSize, filtered.length) + ' dari ' + filtered.length + ' kategori' : '';
+    pageNum.textContent = 'Halaman ' + catPage + ' / ' + totalPages;
+    (document.getElementById('cat-prev') as HTMLButtonElement).disabled = catPage <= 1;
+    (document.getElementById('cat-next') as HTMLButtonElement).disabled = catPage >= totalPages;
   }
 
+  function catPrevPage() { if (catPage > 1) { catPage--; renderCategoryPage(); } }
+  function catNextPage() { catPage++; renderCategoryPage(); }
+  (window as any).catPrevPage = catPrevPage;
+  (window as any).catNextPage = catNextPage;
+
+  document.getElementById('category-search')?.addEventListener('input', function() { catPage = 1; renderCategoryPage(); });
   function openModal() {
     document.getElementById('category-modal').classList.remove('hidden');
     document.getElementById('category-form').reset();
@@ -264,7 +311,6 @@ import Icon from '../../components/ui/Icon.astro';
       if (!res.ok) throw new Error('Failed to delete category');
       loadCategories();
     } catch (error) {
-      console.error('Error deleting category:', error);
       if (error.message !== 'Auth expired') showToast('Gagal menghapus kategori.', 'error');
     }
   }
@@ -278,7 +324,6 @@ import Icon from '../../components/ui/Icon.astro';
       if (!res.ok) throw new Error('Failed to toggle category');
       loadCategories();
     } catch (error) {
-      console.error('Error toggling category:', error);
       if (error.message !== 'Auth expired') showToast('Gagal mengubah status kategori.', 'error');
     }
   }
@@ -325,7 +370,6 @@ import Icon from '../../components/ui/Icon.astro';
       closeModal();
       loadCategories();
     } catch (error) {
-      console.error('Error saving category:', error);
       if (error.message !== 'Auth expired') showToast('Gagal menyimpan kategori.', 'error');
     }
   });

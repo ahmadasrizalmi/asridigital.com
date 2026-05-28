@@ -65,9 +65,8 @@ import { formatIDR } from '../../lib/utils';
           </div>
           
           <div class="flex items-center gap-4">
-            <button class="p-2 hover:bg-background rounded-lg relative">
+            <button class="p-2 hover:bg-background rounded-lg" aria-label="Notifikasi">
               <Icon name="bell" size={20} class="text-text-secondary" />
-              <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             
             <div class="flex items-center gap-3">
@@ -202,14 +201,6 @@ import { formatIDR } from '../../lib/utils';
 <script>
   const API_BASE = '/api';
 
-  function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
   async function loadAdminStats() {
     try {
       const response = await adminFetch(`${API_BASE}/admin/stats`);
@@ -248,7 +239,6 @@ import { formatIDR } from '../../lib/utils';
         `).join('');
       }
     } catch (error) {
-      console.error('Error loading admin stats:', error);
     }
   }
 

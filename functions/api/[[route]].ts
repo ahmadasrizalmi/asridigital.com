@@ -404,8 +404,8 @@ export async function onRequest(context: any): Promise<Response> {
     if (route === '/products' && method === 'GET') {
       const category = url.searchParams.get('category');
       const search = url.searchParams.get('search');
-      const page = parseInt(url.searchParams.get('page') || '1');
-      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1') || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20') || 20));
       const offset = (page - 1) * limit;
 
       let query = 'SELECT * FROM products WHERE is_active = 1';
@@ -1509,8 +1509,8 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== BLOG POSTS ====================
     if (route === '/blog/posts' && method === 'GET') {
       const category = url.searchParams.get('category');
-      const page = parseInt(url.searchParams.get('page') || '1');
-      const limit = parseInt(url.searchParams.get('limit') || '10');
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1') || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '10') || 10));
       const offset = (page - 1) * limit;
 
       let query = 'SELECT id, title, slug, excerpt, image_url, category, tags, published_at, author_name FROM blog_posts WHERE is_published = 1';
@@ -1555,6 +1555,7 @@ export async function onRequest(context: any): Promise<Response> {
 
     // ==================== ADMIN MIDDLEWARE ====================
     // All admin routes require authentication and admin role
+    let adminUser: any = null;
     if (route.startsWith('/admin')) {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1570,12 +1571,13 @@ export async function onRequest(context: any): Promise<Response> {
       
       // Check if user is admin
       const user = await env.DB.prepare(
-        'SELECT role FROM users WHERE id = ?'
+        'SELECT role, name FROM users WHERE id = ?'
       ).bind(payload.userId).first();
       
       if (!user || user.role !== 'admin') {
         return jsonResponse({ error: 'Forbidden - Admin access required' }, 403);
       }
+      adminUser = { ...payload, name: user.name || payload.name };
     }
 
     // ==================== ADMIN STATS ====================
@@ -1897,7 +1899,7 @@ export async function onRequest(context: any): Promise<Response> {
           image_url || null,
           category || 'general',
           typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-          author_name || 'Admin',
+          adminUser?.name || author_name || 'Admin',
           is_published !== false ? 1 : 0
         )
         .run();
@@ -1925,7 +1927,7 @@ export async function onRequest(context: any): Promise<Response> {
           image_url,
           category,
           typeof tags === 'string' ? tags : JSON.stringify(tags),
-          author_name,
+          adminUser?.name || author_name || 'Admin',
           is_published ? 1 : 0,
           postId
         )

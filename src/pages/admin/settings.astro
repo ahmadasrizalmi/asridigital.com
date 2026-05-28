@@ -334,7 +334,6 @@ import Icon from '../../components/ui/Icon.astro';
       }
     } catch (error) {
       if (error.message !== 'Auth expired') {
-        console.error('Error loading settings:', error);
         showToast('Gagal memuat pengaturan', 'error');
       }
     }
@@ -384,7 +383,6 @@ import Icon from '../../components/ui/Icon.astro';
       }
     } catch (error) {
       if (error.message !== 'Auth expired') {
-        console.error('Error saving settings:', error);
         showToast('Terjadi kesalahan saat menyimpan', 'error');
       }
     } finally {

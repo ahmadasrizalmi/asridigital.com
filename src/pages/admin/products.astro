@@ -296,14 +296,6 @@ import Icon from '../../components/ui/Icon.astro';
   let productCurrentPage = 1;
   const PRODUCTS_PER_PAGE = 20;
 
-  function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
   // ====== MARKDOWN EDITOR TOOLBAR ======
   const mdActions: Record<string, { prefix: string; suffix: string; placeholder: string }> = {
     bold:   { prefix: '**', suffix: '**', placeholder: 'Teks tebal' },
@@ -514,7 +506,7 @@ import Icon from '../../components/ui/Icon.astro';
         '<option value="' + c.slug + '">' + c.name + '</option>'
       ).join('');
     } catch (e) {
-      if (e.message !== 'Auth expired') console.error('Error loading categories:', e);
+      // Auth handled by admin-utils.js
     }
   }
   loadCategories();
@@ -532,7 +524,6 @@ import Icon from '../../components/ui/Icon.astro';
       renderFilteredProducts();
     } catch (error) {
       if (error.message !== 'Auth expired') {
-        console.error('Error loading products:', error);
         showToast('Gagal memuat produk', 'error');
       }
     }
@@ -677,7 +668,6 @@ import Icon from '../../components/ui/Icon.astro';
       }
     } catch (error) {
       if (error.message !== 'Auth expired') {
-        console.error('Error toggling product:', error);
         showToast('Terjadi kesalahan', 'error');
       }
     }
@@ -701,7 +691,6 @@ import Icon from '../../components/ui/Icon.astro';
       }
     } catch (error) {
       if (error.message !== 'Auth expired') {
-        console.error('Error deleting product:', error);
         showToast('Terjadi kesalahan', 'error');
       }
     }
@@ -757,7 +746,6 @@ import Icon from '../../components/ui/Icon.astro';
       }
     } catch (error) {
       if (error.message !== 'Auth expired') {
-        console.error('Error saving product:', error);
         showToast('Terjadi kesalahan', 'error');
       }
     } finally {
