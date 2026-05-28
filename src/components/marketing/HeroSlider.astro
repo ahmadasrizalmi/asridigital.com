@@ -1,11 +1,10 @@
 ---
 // HeroSlider.astro — Dynamic hero slider managed via admin panel
-// Fetches slides from /api/hero-slides on client-side
 ---
 
-<section id="hero-slider" class="relative w-full overflow-hidden">
+<section id="hero-slider" class="relative w-full">
   <!-- Loading skeleton -->
-  <div id="hero-loading" class="absolute inset-0 flex items-center justify-center bg-background">
+  <div id="hero-loading" class="w-full bg-background flex items-center justify-center" style="min-height: 420px;">
     <div class="text-text-muted text-sm">Loading...</div>
   </div>
 
@@ -27,10 +26,14 @@
     </div>
   </div>
 
-  <!-- Slider container -->
-  <div id="hero-slides-container" class="hidden relative w-full">
-    <!-- Slides will be injected here -->
-  </div>
+  <!-- Slider container — hidden until JS loads slides -->
+  <div id="hero-slides-container" class="hidden"></div>
+
+  <style>
+    @media (min-width: 1024px) {
+      .lg-flex { display: flex !important; }
+    }
+  </style>
 
   <!-- Dot indicators -->
   <div id="hero-dots" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
@@ -57,7 +60,7 @@
   let currentSlide = 0;
   let slides: HeroSlide[] = [];
   let autoplayTimer: ReturnType<typeof setInterval> | null = null;
-  const AUToplay_INTERVAL = 5000;
+  const AUTOPLAY_INTERVAL = 5000;
 
   function getBadgeColorClasses(color: string): string {
     const map: Record<string, string> = {
@@ -92,42 +95,39 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>`
       : '';
-    // Mobile: full-screen portrait image, text at top
-    // Desktop: text left, image right
+
+    const isActive = index === 0;
+
     return `
-      <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}" data-index="${index}">
-        <!-- Mobile layout — full screen -->
-        <div class="sm:hidden relative w-full min-h-screen flex flex-col">
-          <div class="absolute inset-0">
-            <img src="${slide.image_mobile}" alt="${slide.title}" class="w-full h-full object-cover object-top" loading="${index === 0 ? 'eager' : 'lazy'}" />
+      <!-- MOBILE: full-screen portrait -->
+      <div class="hero-slide-mobile ${isActive ? '' : 'hidden'}" data-index="${index}" style="position:relative;width:100%;min-height:100vh;display:flex;flex-direction:column;">
+        <img src="${slide.image_mobile}" alt="${slide.title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;" loading="${index === 0 ? 'eager' : 'lazy'}" />
+        <div style="position:relative;z-index:10;display:flex;flex-direction:column;flex:1;padding:20px 20px 16px;min-height:100vh;">
+          <div>
+            ${badgeHtml ? `<div style="margin-bottom:12px;">${badgeHtml}</div>` : ''}
+            <h2 style="font-size:28px;line-height:1.15;font-weight:800;color:#000;margin:0 0 8px;">${slide.title}</h2>
+            ${slide.subtitle ? `<p style="font-size:14px;color:rgba(0,0,0,0.7);margin:0 0 16px;max-width:28rem;">${slide.subtitle}</p>` : ''}
           </div>
-          <div class="relative z-10 p-5 pt-8 flex flex-col flex-1" style="min-height: 100vh;">
-            <div>
-              ${badgeHtml ? `<div class="mb-3">${badgeHtml}</div>` : ''}
-              <h2 class="text-[28px] leading-[1.15] font-extrabold text-black mb-2">${slide.title}</h2>
-              ${slide.subtitle ? `<p class="text-sm text-black/70 mb-4 max-w-md">${slide.subtitle}</p>` : ''}
-            </div>
-            <div class="mt-auto pb-4">
-              ${slide.cta_text ? `<a href="${linkHref}" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-btn-primary text-sm">${slide.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>` : ''}
+          <div style="margin-top:auto;padding-bottom:8px;">
+            ${slide.cta_text ? `<a href="${linkHref}" style="display:inline-flex;align-items:center;gap:8px;background:#0d9488;color:#fff;font-weight:700;padding:12px 24px;border-radius:12px;font-size:14px;text-decoration:none;">${slide.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- DESKTOP: text left + image right -->
+      <div class="hero-slide-desktop ${isActive ? '' : 'hidden'}" data-index="${index}" style="position:relative;width:100%;min-height:480px;display:flex;">
+        <div style="flex:1;display:flex;align-items:center;">
+          <div style="max-width:1280px;margin:0 auto;width:100%;padding:64px 24px;">
+            <div style="max-width:36rem;">
+              ${badgeHtml ? `<div style="margin-bottom:16px;">${badgeHtml}</div>` : ''}
+              <h2 style="font-size:2.25rem;font-weight:800;color:#171717;line-height:1.2;margin:0 0 16px;">${slide.title}</h2>
+              ${slide.subtitle ? `<p style="font-size:1.125rem;color:#525252;margin:0 0 32px;max-width:32rem;">${slide.subtitle}</p>` : ''}
+              <div>${ctaHtml}</div>
             </div>
           </div>
         </div>
-
-        <!-- Desktop layout -->
-        <div class="hidden sm:flex relative w-full h-full min-h-[480px] lg:min-h-[520px]">
-          <div class="flex-1 flex items-center">
-            <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full py-16 lg:py-20">
-              <div class="max-w-xl">
-                ${badgeHtml ? `<div class="mb-4">${badgeHtml}</div>` : ''}
-                <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-text-primary leading-tight mb-4">${slide.title}</h2>
-                ${slide.subtitle ? `<p class="text-base lg:text-lg text-text-secondary mb-8 max-w-lg">${slide.subtitle}</p>` : ''}
-                <div>${ctaHtml}</div>
-              </div>
-            </div>
-          </div>
-          <div class="hidden lg:flex items-center justify-center w-[45%] pr-8">
-            <img src="${slide.image_desktop}" alt="${slide.title}" class="w-full max-h-[360px] object-contain rounded-2xl shadow-xl" loading="${index === 0 ? 'eager' : 'lazy'}" />
-          </div>
+        <div style="display:none;align-items:center;justify-content:center;width:45%;padding-right:32px;" class="lg-flex">
+          <img src="${slide.image_desktop}" alt="${slide.title}" style="width:100%;max-height:360px;object-fit:contain;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);" loading="${index === 0 ? 'eager' : 'lazy'}" />
         </div>
       </div>
     `;
@@ -136,14 +136,21 @@
   function goToSlide(index: number) {
     if (index === currentSlide || slides.length === 0) return;
 
-    const allSlides = document.querySelectorAll('.hero-slide');
-    allSlides.forEach((s, i) => {
+    // Update mobile slides
+    document.querySelectorAll('.hero-slide-mobile').forEach((s, i) => {
       if (i === index) {
-        s.classList.remove('opacity-0');
-        s.classList.add('opacity-100', 'z-10');
+        (s as HTMLElement).classList.remove('hidden');
       } else {
-        s.classList.remove('opacity-100', 'z-10');
-        s.classList.add('opacity-0', 'z-0');
+        (s as HTMLElement).classList.add('hidden');
+      }
+    });
+
+    // Update desktop slides
+    document.querySelectorAll('.hero-slide-desktop').forEach((s, i) => {
+      if (i === index) {
+        (s as HTMLElement).classList.remove('hidden');
+      } else {
+        (s as HTMLElement).classList.add('hidden');
       }
     });
 
@@ -163,13 +170,12 @@
   }
 
   function nextSlide() {
-    const next = (currentSlide + 1) % slides.length;
-    goToSlide(next);
+    goToSlide((currentSlide + 1) % slides.length);
   }
 
   function startAutoplay() {
     stopAutoplay();
-    autoplayTimer = setInterval(nextSlide, AUToplay_INTERVAL);
+    autoplayTimer = setInterval(nextSlide, AUTOPLAY_INTERVAL);
   }
 
   function stopAutoplay() {
@@ -187,14 +193,14 @@
     }
     container.classList.remove('hidden');
     container.innerHTML = Array.from({ length: count }, (_, i) =>
-      `<button class="w-2.5 h-2.5 rounded-full transition-all ${i === 0 ? 'bg-text-primary' : 'bg-text-muted/40'}" data-index="${i}" aria-label="Slide ${i + 1}"></button>`
+      `<button style="width:10px;height:10px;border-radius:50%;transition:all;${i === 0 ? 'background:#171717;' : 'background:rgba(115,115,115,0.4);'}" data-index="${i}" aria-label="Slide ${i + 1}"></button>`
     ).join('');
 
     container.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.getAttribute('data-index') || '0');
         goToSlide(idx);
-        startAutoplay(); // Reset timer
+        startAutoplay();
       });
     });
   }
