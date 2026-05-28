@@ -140,6 +140,59 @@ try {
         </div>
       </div>
     </section>
+
+    {/* ARTIKEL TERBARU — Latest Blog Posts */}
+    <section id="artikel-terbaru" class="py-24 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">Artikel Terbaru</h2>
+          <p class="text-slate-500">Tips, tutorial, dan insight tentang AI & digital tools</p>
+        </div>
+
+        {/* Blog Posts Grid */}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="blog-posts-grid">
+          {/* Loading skeletons */}
+          <div class="blog-skeleton bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
+            </div>
+          </div>
+          <div class="blog-skeleton hidden md:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
+            </div>
+          </div>
+          <div class="blog-skeleton hidden lg:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* View All Button */}
+        <div class="text-center mt-12" id="blog-view-all" style="display:none;">
+          <a href="/blog" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-full hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-md hover:shadow-lg">
+            Lihat Semua Artikel
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <Footer />
@@ -219,7 +272,90 @@ try {
     }
   }
 
+  // ===== LATEST BLOG POSTS =====
+  const CATEGORY_META: Record<string, { label: string; color: string; bgColor: string }> = {
+    'tips': { label: 'Tips & Trik', color: 'bg-emerald-500 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
+    'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+    'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+    'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+    'ai': { label: 'AI', color: 'bg-emerald-600 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
+    'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+    'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
+  };
+
+  function getBlogCategoryMeta(category: string) {
+    const key = category?.toLowerCase() || 'general';
+    return CATEGORY_META[key] || CATEGORY_META['general'];
+  }
+
+  function formatBlogDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
+
+  async function loadLatestBlogPosts() {
+    const grid = document.getElementById('blog-posts-grid');
+    const viewAll = document.getElementById('blog-view-all');
+    if (!grid) return;
+
+    try {
+      const res = await fetch('/api/blog/posts?limit=3');
+      const data = await res.json();
+      const posts = (data.posts || []).slice(0, 3);
+
+      if (posts.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada artikel tersedia.</div>';
+        return;
+      }
+
+      grid.innerHTML = posts.map((post: any) => {
+        const catKey = post.category?.toLowerCase() || 'general';
+        const meta = getBlogCategoryMeta(catKey);
+        const pubDate = formatBlogDate(post.published_at);
+        const imgSrc = post.image_url ? `${post.image_url}` : '';
+
+        return `
+          <article class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg transition-shadow group">
+            <a href="/blog/${post.slug}/" class="block">
+              <div class="relative overflow-hidden">
+                ${imgSrc
+                  ? `<img src="${imgSrc}" alt="${post.title}" class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />`
+                  : `<div class="w-full aspect-video bg-gradient-to-br ${meta.bgColor} flex items-center justify-center">
+                       <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                     </div>`
+                }
+                <div class="absolute top-3 left-3">
+                  <span class="px-3 py-1 ${meta.color} text-xs font-medium rounded-full">${meta.label}</span>
+                </div>
+              </div>
+            </a>
+            <div class="p-5">
+              <a href="/blog/${post.slug}/" class="block">
+                <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">${post.title}</h3>
+              </a>
+              <p class="text-sm text-slate-500 mb-4 line-clamp-2">${post.excerpt || ''}</p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400">${pubDate}</span>
+                <a href="/blog/${post.slug}/" class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+                  Baca Artikel
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      if (viewAll) viewAll.style.display = 'block';
+    } catch (err) {
+      console.error('Failed to load blog posts:', err);
+      grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Gagal memuat artikel.</div>';
+    }
+  }
+
   loadDynamicContent();
+  loadLatestBlogPosts();
   bindFilterTabs(); // Bind initial "Semua" tab
 
   // Navbar scroll effect
