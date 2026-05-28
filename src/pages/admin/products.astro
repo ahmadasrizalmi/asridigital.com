@@ -66,6 +66,13 @@ import Icon from '../../components/ui/Icon.astro';
       </header>
       
       <div class="p-4 sm:p-6">
+        <div class="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div class="relative flex-1 max-w-md w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="product-search" class="input pl-10 w-full" placeholder="Cari produk..." />
+          </div>
+          <span id="product-count" class="text-sm text-text-muted"></span>
+        </div>
         <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
@@ -89,6 +96,7 @@ import Icon from '../../components/ui/Icon.astro';
             </table>
           </div>
         </div>
+        <div id="product-pagination" class="mt-4 flex items-center justify-center gap-3"></div>
       </div>
     </main>
   </div>
@@ -279,6 +287,10 @@ import Icon from '../../components/ui/Icon.astro';
 <script is:inline src="/js/admin-utils.js"></script>
 <script>
   const API_BASE = '/api';
+  let allProducts: any[] = [];
+  let productSearchQuery = '';
+  let productCurrentPage = 1;
+  const PRODUCTS_PER_PAGE = 20;
 
   function formatIDR(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
@@ -508,10 +520,42 @@ import Icon from '../../components/ui/Icon.astro';
       const response = await adminFetch(`${API_BASE}/admin/products`);
       if (response.status === 401 || response.status === 403) return;
       const data = await response.json() as any;
-      
-      const table = document.getElementById('products-table')!;
-      if (data.products && data.products.length > 0) {
-        table.innerHTML = data.products.map((product: any) => `
+      allProducts = data.products || [];
+      productCurrentPage = 1;
+      productSearchQuery = '';
+      const searchInput = document.getElementById('product-search') as HTMLInputElement;
+      if (searchInput) searchInput.value = '';
+      renderFilteredProducts();
+    } catch (error) {
+      if (error.message !== 'Auth expired') {
+        console.error('Error loading products:', error);
+        showToast('Gagal memuat produk', 'error');
+      }
+    }
+  }
+
+  function renderFilteredProducts() {
+    const table = document.getElementById('products-table')!;
+    const query = productSearchQuery.toLowerCase();
+    const filtered = query
+      ? allProducts.filter((p: any) => p.title.toLowerCase().includes(query))
+      : allProducts;
+
+    const countEl = document.getElementById('product-count');
+    if (countEl) {
+      const showing = Math.min(filtered.length, PRODUCTS_PER_PAGE);
+      countEl.textContent = `Menampilkan ${showing} dari ${filtered.length} data`;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
+    if (productCurrentPage > totalPages) productCurrentPage = totalPages;
+    const start = (productCurrentPage - 1) * PRODUCTS_PER_PAGE;
+    const pageItems = filtered.slice(start, start + PRODUCTS_PER_PAGE);
+
+    if (filtered.length === 0) {
+      table.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Tidak ada produk ditemukan.</td></tr>';
+    } else {
+      table.innerHTML = pageItems.map((product: any) => `
           <tr class="hover:bg-background/50">
             <td class="px-6 py-4">
               <div>
@@ -552,14 +596,9 @@ import Icon from '../../components/ui/Icon.astro';
               </div>
             </td>
           </tr>
-        `).join('');
-      }
-    } catch (error) {
-      if (error.message !== 'Auth expired') {
-        console.error('Error loading products:', error);
-        showToast('Gagal memuat produk', 'error');
-      }
+      `).join('');
     }
+    renderProductPagination(totalPages);
   }
 
   function openModal(product?: any) {
@@ -733,12 +772,39 @@ import Icon from '../../components/ui/Icon.astro';
     (document.getElementById('product-slug') as HTMLInputElement).value = slug;
   });
 
+  // Search and pagination
+  function renderProductPagination(totalPages: number) {
+    const container = document.getElementById('product-pagination');
+    if (!container) return;
+    if (totalPages <= 1) { container.innerHTML = ''; return; }
+    container.innerHTML =
+      '<button onclick="productPrevPage()" ' + (productCurrentPage <= 1 ? 'disabled' : '') + ' class="btn-tertiary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Sebelumnya</button>' +
+      '<span class="text-sm text-text-muted">Halaman ' + productCurrentPage + ' dari ' + totalPages + '</span>' +
+      '<button onclick="productNextPage()" ' + (productCurrentPage >= totalPages ? 'disabled' : '') + ' class="btn-tertiary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Berikutnya</button>';
+  }
+
+  function productPrevPage() {
+    if (productCurrentPage > 1) { productCurrentPage--; renderFilteredProducts(); }
+  }
+
+  function productNextPage() {
+    productCurrentPage++; renderFilteredProducts();
+  }
+
+  document.getElementById('product-search')?.addEventListener('input', (e) => {
+    productSearchQuery = (e.target as HTMLInputElement).value;
+    productCurrentPage = 1;
+    renderFilteredProducts();
+  });
+
   // Expose to global scope for onclick handlers
   (window as any).openModal = openModal;
   (window as any).closeModal = closeModal;
   (window as any).editProduct = editProduct;
   (window as any).toggleProduct = toggleProduct;
   (window as any).deleteProduct = deleteProduct;
+  (window as any).productPrevPage = productPrevPage;
+  (window as any).productNextPage = productNextPage;
 
   // Load on page load
   loadProducts();

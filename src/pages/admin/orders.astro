@@ -75,6 +75,13 @@ import Icon from '../../components/ui/Icon.astro';
       </header>
       
       <div class="p-4 sm:p-6">
+        <div class="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div class="relative flex-1 max-w-md w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="order-search" class="input pl-10 w-full" placeholder="Cari pesanan..." />
+          </div>
+          <span id="order-count" class="text-sm text-text-muted"></span>
+        </div>
         <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
@@ -106,6 +113,7 @@ import Icon from '../../components/ui/Icon.astro';
             <p class="text-text-secondary">Pesanan akan muncul di sini ketika pelanggan melakukan checkout.</p>
           </div>
         </div>
+        <div id="order-pagination" class="mt-4 flex items-center justify-center gap-3"></div>
       </div>
     </main>
   </div>
@@ -192,6 +200,9 @@ import Icon from '../../components/ui/Icon.astro';
 <script>
   const API_BASE = '/api';
   let allOrders: any[] = [];
+  let orderSearchQuery = '';
+  let orderCurrentPage = 1;
+  const ORDERS_PER_PAGE = 20;
 
   function formatIDR(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
@@ -288,20 +299,46 @@ import Icon from '../../components/ui/Icon.astro';
       });
       const data = await response.json();
       allOrders = data.orders || [];
-      renderOrders(allOrders);
+      orderCurrentPage = 1;
+      orderSearchQuery = '';
+      const searchInput = document.getElementById('order-search') as HTMLInputElement;
+      if (searchInput) searchInput.value = '';
+      applyOrderFilters();
     } catch (error) {
       console.error('Error loading orders:', error);
     }
   }
 
-  function filterOrders() {
+  function applyOrderFilters() {
     const el = document.getElementById('status-filter') as HTMLSelectElement;
     const status = el.value;
-    if (status === 'all') {
-      renderOrders(allOrders);
-    } else {
-      renderOrders(allOrders.filter(function(o) { return o.status === status; }));
+    const query = orderSearchQuery.toLowerCase();
+
+    let filtered = allOrders;
+    if (status !== 'all') {
+      filtered = filtered.filter(function(o) { return o.status === status; });
     }
+    if (query) {
+      filtered = filtered.filter(function(o) {
+        return (o.user_name || '').toLowerCase().includes(query) ||
+               o.user_email.toLowerCase().includes(query) ||
+               o.product_title.toLowerCase().includes(query);
+      });
+    }
+
+    const countEl = document.getElementById('order-count');
+    if (countEl) {
+      const showing = Math.min(filtered.length, ORDERS_PER_PAGE);
+      countEl.textContent = 'Menampilkan ' + showing + ' dari ' + filtered.length + ' data';
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / ORDERS_PER_PAGE));
+    if (orderCurrentPage > totalPages) orderCurrentPage = totalPages;
+    const start = (orderCurrentPage - 1) * ORDERS_PER_PAGE;
+    const pageItems = filtered.slice(start, start + ORDERS_PER_PAGE);
+
+    renderOrders(pageItems);
+    renderOrderPagination(totalPages);
   }
 
   function viewOrder(orderId: string) {
@@ -467,8 +504,34 @@ import Icon from '../../components/ui/Icon.astro';
     URL.revokeObjectURL(url);
   }
 
+  function renderOrderPagination(totalPages: number) {
+    const container = document.getElementById('order-pagination');
+    if (!container) return;
+    if (totalPages <= 1) { container.innerHTML = ''; return; }
+    container.innerHTML =
+      '<button onclick="orderPrevPage()" ' + (orderCurrentPage <= 1 ? 'disabled' : '') + ' class="btn-tertiary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Sebelumnya</button>' +
+      '<span class="text-sm text-text-muted">Halaman ' + orderCurrentPage + ' dari ' + totalPages + '</span>' +
+      '<button onclick="orderNextPage()" ' + (orderCurrentPage >= totalPages ? 'disabled' : '') + ' class="btn-tertiary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Berikutnya</button>';
+  }
+
+  function orderPrevPage() {
+    if (orderCurrentPage > 1) { orderCurrentPage--; applyOrderFilters(); }
+  }
+
+  function orderNextPage() {
+    orderCurrentPage++; applyOrderFilters();
+  }
+
   // Event listeners
-  document.getElementById('status-filter')?.addEventListener('change', filterOrders);
+  document.getElementById('status-filter')?.addEventListener('change', function() {
+    orderCurrentPage = 1;
+    applyOrderFilters();
+  });
+  document.getElementById('order-search')?.addEventListener('input', function(e) {
+    orderSearchQuery = (e.target as HTMLInputElement).value;
+    orderCurrentPage = 1;
+    applyOrderFilters();
+  });
 
   // Auth guard
   if (!localStorage.getItem('admin_token')) {
@@ -484,6 +547,8 @@ import Icon from '../../components/ui/Icon.astro';
   (window as any).closeDetailModal = closeDetailModal;
   (window as any).closeEditModal = closeEditModal;
   (window as any).submitEditOrder = submitEditOrder;
+  (window as any).orderPrevPage = orderPrevPage;
+  (window as any).orderNextPage = orderNextPage;
 
   // Load on page load
   loadOrders();
