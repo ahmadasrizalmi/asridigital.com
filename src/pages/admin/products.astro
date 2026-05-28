@@ -276,17 +276,9 @@ import Icon from '../../components/ui/Icon.astro';
 
 </BaseLayout>
 
+<script is:inline src="/js/admin-utils.js"></script>
 <script>
-  // Auth guard
-  if (!localStorage.getItem('admin_token')) {
-    window.location.href = '/admin/login';
-  }
-
   const API_BASE = '/api';
-
-  function getAdminToken(): string | null {
-    return localStorage.getItem('admin_token');
-  }
 
   function formatIDR(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
@@ -497,10 +489,8 @@ import Icon from '../../components/ui/Icon.astro';
   // Load categories from API
   async function loadCategories() {
     try {
-      const token = getAdminToken();
-      const res = await fetch('/api/admin/categories', {
-        headers: { ...(token ? { 'Authorization': 'Bearer ' + token } : {}) }
-      });
+      const res = await adminFetch('/api/admin/categories');
+      if (res.status === 401 || res.status === 403) return;
       const data = await res.json();
       const categories = data.categories || [];
       const select = document.getElementById('product-category') as HTMLSelectElement;
@@ -508,19 +498,15 @@ import Icon from '../../components/ui/Icon.astro';
         '<option value="' + c.slug + '">' + c.name + '</option>'
       ).join('');
     } catch (e) {
-      console.error('Error loading categories:', e);
+      if (e.message !== 'Auth expired') console.error('Error loading categories:', e);
     }
   }
   loadCategories();
 
   async function loadProducts() {
     try {
-      const token = getAdminToken();
-      const response = await fetch(`${API_BASE}/admin/products`, {
-        headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
-      });
+      const response = await adminFetch(`${API_BASE}/admin/products`);
+      if (response.status === 401 || response.status === 403) return;
       const data = await response.json() as any;
       
       const table = document.getElementById('products-table')!;
@@ -631,52 +617,47 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function toggleProduct(id: string, isActive: boolean) {
     try {
-      const token = getAdminToken();
-      const response = await fetch(`${API_BASE}/admin/products/${id}`, {
+      const response = await adminFetch(`${API_BASE}/admin/products/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
         body: JSON.stringify({ is_active: !isActive }),
       });
-
+      if (response.status === 401 || response.status === 403) return;
       const result = await response.json() as any;
-
       if (response.ok) {
+        showToast(isActive ? 'Produk dinonaktifkan' : 'Produk diaktifkan');
         loadProducts();
       } else {
-        alert(result.error || 'Terjadi kesalahan');
+        showToast(result.error || 'Terjadi kesalahan', 'error');
       }
     } catch (error) {
-      console.error('Error toggling product:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      if (error.message !== 'Auth expired') {
+        console.error('Error toggling product:', error);
+        showToast('Terjadi kesalahan', 'error');
+      }
     }
   }
 
   async function deleteProduct(id: string) {
-    if (!confirm('Yakin ingin menghapus produk ini?')) return;
+    const choice = confirm('Pilih OK untuk HAPUS PERMANEN, atau Cancel untuk batal.\n\nProduk yang dihapus tidak bisa dikembalikan!');
+    if (!choice) return;
     
     try {
-      const token = getAdminToken();
-      const response = await fetch(`${API_BASE}/admin/products/${id}`, {
+      const response = await adminFetch(`${API_BASE}/admin/products/${id}`, {
         method: 'DELETE',
-        headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
       });
-      
+      if (response.status === 401 || response.status === 403) return;
       const result = await response.json() as any;
-      
       if (response.ok) {
-        alert('Produk berhasil dihapus');
+        showToast('Produk berhasil dihapus');
         loadProducts();
       } else {
-        alert(result.error || 'Terjadi kesalahan');
+        showToast(result.error || 'Gagal menghapus produk', 'error');
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      if (error.message !== 'Auth expired') {
+        console.error('Error deleting product:', error);
+        showToast('Terjadi kesalahan', 'error');
+      }
     }
   }
 
@@ -714,27 +695,25 @@ import Icon from '../../components/ui/Icon.astro';
     submitBtn.textContent = 'Menyimpan...';
 
     try {
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(getAdminToken() ? { 'Authorization': `Bearer ${getAdminToken()}` } : {})
-        },
         body: JSON.stringify(productData),
       });
-      
+      if (response.status === 401 || response.status === 403) return;
       const result = await response.json() as any;
       
       if (response.ok) {
-        alert('Produk berhasil ' + (productId ? 'diupdate' : 'ditambahkan'));
+        showToast('Produk berhasil ' + (productId ? 'diupdate' : 'ditambahkan'));
         closeModal();
         loadProducts();
       } else {
-        alert(result.error || 'Terjadi kesalahan');
+        showToast(result.error || 'Terjadi kesalahan', 'error');
       }
     } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      if (error.message !== 'Auth expired') {
+        console.error('Error saving product:', error);
+        showToast('Terjadi kesalahan', 'error');
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Simpan Produk';

@@ -1838,14 +1838,14 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.startsWith('/admin/products/') && method === 'DELETE') {
       const productId = route.split('/')[3];
 
-      // Soft delete - set is_active to false
+      // Hard delete - remove product from database
       await env.DB.prepare(
-        'UPDATE products SET is_active = 0 WHERE id = ?'
+        'DELETE FROM products WHERE id = ?'
       )
         .bind(productId)
         .run();
 
-      return jsonResponse({ success: true });
+      return jsonResponse({ success: true, message: 'Produk berhasil dihapus' });
     }
 
     // ==================== ADMIN: BLOG POSTS LIST ====================

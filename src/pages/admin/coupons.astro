@@ -182,6 +182,7 @@ import Icon from '../../components/ui/Icon.astro';
 
 </BaseLayout>
 
+<script is:inline src="/js/admin-utils.js"></script>
 <script>
   function getAdminToken(): string | null {
     return localStorage.getItem('admin_token');
