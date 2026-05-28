@@ -1,30 +1,16 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
-import Icon from '../../components/ui/Icon.astro';
-import ProductCard from '../../components/marketing/ProductCard.astro';
-import { formatIDR, formatDescription, parseTags } from '../../lib/utils';
-
-interface Feature {
-  icon?: string;
-  title: string;
-  description: string;
-}
+import Footer from '../../components/layout/Footer.astro';
+import { formatIDR } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-
   try {
     const res = await fetch(`${apiBase}/api/products`);
     const data = await res.json() as any;
-    const products = data.products || [];
-
-    return products.map((p: any) => ({
-      params: { slug: p.slug },
-    }));
-  } catch {
-    return [];
-  }
+    return (data.products || []).map((p: any) => ({ params: { slug: p.slug } }));
+  } catch { return []; }
 }
 
 const productSlug = Astro.params.slug || '';
@@ -32,421 +18,286 @@ const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').re
 
 let product: any = null;
 let relatedProducts: any[] = [];
-let notFound = false;
 
-// Fetch product from database/API
 try {
-  const apiResponse = await fetch(`${apiBase}/api/products/${productSlug}`);
-  if (apiResponse.ok) {
-    const data = await apiResponse.json();
+  const res = await fetch(`${apiBase}/api/products/${productSlug}`);
+  if (res.ok) {
+    const data = await res.json();
     product = data.product;
-
-    // Fetch related products (same category, excluding current)
     if (product?.category) {
-      const relatedResponse = await fetch(`${apiBase}/api/products?category=${product.category}&limit=4`);
-      if (relatedResponse.ok) {
-        const relatedData = await relatedResponse.json();
-        relatedProducts = (relatedData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
+      const relRes = await fetch(`${apiBase}/api/products?category=${product.category}&limit=4`);
+      if (relRes.ok) {
+        const relData = await relRes.json();
+        relatedProducts = (relData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
       }
     }
-    // Fallback: if no same-category products, show other products
-    if (relatedProducts.length === 0) {
-      const fallbackResponse = await fetch(`${apiBase}/api/products?limit=4`);
-      if (fallbackResponse.ok) {
-        const fallbackData = await fallbackResponse.json();
-        relatedProducts = (fallbackData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
-      }
-    }
-  } else {
-    notFound = true;
   }
-} catch (e) {
-  console.error('Error fetching product:', e);
-  notFound = true;
-}
+} catch (e) { console.error('Product fetch error:', e); }
 
-if (!product && notFound) {
-  return Astro.redirect('/#produk');
-}
+if (!product) return Astro.redirect('/#produk');
 
-// Parse product data
-const galleryImages: string[] = product?.gallery_images
-  ? typeof product.gallery_images === 'string'
-    ? JSON.parse(product.gallery_images)
-    : product.gallery_images
-  : (product?.image_icon ? [product.image_icon] : []);
+// Parse fields from D1
+const galleryImages: string[] = product.gallery_images
+  ? (typeof product.gallery_images === 'string' ? JSON.parse(product.gallery_images) : product.gallery_images)
+  : (product.image_icon ? [product.image_icon] : []);
 
-const galleryVideos: string[] = product?.gallery_videos
-  ? typeof product.gallery_videos === 'string'
-    ? JSON.parse(product.gallery_videos)
-    : product.gallery_videos
+const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+const isFree = product.price === 0;
+const discount = hasDiscount ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
+
+// Build features list from product.features or generate from description
+const features: Array<{title: string; description: string}> = product.features
+  ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features)
   : [];
 
-const features: Feature[] = product?.features
-  ? typeof product.features === 'string'
-    ? JSON.parse(product.features)
-    : product.features
-  : [];
-
-const specs: Record<string, string> = product?.specs
-  ? typeof product.specs === 'string'
-    ? JSON.parse(product.specs)
-    : product.specs
+// Build specs from product.specs
+const specs: Record<string, string> = product.specs
+  ? (typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs)
   : {};
 
-const faqs: Array<{question: string; answer: string}> = product?.faq
-  ? typeof product.faq === 'string'
-    ? JSON.parse(product.faq)
-    : product.faq
+// Build FAQ from product.faq
+const faqs: Array<{question: string; answer: string}> = product.faq
+  ? (typeof product.faq === 'string' ? JSON.parse(product.faq) : product.faq)
   : [];
 
-const hasDiscount = product?.compare_at_price && product.compare_at_price > product.price;
-const discount = hasDiscount
-  ? Math.round((1 - product.price / product.compare_at_price) * 100)
-  : 0;
-
-const tags = parseTags(product?.tags);
+// Category badge text
+const categoryBadge: Record<string, string> = {
+  marketing: 'MARKETING', coding: 'CODE', kreatif: 'KREATIF',
+  pendidikan: 'PENDIDIKAN', membership: 'ALL-ACCESS', tools: 'TOOLS',
+  data: 'DATA', ai: 'AI',
+};
+const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.category || 'DIGITAL').toUpperCase();
 ---
 
-<BaseLayout title={`${product?.title || 'Produk'} - Asri Digital`}>
+<BaseLayout title={`${product.title} - Asri Digital`} description={product.short_description || product.description}>
   <Header />
 
-  <main class="flex-1 py-8 sm:py-12">
+  <main class="pt-28 pb-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
       <!-- Breadcrumb -->
-      <nav class="flex items-center gap-2 text-sm text-text-muted mb-6 sm:mb-8 flex-wrap" aria-label="Breadcrumb">
-        <a href="/" class="hover:text-primary transition-colors">Beranda</a>
-        <Icon name="chevron-right" size={14} />
-        <a href="/#produk" class="hover:text-primary transition-colors">Produk</a>
-        <Icon name="chevron-right" size={14} />
-        <span class="text-text-primary font-medium truncate max-w-[200px]">{product?.title}</span>
+      <nav class="flex text-sm text-slate-500 mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 flex-wrap">
+          <li class="inline-flex items-center">
+            <a href="/" class="hover:text-slate-900 transition-colors">Beranda</a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <svg class="w-3 h-3 mx-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+              <a href="/#produk" class="hover:text-slate-900 transition-colors ml-1 md:ml-2">Katalog Produk</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <svg class="w-3 h-3 mx-1 text-slate-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+              <span class="ml-1 md:ml-2 text-slate-800 font-medium">{product.title}</span>
+            </div>
+          </li>
+        </ol>
       </nav>
 
-      <!-- Product Header -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
-        <!-- Product Gallery -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <!-- LEFT: Image Gallery -->
         <div class="space-y-4">
-          <!-- Main Image/Video -->
-          <div class="relative aspect-square rounded-2xl overflow-hidden bg-background">
-            {product?.video_embed_url ? (
-              <div class="w-full h-full">
-                <iframe
-                  src={product.video_embed_url}
-                  class="w-full h-full"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                ></iframe>
-              </div>
-            ) : (
-              <img
-                id="main-image"
-                src={galleryImages[0] || '/images/placeholder.jpg'}
-                alt={product?.title}
-                class="w-full h-full object-cover cursor-pointer transition-transform duration-300 hover:scale-105"
-              />
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+            <span class="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-slate-100">{badgeText}</span>
+            {hasDiscount && !isFree && (
+              <span class="absolute top-4 right-4 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">-{discount}%</span>
             )}
-
-            {/* Badges */}
-            <div class="absolute top-4 left-4 flex flex-wrap gap-2">
-              {product?.price === 0 && (
-                <span class="badge-success">
-                  GRATIS
-                </span>
-              )}
-              {hasDiscount && product?.price !== 0 && (
-                <span class="badge-danger">
-                  HEMAT {discount}%
-                </span>
-              )}
-              {product?.is_featured && (
-                <span class="badge-warning">
-                  <Icon name="star" size={12} />
-                  POPULER
-                </span>
-              )}
-            </div>
-
-            <!-- Image Counter -->
-            {galleryImages.length > 1 && (
-              <div class="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm">
-                <span id="image-counter">1</span> / {galleryImages.length}
-              </div>
+            {isFree && (
+              <span class="absolute top-4 right-4 z-10 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">GRATIS</span>
             )}
+            <img id="main-image" src={galleryImages[0] || product.image_icon || '/images/placeholder.jpg'} alt={product.title} class="w-full h-full object-cover" />
           </div>
-
-          <!-- Thumbnail Gallery -->
           {galleryImages.length > 1 && (
-            <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
-              {galleryImages.map((img: string, index: number) => (
-                <button
-                  class={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                    index === 0 ? 'border-primary' : 'border-border hover:border-primary/50'
-                  }`}
-                  onclick={`changeMainImage('${img}', ${index})`}
-                >
-                  <img
-                    src={img}
-                    alt={`Gallery ${index + 1}`}
-                    class="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-
-          <!-- Video Thumbnails -->
-          {galleryVideos.length > 0 && (
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
-              {galleryVideos.map((video: string, index: number) => (
-                <button
-                  class="aspect-video rounded-lg overflow-hidden border-2 border-border hover:border-primary/50 transition-all relative group"
-                  onclick={`openVideoModal('${video.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')`}
-                >
-                  <video
-                    src={video}
-                    class="w-full h-full object-cover"
-                    muted
-                  ></video>
-                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                      <Icon name="play" size={20} class="text-primary ml-1" />
-                    </div>
-                  </div>
-                  <span class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                    Video {index + 1}
-                  </span>
+            <div class="grid grid-cols-4 gap-4">
+              {galleryImages.map((img: string, i: number) => (
+                <button class={`aspect-square rounded-xl overflow-hidden bg-slate-50 transition-all ${i === 0 ? 'border-2 border-slate-900' : 'border border-slate-200 opacity-60 hover:opacity-100'}`} onclick={`changeMainImage('${img}', ${i})`}>
+                  <img src={img} alt={`${product.title} ${i + 1}`} class="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <!-- Product Info -->
-        <div class="space-y-6">
-          <!-- Category -->
-          <div>
-            <a
-              href={`/#produk?category=${product?.category}`}
-              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            >
-              <Icon name="folder" size={14} />
-              {product?.category}
-            </a>
+        <!-- RIGHT: Product Details -->
+        <div class="flex flex-col">
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">{product.title}</h1>
+
+          <div class="flex items-center space-x-4 mb-6">
+            <div class="flex items-center text-yellow-400">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+              <span class="ml-1 text-sm font-medium text-slate-700">4.9 (120+ Review)</span>
+            </div>
+            <span class="text-slate-300">|</span>
+            <span class="text-sm font-medium text-green-700 bg-green-50 px-2.5 py-0.5 rounded">Tersedia Instan</span>
           </div>
 
-          <!-- Title -->
-          <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
-            {product?.title}
-          </h1>
+          <p class="text-slate-600 text-base leading-relaxed mb-8">
+            {product.short_description || product.description}
+          </p>
 
-          <!-- Tags -->
-          {tags.length > 0 && (
-            <div class="flex flex-wrap gap-2">
-              {tags.map((tag: string) => (
-                <span class="px-3 py-1 bg-background border border-border rounded-full text-sm text-text-muted">
-                  #{tag}
-                </span>
+          <!-- Price Block -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8">
+            {isFree ? (
+              <>
+                <div class="flex items-end mb-4">
+                  <span class="text-4xl font-extrabold text-green-600 tracking-tight">Gratis</span>
+                </div>
+              </>
+            ) : (
+              <>
+                {hasDiscount && (
+                  <p class="text-sm text-slate-500 font-medium mb-1 line-through">Harga Normal: {formatIDR(product.compare_at_price)}</p>
+                )}
+                <div class="flex items-end mb-4">
+                  <span class="text-4xl font-extrabold text-slate-900 tracking-tight">{formatIDR(product.price)}</span>
+                  {hasDiscount && (
+                    <span class="ml-3 mb-1 text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded">Diskon {discount}%</span>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Akses instan setelah pembayaran</span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Lisensi seumur hidup</span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Gratis update versi mendatang</span>
+              </div>
+              {features.length > 0 && features.slice(0, 3).map((f: {title: string}) => (
+                <div class="flex items-center text-sm text-slate-600">
+                  <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  <span>{f.title}</span>
+                </div>
               ))}
             </div>
-          )}
 
-          <!-- Price -->
-          <div class="space-y-2">
-            <div class="flex items-baseline gap-3">
-              {product?.price === 0 ? (
-                <span class="text-3xl sm:text-4xl font-bold text-green-600">
-                  Gratis
-                </span>
-              ) : (
-                <>
-                  <span class="text-3xl sm:text-4xl font-bold text-primary">
-                    {formatIDR(product?.price)}
-                  </span>
-                  {hasDiscount && (
-                    <span class="text-xl text-text-muted line-through">
-                      {formatIDR(product?.compare_at_price)}
-                    </span>
-                  )}
-                </>
-              )}
-            </div>
-            {hasDiscount && product?.price !== 0 && (
-              <p class="text-green-600 text-sm font-medium">
-                Hemat {formatIDR(product?.compare_at_price - product?.price)} ({discount}%)
-              </p>
-            )}
-          </div>
-
-          <!-- Description -->
-          <div class="prose prose-sm max-w-none text-text-secondary">
-            <Fragment set:html={formatDescription(product?.description || '')} />
-          </div>
-
-          <!-- GPT URL - Only shown to authenticated owners -->
-          <div id="gpt-access-section" class="hidden">
-            <a
-              id="gpt-preview-link"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-            >
-              <Icon name="sparkles" size={16} />
-              Buka GPT
-              <Icon name="external-link" size={14} />
+            <a id="buy-button" href={`/checkout?product=${product.slug}`} class="w-full bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 py-4 rounded-xl font-bold text-lg transition-all shadow-sm hover:shadow-md hover:from-emerald-400 hover:to-yellow-200 transform hover:-translate-y-0.5 flex items-center justify-center">
+              <svg class="w-5 h-5 mr-2 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              {isFree ? 'Download Gratis' : 'Beli & Download Instan'}
             </a>
-          </div>
-
-          <!-- CTA Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 pt-4">
-            <a
-              id="buy-button"
-              href={`/checkout?product=${product?.slug}`}
-              class={`${product?.price === 0 ? 'btn-secondary' : 'btn-primary'} justify-center text-lg py-4`}
-            >
-              <Icon name={product?.price === 0 ? 'gift' : 'shopping-cart'} size={20} />
-              {product?.price === 0 ? 'Ambil Gratis' : 'Beli Sekarang'}
-            </a>
-            <div id="gpt-demo-section" class="hidden">
-              <a
-                id="gpt-demo-link"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-tertiary justify-center text-lg py-4"
-              >
-                <Icon name="play-circle" size={20} />
-                Buka GPT
-              </a>
-            </div>
-          </div>
-
-          <!-- Trust Badges -->
-          <div class="grid grid-cols-2 gap-3 pt-4">
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="shield" size={16} class="text-green-600" />
-              <span>Garansi 7 hari</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="download" size={16} class="text-blue-600" />
-              <span>Akses instan</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="refresh-cw" size={16} class="text-purple-600" />
-              <span>Update gratis</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="message-circle" size={16} class="text-amber-600" />
-              <span>Support premium</span>
-            </div>
+            <p class="text-center text-xs text-slate-400 mt-4 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              Pembayaran dijamin aman via Payment Gateway
+            </p>
           </div>
 
           <!-- All-Access Badge -->
-          <div class="flex items-center gap-2 p-4 bg-primary/5 rounded-xl border border-primary/20">
-            <Icon name="crown" size={20} class="text-amber-500" />
-            <div>
-              <p class="text-sm font-medium text-text-primary">Tersedia di All-Access Pass</p>
-              <p class="text-xs text-text-muted">Bayar sekali, akses semua produk seumur hidup</p>
+          <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
             </div>
-            <a href="/checkout?product=lifetime-all-access-pass" class="ml-auto text-primary text-sm font-medium hover:underline">
-              Lihat →
-            </a>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Tersedia di All-Access Pass</p>
+              <p class="text-xs text-slate-500">Bayar sekali Rp 299.000, akses semua produk seumur hidup</p>
+            </div>
+            <a href="/checkout?product=lifetime-all-access-pass" class="text-emerald-600 text-sm font-semibold hover:underline shrink-0">Lihat →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mt-20 border-t border-slate-200 pt-12">
+        <div class="max-w-3xl">
+          <h3 class="text-2xl font-bold text-slate-900 mb-6">Deskripsi Lengkap</h3>
+          <div class="prose prose-slate text-slate-600 space-y-4">
+            <p>{product.description}</p>
           </div>
         </div>
       </div>
 
       <!-- Features Section -->
       {features.length > 0 && (
-        <section class="mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="star" size={24} class="text-primary" />
-            Fitur Utama
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((feature: Feature) => (
-              <div class="card p-5 hover:border-primary/30 transition-colors">
-                <div class="flex items-start gap-4">
-                  <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                    {feature.icon ? (
-                      <Icon name={feature.icon} size={20} class="text-primary" />
-                    ) : (
-                      <Icon name="check-circle" size={20} class="text-primary" />
-                    )}
+        <section class="mt-12">
+          <div class="max-w-3xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Fitur Utama</h3>
+            <div class="space-y-4">
+              {features.map((feature: {title: string; description: string}) => (
+                <div class="flex items-start gap-4 p-4 bg-white border border-slate-100 rounded-xl hover:shadow-float transition-all">
+                  <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                   </div>
                   <div>
-                    <h3 class="font-semibold text-text-primary mb-1">{feature.title}</h3>
-                    <p class="text-sm text-text-secondary">{feature.description}</p>
+                    <h4 class="font-semibold text-slate-900 mb-1">{feature.title}</h4>
+                    <p class="text-sm text-slate-500">{feature.description}</p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <!-- Specifications Section -->
-      {Object.keys(specs).length > 0 && (
-        <section class="mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="list" size={24} class="text-primary" />
-            Spesifikasi
-          </h2>
-          <div class="card overflow-hidden">
-            <div class="overflow-x-auto">
-            <table class="w-full">
-              <tbody class="divide-y divide-border">
-                {Object.entries(specs).map(([key, value]) => (
-                  <tr>
-                    <td class="px-4 sm:px-6 py-3 sm:py-4 bg-background font-medium text-text-primary w-1/3 min-w-[120px]">
-                      {key}
-                    </td>
-                    <td class="px-4 sm:px-6 py-3 sm:py-4 text-text-secondary">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      <!-- FAQ Section -->
-      {faqs.length > 0 && (
-        <section class="mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="help-circle" size={24} class="text-primary" />
-            Pertanyaan yang Sering Diajukan
-          </h2>
-          <div class="space-y-3">
-            {faqs.map((faq: {question: string; answer: string}, index: number) => (
-              <div class="card overflow-hidden">
-                <button
-                  onclick={`toggleFaq(${index})`}
-                  class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-background/50 transition-colors"
-                >
-                  <span class="font-medium text-text-primary">{faq.question}</span>
-                  <Icon id={`faq-icon-${index}`} name="chevron-down" size={20} class="text-text-muted transition-transform" />
-                </button>
-                <div id={`faq-content-${index}`} class="hidden px-6 pb-4">
-                  <p class="text-text-secondary">{faq.answer}</p>
+      <!-- Specifications -->
+      {Object.keys(specs).length > 0 && (
+        <section class="mt-12">
+          <div class="max-w-3xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Spesifikasi</h3>
+            <div class="border border-slate-200 rounded-2xl overflow-hidden">
+              {Object.entries(specs).map(([key, value], i) => (
+                <div class={`flex ${i > 0 ? 'border-t border-slate-100' : ''}`}>
+                  <div class="w-1/3 px-6 py-4 bg-slate-50 font-medium text-slate-900 text-sm">{key}</div>
+                  <div class="flex-1 px-6 py-4 text-slate-600 text-sm">{value}</div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- FAQ -->
+      {faqs.length > 0 && (
+        <section class="mt-12">
+          <div class="max-w-3xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Pertanyaan Umum</h3>
+            <div class="space-y-3">
+              {faqs.map((faq: {question: string; answer: string}, index: number) => (
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                  <button onclick={`toggleFaq(${index})`} class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 transition-colors">
+                    <span class="font-semibold text-slate-900 text-sm pr-4">{faq.question}</span>
+                    <svg id={`faq-icon-${index}`} class="w-5 h-5 text-slate-400 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                  <div id={`faq-content-${index}`} class="hidden px-6 pb-4">
+                    <p class="text-sm text-slate-600 leading-relaxed">{faq.answer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
       <!-- Related Products -->
       {relatedProducts.length > 0 && (
-        <section class="pb-8">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="sparkles" size={24} class="text-primary" />
-            Produk Lainnya
-          </h2>
-          <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {relatedProducts.map((relatedProduct: any) => (
-              <ProductCard product={relatedProduct} />
+        <section class="mt-20 border-t border-slate-200 pt-12">
+          <h3 class="text-2xl font-bold text-slate-900 mb-8 text-center">Produk Lainnya</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {relatedProducts.map((rp: any) => (
+              <a href={`/product/${rp.slug}`} class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-float hover:-translate-y-1 transition-all duration-300 group">
+                <div class="overflow-hidden aspect-[4/3] bg-slate-50">
+                  <img src={rp.image_icon || '/images/placeholder.jpg'} alt={rp.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                </div>
+                <div class="p-5">
+                  <h4 class="font-bold text-slate-900 mb-2 line-clamp-1">{rp.title}</h4>
+                  <p class="text-sm text-slate-500 mb-4 line-clamp-2">{rp.short_description || rp.description}</p>
+                  <div class="flex items-center justify-between pt-3 border-t border-slate-50">
+                    {rp.price === 0 ? (
+                      <span class="text-lg font-bold text-slate-900">Gratis</span>
+                    ) : (
+                      <span class="text-lg font-bold text-slate-900">{formatIDR(rp.price)}</span>
+                    )}
+                    <span class="bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all">Detail</span>
+                  </div>
+                </div>
+              </a>
             ))}
           </div>
         </section>
@@ -454,81 +305,33 @@ const tags = parseTags(product?.tags);
     </div>
   </main>
 
-  <!-- Video Modal -->
-  <div id="video-modal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
-    <button
-      onclick="closeVideoModal()"
-      class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
-    >
-      <Icon name="x" size={32} />
-    </button>
-    <video id="modal-video" controls class="max-w-full max-h-[80vh] rounded-lg"></video>
-  </div>
+  <Footer />
 </BaseLayout>
 
-<script define:vars={{ galleryImages, galleryVideos }}>
-  let currentImageIndex = 0;
-
+<script define:vars={{ galleryImages }}>
   function changeMainImage(src, index) {
     const mainImage = document.getElementById('main-image');
-    const counter = document.getElementById('image-counter');
-
-    mainImage.src = src;
-    currentImageIndex = index;
-    counter.textContent = (index + 1).toString();
-
-    // Update thumbnail borders
+    if (mainImage) mainImage.src = src;
     const thumbnails = document.querySelectorAll('button[onclick^="changeMainImage"]');
     thumbnails.forEach((thumb, i) => {
       if (i === index) {
-        thumb.classList.remove('border-border');
-        thumb.classList.add('border-primary');
+        thumb.classList.remove('border-slate-200', 'opacity-60');
+        thumb.classList.add('border-2', 'border-slate-900', 'opacity-100');
       } else {
-        thumb.classList.remove('border-primary');
-        thumb.classList.add('border-border');
+        thumb.classList.remove('border-2', 'border-slate-900', 'opacity-100');
+        thumb.classList.add('border-slate-200', 'opacity-60');
       }
     });
-  }
-
-  function openVideoModal(videoSrc) {
-    const modal = document.getElementById('video-modal');
-    const video = document.getElementById('modal-video');
-
-    video.src = videoSrc;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    video.play();
-  }
-
-  function closeVideoModal() {
-    const modal = document.getElementById('video-modal');
-    const video = document.getElementById('modal-video');
-
-    video.pause();
-    video.src = '';
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
   }
 
   function toggleFaq(index) {
     const content = document.getElementById('faq-content-' + index);
     const icon = document.getElementById('faq-icon-' + index);
-
-    content.classList.toggle('hidden');
-    icon.classList.toggle('rotate-180');
+    if (content) content.classList.toggle('hidden');
+    if (icon) icon.classList.toggle('rotate-180');
   }
 
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeVideoModal();
-    }
-  });
-
-  // Make functions globally available
   window.changeMainImage = changeMainImage;
-  window.openVideoModal = openVideoModal;
-  window.closeVideoModal = closeVideoModal;
   window.toggleFaq = toggleFaq;
 
   // Tracking: ViewContent
@@ -540,55 +343,25 @@ const tags = parseTags(product?.tags);
     });
   }
 
-  // Check if user owns this product and show GPT link
+  // Check product access
   (async function checkProductAccess() {
-    const token = document.cookie.split('; ').find(c => c.startsWith('token='))?.split('=')[1];
-    if (!token) return; // Not logged in
-
-    const currentSlug = window.location.pathname.split('/').filter(Boolean).pop();
-
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
     try {
-      // Check if user has access to this product
-      const res = await fetch('/api/user/products', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-
+      const res = await fetch('/api/user/products', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) return;
-
       const data = await res.json();
-      const userProducts = data.products || [];
-
-      // Find current product in user's products
-      const ownedProduct = userProducts.find((p) => p.slug === currentSlug);
-
-      if (ownedProduct && ownedProduct.gpt_url && ownedProduct.gpt_url !== '#') {
-        // Show GPT access section
-        const accessSection = document.getElementById('gpt-access-section');
-        const previewLink = document.getElementById('gpt-preview-link');
-        const demoSection = document.getElementById('gpt-demo-section');
-        const demoLink = document.getElementById('gpt-demo-link');
-        const buyButton = document.getElementById('buy-button');
-
-        if (accessSection && previewLink) {
-          previewLink.href = ownedProduct.gpt_url;
-          accessSection.classList.remove('hidden');
-        }
-
-        if (demoSection && demoLink) {
-          demoLink.href = ownedProduct.gpt_url;
-          demoSection.classList.remove('hidden');
-        }
-
-        // Change buy button to "Akses Produk" style
-        if (buyButton) {
-          buyButton.classList.remove('btn-primary');
-          buyButton.classList.add('border-2', 'border-green-500', 'text-green-700', 'bg-green-50', 'hover:bg-green-100');
-          buyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15"/><path d="M10 17L15 12L10 7"/><path d="M15 12H3"/></svg> Akses Produk';
-          buyButton.setAttribute('href', '/dashboard');
+      const slug = window.location.pathname.split('/').filter(Boolean).pop();
+      const owned = (data.products || []).find((p) => p.slug === slug);
+      if (owned) {
+        const btn = document.getElementById('buy-button');
+        if (btn) {
+          btn.classList.remove('from-emerald-300', 'to-yellow-100');
+          btn.classList.add('bg-white', 'border-2', 'border-slate-200', 'hover:border-slate-400');
+          btn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15"/><path d="M10 17L15 12L10 7"/><path d="M15 12H3"/></svg> Akses Produk';
+          btn.setAttribute('href', '/dashboard');
         }
       }
-    } catch (e) {
-      // Silently fail - user just won't see the GPT link
-    }
+    } catch {}
   })();
 </script>
