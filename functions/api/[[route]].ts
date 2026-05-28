@@ -145,7 +145,8 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
 // Helper: Create JWT token
 async function createJWT(payload: any, secret: string, expiresIn: string = '24h'): Promise<string> {
   // Ensure secret is not empty
-  const secretKey = secret || 'asri-digital-default-jwt-secret-key-2026';
+  if (!secret) throw new Error('JWT_SECRET is required but was not provided');
+  const secretKey = secret;
   
   const header = { alg: 'HS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);
@@ -191,7 +192,8 @@ async function createJWT(payload: any, secret: string, expiresIn: string = '24h'
 // Helper: Verify JWT token
 async function verifyJWT(token: string, secret: string): Promise<any> {
   try {
-    const secretKey = secret || 'asri-digital-default-jwt-secret-key-2026';
+    if (!secret) throw new Error('JWT_SECRET is required but was not provided');
+    const secretKey = secret;
     
     const parts = token.split('.');
     if (parts.length !== 3) return null;
@@ -242,7 +244,7 @@ async function getUser(request: Request, env: Env): Promise<any> {
   }
   
   const token = authHeader.substring(7);
-  const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+  const payload = await verifyJWT(token, env.JWT_SECRET);
   if (!payload || !payload.userId) {
     return null;
   }
@@ -265,20 +267,25 @@ function getAllowedOrigin(request: Request): string {
 let _currentRequest: Request | null = null;
 
 // Helper: JSON response
-function jsonResponse(data: any, status: number = 200, request?: Request): Response {
+function jsonResponse(data: any, status: number = 200, request?: Request, cacheControl?: string): Response {
   const req = request || _currentRequest;
   const origin = req ? getAllowedOrigin(req) : 'https://asridigital.com';
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Credentials': 'true',
-      'Vary': 'Origin'
-    }
-  });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+    'Vary': 'Origin'
+  };
+  // For mutable methods (POST/PUT/DELETE), never cache
+  if (cacheControl) {
+    headers['Cache-Control'] = cacheControl;
+  } else if (req && req.method !== 'GET') {
+    headers['Cache-Control'] = 'no-store';
+  }
+  // For GET requests, rely on Cloudflare Pages _headers Cache-Control
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 // Helper: Calculate time ago
@@ -297,6 +304,15 @@ function timeAgo(dateStr: string): string {
 export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
   _currentRequest = request;
+
+  // Require JWT_SECRET to be configured
+  if (!env.JWT_SECRET) {
+    return new Response(JSON.stringify({ error: 'Server configuration error: JWT_SECRET not set' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
@@ -550,7 +566,7 @@ export async function onRequest(context: any): Promise<Response> {
                   await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(user.id, orderId).run();
                   magicToken = await createJWT(
                     { userId: user.id, email: paidOrder.user_email, type: 'magic_login' },
-                    env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026',
+                    env.JWT_SECRET,
                     '720h'
                   );
                 }
@@ -580,7 +596,7 @@ export async function onRequest(context: any): Promise<Response> {
         if (fullOrder?.user_id) {
           const magicToken = await createJWT(
             { userId: fullOrder.user_id, type: 'magic_login' },
-            env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026',
+            env.JWT_SECRET,
             '720h'
           );
           dashboardUrl = `/api/auth/magic-login?token=${magicToken}`;
@@ -639,7 +655,7 @@ export async function onRequest(context: any): Promise<Response> {
         .run();
 
       // Create JWT token
-      const token = await createJWT({ userId, email: sanitizedEmail, name: sanitizedName, role: 'user' }, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const token = await createJWT({ userId, email: sanitizedEmail, name: sanitizedName, role: 'user' }, env.JWT_SECRET);
 
       return jsonResponse({
         success: true,
@@ -677,7 +693,7 @@ export async function onRequest(context: any): Promise<Response> {
       // Create JWT token
       const token = await createJWT(
         { userId: user.id, email: user.email, name: user.name, role: user.role || 'user' },
-        env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026'
+        env.JWT_SECRET
       );
 
       return jsonResponse({
@@ -1335,7 +1351,7 @@ export async function onRequest(context: any): Promise<Response> {
         if (user) {
           magicToken = await createJWT(
             { userId: user.id, email: order.user_email, type: 'magic_login' },
-            env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026',
+            env.JWT_SECRET,
             '720h' // 30 days
           );
 
@@ -1546,7 +1562,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
       
       const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       
       if (!payload) {
         return jsonResponse({ error: 'Invalid token' }, 401);
@@ -2198,7 +2214,7 @@ export async function onRequest(context: any): Promise<Response> {
         });
       }
 
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       if (!payload || payload.type !== 'magic_login') {
         return new Response('<html><body>Token tidak valid atau sudah expired</body></html>', {
           status: 400,
@@ -2220,7 +2236,7 @@ export async function onRequest(context: any): Promise<Response> {
       // Create a regular JWT for the user
       const authToken = await createJWT(
         { userId: user.id, email: user.email, name: user.name, role: user.role || 'user' },
-        env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026'
+        env.JWT_SECRET
       );
 
       // Redirect to dashboard with token in URL fragment (client-side reads it)
@@ -2240,7 +2256,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       if (!payload) {
         return jsonResponse({ error: 'Invalid token' }, 401);
       }
@@ -2306,7 +2322,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       if (!payload) {
         return jsonResponse({ error: 'Invalid token' }, 401);
       }
