@@ -1,5 +1,4 @@
 ---
-import Icon from '../ui/Icon.astro';
 import type { Product } from '../../types';
 import { formatIDR, parseTags } from '../../lib/utils';
 
@@ -14,122 +13,63 @@ const product = {
   compareAtPrice: rawProduct.compareAtPrice ?? rawProduct.compare_at_price ?? null,
   imageIcon: rawProduct.imageIcon ?? rawProduct.image_icon ?? null,
   isFeatured: rawProduct.isFeatured ?? rawProduct.is_featured ?? false,
+  category: rawProduct.category || 'tools',
 };
-    const tags = parseTags(product.tags);
+const tags = parseTags(product.tags);
 const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
 const isFree = product.price === 0;
-const discount = hasDiscount 
-  ? Math.round((1 - product.price / product.compareAtPrice!) * 100) 
+const discount = hasDiscount
+  ? Math.round((1 - product.price / product.compareAtPrice!) * 100)
   : 0;
+
+// Map category to filter data attribute
+const catMap: Record<string, string> = {
+  marketing: 'ai', coding: 'ai', kreatif: 'tools', pendidikan: 'data', membership: 'ai'
+};
+const filterCat = catMap[product.category.toLowerCase()] || 'tools';
 ---
 
-<div class="card-hover group flex flex-col h-full" data-slug={product.slug}>
-  {/* Product Image */}
-  <div class="relative aspect-square overflow-hidden bg-background shrink-0">
-    <img 
-      src={product.imageIcon || '/images/placeholder.jpg'} 
+<a href={`/product/${product.slug}`} class="product-card bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full" data-category={filterCat} data-title={product.title.toLowerCase()} data-slug={product.slug}>
+  <div class="relative overflow-hidden aspect-[4/3] bg-slate-50">
+    <img
+      src={product.imageIcon || '/images/placeholder.jpg'}
       alt={product.title}
       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       loading="lazy"
     />
-    
-    {/* Badges — max 2: promo + best seller */}
     {hasDiscount && !isFree && (
-      <div class="absolute top-2 left-2 sm:top-3 sm:left-3">
-        <span class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-red-500 text-white text-[10px] sm:text-xs font-bold shadow-sm">
-          -{discount}%
-        </span>
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">-{discount}%</span>
       </div>
     )}
     {isFree && (
-      <div class="absolute top-2 left-2 sm:top-3 sm:left-3">
-        <span class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-green-500 text-white text-[10px] sm:text-xs font-bold shadow-sm">
-          GRATIS
-        </span>
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">GRATIS</span>
       </div>
     )}
     {product.isFeatured && (
-      <div class="absolute top-2 right-2 sm:top-3 sm:right-3">
-        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md bg-amber-400 text-amber-900 text-[10px] sm:text-xs font-bold shadow-sm">
-          <Icon name="star" size={10} class="fill-current" />
-          <span class="hidden sm:inline">Best</span>
-        </span>
+      <div class="absolute top-3 right-3">
+        <span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm">Best Seller</span>
       </div>
     )}
   </div>
-  
-  {/* Product Info */}
-  <div class="p-2.5 sm:p-4 flex flex-col flex-1">
-    {/* Title — fixed 2-line height for alignment */}
-    <h3 class="font-semibold text-xs sm:text-base text-text-primary group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[2.5em] mb-0.5 sm:mb-1.5">
-      {product.title}
-    </h3>
-    
-    {/* Description — fixed 3-line height for alignment */}
-    <p class="text-[10px] sm:text-xs text-text-muted line-clamp-3 sm:line-clamp-2 leading-relaxed h-[3.3em] sm:h-[2.5em]">
+  <div class="p-6 flex flex-col flex-grow">
+    <h3 class="text-lg font-bold text-slate-900 mb-2 transition-colors">{product.title}</h3>
+    <p class="text-slate-500 text-sm mb-6 flex-grow leading-relaxed line-clamp-2">
       {product.shortDescription || product.description}
     </p>
-    
-    {/* Divider */}
-    <div class="border-t border-gray-100 my-2 sm:my-2.5"></div>
-    
-    {/* Price — vertical stacked, same size */}
-    <div class="mb-2 sm:mb-3">
+    <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
       {isFree ? (
-        <span class="text-sm sm:text-xl font-bold text-green-600">
-          Gratis
-        </span>
+        <span class="text-xl font-bold text-slate-900">Gratis</span>
       ) : (
-        <div class="flex flex-col">
+        <div>
           {hasDiscount && (
-            <span class="text-sm text-text-muted line-through leading-none mb-0.5">
-              {formatIDR(product.compareAtPrice!)}
-            </span>
+            <span class="text-xs text-slate-400 line-through block mb-0.5">{formatIDR(product.compareAtPrice!)}</span>
           )}
-          <span class="text-sm sm:text-xl font-bold text-text-primary leading-tight">
-            {formatIDR(product.price)}
-          </span>
+          <span class="text-xl font-bold text-slate-900">{formatIDR(product.price)}</span>
         </div>
       )}
-    </div>
-    
-    {/* Divider */}
-    <div class="border-t border-gray-100 my-1.5 sm:my-2"></div>
-    
-    {/* Actions — 2 buttons */}
-    <div class="flex gap-1.5 sm:gap-2 mt-auto pt-1">
-      <a 
-        href={`/product/${product.slug}`}
-        class="inline-flex items-center justify-center gap-1 flex-1 text-[10px] sm:text-xs py-1 sm:py-2 px-1.5 sm:px-3 rounded-lg bg-surface border border-border text-text-main shadow-card hover:border-text-muted transition-all"
-      >
-        <Icon name="eye" size={11} />
-        Detail
-      </a>
-      <a 
-        href={`/checkout?product/${product.slug}`}
-        class={`buy-btn inline-flex items-center justify-center gap-1 flex-1 text-[10px] sm:text-xs py-1 sm:py-2 px-1.5 sm:px-3 rounded-lg transition-all ${isFree ? 'bg-transparent border-2 border-text-primary text-text-primary hover:bg-text-primary hover:text-white' : 'bg-primary text-white shadow-btn-primary hover:bg-primary-hover'}`}
-      >
-        <Icon name={isFree ? 'gift' : 'shopping-cart'} size={11} />
-        {isFree ? 'Gratis' : 'Beli'}
-      </a>
-    </div>
-    
-    {/* All-Access Badge — desktop only */}
-    <div class="mt-2 sm:mt-3 hidden sm:flex items-center gap-1.5 text-xs text-text-muted">
-      <Icon name="crown" size={14} class="text-amber-500" />
-      <span>Tersedia di All-Access Pass</span>
+      <button class="buy-btn bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all duration-300">Lihat Detail</button>
     </div>
   </div>
-</div>
-
-<style>
-  /* Add card hover effect if not already present */
-  .card-hover {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
-  }
-</style>
+</a>
