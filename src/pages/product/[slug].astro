@@ -38,28 +38,40 @@ try {
 if (!product) return Astro.redirect('/#produk');
 
 // Parse fields from D1
-const galleryImages: string[] = product.gallery_images
-  ? (typeof product.gallery_images === 'string' ? JSON.parse(product.gallery_images) : product.gallery_images)
-  : (product.image_icon ? [product.image_icon] : []);
+let galleryImages: string[] = [];
+try {
+  galleryImages = product.gallery_images
+    ? (typeof product.gallery_images === 'string' ? JSON.parse(product.gallery_images) : product.gallery_images)
+    : (product.image_icon ? [product.image_icon] : []);
+} catch { galleryImages = product.image_icon ? [product.image_icon] : []; }
 
 const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
 const isFree = product.price === 0;
 const discount = hasDiscount ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
 
 // Build features list from product.features or generate from description
-const features: Array<{title: string; description: string}> = product.features
-  ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features)
-  : [];
+let features: Array<{title: string; description: string}> = [];
+try {
+  features = product.features
+    ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features)
+    : [];
+} catch { features = []; }
 
 // Build specs from product.specs
-const specs: Record<string, string> = product.specs
-  ? (typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs)
-  : {};
+let specs: Record<string, string> = {};
+try {
+  specs = product.specs
+    ? (typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs)
+    : {};
+} catch { specs = {}; }
 
 // Build FAQ from product.faq
-const faqs: Array<{question: string; answer: string}> = product.faq
-  ? (typeof product.faq === 'string' ? JSON.parse(product.faq) : product.faq)
-  : [];
+let faqs: Array<{question: string; answer: string}> = [];
+try {
+  faqs = product.faq
+    ? (typeof product.faq === 'string' ? JSON.parse(product.faq) : product.faq)
+    : [];
+} catch { faqs = []; }
 
 // Category badge text
 const categoryBadge: Record<string, string> = {

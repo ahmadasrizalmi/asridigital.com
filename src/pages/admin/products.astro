@@ -555,7 +555,10 @@ import Icon from '../../components/ui/Icon.astro';
         `).join('');
       }
     } catch (error) {
-      console.error('Error loading products:', error);
+      if (error.message !== 'Auth expired') {
+        console.error('Error loading products:', error);
+        showToast('Gagal memuat produk', 'error');
+      }
     }
   }
 
