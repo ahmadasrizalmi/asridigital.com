@@ -3,29 +3,29 @@
 // ALL data fetched from D1 via API (products + site_settings)
 ---
 
-<section id="all-access" class="py-16 sm:py-20 bg-carbon text-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="bg-white/5 border border-white/10 rounded-3xl overflow-hidden" id="promo-card">
+<section id="all-access" class="py-10 sm:py-16 lg:py-20 bg-carbon text-white">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+    <div class="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden" id="promo-card">
       <div class="flex flex-col lg:flex-row">
         <!-- Left: Content -->
-        <div class="flex-1 p-6 sm:p-8 lg:p-12 flex flex-col justify-center">
-          <span id="promo-badge" class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full mb-4 border border-emerald-500/30 w-fit">BEST VALUE</span>
-          <h2 id="promo-title" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-3 tracking-tight leading-tight">Loading...</h2>
-          <p id="promo-desc" class="text-slate-300 text-sm sm:text-base lg:text-lg mb-6 leading-relaxed">Loading...</p>
+        <div class="flex-1 p-4 sm:p-8 lg:p-12 flex flex-col justify-center">
+          <span id="promo-badge" class="inline-block bg-emerald-500/20 text-emerald-300 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full mb-3 sm:mb-4 border border-emerald-500/30 w-fit">BEST VALUE</span>
+          <h2 id="promo-title" class="text-lg sm:text-2xl lg:text-4xl font-extrabold mb-2 sm:mb-3 tracking-tight leading-tight">Loading...</h2>
+          <p id="promo-desc" class="text-slate-300 text-xs sm:text-sm lg:text-lg mb-4 sm:mb-6 leading-relaxed">Loading...</p>
 
-          <div class="flex items-baseline gap-3 mb-6">
-            <span id="promo-price" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">-</span>
-            <span id="promo-compare" class="text-lg sm:text-xl text-slate-400 line-through"></span>
+          <div class="flex items-baseline gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <span id="promo-price" class="text-2xl sm:text-3xl lg:text-5xl font-extrabold tracking-tight">-</span>
+            <span id="promo-compare" class="text-sm sm:text-lg text-slate-400 line-through"></span>
           </div>
 
-          <a id="promo-cta" href="/checkout?product=lifetime-all-access-pass" class="inline-flex items-center justify-center bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-900 font-bold px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl hover:shadow-[0_0_20px_rgba(52,211,153,0.3)] transition-all transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto">
+          <a id="promo-cta" href="/checkout?product=lifetime-all-access-pass" class="inline-flex items-center justify-center bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-900 font-bold px-4 sm:px-8 py-2.5 sm:py-4 rounded-lg sm:rounded-xl hover:shadow-[0_0_20px_rgba(52,211,153,0.3)] transition-all transform hover:-translate-y-1 text-xs sm:text-base w-full sm:w-auto">
             Loading...
           </a>
         </div>
 
-        <!-- Right: Image -->
-        <div class="lg:w-2/5 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-          <img id="promo-image" src="/images/placeholder.jpg" alt="Lifetime All-Access" class="w-full max-w-sm rounded-2xl shadow-float lg:rotate-2 lg:hover:rotate-0 transition-transform duration-500" loading="lazy" />
+        <!-- Right: Image (hidden on very small screens) -->
+        <div class="hidden sm:flex lg:w-2/5 p-3 sm:p-6 lg:p-8 items-center justify-center">
+          <img id="promo-image" src="/images/placeholder.jpg" alt="Lifetime All-Access" class="w-full max-w-sm rounded-xl sm:rounded-2xl shadow-float lg:rotate-2 lg:hover:rotate-0 transition-transform duration-500" loading="lazy" />
         </div>
       </div>
     </div>
