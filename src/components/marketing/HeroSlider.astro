@@ -1,29 +1,51 @@
 ---
-// HeroSlider.astro — CSS opacity-based hero slider with <picture> elements
+// HeroSlider.astro — CSS opacity-based hero slider with responsive mobile/desktop layouts
 ---
 
-<header class="relative w-full overflow-hidden flex items-center" style="height:100vh;min-height:600px;padding-top:80px;">
+<header class="relative w-full overflow-hidden" style="height:100vh;min-height:600px;">
   <!-- Slider Images Container -->
   <div id="hero-slider" class="absolute inset-0 w-full h-full">
     <!-- Slides rendered by JS -->
   </div>
 
-  <!-- Overlay gradient for text readability -->
-  <div class="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent z-[2]" style="width:66%;"></div>
-
-  <!-- Hero Content Block -->
-  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-    <div id="hero-glass-card" class="max-w-xl" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:2rem 2.5rem;border-radius:1.5rem;border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 24px -4px rgba(0,0,0,0.04);">
-      <h1 id="hero-main-title" class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-6">
+  <!-- MOBILE LAYOUT: text top, no glass, CTA bottom -->
+  <div class="relative z-10 flex flex-col justify-between h-full sm:hidden" style="padding-top:100px;padding-bottom:80px;">
+    <!-- Text at top -->
+    <div class="px-6">
+      <h1 id="hero-main-title-mobile" class="text-3xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-3">
         Loading...
       </h1>
-      <p id="hero-main-subtitle" class="text-lg text-slate-600 mb-8 leading-relaxed">
+      <p id="hero-main-subtitle-mobile" class="text-base text-slate-600 leading-relaxed">
         Loading...
       </p>
-      <div class="flex flex-col sm:flex-row gap-4">
-        <a id="hero-main-cta" href="#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center px-8 py-3.5 rounded-full font-bold shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
+    </div>
+    <!-- CTA at bottom -->
+    <div class="px-6">
+      <a id="hero-main-cta-mobile" href="#produk" class="block w-full bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center py-4 rounded-full font-bold text-base shadow-sm">
+        Loading...
+      </a>
+    </div>
+  </div>
+
+  <!-- DESKTOP LAYOUT: glass card left, image right -->
+  <div class="relative z-10 hidden sm:flex items-center h-full">
+    <!-- Overlay gradient for text readability -->
+    <div class="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent z-[2]" style="width:66%;"></div>
+
+    <!-- Glass Card -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div id="hero-glass-card" class="max-w-xl" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:2rem 2.5rem;border-radius:1.5rem;border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 24px -4px rgba(0,0,0,0.04);">
+        <h1 id="hero-main-title" class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-6">
           Loading...
-        </a>
+        </h1>
+        <p id="hero-main-subtitle" class="text-lg text-slate-600 mb-8 leading-relaxed">
+          Loading...
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a id="hero-main-cta" href="#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center px-8 py-3.5 rounded-full font-bold shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
+            Loading...
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -57,7 +79,7 @@
       <div class="hero-slide${i === 0 ? ' active' : ''}">
         <picture>
           <source media="(max-width: 768px)" srcset="${s.image_mobile}" />
-          <img src="${s.image_desktop}" alt="${s.title}" class="w-full h-full object-cover object-right md:object-center" loading="${i === 0 ? 'eager' : 'lazy'}" />
+          <img src="${s.image_desktop}" alt="${s.title}" class="w-full h-full object-cover object-center" loading="${i === 0 ? 'eager' : 'lazy'}" />
         </picture>
       </div>
     `).join('');
@@ -100,12 +122,24 @@
         fetch('/api/hero-slides')
       ]);
 
-      // Apply hero content from site_settings
+      // Apply hero content from site_settings — both mobile and desktop
       const settings = await settingsRes.json();
-      if (settings.hero_title) document.getElementById('hero-main-title')!.textContent = settings.hero_title;
-      if (settings.hero_subtitle) document.getElementById('hero-main-subtitle')!.textContent = settings.hero_subtitle;
-      if (settings.hero_cta_text) document.getElementById('hero-main-cta')!.textContent = settings.hero_cta_text;
-      if (settings.hero_cta_link) document.getElementById('hero-main-cta')!.setAttribute('href', settings.hero_cta_link);
+      if (settings.hero_title) {
+        document.getElementById('hero-main-title')!.textContent = settings.hero_title;
+        document.getElementById('hero-main-title-mobile')!.textContent = settings.hero_title;
+      }
+      if (settings.hero_subtitle) {
+        document.getElementById('hero-main-subtitle')!.textContent = settings.hero_subtitle;
+        document.getElementById('hero-main-subtitle-mobile')!.textContent = settings.hero_subtitle;
+      }
+      if (settings.hero_cta_text) {
+        document.getElementById('hero-main-cta')!.textContent = settings.hero_cta_text;
+        document.getElementById('hero-main-cta-mobile')!.textContent = settings.hero_cta_text;
+      }
+      if (settings.hero_cta_link) {
+        document.getElementById('hero-main-cta')!.setAttribute('href', settings.hero_cta_link);
+        document.getElementById('hero-main-cta-mobile')!.setAttribute('href', settings.hero_cta_link);
+      }
 
       // Apply slider slides from hero_slides
       const json = await slidesRes.json();
