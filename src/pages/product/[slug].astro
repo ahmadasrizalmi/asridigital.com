@@ -99,7 +99,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
         <!-- LEFT: Image Gallery -->
         <div class="space-y-4">
-          <div class="aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+          <div class="aspect-square rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
             <span class="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-slate-100">{badgeText}</span>
             {hasDiscount && !isFree && (
               <span class="absolute top-4 right-4 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">-{discount}%</span>
@@ -282,7 +282,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {relatedProducts.map((rp: any) => (
               <a href={`/product/${rp.slug}`} class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-float hover:-translate-y-1 transition-all duration-300 group">
-                <div class="overflow-hidden aspect-[4/3] bg-slate-50">
+                <div class="overflow-hidden aspect-square bg-slate-50">
                   <img src={rp.image_icon || '/images/placeholder.jpg'} alt={rp.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                 </div>
                 <div class="p-5">
