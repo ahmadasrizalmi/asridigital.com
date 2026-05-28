@@ -126,9 +126,39 @@ import Icon from '../../components/ui/Icon.astro';
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi <span class="text-xs text-text-muted font-normal">(mendukung Markdown)</span></label>
-            <textarea id="product-description" class="input font-mono text-sm" rows="8" placeholder="## Fitur Utama&#10;&#10;- **Fitur 1:** Deskripsi fitur&#10;- **Fitur 2:** Deskripsi fitur&#10;&#10;## Cara Instalasi&#10;1. Langkah pertama&#10;2. Langkah kedua"></textarea>
-            <p class="text-xs text-text-muted mt-1">Gunakan Markdown: **teks tebal**, - daftar, 1. daftar bernomor, ## heading</p>
+            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi</label>
+            
+            {/* Toolbar */}
+            <div class="flex items-center gap-1 p-2 bg-background border border-b-0 border-border rounded-t-lg">
+              <button type="button" onclick="mdAction('bold')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary font-bold text-sm" title="Tebal">B</button>
+              <button type="button" onclick="mdAction('italic')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary italic text-sm" title="Miring">I</button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button type="button" onclick="mdAction('h2')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-xs font-bold" title="Heading">H2</button>
+              <button type="button" onclick="mdAction('h3')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-xs font-bold" title="Sub Heading">H3</button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button type="button" onclick="mdAction('ul')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-sm" title="Daftar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </button>
+              <button type="button" onclick="mdAction('ol')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-sm" title="Daftar Bernomor">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11M10 12h11M10 18h11M3 5v2h3V5H3zm0 6v2h3v-2H3zm0 6v2h3v-2H3z"/></svg>
+              </button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button type="button" onclick="mdAction('check')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-sm" title="Checklist">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </button>
+              <div class="flex-1"></div>
+              <button type="button" onclick="togglePreview()" id="preview-toggle" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-primary text-xs font-medium px-3">
+                👁 Preview
+              </button>
+            </div>
+
+            {/* Textarea */}
+            <textarea id="product-description" class="input font-mono text-sm rounded-t-none border-t-0" rows="8" placeholder="Tulis deskripsi produk di sini..."></textarea>
+            
+            {/* Live Preview */}
+            <div id="description-preview" class="hidden border border-border rounded-b-lg p-4 bg-white prose prose-sm max-w-none">
+              <p class="text-text-muted text-sm italic">Preview akan muncul di sini...</p>
+            </div>
           </div>
           
           <div>
@@ -270,6 +300,91 @@ import Icon from '../../components/ui/Icon.astro';
       minimumFractionDigits: 0
     }).format(amount);
   }
+
+  // ====== MARKDOWN EDITOR TOOLBAR ======
+  const mdActions: Record<string, { prefix: string; suffix: string; placeholder: string }> = {
+    bold:   { prefix: '**', suffix: '**', placeholder: 'Teks tebal' },
+    italic: { prefix: '_', suffix: '_', placeholder: 'Teks miring' },
+    h2:     { prefix: '\n## ', suffix: '\n', placeholder: 'Judul' },
+    h3:     { prefix: '\n### ', suffix: '\n', placeholder: 'Sub Judul' },
+    ul:     { prefix: '\n- ', suffix: '\n', placeholder: 'Item daftar' },
+    ol:     { prefix: '\n1. ', suffix: '\n', placeholder: 'Item bernomor' },
+    check:  { prefix: '\n- [ ] ', suffix: '\n', placeholder: 'Item checklist' },
+  };
+
+  (window as any).mdAction = function(action: string) {
+    const ta = document.getElementById('product-description') as HTMLTextAreaElement;
+    if (!ta) return;
+    const cfg = mdActions[action];
+    if (!cfg) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end);
+    const replacement = selected || cfg.placeholder;
+
+    ta.value = ta.value.substring(0, start) + cfg.prefix + replacement + cfg.suffix + ta.value.substring(end);
+    ta.focus();
+    ta.setSelectionRange(start + cfg.prefix.length, start + cfg.prefix.length + replacement.length);
+    updatePreview();
+  };
+
+  let previewVisible = false;
+  (window as any).togglePreview = function() {
+    const preview = document.getElementById('description-preview')!;
+    const btn = document.getElementById('preview-toggle')!;
+    previewVisible = !previewVisible;
+    if (previewVisible) {
+      preview.classList.remove('hidden');
+      btn.textContent = '✏️ Edit';
+      updatePreview();
+    } else {
+      preview.classList.add('hidden');
+      btn.textContent = '👁 Preview';
+    }
+  };
+
+  function updatePreview() {
+    if (!previewVisible) return;
+    const ta = document.getElementById('product-description') as HTMLTextAreaElement;
+    const preview = document.getElementById('description-preview')!;
+    const md = ta.value;
+    if (!md.trim()) {
+      preview.innerHTML = '<p class="text-text-muted text-sm italic">Tulis deskripsi untuk melihat preview...</p>';
+      return;
+    }
+    // Simple markdown to HTML (server-side via API for full support)
+    preview.innerHTML = simpleMarkdown(md);
+  }
+
+  function simpleMarkdown(text: string): string {
+    let html = text
+      // Escape HTML
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      // Headings
+      .replace(/^### (.+)$/gm, '<h3 style="font-size:1.1em;font-weight:700;margin:12px 0 6px;color:#1e293b;">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 style="font-size:1.25em;font-weight:700;margin:16px 0 8px;color:#1e293b;">$1</h2>')
+      // Bold and italic
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#1e293b;">$1</strong>')
+      .replace(/_(.+?)_/g, '<em>$1</em>')
+      // Checklist
+      .replace(/^- \[ \] (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><input type="checkbox" disabled style="margin-top:3px;"><span>$1</span></div>')
+      .replace(/^- \[x\] (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><input type="checkbox" checked disabled style="margin-top:3px;"><span>$1</span></div>')
+      // Unordered list
+      .replace(/^- (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><span style="color:#10b981;font-weight:bold;">•</span><span>$1</span></div>')
+      // Ordered list (simple)
+      .replace(/^(\d+)\. (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><span style="color:#10b981;font-weight:bold;min-width:20px;">$1.</span><span>$2</span></div>')
+      // Paragraphs
+      .replace(/\n\n/g, '</p><p style="margin:8px 0;color:#475569;line-height:1.7;">')
+      .replace(/\n/g, '<br>');
+
+    return '<p style="margin:8px 0;color:#475569;line-height:1.7;">' + html + '</p>';
+  }
+
+  // Update preview on typing
+  document.getElementById('product-description')?.addEventListener('input', () => {
+    setTimeout(updatePreview, 300);
+  });
 
   // ====== GALLERY MANAGEMENT ======
   let galleryImages: string[] = [];
