@@ -16,8 +16,8 @@ export default {
         'text-muted': '#9CA3AF',
         border: '#E5E5E5',
         primary: {
-          DEFAULT: '#5C7A36',
-          hover: '#4A6628',
+          DEFAULT: '#10b981',  // emerald-500
+          hover: '#059669',    // emerald-600
         },
         secondary: '#5C7A36',
         accent: '#5C7A36',
@@ -47,7 +47,7 @@ export default {
         'float': '0 8px 24px -4px rgba(0, 0, 0, 0.04)',
         'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
         'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-        'btn-primary': '0 4px 14px rgba(92, 122, 54, 0.25)',
+        'btn-primary': '0 4px 14px rgba(16, 185, 129, 0.25)',
         'nav': '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
       },
       animation: {
