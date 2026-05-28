@@ -3,9 +3,9 @@
 // Fetches slides from /api/hero-slides on client-side
 ---
 
-<section id="hero-slider" class="relative w-full overflow-hidden bg-white" style="min-height: 420px;">
+<section id="hero-slider" class="relative w-full overflow-hidden">
   <!-- Loading skeleton -->
-  <div id="hero-loading" class="absolute inset-0 flex items-center justify-center">
+  <div id="hero-loading" class="absolute inset-0 flex items-center justify-center bg-background">
     <div class="text-text-muted text-sm">Loading...</div>
   </div>
 
@@ -19,7 +19,7 @@
         <p class="text-base sm:text-lg text-text-secondary mb-8 max-w-lg">
           Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. Bayar sekali, akses seumur hidup.
         </p>
-        <a href="/#produk" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-xl hover:bg-primary/90 transition-all shadow-lg text-base sm:text-lg">
+        <a href="/#produk" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-4 rounded-xl hover:bg-primary/90 transition-all shadow-btn-primary text-base sm:text-lg">
           Mulai Gratis
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
@@ -28,7 +28,7 @@
   </div>
 
   <!-- Slider container -->
-  <div id="hero-slides-container" class="hidden relative w-full" style="min-height: 420px;">
+  <div id="hero-slides-container" class="hidden relative w-full">
     <!-- Slides will be injected here -->
   </div>
 
@@ -92,29 +92,29 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>`
       : '';
-
-    // Mobile: full-screen portrait image, black text on top (no overlay)
+    // Mobile: full-screen portrait image, text at top
     // Desktop: text left, image right
     return `
       <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}" data-index="${index}">
-        <!-- Mobile layout: full-screen portrait image -->
-        <div class="sm:hidden relative w-full h-full">
-          <img src="${slide.image_mobile}" alt="${slide.title}" class="absolute inset-0 w-full h-full object-cover object-top" loading="${index === 0 ? 'eager' : 'lazy'}" style="min-height: 100vh;" />
-          <!-- Text on top of image (no overlay) -->
-          <div class="relative z-10 p-6 pt-10 flex flex-col justify-between" style="min-height: 100vh;">
+        <!-- Mobile layout — full screen -->
+        <div class="sm:hidden relative w-full min-h-screen flex flex-col">
+          <div class="absolute inset-0">
+            <img src="${slide.image_mobile}" alt="${slide.title}" class="w-full h-full object-cover object-top" loading="${index === 0 ? 'eager' : 'lazy'}" />
+          </div>
+          <div class="relative z-10 p-5 pt-8 flex flex-col flex-1" style="min-height: 100vh;">
             <div>
               ${badgeHtml ? `<div class="mb-3">${badgeHtml}</div>` : ''}
-              <h2 class="text-2xl sm:text-3xl font-extrabold text-black leading-tight mb-3">${slide.title}</h2>
-              ${slide.subtitle ? `<p class="text-sm sm:text-base text-black/70 mb-6 max-w-md">${slide.subtitle}</p>` : ''}
+              <h2 class="text-[28px] leading-[1.15] font-extrabold text-black mb-2">${slide.title}</h2>
+              ${slide.subtitle ? `<p class="text-sm text-black/70 mb-4 max-w-md">${slide.subtitle}</p>` : ''}
             </div>
-            <div>
-              ${ctaHtml}
+            <div class="mt-auto pb-4">
+              ${slide.cta_text ? `<a href="${linkHref}" class="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-xl shadow-btn-primary text-sm">${slide.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>` : ''}
             </div>
           </div>
         </div>
 
-        <!-- Desktop layout: text left, image right -->
-        <div class="hidden sm:flex relative w-full h-full">
+        <!-- Desktop layout -->
+        <div class="hidden sm:flex relative w-full h-full min-h-[480px] lg:min-h-[520px]">
           <div class="flex-1 flex items-center">
             <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full py-16 lg:py-20">
               <div class="max-w-xl">
@@ -126,7 +126,7 @@
             </div>
           </div>
           <div class="hidden lg:flex items-center justify-center w-[45%] pr-8">
-            <img src="${slide.image_desktop}" alt="${slide.title}" class="w-full max-h-[360px] object-contain rounded-2xl shadow-2xl" loading="${index === 0 ? 'eager' : 'lazy'}" />
+            <img src="${slide.image_desktop}" alt="${slide.title}" class="w-full max-h-[360px] object-contain rounded-2xl shadow-xl" loading="${index === 0 ? 'eager' : 'lazy'}" />
           </div>
         </div>
       </div>
