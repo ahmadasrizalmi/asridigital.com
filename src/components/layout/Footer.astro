@@ -2,17 +2,17 @@
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="bg-white pt-12 sm:pt-20 pb-8 sm:pb-12">
+<footer class="bg-white pt-12 pb-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
-    <!-- MOBILE: simplified layout -->
-    <div class="md:hidden">
+    <!-- MOBILE + SMALL TABLET: simplified layout (< 1024px) -->
+    <div class="lg:hidden">
       <h4 class="font-bold text-slate-900 text-lg mb-3">Asri Digital</h4>
       <p class="text-slate-500 text-sm mb-5 leading-relaxed">
         Solusi Bisnis Digital & AI untuk Profesional Indonesia.
       </p>
       
-      <!-- Quick links horizontal -->
+      <!-- Quick links -->
       <div class="flex flex-wrap gap-x-5 gap-y-2 mb-6 text-sm">
         <a href="/about" class="text-slate-500 hover:text-slate-900">About</a>
         <a href="/blog" class="text-slate-500 hover:text-slate-900">Blog</a>
@@ -20,14 +20,6 @@ const currentYear = new Date().getFullYear();
         <a href="/contact" class="text-slate-500 hover:text-slate-900">Support</a>
         <a href="/terms" class="text-slate-500 hover:text-slate-900">Terms</a>
         <a href="/privacy" class="text-slate-500 hover:text-slate-900">Privacy</a>
-      </div>
-
-      <!-- Newsletter -->
-      <div class="relative mb-6">
-        <input type="email" placeholder="Enter your email" class="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 text-slate-900" />
-        <button class="absolute right-1.5 top-1.5 bottom-1.5 bg-carbon text-white px-3 rounded-md transition flex items-center justify-center">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-        </button>
       </div>
 
       <!-- Social + Copyright -->
@@ -44,12 +36,12 @@ const currentYear = new Date().getFullYear();
       </div>
     </div>
 
-    <!-- TABLET + DESKTOP: full layout -->
-    <div class="hidden md:block">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-16">
+    <!-- DESKTOP: full layout (>= 1024px) -->
+    <div class="hidden lg:block">
+      <div class="grid grid-cols-4 gap-12 mb-16">
         
         <!-- Brand & Newsletter -->
-        <div class="lg:col-span-1">
+        <div class="col-span-1">
           <h4 class="font-bold text-slate-900 text-lg mb-4">Asri Digital</h4>
           <p class="text-slate-500 text-sm mb-6 leading-relaxed pr-4">
             Dapatkan inspirasi alur kerja, update software, dan tips produktivitas harian.
@@ -62,8 +54,8 @@ const currentYear = new Date().getFullYear();
           </div>
         </div>
         
-        <!-- Links Company -->
-        <div class="lg:ml-12">
+        <!-- Company -->
+        <div>
           <h5 class="font-bold text-slate-900 text-sm mb-5">Company</h5>
           <ul class="space-y-4 text-sm">
             <li><a href="/about" class="text-slate-500 hover:text-slate-900 transition-colors">About</a></li>
@@ -72,7 +64,7 @@ const currentYear = new Date().getFullYear();
           </ul>
         </div>
         
-        <!-- Links Product -->
+        <!-- Product -->
         <div>
           <h5 class="font-bold text-slate-900 text-sm mb-5">Product</h5>
           <ul class="space-y-4 text-sm">
@@ -82,7 +74,7 @@ const currentYear = new Date().getFullYear();
           </ul>
         </div>
         
-        <!-- Links Resources -->
+        <!-- Resources -->
         <div>
           <h5 class="font-bold text-slate-900 text-sm mb-5">Resources</h5>
           <ul class="space-y-4 text-sm">
@@ -93,8 +85,8 @@ const currentYear = new Date().getFullYear();
       </div>
 
       <!-- Bottom Footer -->
-      <div class="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-slate-100">
-        <p class="text-sm text-slate-400 mb-4 md:mb-0">
+      <div class="flex justify-between items-center pt-8 border-t border-slate-100">
+        <p class="text-sm text-slate-400">
           &copy; {currentYear} Asri Digital by Creator. All rights reserved.
         </p>
         <div class="flex space-x-3">
