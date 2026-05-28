@@ -1,49 +1,64 @@
 ---
-// HeroSlider.astro — Enterprise-grade hero slider
+// HeroSlider.astro — Enterprise hero slider
+// Single source of truth: API → render → go()
 ---
 
-<section id="hero-slider" class="relative w-full bg-white">
-  <!-- Loading -->
-  <div id="hero-loading" class="flex items-center justify-center h-[420px] bg-gray-50">
+<section id="hero-slider" class="relative w-full bg-white overflow-hidden">
+  <!-- Loading state -->
+  <div id="hero-loading" class="flex items-center justify-center" style="height:480px;">
     <div class="text-gray-400 text-sm">Loading...</div>
   </div>
 
-  <!-- Fallback -->
-  <div id="hero-fallback" class="hidden max-w-7xl mx-auto px-6 py-16 sm:py-20 lg:py-24">
-    <div class="max-w-2xl">
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-        Custom GPT untuk Profesional Indonesia
-      </h1>
-      <p class="text-base sm:text-lg text-gray-600 mb-8">Bayar sekali, akses seumur hidup.</p>
-      <a href="/#produk" class="inline-flex items-center gap-2 bg-teal-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-teal-700 transition-all">
-        Mulai Gratis
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </a>
+  <!-- Fallback (shown if API returns 0 slides) -->
+  <div id="hero-fallback" class="hidden">
+    <div class="max-w-7xl mx-auto px-6 py-16 sm:py-20 lg:py-24">
+      <div class="max-w-2xl">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+          Custom GPT untuk Profesional Indonesia
+        </h1>
+        <p class="text-base sm:text-lg text-gray-600 mb-8">Bayar sekali, akses seumur hidup.</p>
+        <a href="/#produk" class="inline-flex items-center gap-2 bg-teal-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-teal-700 transition-all">
+          Mulai Gratis →
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Slider viewport — clips overflow -->
-  <div id="slider-viewport" class="hidden relative overflow-hidden">
-    <!-- Slide wrapper — handles height -->
-    <div id="slide-wrapper">
-      <!-- Slides injected by JS -->
-    </div>
+  <!-- Slider viewport -->
+  <div id="slider-wrap" class="hidden relative" style="overflow:hidden;">
+    <!-- Slides rendered here by JS -->
+    <div id="slider-track"></div>
 
-    <!-- Prev/Next arrows (desktop only) -->
-    <button id="slider-prev" class="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors" aria-label="Previous">
+    <!-- Prev/Next arrows -->
+    <button id="s-prev" class="hidden lg:flex absolute left-4 top-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white/90 shadow-lg border border-gray-200 hover:bg-white transition cursor-pointer" style="transform:translateY(-50%);" aria-label="Previous">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button id="slider-next" class="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors" aria-label="Next">
+    <button id="s-next" class="hidden lg:flex absolute right-4 top-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white/90 shadow-lg border border-gray-200 hover:bg-white transition cursor-pointer" style="transform:translateY(-50%);" aria-label="Next">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </button>
-  </div>
 
-  <!-- Dots -->
-  <div id="slider-dots" class="hidden absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2"></div>
+    <!-- Dots -->
+    <div id="s-dots" class="absolute bottom-5 left-1/2 z-30 flex items-center gap-2" style="transform:translateX(-50%);"></div>
+  </div>
 </section>
 
+<style>
+  /* Hide all slides except active */
+  #slider-track .slide { display:none; }
+  #slider-track .slide.active { display:block; }
+
+  /* Smooth fade */
+  #slider-track .slide.active {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0.4; }
+    to   { opacity: 1; }
+  }
+</style>
+
 <script>
-  interface HeroSlide {
+  interface Slide {
     id: string; title: string; subtitle: string | null;
     cta_text: string | null; cta_link: string | null;
     image_desktop: string; image_mobile: string;
@@ -52,18 +67,18 @@
     sort_order: number; is_active: number;
   }
 
-  const slides: HeroSlide[] = [];
-  let currentSlide = 0;
+  const DATA: Slide[] = [];
+  let cur = 0;
   let timer: ReturnType<typeof setInterval> | null = null;
 
-  const badgeColors: Record<string,string> = {
+  const COLORS: Record<string,string> = {
     primary: 'bg-teal-600 text-white',
-    amber: 'bg-amber-400 text-amber-900',
-    green: 'bg-green-500 text-white',
-    red: 'bg-red-500 text-white',
+    amber:   'bg-amber-400 text-amber-900',
+    green:   'bg-green-500 text-white',
+    red:     'bg-red-500 text-white',
   };
 
-  function href(s: HeroSlide): string {
+  function link(s: Slide): string {
     if (s.cta_link) return s.cta_link;
     if (s.link_type === 'product' && s.link_target) return '/product/' + s.link_target;
     if (s.link_type === 'blog' && s.link_target) return '/blog/' + s.link_target;
@@ -71,108 +86,109 @@
     return s.link_target || '#';
   }
 
-  function renderAll(): void {
-    const wrapper = document.getElementById('slide-wrapper')!;
-    wrapper.innerHTML = slides.map((s, i) => {
-      const active = i === 0;
-      const badge = s.badge_text ? `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm ${badgeColors[s.badge_color]||badgeColors.primary}">${s.badge_text}</span>` : '';
-      const cta = s.cta_text ? `<a href="${href(s)}" class="inline-flex items-center gap-2 bg-teal-600 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-teal-700 transition-all shadow-lg text-sm sm:text-base">${s.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>` : '';
-      const badgeDiv = badge ? `<div class="mb-3">${badge}</div>` : '';
-      const sub = s.subtitle ? `<p class="text-sm sm:text-base lg:text-lg text-gray-500 mb-6 max-w-lg">${s.subtitle}</p>` : '';
-      const arrows = `<div class="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white/90 shadow-lg border border-gray-200 hover:bg-white transition cursor-pointer" onclick="sliderPrev()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div><div class="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 items-center justify-center rounded-full bg-white/90 shadow-lg border border-gray-200 hover:bg-white transition cursor-pointer" onclick="sliderNext()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>`;
-
-      return `
-        <div class="hero-slide ${active?'':'absolute top-0 left-0 w-full opacity-0 pointer-events-none'}" data-idx="${i}" style="transition:opacity 0.5s ease-in-out;">
-          <!-- Mobile -->
-          <div class="sm:hidden relative" style="height:100svh;">
-            <img src="${s.image_mobile}" alt="${s.title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;" loading="${i===0?'eager':'lazy'}" />
-            <div class="relative z-10 flex flex-col justify-between h-full p-6" style="padding-top:40px;padding-bottom:48px;">
-              <div>${badgeDiv}<h2 class="text-3xl font-extrabold text-gray-900 leading-tight mb-2">${s.title}</h2>${sub}</div>
-              <div>${cta}</div>
-            </div>
-            ${arrows}
-          </div>
-          <!-- Tablet -->
-          <div class="hidden sm:flex lg:hidden relative bg-gray-50" style="height:420px;">
-            <div class="flex-1 flex items-center"><div class="px-10 py-10 max-w-lg">${badgeDiv}<h2 class="text-3xl font-extrabold text-gray-900 leading-tight mb-3">${s.title}</h2>${sub}<div>${cta}</div></div></div>
-            <div class="w-2/5"><img src="${s.image_desktop}" alt="${s.title}" class="w-full h-full object-cover" loading="${i===0?'eager':'lazy'}" /></div>
-            ${arrows}
-          </div>
-          <!-- Desktop -->
-          <div class="hidden lg:flex relative bg-gray-50" style="height:480px;">
-            <div class="flex-1 flex items-center"><div class="pl-16 xl:pl-24 pr-8 max-w-xl">${badgeDiv}<h2 class="text-4xl xl:text-5xl font-extrabold text-gray-900 leading-tight mb-4">${s.title}</h2>${sub}<div>${cta}</div></div></div>
-            <div class="w-2/5 xl:w-[45%] flex items-center justify-center p-8"><img src="${s.image_desktop}" alt="${s.title}" class="w-full max-h-[420px] object-contain rounded-2xl shadow-2xl" loading="${i===0?'eager':'lazy'}" /></div>
-            ${arrows}
-          </div>
-        </div>`;
-    }).join('');
+  function badge(s: Slide): string {
+    if (!s.badge_text) return '';
+    return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm ${COLORS[s.badge_color]||COLORS.primary}">${s.badge_text}</span>`;
   }
 
-  function go(idx: number) {
-    if (idx === currentSlide) return;
-    const all = document.querySelectorAll('.hero-slide');
-    all.forEach((el, i) => {
-      if (i === idx) {
-        el.classList.remove('absolute','top-0','left-0','w-full','opacity-0','pointer-events-none');
-        (el as HTMLElement).style.opacity = '1';
-      } else {
-        (el as HTMLElement).style.opacity = '0';
-        el.classList.add('absolute','top-0','left-0','w-full','pointer-events-none');
-      }
+  function cta(s: Slide): string {
+    if (!s.cta_text) return '';
+    return `<a href="${link(s)}" class="inline-flex items-center gap-2 bg-teal-600 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-teal-700 transition-all shadow-lg text-sm sm:text-base">${s.cta_text} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>`;
+  }
+
+  function renderSlides(): void {
+    const track = document.getElementById('slider-track')!;
+    track.innerHTML = DATA.map((s, i) => `
+      <div class="slide${i === 0 ? ' active' : ''}" data-idx="${i}">
+        <!-- MOBILE: full viewport portrait -->
+        <div class="sm:hidden" style="position:relative;width:100%;height:100svh;overflow:hidden;">
+          <img src="${s.image_mobile}" alt="${s.title}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;" loading="${i===0?'eager':'lazy'}" />
+          <div style="position:relative;z-index:10;display:flex;flex-direction:column;justify-content:space-between;height:100%;padding:48px 24px 56px;">
+            <div>${badge(s)}<h2 style="font-size:30px;line-height:1.15;font-weight:800;color:#171717;margin:12px 0 8px;">${s.title}</h2>${s.subtitle?`<p style="font-size:15px;color:#525252;max-width:28rem;">${s.subtitle}</p>`:''}</div>
+            <div>${cta(s)}</div>
+          </div>
+        </div>
+        <!-- TABLET: side-by-side -->
+        <div class="hidden sm:flex lg:hidden" style="position:relative;width:100%;height:420px;background:#f9fafb;">
+          <div style="flex:1;display:flex;align-items:center;padding:40px;">
+            <div style="max-width:28rem;">${badge(s)}<h2 style="font-size:30px;line-height:1.2;font-weight:800;color:#171717;margin:12px 0 12px;">${s.title}</h2>${s.subtitle?`<p style="font-size:16px;color:#525252;margin-bottom:24px;">${s.subtitle}</p>`:''}${cta(s)}</div>
+          </div>
+          <div style="width:40%;overflow:hidden;"><img src="${s.image_desktop}" alt="${s.title}" style="width:100%;height:100%;object-fit:cover;" loading="${i===0?'eager':'lazy'}" /></div>
+        </div>
+        <!-- DESKTOP: side-by-side wide -->
+        <div class="hidden lg:flex" style="position:relative;width:100%;height:480px;background:#f9fafb;">
+          <div style="flex:1;display:flex;align-items:center;padding-left:64px;">
+            <div style="max-width:36rem;">${badge(s)}<h2 style="font-size:48px;line-height:1.1;font-weight:800;color:#171717;margin:16px 0 16px;">${s.title}</h2>${s.subtitle?`<p style="font-size:18px;color:#525252;margin-bottom:32px;">${s.subtitle}</p>`:''}${cta(s)}</div>
+          </div>
+          <div style="width:42%;display:flex;align-items:center;justify-content:center;padding:32px;"><img src="${s.image_desktop}" alt="${s.title}" style="max-height:420px;max-width:100%;object-fit:contain;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);" loading="${i===0?'eager':'lazy'}" /></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderDots(): void {
+    const el = document.getElementById('s-dots')!;
+    if (DATA.length <= 1) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+    el.innerHTML = DATA.map((_, i) =>
+      `<button onclick="window.__sliderGo(${i})" aria-label="Slide ${i+1}" style="width:10px;height:10px;border-radius:50%;border:none;cursor:pointer;background:${i===0?'#171717':'rgba(115,115,115,0.4)'};transition:background .3s;"></button>`
+    ).join('');
+  }
+
+  function go(idx: number): void {
+    if (idx === cur) return;
+    document.querySelectorAll('#slider-track .slide').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
     });
-    // dots
-    document.querySelectorAll('#slider-dots button').forEach((d, i) => {
-      (d as HTMLElement).style.background = i === idx ? '#171717' : 'rgba(115,115,115,0.4)';
+    document.querySelectorAll('#s-dots button').forEach((b, i) => {
+      (b as HTMLElement).style.background = i === idx ? '#171717' : 'rgba(115,115,115,0.4)';
     });
-    currentSlide = idx;
+    cur = idx;
   }
 
-  (window as any).sliderPrev = function() { go((currentSlide - 1 + slides.length) % slides.length); resetTimer(); };
-  (window as any).sliderNext = function() { go((currentSlide + 1) % slides.length); resetTimer(); };
+  function next(): void { go((cur + 1) % DATA.length); }
+  function prev(): void { go((cur - 1 + DATA.length) % DATA.length); }
 
-  function autoPlay() { timer = setInterval(() => go((currentSlide+1)%slides.length), 5000); }
-  function resetTimer() { if(timer) clearInterval(timer); autoPlay(); }
+  function startAuto(): void { stopAuto(); timer = setInterval(next, 5000); }
+  function stopAuto(): void { if (timer) { clearInterval(timer); timer = null; } }
 
-  function renderDots(n: number) {
-    const c = document.getElementById('slider-dots')!;
-    if (n <= 1) { c.classList.add('hidden'); return; }
-    c.classList.remove('hidden');
-    c.innerHTML = Array.from({length:n}, (_,i) => `<button onclick="go(${i});resetTimer()" style="width:10px;height:10px;border-radius:50%;background:${i===0?'#171717':'rgba(115,115,115,0.4)'};transition:background 0.3s;" aria-label="Slide ${i+1}"></button>`).join('');
-  }
-
-  (window as any).go = go;
-  (window as any).resetTimer = resetTimer;
+  // Expose for inline onclick
+  (window as any).__sliderGo = function(idx: number) { go(idx); startAuto(); };
 
   async function init() {
     try {
       const res = await fetch('/api/hero-slides');
-      const data = await res.json();
-      const fetched = (data.slides || []) as HeroSlide[];
-      slides.push(...fetched);
+      const json = await res.json();
+      const list = (json.slides || []) as Slide[];
+      DATA.push(...list);
 
       document.getElementById('hero-loading')!.classList.add('hidden');
 
-      if (slides.length === 0) {
+      if (DATA.length === 0) {
         document.getElementById('hero-fallback')!.classList.remove('hidden');
         return;
       }
 
-      document.getElementById('slider-viewport')!.classList.remove('hidden');
-      renderAll();
-      renderDots(slides.length);
-      autoPlay();
+      document.getElementById('slider-wrap')!.classList.remove('hidden');
+      renderSlides();
+      renderDots();
+      startAuto();
+
+      // Arrow buttons
+      document.getElementById('s-prev')!.addEventListener('click', () => { prev(); startAuto(); });
+      document.getElementById('s-next')!.addEventListener('click', () => { next(); startAuto(); });
 
       // Touch swipe
       let x0 = 0;
-      const vp = document.getElementById('slider-viewport')!;
-      vp.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; if(timer) clearInterval(timer); }, {passive:true});
-      vp.addEventListener('touchend', e => {
+      const wrap = document.getElementById('slider-wrap')!;
+      wrap.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; stopAuto(); }, {passive:true});
+      wrap.addEventListener('touchend', e => {
         const dx = x0 - e.changedTouches[0].clientX;
-        if (Math.abs(dx) > 50) { dx > 0 ? (window as any).sliderNext() : (window as any).sliderPrev(); }
-        else autoPlay();
+        if (Math.abs(dx) > 50) { dx > 0 ? next() : prev(); }
+        startAuto();
       }, {passive:true});
 
-    } catch(err) {
+    } catch (err) {
       console.error('Hero slider failed:', err);
       document.getElementById('hero-loading')!.classList.add('hidden');
       document.getElementById('hero-fallback')!.classList.remove('hidden');
