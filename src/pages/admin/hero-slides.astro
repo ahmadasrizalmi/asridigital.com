@@ -1,0 +1,523 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+---
+
+<BaseLayout title="Kelola Hero Slides - Admin Asri Digital">
+  <div class="flex min-h-screen">
+    <aside id="admin-sidebar" class="w-64 bg-surface border-r border-border shrink-0 fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
+      <div class="sticky top-0 h-screen overflow-y-auto p-4">
+        <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
+          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <Icon name="sparkles" size={18} class="text-white" />
+          </div>
+          <div>
+            <span class="font-bold text-text-primary block">Asri Digital</span>
+            <span class="text-xs text-text-muted">Admin Panel</span>
+          </div>
+        </a>
+        
+        <nav class="space-y-1">
+          {[
+            { icon: 'bar-chart', label: 'Dashboard', href: '/admin' },
+            { icon: 'sparkles', label: 'Produk', href: '/admin/products' },
+            { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders' },
+            { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
+            { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'image', label: 'Hero Slides', href: '/admin/hero-slides', active: true },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
+            { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
+          ].map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
+              <Icon name={link.icon} size={18} />
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        
+        <div class="mt-8 pt-4 border-t border-border">
+          <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-background transition-colors">
+            <Icon name="external-link" size={18} />
+            Lihat Website
+          </a>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full');this.classList.add('hidden')"></div>
+    
+    <main class="flex-1 bg-background">
+      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
+              <Icon name="menu" size={24} class="text-text-secondary" />
+            </button>
+            <div>
+              <h1 class="text-xl font-bold text-text-primary">Hero Slides</h1>
+              <p class="text-xs text-text-muted">Kelola slider hero homepage</p>
+            </div>
+          </div>
+          
+          <button onclick="openModal()" class="btn-primary">
+            <Icon name="plus" size={18} />
+            Tambah Slide
+          </button>
+        </div>
+      </header>
+      
+      <div class="p-4 sm:p-6">
+        <!-- Slides list -->
+        <div id="slides-container" class="space-y-4">
+          <div class="text-center py-12 text-text-muted">Loading...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Slide Modal -->
+  <div id="slide-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-border">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-text-primary" id="modal-title">Tambah Slide</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-background rounded-lg">
+              <Icon name="x" size={20} class="text-text-secondary" />
+            </button>
+          </div>
+        </div>
+        
+        <form id="slide-form" class="p-6 space-y-4">
+          <input type="hidden" id="slide-id" />
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Judul Slide *</label>
+            <input type="text" id="slide-title" class="input" required placeholder="Custom GPT untuk Profesional Indonesia" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Subtitle</label>
+            <textarea id="slide-subtitle" class="input" rows="2" placeholder="Deskripsi singkat slide..."></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Teks CTA</label>
+              <input type="text" id="slide-cta-text" class="input" placeholder="Beli Sekarang" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Link CTA</label>
+              <input type="text" id="slide-cta-link" class="input" placeholder="#all-access atau /product/xxx" />
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Link Type</label>
+              <select id="slide-link-type" class="input">
+                <option value="none">Tidak ada</option>
+                <option value="product">Produk</option>
+                <option value="blog">Blog</option>
+                <option value="page">Halaman</option>
+                <option value="custom">Custom URL</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Link Target (slug/URL)</label>
+              <input type="text" id="slide-link-target" class="input" placeholder="slug produk atau URL" />
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Gambar Desktop *</label>
+            <input type="url" id="slide-image-desktop" class="input" required placeholder="https://res.cloudinary.com/xxx/desktop.png" />
+            <div id="preview-desktop" class="mt-2 hidden">
+              <img id="preview-desktop-img" src="" alt="Preview" class="w-full h-40 object-cover rounded-lg border border-border" />
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Gambar Mobile *</label>
+            <input type="url" id="slide-image-mobile" class="input" required placeholder="https://res.cloudinary.com/xxx/mobile.png" />
+            <div id="preview-mobile" class="mt-2 hidden">
+              <img id="preview-mobile-img" src="" alt="Preview" class="w-full h-32 object-cover rounded-lg border border-border" />
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Badge Teks</label>
+              <input type="text" id="slide-badge-text" class="input" placeholder="🚀 Promo" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Badge Warna</label>
+              <select id="slide-badge-color" class="input">
+                <option value="primary">Primary</option>
+                <option value="amber">Amber/Kuning</option>
+                <option value="green">Hijau</option>
+                <option value="red">Merah</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Urutan</label>
+              <input type="number" id="slide-sort-order" class="input" value="0" min="0" />
+            </div>
+          </div>
+          
+          <div>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="slide-active" class="rounded" checked />
+              <span class="text-sm text-text-main">Aktif</span>
+            </label>
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-4 border-t border-border">
+            <button type="button" onclick="closeModal()" class="btn-tertiary">Batal</button>
+            <button type="submit" class="btn-primary">Simpan Slide</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('admin-sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) overlay.classList.toggle('hidden');
+      });
+    }
+  });
+</script>
+
+<script>
+  // Auth guard
+  if (!localStorage.getItem('admin_token')) {
+    window.location.href = '/admin/login';
+  }
+
+  const API_BASE = '/api';
+
+  function getAdminToken(): string | null {
+    return localStorage.getItem('admin_token');
+  }
+
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  interface HeroSlide {
+    id: string;
+    title: string;
+    subtitle: string | null;
+    cta_text: string | null;
+    cta_link: string | null;
+    image_desktop: string;
+    image_mobile: string;
+    link_type: string;
+    link_target: string | null;
+    badge_text: string | null;
+    badge_color: string;
+    sort_order: number;
+    is_active: number;
+    created_at: string;
+    updated_at: string;
+  }
+
+  function getBadgeColorClasses(color: string): string {
+    const map: Record<string, string> = {
+      primary: 'bg-primary/10 text-primary',
+      amber: 'bg-amber-100 text-amber-700',
+      green: 'bg-green-100 text-green-700',
+      red: 'bg-red-100 text-red-700',
+    };
+    return map[color] || map.primary;
+  }
+
+  function renderSlides(slides: HeroSlide[]) {
+    const container = document.getElementById('slides-container')!;
+    if (slides.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-12 bg-surface rounded-xl border border-border">
+          <div class="w-16 h-16 mx-auto mb-4 bg-background rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-text-primary mb-2">Belum ada hero slides</h3>
+          <p class="text-sm text-text-muted mb-4">Tambahkan slide pertama untuk menampilkan slider di homepage</p>
+          <button onclick="openModal()" class="btn-primary">+ Tambah Slide</button>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = slides.map((slide, i) => `
+      <div class="bg-surface rounded-xl border border-border overflow-hidden" data-id="${slide.id}">
+        <div class="flex flex-col sm:flex-row">
+          <!-- Preview image -->
+          <div class="sm:w-64 h-40 sm:h-auto bg-background shrink-0 relative">
+            <img src="${slide.image_desktop}" alt="${slide.title}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 100%22><rect fill=%22%23f3f4f6%22 width=%22200%22 height=%22100%22/><text x=%22100%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2212%22>No Image</text></svg>'" />
+            ${slide.badge_text ? `<span class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold ${getBadgeColorClasses(slide.badge_color)}">${slide.badge_text}</span>` : ''}
+          </div>
+          
+          <!-- Info -->
+          <div class="flex-1 p-4 sm:p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <h3 class="font-bold text-base text-text-primary truncate">${slide.title}</h3>
+                ${slide.subtitle ? `<p class="text-sm text-text-muted mt-1 line-clamp-2">${slide.subtitle}</p>` : ''}
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                  <span class="text-xs px-2 py-0.5 rounded ${slide.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${slide.is_active ? 'Aktif' : 'Nonaktif'}</span>
+                  <span class="text-xs text-text-muted">Urutan: ${slide.sort_order}</span>
+                  ${slide.cta_text ? `<span class="text-xs text-text-muted">CTA: ${slide.cta_text}</span>` : ''}
+                  ${slide.link_type !== 'none' ? `<span class="text-xs px-2 py-0.5 rounded bg-background text-text-secondary">${slide.link_type}: ${slide.link_target || '-'}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-2 mt-4 pt-3 border-t border-border">
+              <button onclick='editSlide(${JSON.stringify(slide).replace(/'/g, "&#39;")})' class="btn-tertiary text-xs px-3 py-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <button onclick="toggleSlide('${slide.id}', ${slide.is_active})" class="btn-tertiary text-xs px-3 py-1.5 ${slide.is_active ? 'text-green-600' : 'text-text-muted'}">
+                ${slide.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+              </button>
+              ${i > 0 ? `<button onclick="moveSlide('${slide.id}', -1)" class="btn-tertiary text-xs px-2 py-1.5" title="Naik">▲</button>` : ''}
+              ${i < slides.length - 1 ? `<button onclick="moveSlide('${slide.id}', 1)" class="btn-tertiary text-xs px-2 py-1.5" title="Turun">▼</button>` : ''}
+              <button onclick="deleteSlide('${slide.id}')" class="btn-tertiary text-xs px-3 py-1.5 text-red-600 ml-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function loadSlides() {
+    try {
+      const token = getAdminToken();
+      const res = await fetch(`${API_BASE}/admin/hero-slides`, {
+        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
+      });
+      const data = await res.json() as any;
+      renderSlides(data.slides || []);
+    } catch (err) {
+      console.error('Error loading slides:', err);
+      document.getElementById('slides-container')!.innerHTML = '<div class="text-center py-12 text-red-500">Gagal memuat slides</div>';
+    }
+  }
+
+  function openModal(slide?: HeroSlide) {
+    const modal = document.getElementById('slide-modal')!;
+    const title = document.getElementById('modal-title')!;
+    
+    if (slide) {
+      title.textContent = 'Edit Slide';
+      (document.getElementById('slide-id') as HTMLInputElement).value = slide.id;
+      (document.getElementById('slide-title') as HTMLInputElement).value = slide.title;
+      (document.getElementById('slide-subtitle') as HTMLTextAreaElement).value = slide.subtitle || '';
+      (document.getElementById('slide-cta-text') as HTMLInputElement).value = slide.cta_text || '';
+      (document.getElementById('slide-cta-link') as HTMLInputElement).value = slide.cta_link || '';
+      (document.getElementById('slide-link-type') as HTMLSelectElement).value = slide.link_type || 'none';
+      (document.getElementById('slide-link-target') as HTMLInputElement).value = slide.link_target || '';
+      (document.getElementById('slide-image-desktop') as HTMLInputElement).value = slide.image_desktop;
+      (document.getElementById('slide-image-mobile') as HTMLInputElement).value = slide.image_mobile;
+      (document.getElementById('slide-badge-text') as HTMLInputElement).value = slide.badge_text || '';
+      (document.getElementById('slide-badge-color') as HTMLSelectElement).value = slide.badge_color || 'primary';
+      (document.getElementById('slide-sort-order') as HTMLInputElement).value = String(slide.sort_order || 0);
+      (document.getElementById('slide-active') as HTMLInputElement).checked = slide.is_active === 1;
+
+      // Show previews
+      const previewDesktop = document.getElementById('preview-desktop')!;
+      const previewDesktopImg = document.getElementById('preview-desktop-img') as HTMLImageElement;
+      if (slide.image_desktop) {
+        previewDesktop.classList.remove('hidden');
+        previewDesktopImg.src = slide.image_desktop;
+      }
+      const previewMobile = document.getElementById('preview-mobile')!;
+      const previewMobileImg = document.getElementById('preview-mobile-img') as HTMLImageElement;
+      if (slide.image_mobile) {
+        previewMobile.classList.remove('hidden');
+        previewMobileImg.src = slide.image_mobile;
+      }
+    } else {
+      title.textContent = 'Tambah Slide';
+      (document.getElementById('slide-form') as HTMLFormElement).reset();
+      (document.getElementById('slide-id') as HTMLInputElement).value = '';
+      (document.getElementById('slide-active') as HTMLInputElement).checked = true;
+      document.getElementById('preview-desktop')!.classList.add('hidden');
+      document.getElementById('preview-mobile')!.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('slide-modal')!.classList.add('hidden');
+  }
+
+  // Image preview on URL paste
+  document.getElementById('slide-image-desktop')?.addEventListener('change', (e) => {
+    const url = (e.target as HTMLInputElement).value;
+    const preview = document.getElementById('preview-desktop')!;
+    const img = document.getElementById('preview-desktop-img') as HTMLImageElement;
+    if (url) {
+      preview.classList.remove('hidden');
+      img.src = url;
+    } else {
+      preview.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('slide-image-mobile')?.addEventListener('change', (e) => {
+    const url = (e.target as HTMLInputElement).value;
+    const preview = document.getElementById('preview-mobile')!;
+    const img = document.getElementById('preview-mobile-img') as HTMLImageElement;
+    if (url) {
+      preview.classList.remove('hidden');
+      img.src = url;
+    } else {
+      preview.classList.add('hidden');
+    }
+  });
+
+  // Expose to global scope
+  (window as any).openModal = openModal;
+  (window as any).closeModal = closeModal;
+
+  (window as any).editSlide = function(slide: HeroSlide) {
+    openModal(slide);
+  };
+
+  document.getElementById('slide-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = (document.getElementById('slide-id') as HTMLInputElement).value;
+    const body = {
+      title: (document.getElementById('slide-title') as HTMLInputElement).value,
+      subtitle: (document.getElementById('slide-subtitle') as HTMLTextAreaElement).value || null,
+      cta_text: (document.getElementById('slide-cta-text') as HTMLInputElement).value || null,
+      cta_link: (document.getElementById('slide-cta-link') as HTMLInputElement).value || null,
+      link_type: (document.getElementById('slide-link-type') as HTMLSelectElement).value,
+      link_target: (document.getElementById('slide-link-target') as HTMLInputElement).value || null,
+      image_desktop: (document.getElementById('slide-image-desktop') as HTMLInputElement).value,
+      image_mobile: (document.getElementById('slide-image-mobile') as HTMLInputElement).value,
+      badge_text: (document.getElementById('slide-badge-text') as HTMLInputElement).value || null,
+      badge_color: (document.getElementById('slide-badge-color') as HTMLSelectElement).value,
+      sort_order: parseInt((document.getElementById('slide-sort-order') as HTMLInputElement).value) || 0,
+      is_active: (document.getElementById('slide-active') as HTMLInputElement).checked,
+    };
+
+    try {
+      const token = getAdminToken();
+      const url = id ? `${API_BASE}/admin/hero-slides/${id}` : `${API_BASE}/admin/hero-slides`;
+      const method = id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        closeModal();
+        loadSlides();
+      } else {
+        alert(data.error || 'Gagal menyimpan slide');
+      }
+    } catch (err) {
+      alert('Error: ' + err);
+    }
+  });
+
+  (window as any).toggleSlide = async function(id: string, currentActive: number) {
+    try {
+      const token = getAdminToken();
+      await fetch(`${API_BASE}/admin/hero-slides/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ is_active: currentActive ? 0 : 1 })
+      });
+      loadSlides();
+    } catch (err) {
+      alert('Error: ' + err);
+    }
+  };
+
+  (window as any).deleteSlide = async function(id: string) {
+    if (!confirm('Yakin ingin menghapus slide ini?')) return;
+    try {
+      const token = getAdminToken();
+      await fetch(`${API_BASE}/admin/hero-slides/${id}`, {
+        method: 'DELETE',
+        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
+      });
+      loadSlides();
+    } catch (err) {
+      alert('Error: ' + err);
+    }
+  };
+
+  (window as any).moveSlide = async function(id: string, direction: number) {
+    try {
+      const token = getAdminToken();
+      const res = await fetch(`${API_BASE}/admin/hero-slides`, {
+        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
+      });
+      const data = await res.json() as any;
+      const slides = data.slides || [];
+      const idx = slides.findIndex((s: HeroSlide) => s.id === id);
+      if (idx < 0) return;
+
+      const newOrder = slides.map((s: HeroSlide, i: number) => ({
+        id: s.id,
+        sort_order: i
+      }));
+
+      // Swap
+      const temp = newOrder[idx].sort_order;
+      newOrder[idx].sort_order = newOrder[idx + direction].sort_order;
+      newOrder[idx + direction].sort_order = temp;
+
+      await fetch(`${API_BASE}/admin/hero-slides/reorder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ order: newOrder })
+      });
+      loadSlides();
+    } catch (err) {
+      alert('Error: ' + err);
+    }
+  };
+
+  // Load on init
+  loadSlides();
+</script>

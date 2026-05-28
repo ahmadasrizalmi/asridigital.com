@@ -4,6 +4,8 @@ import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import ProductCard from '../components/marketing/ProductCard.astro';
 import FeaturedProductCard from '../components/marketing/FeaturedProductCard.astro';
+import HeroSlider from '../components/marketing/HeroSlider.astro';
+import PromoCard from '../components/marketing/PromoCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
 import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
@@ -154,75 +156,11 @@ const stats = [
   <Header />
   
   <main class="flex-1">
-    {/* HERO SECTION */}
-    <section class="relative py-20 lg:py-32 bg-surface overflow-hidden">
-      {/* Subtle Background Decoration */}
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-      </div>
-      
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-4xl mx-auto">
-          {/* Announcement Badge */}
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-8 animate-fade-in">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <span class="text-sm text-primary font-medium">🚀 Promo Launching - Diskon 50%</span>
-          </div>
-          
-          {/* Main Heading */}
-          <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 animate-slide-up text-text-primary">
-            Custom GPT untuk
-            <span class="text-primary">Profesional Indonesia</span>
-          </h1>
-          
-          {/* Subheading */}
-          <p class="text-xl text-text-secondary mb-10 max-w-2xl mx-auto animate-slide-up" style="animation-delay: 0.1s">
-            Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. 
-            <strong class="text-text-main">Bayar sekali, akses seumur hidup.</strong>
-          </p>
-          
-          {/* CTA Buttons */}
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-12 animate-slide-up" style="animation-delay: 0.2s">
-            <a 
-              href="#all-access" 
-              class="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto justify-center"
-            >
-              <Icon name="crown" size={18} class="sm:w-5" />
-              <span>Beli All-Access Pass</span>
-            </a>
-            <a 
-              href="#produk" 
-              class="btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto justify-center"
-            >
-              <Icon name="eye" size={18} class="sm:w-5" />
-              <span>Lihat Produk</span>
-            </a>
-          </div>
-          
-          {/* Price Preview */}
-          <div class="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-text-muted animate-slide-up text-xs sm:text-sm" style="animation-delay: 0.3s">
-            <span class="flex items-center gap-1.5">
-              <Icon name="shield" size={14} class="text-primary" />
-              Garansi 7 hari
-            </span>
-            <span class="hidden sm:inline">•</span>
-            <span class="flex items-center gap-1.5">
-              <Icon name="lock" size={14} class="text-primary" />
-              Pembayaran aman
-            </span>
-            <span class="hidden sm:inline">•</span>
-            <span class="flex items-center gap-1.5">
-              <Icon name="zap" size={14} class="text-primary" />
-              Akses instant
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
+    {/* HERO SLIDER */}
+    <HeroSlider />
+
+    {/* PROMO CARD — Lifetime All-Access Pass */}
+    <PromoCard />
 
     {/* SOCIAL PROOF BAR */}
     <section class="py-6 border-y border-border bg-background">
@@ -239,100 +177,6 @@ const stats = [
               </div>
             </div>
           ))}
-        </div>
-      </div>
-    </section>
-
-    {/* ALL-ACCESS PASS */}
-    <section id="all-access" class="py-20 scroll-mt-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="relative card overflow-hidden">
-          {/* Subtle Gradient */}
-          <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5"></div>
-          
-          <div class="relative p-6 sm:p-8 md:p-12 lg:p-16">
-            <div class="flex flex-col lg:flex-row items-start gap-6 sm:gap-8 lg:gap-12">
-              {/* Left Content */}
-              <div class="flex-1 min-w-0">
-                <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 text-amber-700 rounded-full font-semibold mb-4 sm:mb-6 text-xs sm:text-sm">
-                  <Icon name="crown" size={14} class="sm:w-4" />
-                  <span>BEST VALUE</span>
-                </div>
-
-                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-text-primary leading-tight">
-                  Lifetime
-                  <span class="text-primary block sm:inline"> All-Access Pass</span>
-                </h2>
-
-                <div class="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-6 sm:mb-8">
-                  <span class="text-4xl sm:text-5xl font-extrabold text-text-primary">{formatIDR(allAccessProduct.price)}</span>
-                  <span class="text-xl sm:text-2xl text-text-muted line-through">{formatIDR(allAccessProduct.compareAtPrice!)}</span>
-                  <span class="badge-danger text-sm sm:text-lg px-2 sm:px-3 py-1 sm:py-1.5 inline-flex items-center whitespace-nowrap">
-                    HEMAT 50%
-                  </span>
-                </div>
-                
-                <ul class="space-y-3 sm:space-y-4 mb-6 sm:mb-10">
-                  {[
-                    'Akses SEMUA GPT yang ada & akan datang',
-                    'Update lifetime gratis',
-                    'Prioritas support',
-                    'Komunitas eksklusif',
-                  ].map((feature) => (
-                    <li class="flex items-start gap-2 sm:gap-3 text-text-main text-sm sm:text-base">
-                      <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <Icon name="check" size={10} class="sm:w-3.5 text-primary" />
-                      </div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <a 
-                  href={`/checkout?product=${allAccessProduct.slug}`}
-                  class="btn-primary text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 inline-flex w-full sm:w-auto justify-center"
-                >
-                  <Icon name="zap" size={18} class="sm:w-5" />
-                  <span class="whitespace-nowrap">Dapatkan All-Access Sekarang</span>
-                </a>
-                
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-4 sm:mt-6 text-xs sm:text-sm text-text-muted text-center sm:text-left">
-                  <div class="flex items-center gap-1.5 sm:gap-2 justify-center">
-                    <Icon name="shield" size={14} class="text-primary" />
-                    <span>Garansi 7 hari</span>
-                  </div>
-                  <span class="hidden sm:inline">•</span>
-                  <div class="flex items-center gap-1.5 sm:gap-2 justify-center">
-                    <Icon name="lock" size={14} class="text-primary" />
-                    <span>Sekali bayar, akses seumur hidup</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Right Visual */}
-              <div class="hidden lg:block w-80 shrink-0">
-                <div class="card p-6 text-center">
-                  <div class="w-20 h-20 mx-auto mb-4 bg-amber-100 rounded-2xl flex items-center justify-center">
-                    <Icon name="crown" size={40} class="text-amber-600" />
-                  </div>
-                  <h3 class="text-xl font-bold mb-2 text-text-primary">VIP Member</h3>
-                  <p class="text-sm text-text-secondary mb-4">Akses unlimited ke semua produk</p>
-                  <div class="space-y-2">
-                    {products.map((p) => (
-                      <div class="flex items-center gap-2 text-sm text-text-secondary">
-                        <Icon name="check-circle" size={16} class="text-primary" />
-                        <span class="truncate">{p.title}</span>
-                      </div>
-                    ))}
-                    <div class="flex items-center gap-2 text-sm text-text-muted">
-                      <Icon name="plus" size={16} />
-                      <span>Dan produk lainnya...</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

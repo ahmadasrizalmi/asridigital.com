@@ -1931,6 +1931,104 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true });
     }
 
+    // ==================== PUBLIC: HERO SLIDES ====================
+    if (route === '/hero-slides' && method === 'GET') {
+      try {
+        const slides = await env.DB.prepare(
+          'SELECT * FROM hero_slides WHERE is_active = 1 ORDER BY sort_order ASC'
+        ).all();
+        return jsonResponse({ slides: slides.results });
+      } catch (e) {
+        // Table might not exist yet
+        return jsonResponse({ slides: [] });
+      }
+    }
+
+    // ==================== ADMIN: HERO SLIDES LIST ====================
+    if (route === '/admin/hero-slides' && method === 'GET') {
+      const slides = await env.DB.prepare(
+        'SELECT * FROM hero_slides ORDER BY sort_order ASC'
+      ).all();
+      return jsonResponse({ slides: slides.results });
+    }
+
+    // ==================== ADMIN: CREATE HERO SLIDE ====================
+    if (route === '/admin/hero-slides' && method === 'POST') {
+      const body = await request.json();
+      const { title, subtitle, cta_text, cta_link, image_desktop, image_mobile, link_type, link_target, badge_text, badge_color, sort_order, is_active } = body;
+
+      if (!title || !image_desktop || !image_mobile) {
+        return jsonResponse({ error: 'Title, image_desktop, dan image_mobile wajib diisi' }, 400);
+      }
+
+      const slideId = 'slide-' + generateId().substring(0, 8);
+
+      await env.DB.prepare(
+        `INSERT INTO hero_slides (id, title, subtitle, cta_text, cta_link, image_desktop, image_mobile, link_type, link_target, badge_text, badge_color, sort_order, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+      ).bind(
+        slideId, title, subtitle || null, cta_text || null, cta_link || null,
+        image_desktop, image_mobile, link_type || 'none', link_target || null,
+        badge_text || null, badge_color || 'primary', sort_order || 0, is_active !== false ? 1 : 0
+      ).run();
+
+      return jsonResponse({ success: true, slide: { id: slideId } });
+    }
+
+    // ==================== ADMIN: UPDATE HERO SLIDE ====================
+    if (route.startsWith('/admin/hero-slides/') && method === 'PUT') {
+      const slideId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.title !== undefined) { updates.push('title = ?'); values.push(body.title); }
+      if (body.subtitle !== undefined) { updates.push('subtitle = ?'); values.push(body.subtitle); }
+      if (body.cta_text !== undefined) { updates.push('cta_text = ?'); values.push(body.cta_text); }
+      if (body.cta_link !== undefined) { updates.push('cta_link = ?'); values.push(body.cta_link); }
+      if (body.image_desktop !== undefined) { updates.push('image_desktop = ?'); values.push(body.image_desktop); }
+      if (body.image_mobile !== undefined) { updates.push('image_mobile = ?'); values.push(body.image_mobile); }
+      if (body.link_type !== undefined) { updates.push('link_type = ?'); values.push(body.link_type); }
+      if (body.link_target !== undefined) { updates.push('link_target = ?'); values.push(body.link_target); }
+      if (body.badge_text !== undefined) { updates.push('badge_text = ?'); values.push(body.badge_text); }
+      if (body.badge_color !== undefined) { updates.push('badge_color = ?'); values.push(body.badge_color); }
+      if (body.sort_order !== undefined) { updates.push('sort_order = ?'); values.push(body.sort_order); }
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
+
+      if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+
+      updates.push("updated_at = datetime('now')");
+      values.push(slideId);
+
+      await env.DB.prepare(`UPDATE hero_slides SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: DELETE HERO SLIDE ====================
+    if (route.startsWith('/admin/hero-slides/') && method === 'DELETE') {
+      const slideId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM hero_slides WHERE id = ?').bind(slideId).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: REORDER HERO SLIDES ====================
+    if (route === '/admin/hero-slides/reorder' && method === 'POST') {
+      const body = await request.json();
+      const { order } = body; // array of { id, sort_order }
+
+      if (!Array.isArray(order)) {
+        return jsonResponse({ error: 'Order harus berupa array' }, 400);
+      }
+
+      for (const item of order) {
+        await env.DB.prepare(
+          'UPDATE hero_slides SET sort_order = ?, updated_at = datetime(\'now\') WHERE id = ?'
+        ).bind(item.sort_order, item.id).run();
+      }
+
+      return jsonResponse({ success: true });
+    }
+
     // ==================== PUBLIC: TRACKING CONFIG ====================
     if (route === '/tracking-config' && method === 'GET') {
       const keys = ['gtm_id', 'meta_pixel_id', 'google_ads_id', 'google_ads_label'];

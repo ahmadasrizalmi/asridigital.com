@@ -1,0 +1,257 @@
+---
+// HeroSlider.astro — Dynamic hero slider managed via admin panel
+// Fetches slides from /api/hero-slides on client-side
+---
+
+<section id="hero-slider" class="relative w-full overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/70" style="min-height: 420px;">
+  <!-- Loading skeleton -->
+  <div id="hero-loading" class="absolute inset-0 flex items-center justify-center">
+    <div class="text-white/60 text-sm">Loading...</div>
+  </div>
+
+  <!-- Fallback static content (shown if no slides) -->
+  <div id="hero-fallback" class="hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+      <div class="max-w-2xl">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">
+          Custom GPT untuk<br/>Profesional Indonesia
+        </h1>
+        <p class="text-base sm:text-lg text-white/80 mb-8 max-w-lg">
+          Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. Bayar sekali, akses seumur hidup.
+        </p>
+        <a href="/#produk" class="inline-flex items-center gap-2 bg-white text-primary font-bold px-8 py-4 rounded-xl hover:bg-white/90 transition-all shadow-lg text-base sm:text-lg">
+          Mulai Gratis
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slider container -->
+  <div id="hero-slides-container" class="hidden relative w-full" style="min-height: 420px;">
+    <!-- Slides will be injected here -->
+  </div>
+
+  <!-- Dot indicators -->
+  <div id="hero-dots" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+  </div>
+</section>
+
+<script>
+  interface HeroSlide {
+    id: string;
+    title: string;
+    subtitle: string | null;
+    cta_text: string | null;
+    cta_link: string | null;
+    image_desktop: string;
+    image_mobile: string;
+    link_type: string;
+    link_target: string | null;
+    badge_text: string | null;
+    badge_color: string;
+    sort_order: number;
+    is_active: number;
+  }
+
+  let currentSlide = 0;
+  let slides: HeroSlide[] = [];
+  let autoplayTimer: ReturnType<typeof setInterval> | null = null;
+  const AUToplay_INTERVAL = 5000;
+
+  function getBadgeColorClasses(color: string): string {
+    const map: Record<string, string> = {
+      primary: 'bg-primary text-white',
+      amber: 'bg-amber-400 text-amber-900',
+      green: 'bg-green-500 text-white',
+      red: 'bg-red-500 text-white',
+    };
+    return map[color] || map.primary;
+  }
+
+  function getLinkHref(slide: HeroSlide): string {
+    if (slide.cta_link) return slide.cta_link;
+    switch (slide.link_type) {
+      case 'product': return slide.link_target ? `/product/${slide.link_target}` : '#';
+      case 'blog': return slide.link_target ? `/blog/${slide.link_target}` : '/blog';
+      case 'page': return slide.link_target ? `/${slide.link_target}` : '#';
+      case 'custom': return slide.link_target || '#';
+      default: return '#';
+    }
+  }
+
+  function renderSlide(slide: HeroSlide, index: number): string {
+    const linkHref = getLinkHref(slide);
+    const badgeHtml = slide.badge_text
+      ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm ${getBadgeColorClasses(slide.badge_color)}">${slide.badge_text}</span>`
+      : '';
+
+    const ctaHtml = slide.cta_text
+      ? `<a href="${linkHref}" class="inline-flex items-center gap-2 bg-white text-primary font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-white/90 transition-all shadow-lg text-sm sm:text-base">
+          ${slide.cta_text}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>`
+      : '';
+
+    // Mobile: image background, text overlay
+    // Desktop: text left, image right
+    return `
+      <div class="hero-slide absolute inset-0 transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}" data-index="${index}">
+        <!-- Mobile layout -->
+        <div class="sm:hidden relative w-full h-full flex flex-col justify-between" style="min-height: 420px;">
+          <div class="absolute inset-0">
+            <img src="${slide.image_mobile}" alt="${slide.title}" class="w-full h-full object-cover" loading="${index === 0 ? 'eager' : 'lazy'}" />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/60"></div>
+          </div>
+          <div class="relative z-10 p-6 pt-8 flex flex-col flex-1 justify-between">
+            <div>
+              ${badgeHtml ? `<div class="mb-3">${badgeHtml}</div>` : ''}
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-3">${slide.title}</h2>
+              ${slide.subtitle ? `<p class="text-sm sm:text-base text-white/80 mb-6 max-w-md">${slide.subtitle}</p>` : ''}
+            </div>
+            <div>
+              ${ctaHtml}
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop layout -->
+        <div class="hidden sm:flex relative w-full h-full">
+          <div class="flex-1 flex items-center">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full py-16 lg:py-20">
+              <div class="max-w-xl">
+                ${badgeHtml ? `<div class="mb-4">${badgeHtml}</div>` : ''}
+                <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-4">${slide.title}</h2>
+                ${slide.subtitle ? `<p class="text-base lg:text-lg text-white/80 mb-8 max-w-lg">${slide.subtitle}</p>` : ''}
+                <div>${ctaHtml}</div>
+              </div>
+            </div>
+          </div>
+          <div class="hidden lg:flex items-center justify-center w-[45%] pr-8">
+            <img src="${slide.image_desktop}" alt="${slide.title}" class="w-full max-h-[360px] object-contain rounded-2xl shadow-2xl" loading="${index === 0 ? 'eager' : 'lazy'}" />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function goToSlide(index: number) {
+    if (index === currentSlide || slides.length === 0) return;
+
+    const allSlides = document.querySelectorAll('.hero-slide');
+    allSlides.forEach((s, i) => {
+      if (i === index) {
+        s.classList.remove('opacity-0');
+        s.classList.add('opacity-100', 'z-10');
+      } else {
+        s.classList.remove('opacity-100', 'z-10');
+        s.classList.add('opacity-0', 'z-0');
+      }
+    });
+
+    // Update dots
+    const dots = document.querySelectorAll('#hero-dots button');
+    dots.forEach((d, i) => {
+      if (i === index) {
+        d.classList.remove('bg-white/40');
+        d.classList.add('bg-white');
+      } else {
+        d.classList.remove('bg-white');
+        d.classList.add('bg-white/40');
+      }
+    });
+
+    currentSlide = index;
+  }
+
+  function nextSlide() {
+    const next = (currentSlide + 1) % slides.length;
+    goToSlide(next);
+  }
+
+  function startAutoplay() {
+    stopAutoplay();
+    autoplayTimer = setInterval(nextSlide, AUToplay_INTERVAL);
+  }
+
+  function stopAutoplay() {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+  }
+
+  function renderDots(count: number) {
+    const container = document.getElementById('hero-dots');
+    if (!container || count <= 1) {
+      if (container) container.classList.add('hidden');
+      return;
+    }
+    container.classList.remove('hidden');
+    container.innerHTML = Array.from({ length: count }, (_, i) =>
+      `<button class="w-2.5 h-2.5 rounded-full transition-all ${i === 0 ? 'bg-white' : 'bg-white/40'}" data-index="${i}" aria-label="Slide ${i + 1}"></button>`
+    ).join('');
+
+    container.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-index') || '0');
+        goToSlide(idx);
+        startAutoplay(); // Reset timer
+      });
+    });
+  }
+
+  async function initHeroSlider() {
+    try {
+      const res = await fetch('/api/hero-slides');
+      const data = await res.json();
+      slides = data.slides || [];
+
+      const loading = document.getElementById('hero-loading');
+      const fallback = document.getElementById('hero-fallback');
+      const container = document.getElementById('hero-slides-container');
+
+      if (loading) loading.classList.add('hidden');
+
+      if (slides.length === 0) {
+        fallback?.classList.remove('hidden');
+        return;
+      }
+
+      container?.classList.remove('hidden');
+      container!.innerHTML = slides.map((s, i) => renderSlide(s, i)).join('');
+      renderDots(slides.length);
+      startAutoplay();
+
+      // Pause on hover
+      const heroSection = document.getElementById('hero-slider');
+      heroSection?.addEventListener('mouseenter', stopAutoplay);
+      heroSection?.addEventListener('mouseleave', startAutoplay);
+
+      // Touch/swipe support
+      let touchStartX = 0;
+      heroSection?.addEventListener('touchstart', (e) => {
+        touchStartX = (e as TouchEvent).touches[0].clientX;
+        stopAutoplay();
+      }, { passive: true });
+      heroSection?.addEventListener('touchend', (e) => {
+        const diff = touchStartX - (e as TouchEvent).changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) {
+            goToSlide((currentSlide + 1) % slides.length);
+          } else {
+            goToSlide((currentSlide - 1 + slides.length) % slides.length);
+          }
+        }
+        startAutoplay();
+      }, { passive: true });
+
+    } catch (err) {
+      console.error('Hero slider load failed:', err);
+      document.getElementById('hero-loading')?.classList.add('hidden');
+      document.getElementById('hero-fallback')?.classList.remove('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initHeroSlider);
+</script>
