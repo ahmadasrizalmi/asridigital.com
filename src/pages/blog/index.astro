@@ -15,16 +15,41 @@ try {
   console.error('Failed to fetch blog posts:', e);
 }
 
-// Category metadata
+// Category metadata — keys are lowercased post.category values
 const categoryMeta: Record<string, { label: string; color: string; bgColor: string }> = {
-  'tips': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
-  'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
-  'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
-  'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
   'ai': { label: 'AI', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
   'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  'tips & trik': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+  'studi kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+  'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
   'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
 };
+
+// Derive unique categories dynamically from posts
+const categoryColorPalette = [
+  { color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+  { color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  { color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+  { color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+  { color: 'bg-emerald-500 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
+  { color: 'bg-rose-500 text-white', bgColor: 'from-rose-100 to-rose-50' },
+  { color: 'bg-cyan-500 text-white', bgColor: 'from-cyan-100 to-cyan-50' },
+];
+
+const uniqueCategories: string[] = [...new Set(posts.map((p: any) => p.category).filter(Boolean))] as string[];
+
+// Ensure every category from posts has a meta entry
+uniqueCategories.forEach((cat, i) => {
+  const key = cat.toLowerCase();
+  if (!categoryMeta[key]) {
+    categoryMeta[key] = {
+      label: cat,
+      color: categoryColorPalette[i % categoryColorPalette.length].color,
+      bgColor: categoryColorPalette[i % categoryColorPalette.length].bgColor,
+    };
+  }
+});
 
 const iconNames = ['sparkles', 'code', 'video', 'lightbulb', 'rocket', 'star', 'zap'];
 const iconColors = ['text-primary', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-emerald-500', 'text-rose-500', 'text-cyan-500'];
@@ -58,23 +83,20 @@ function getCategoryMeta(category: string) {
         </p>
       </div>
       
-      <!-- Category Filter -->
+      <!-- Category Filter (dynamically generated from posts) -->
       <div class="flex flex-wrap justify-center gap-2 mb-8">
         <button data-category="all" class="px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
           Semua
         </button>
-        <button data-category="tips" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Tips & Trik
-        </button>
-        <button data-category="tutorial" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Tutorial
-        </button>
-        <button data-category="studi-kasus" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Studi Kasus
-        </button>
-        <button data-category="berita" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Berita
-        </button>
+        {uniqueCategories.map((cat: string) => {
+          const key = cat.toLowerCase();
+          const meta = getCategoryMeta(key);
+          return (
+            <button data-category={key} class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+              {meta.label}
+            </button>
+          );
+        })}
       </div>
       
       <!-- Blog Grid -->
@@ -181,12 +203,12 @@ function getCategoryMeta(category: string) {
 
   function createPostCard(post: any, index: number) {
     const categoryMeta: Record<string, { label: string; color: string; bgColor: string }> = {
-      'tips': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
-      'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
-      'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
-      'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
       'ai': { label: 'AI', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
       'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+      'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+      'tips & trik': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+      'studi kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+      'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
       'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
     };
     const iconNames = ['sparkles', 'code', 'video', 'lightbulb', 'rocket', 'star', 'zap'];

@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -198,20 +202,9 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadCoupons() {
     const table = document.getElementById('coupons-table')!;
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
     try {
-      const res = await fetch('/api/admin/coupons', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('admin_token');
-        window.location.href = '/admin/login';
-        return;
-      }
+      const res = await adminFetch('/api/admin/coupons');
+      if (res.status === 401 || res.status === 403) return;
       if (!res.ok) throw new Error('Failed to fetch coupons');
       const data = await res.json();
       const coupons = data.coupons || [];
@@ -287,18 +280,15 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function deleteCoupon(id: number) {
     if (!confirm('Yakin ingin menghapus kupon ini?')) return;
-    const token = getAdminToken();
-    if (!token) { window.location.href = '/admin/login'; return; }
     try {
-      const res = await fetch(`/api/admin/coupons/${id}`, {
+      const res = await adminFetch(`/api/admin/coupons/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to delete coupon');
       loadCoupons();
     } catch (error) {
       console.error('Error deleting coupon:', error);
-      alert('Gagal menghapus kupon.');
+      if (error.message !== 'Auth expired') showToast('Gagal menghapus kupon.', 'error');
     }
   }
 
@@ -308,9 +298,6 @@ import Icon from '../../components/ui/Icon.astro';
 
   document.getElementById('coupon-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const token = getAdminToken();
-    if (!token) { window.location.href = '/admin/login'; return; }
-
     const id = (document.getElementById('coupon-id') as HTMLInputElement).value;
     const couponData = {
       code: (document.getElementById('coupon-code') as HTMLInputElement).value.toUpperCase(),
@@ -328,12 +315,8 @@ import Icon from '../../components/ui/Icon.astro';
       const isEdit = !!id;
       const url = isEdit ? `/api/admin/coupons/${id}` : '/api/admin/coupons';
       const method = isEdit ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify(couponData)
       });
       if (!res.ok) throw new Error('Failed to save coupon');
@@ -341,7 +324,7 @@ import Icon from '../../components/ui/Icon.astro';
       loadCoupons();
     } catch (error) {
       console.error('Error saving coupon:', error);
-      alert('Gagal menyimpan kupon.');
+      if (error.message !== 'Auth expired') showToast('Gagal menyimpan kupon.', 'error');
     }
   });
 
@@ -352,4 +335,9 @@ import Icon from '../../components/ui/Icon.astro';
   (window as any).deleteCoupon = deleteCoupon;
 
   loadCoupons();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

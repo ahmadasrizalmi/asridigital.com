@@ -7,7 +7,7 @@ import Icon from '../components/ui/Icon.astro';
 
 <BaseLayout
   title="Kontak Kami - Asri Digital"
-  description="Hubungi tim Asri Digital untuk pertanyaan, dukungan, atau kerjasama. Kami siap membantu Anda dalam 24-48 jam."
+  description="Hubungi Asri Digital untuk pertanyaan tentang produk digital, Custom GPT, dan kerjasama."
   canonicalUrl="https://asridigital.com/contact"
 >
   <Header />
@@ -125,10 +125,10 @@ import Icon from '../components/ui/Icon.astro';
               <h3 class="font-bold text-lg mb-4 text-text-primary">Media Sosial</h3>
               <div class="space-y-3">
                 {[
-                  { name: 'Instagram', icon: 'camera', url: '#', key: 'instagram' },
-                  { name: 'Twitter / X', icon: 'twitter', url: '#', key: 'twitter' },
-                  { name: 'YouTube', icon: 'play', url: '#', key: 'youtube' },
-                  { name: 'TikTok', icon: 'music', url: '#', key: 'tiktok' },
+                  { name: 'Instagram', icon: 'camera', url: 'https://www.instagram.com/asridigital', key: 'instagram' },
+                  { name: 'Twitter / X', icon: 'twitter', url: 'https://x.com/asridigital', key: 'twitter' },
+                  { name: 'YouTube', icon: 'play', url: 'https://www.youtube.com/@asridigital', key: 'youtube' },
+                  { name: 'TikTok', icon: 'music', url: 'https://www.tiktok.com/@asridigital', key: 'tiktok' },
                 ].map((social) => (
                   <a href={social.url} target="_blank" rel="noopener noreferrer" data-social={social.key} class="flex items-center gap-3 p-3 rounded-lg hover:bg-background transition-colors group">
                     <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">

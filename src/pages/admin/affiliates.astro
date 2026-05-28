@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -261,41 +265,14 @@ import Icon from '../../components/ui/Icon.astro';
   }
   (window as any).copyReferralCode = copyReferralCode;
 
-  // --- Toast notification ---
-  function showToast(message: string, isError = false) {
-    const existing = document.getElementById('toast-notification');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.id = 'toast-notification';
-    toast.className = `fixed bottom-4 right-4 z-[60] px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white transition-opacity ${isError ? 'bg-red-600' : 'bg-green-600'}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-  }
-
   let allAffiliates: any[] = [];
 
   // --- Load affiliates from API ---
   async function loadAffiliates() {
     const table = document.getElementById('affiliates-table')!;
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_BASE}/admin/affiliates`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('admin_token');
-        window.location.href = '/admin/login';
-        return;
-      }
-
+      const res = await adminFetch(`${API_BASE}/admin/affiliates`);
+      if (res.status === 401 || res.status === 403) return;
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json() as any;
 
@@ -382,16 +359,13 @@ import Icon from '../../components/ui/Icon.astro';
   // --- Load users for dropdown ---
   async function loadUsers() {
     const select = document.getElementById('affiliate-user') as HTMLSelectElement;
-    const token = getAdminToken();
-    if (!token || !select) return;
+    if (!select) return;
 
     select.innerHTML = '<option value="">Memuat daftar user...</option>';
 
     try {
-      const res = await fetch(`${API_BASE}/admin/users`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
+      const res = await adminFetch(`${API_BASE}/admin/users`);
+      if (res.status === 401 || res.status === 403) return;
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json() as any;
       const users: any[] = data.users || [];
@@ -419,16 +393,9 @@ import Icon from '../../components/ui/Icon.astro';
 
   // --- Delete affiliate ---
   async function deleteAffiliate(userId: number) {
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_BASE}/admin/affiliates/${userId}`, {
+      const res = await adminFetch(`${API_BASE}/admin/affiliates/${userId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (!res.ok) {
@@ -441,7 +408,7 @@ import Icon from '../../components/ui/Icon.astro';
       loadAffiliates();
     } catch (error: any) {
       console.error('Error deleting affiliate:', error);
-      showToast(error.message || 'Gagal menghapus affiliate.', true);
+      showToast(error.message || 'Gagal menghapus affiliate.', 'error');
     }
   }
 
@@ -456,23 +423,12 @@ import Icon from '../../components/ui/Icon.astro';
     const commission = commissionInput?.value;
 
     if (!userId) {
-      showToast('Harap pilih user.', true);
+      showToast('Harap pilih user.', 'error');
       return;
     }
-
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_BASE}/admin/affiliates`, {
+      const res = await adminFetch(`${API_BASE}/admin/affiliates`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify({
           user_id: Number(userId),
           commission_percent: Number(commission)
@@ -489,7 +445,7 @@ import Icon from '../../components/ui/Icon.astro';
       loadAffiliates();
     } catch (error: any) {
       console.error('Error creating affiliate:', error);
-      showToast(error.message || 'Gagal menambahkan affiliate.', true);
+      showToast(error.message || 'Gagal menambahkan affiliate.', 'error');
     }
   });
 
@@ -498,6 +454,11 @@ import Icon from '../../components/ui/Icon.astro';
   if (existingToken) {
     loadAffiliates();
   } else {
+    window.location.href = '/admin/login';
+  }
+
+  function logout() {
+    localStorage.removeItem('admin_token');
     window.location.href = '/admin/login';
   }
 </script>

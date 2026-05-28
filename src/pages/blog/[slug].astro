@@ -25,7 +25,7 @@ const { slug } = Astro.params;
   <Header />
 
   <!-- Reading Progress Bar -->
-  <div id="reading-progress" style="position:fixed;top:0;left:0;height:3px;background:#5C7A36;z-index:9999;width:0;transition:width 0.1s;"></div>
+  <div id="reading-progress" style="position:fixed;top:0;left:0;height:3px;background:#10b981;z-index:9999;width:0;transition:width 0.1s;"></div>
 
   <main class="flex-1">
     <!-- Loading State -->
@@ -38,7 +38,7 @@ const { slug } = Astro.params;
     <div id="article-content" class="hidden">
 
       <!-- Hero Header -->
-      <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#1a2e0a 0%,#2d4a1a 50%,#5C7A36 100%);">
+      <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#10b981 100%);">
         <div id="hero-bg-image" style="position:absolute;inset:0;opacity:0.15;"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
         <div style="position:relative;max-width:800px;margin:0 auto;padding:80px 16px 32px;">
@@ -179,7 +179,7 @@ const { slug } = Astro.params;
   }
 
   const categoryColors = {
-    'tips': { bg: 'rgba(92,122,54,0.15)', color: '#5C7A36' },
+    'tips': { bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
     'tutorial': { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
     'studi-kasus': { bg: 'rgba(168,85,247,0.15)', color: '#a855f7' },
     'berita': { bg: 'rgba(249,115,22,0.15)', color: '#f97316' },
@@ -237,7 +237,7 @@ const { slug } = Astro.params;
       h.id = id;
       const isH3 = h.tagName === 'H3';
       const style = isH3 ? 'padding-left:16px;font-size:13px;' : 'font-size:14px;font-weight:600;';
-      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#5C7A36'" onmouseout="this.style.color='#525252'">${h.textContent}</a>`;
+      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#525252'">${h.textContent}</a>`;
     });
     if (tocList) tocList.innerHTML = html;
     if (tocMobileList) tocMobileList.innerHTML = html;
@@ -391,7 +391,7 @@ const { slug } = Astro.params;
         const grid = document.getElementById('related-grid');
         grid.innerHTML = DOMPurify.sanitize(relatedPosts.map(r => `
           <a href="/blog/${r.slug}" style="border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-            <div style="height:120px;background:linear-gradient(135deg,#5C7A36 0%,#4A6628 100%);display:flex;align-items:center;justify-content:center;">
+            <div style="height:120px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);display:flex;align-items:center;justify-content:center;">
               <span style="font-size:2.5rem;">📝</span>
             </div>
             <div style="padding:14px;">
@@ -526,7 +526,7 @@ const { slug } = Astro.params;
     width: 56px;
     height: 56px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #5C7A36, #4A6628);
+    background: linear-gradient(135deg, #10b981, #059669);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -595,9 +595,9 @@ const { slug } = Astro.params;
   .prose code { background-color: #f5f5f5; padding: 0.15em 0.35em; border-radius: 0.25rem; font-size: 0.85em; font-family: ui-monospace, monospace; word-break: break-word; }
   .prose pre { background-color: #171717; color: #e5e5e5; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; -webkit-overflow-scrolling: touch; }
   .prose pre code { background-color: transparent; padding: 0; color: inherit; word-break: normal; }
-  .prose a { color: #5C7A36; text-decoration: underline; text-underline-offset: 2px; }
-  .prose a:hover { color: #4A6628; }
-  .prose blockquote { border-left: 4px solid #5C7A36; padding: 0.75rem 1rem; margin: 1.25rem 0; background: linear-gradient(135deg, #f0f7e6 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #3a5a1e; font-size: 1rem; font-style: italic; }
+  .prose a { color: #10b981; text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: #059669; }
+  .prose blockquote { border-left: 4px solid #10b981; padding: 0.75rem 1rem; margin: 1.25rem 0; background: linear-gradient(135deg, #ecfdf5 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #065f46; font-size: 1rem; font-style: italic; }
   .prose blockquote p:last-child { margin-bottom: 0; }
   .prose hr { border: none; border-top: 1px solid #e5e5e5; margin: 2rem 0; }
   .prose img { border-radius: 12px; margin: 1.25rem 0; max-width: 100%; height: auto; }
@@ -614,8 +614,8 @@ const { slug } = Astro.params;
   .callout-info { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
 
   /* ===== Stat highlight ===== */
-  .stat-highlight { display: inline-flex; align-items: baseline; gap: 4px; background: linear-gradient(135deg, #f0f7e6, #e8f5e0); padding: 2px 8px; border-radius: 6px; }
-  .stat-number { font-size: 1em; font-weight: 800; color: #5C7A36; }
+  .stat-highlight { display: inline-flex; align-items: baseline; gap: 4px; background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 2px 8px; border-radius: 6px; }
+  .stat-number { font-size: 1em; font-weight: 800; color: #10b981; }
 
   /* ===== Responsive: Tablet (640px+) ===== */
   @media (min-width: 640px) {

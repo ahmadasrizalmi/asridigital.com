@@ -5,37 +5,6 @@ import { formatIDR } from '../../lib/utils';
 ---
 
 <BaseLayout title="Admin Dashboard - Asri Digital">
-  <!-- Login Overlay -->
-  <div id="login-overlay" class="fixed inset-0 bg-background z-50 flex items-center justify-center">
-    <div class="card p-8 max-w-md w-full mx-4">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Icon name="shield" size={32} class="text-primary" />
-        </div>
-        <h1 class="text-2xl font-bold text-text-primary">Admin Login</h1>
-        <p class="text-text-secondary mt-2">Masuk untuk mengakses admin panel</p>
-      </div>
-      
-      <form id="admin-login-form" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-text-primary mb-1">Email</label>
-          <input type="email" name="email" required class="input" placeholder="admin@asridigital.com" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-text-primary mb-1">Password</label>
-          <input type="password" name="password" required class="input" placeholder="••••••••" />
-        </div>
-        <div id="login-error" class="hidden text-red-500 text-sm"></div>
-        <button type="submit" class="btn-primary w-full">
-          <Icon name="log-in" size={18} />
-          Masuk
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Admin Content (hidden until login) -->
-  <div id="admin-content" class="hidden">
   <div class="flex min-h-screen">
     <!-- Admin Sidebar -->
     <aside id="admin-sidebar" class="w-64 bg-surface border-r border-border shrink-0 fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
@@ -76,7 +45,7 @@ import { formatIDR } from '../../lib/utils';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
-          <button onclick="adminLogout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors w-full mt-2">
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
             <Icon name="log-out" size={18} />
             Logout
           </button>
@@ -125,8 +94,7 @@ import { formatIDR } from '../../lib/utils';
               </div>
             </div>
             <div class="mt-4 flex items-center gap-2 text-sm">
-              <span class="text-green-600 font-medium">↑ 12%</span>
-              <span class="text-text-muted">vs bulan lalu</span>
+              <span class="text-text-muted">bulan ini</span>
             </div>
           </div>
           
@@ -157,8 +125,7 @@ import { formatIDR } from '../../lib/utils';
               </div>
             </div>
             <div class="mt-4 flex items-center gap-2 text-sm">
-              <span class="text-purple-600 font-medium">5</span>
-              <span class="text-text-muted">baru hari ini</span>
+              <span class="text-text-muted">terdaftar</span>
             </div>
           </div>
           
@@ -214,7 +181,6 @@ import { formatIDR } from '../../lib/utils';
       </div>
     </main>
   </div>
-  </div><!-- end admin-content -->
 
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
@@ -236,84 +202,6 @@ import { formatIDR } from '../../lib/utils';
 <script>
   const API_BASE = '/api';
 
-  // Check admin auth
-  function getAdminToken() {
-    return localStorage.getItem('admin_token');
-  }
-
-  function setAdminToken(token) {
-    localStorage.setItem('admin_token', token);
-  }
-
-  function clearAdminToken() {
-    localStorage.removeItem('admin_token');
-  }
-
-  // Show admin content
-  function showAdminContent() {
-    document.getElementById('login-overlay')!.classList.add('hidden');
-    document.getElementById('admin-content')!.classList.remove('hidden');
-    loadAdminStats();
-  }
-
-  // Show login
-  function showLogin() {
-    document.getElementById('login-overlay')!.classList.remove('hidden');
-    document.getElementById('admin-content')!.classList.add('hidden');
-  }
-
-  // Admin login form
-  document.getElementById('admin-login-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-    const errorDiv = document.getElementById('login-error')!;
-    
-    try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.get('email'),
-          password: formData.get('password')
-        })
-      });
-      
-      const data = await response.json() as any;
-      
-      if (data.success && data.token) {
-        // Verify admin role
-        const meResponse = await fetch(`${API_BASE}/auth/me`, {
-          headers: { 'Authorization': `Bearer ${data.token}` }
-        });
-        const meData = await meResponse.json() as any;
-        
-        if (meData.user?.role === 'admin') {
-          setAdminToken(data.token);
-          showAdminContent();
-        } else {
-          errorDiv.textContent = 'Akses ditolak. Hanya admin yang bisa masuk.';
-          errorDiv.classList.remove('hidden');
-        }
-      } else {
-        errorDiv.textContent = data.error || 'Login gagal';
-        errorDiv.classList.remove('hidden');
-      }
-    } catch (error) {
-      errorDiv.textContent = 'Terjadi kesalahan';
-      errorDiv.classList.remove('hidden');
-    }
-  });
-
-  // Logout
-  function adminLogout() {
-    clearAdminToken();
-    showLogin();
-  }
-
-  // Make adminLogout available globally
-  (window as any).adminLogout = adminLogout;
-
   function formatIDR(amount: number): string {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -323,13 +211,9 @@ import { formatIDR } from '../../lib/utils';
   }
 
   async function loadAdminStats() {
-    const token = getAdminToken();
-    if (!token) return;
-    
     try {
-      const response = await fetch(`${API_BASE}/admin/stats`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await adminFetch(`${API_BASE}/admin/stats`);
+      if (response.status === 401 || response.status === 403) return;
       const data = await response.json() as any;
       
       if (data.stats) {
@@ -368,32 +252,14 @@ import { formatIDR } from '../../lib/utils';
     }
   }
 
-  // Load on page load - check if already logged in
-  const existingToken = getAdminToken();
-  if (existingToken) {
-    // Verify token is still valid
-    fetch(`${API_BASE}/auth/me`, {
-      headers: { 'Authorization': `Bearer ${existingToken}` }
-    })
-    .then(r => r.json())
-    .then((data: any) => {
-      if (data.user?.role === 'admin') {
-        showAdminContent();
-      } else {
-        clearAdminToken();
-        showLogin();
-      }
-    })
-    .catch(() => {
-      clearAdminToken();
-      showLogin();
-    });
-  } else {
-    showLogin();
-  }
+  // Auth handled by admin-utils.js checkAuth()
+  loadAdminStats();
 
-  // Expose to global scope for onclick handlers
-  (window as any).adminLogout = adminLogout;
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
+  (window as any).logout = logout;
 
   // Refresh every 30 seconds
   setInterval(loadAdminStats, 30000);

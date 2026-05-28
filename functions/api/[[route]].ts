@@ -2456,7 +2456,7 @@ export async function onRequest(context: any): Promise<Response> {
         });
       } catch (error: any) {
         console.error('Error updating admin:', error);
-        return jsonResponse({ error: error.message || 'Update failed' }, 500);
+        return jsonResponse({ error: 'Terjadi kesalahan pada server. Silakan coba lagi.' }, 500);
       }
     }
 
@@ -2616,7 +2616,7 @@ export async function onRequest(context: any): Promise<Response> {
   } catch (error: any) {
     console.error('API Error:', error);
     console.error('API Error stack:', error.stack);
-    return jsonResponse({ error: error.message || 'Internal server error' }, 500);
+    return jsonResponse({ error: 'Terjadi kesalahan pada server. Silakan coba lagi.' }, 500);
   }
 }
 

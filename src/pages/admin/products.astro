@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -413,8 +417,8 @@ import Icon from '../../components/ui/Icon.astro';
     const input = document.getElementById('image-url-input') as HTMLInputElement;
     const url = input.value.trim();
     if (!url) return;
-    if (!url.startsWith('http')) { alert('URL harus dimulai dengan http:// atau https://'); return; }
-    if (galleryImages.includes(url)) { alert('Gambar sudah ditambahkan'); return; }
+    if (!url.startsWith('http')) { showToast('URL harus dimulai dengan http:// atau https://', 'error'); return; }
+    if (galleryImages.includes(url)) { showToast('Gambar sudah ditambahkan', 'error'); return; }
     galleryImages.push(url);
     if (galleryImages.length === 1) coverImage = url; // First image = cover
     input.value = '';
@@ -444,7 +448,7 @@ import Icon from '../../components/ui/Icon.astro';
     const url = input.value.trim();
     if (!url) return;
     if (!url.includes('youtube.com') && !url.includes('youtu.be') && !url.includes('vimeo.com')) {
-      alert('URL harus dari YouTube atau Vimeo');
+      showToast('URL harus dari YouTube atau Vimeo', 'error');
       return;
     }
     videoUrl = url;
@@ -808,4 +812,9 @@ import Icon from '../../components/ui/Icon.astro';
 
   // Load on page load
   loadProducts();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

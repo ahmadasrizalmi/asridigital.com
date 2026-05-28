@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -183,20 +187,9 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadCategories() {
     const table = document.getElementById('categories-table');
-    const token = getAdminToken();
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
     try {
-      const res = await fetch('/api/admin/categories', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('admin_token');
-        window.location.href = '/admin/login';
-        return;
-      }
+      const res = await adminFetch('/api/admin/categories');
+      if (res.status === 401 || res.status === 403) return;
       if (!res.ok) throw new Error('Failed to fetch categories');
       const data = await res.json();
       const categories = data.categories || [];
@@ -264,38 +257,29 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function deleteCategory(id) {
     if (!confirm('Yakin ingin menghapus kategori ini?')) return;
-    const token = getAdminToken();
-    if (!token) { window.location.href = '/admin/login'; return; }
     try {
-      const res = await fetch('/api/admin/categories/' + id, {
+      const res = await adminFetch('/api/admin/categories/' + id, {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!res.ok) throw new Error('Failed to delete category');
       loadCategories();
     } catch (error) {
       console.error('Error deleting category:', error);
-      alert('Gagal menghapus kategori.');
+      if (error.message !== 'Auth expired') showToast('Gagal menghapus kategori.', 'error');
     }
   }
 
   async function toggleCategory(id, activate) {
-    const token = getAdminToken();
-    if (!token) { window.location.href = '/admin/login'; return; }
     try {
-      const res = await fetch('/api/admin/categories/' + id, {
+      const res = await adminFetch('/api/admin/categories/' + id, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
         body: JSON.stringify({ is_active: activate })
       });
       if (!res.ok) throw new Error('Failed to toggle category');
       loadCategories();
     } catch (error) {
       console.error('Error toggling category:', error);
-      alert('Gagal mengubah status kategori.');
+      if (error.message !== 'Auth expired') showToast('Gagal mengubah status kategori.', 'error');
     }
   }
 
@@ -318,8 +302,6 @@ import Icon from '../../components/ui/Icon.astro';
 
   document.getElementById('category-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    var token = getAdminToken();
-    if (!token) { window.location.href = '/admin/login'; return; }
 
     var id = document.getElementById('category-id').value;
     var categoryData = {
@@ -335,12 +317,8 @@ import Icon from '../../components/ui/Icon.astro';
       var isEdit = !!id;
       var url = isEdit ? '/api/admin/categories/' + id : '/api/admin/categories';
       var method = isEdit ? 'PUT' : 'POST';
-      var res = await fetch(url, {
+      var res = await adminFetch(url, {
         method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
         body: JSON.stringify(categoryData)
       });
       if (!res.ok) throw new Error('Failed to save category');
@@ -348,7 +326,7 @@ import Icon from '../../components/ui/Icon.astro';
       loadCategories();
     } catch (error) {
       console.error('Error saving category:', error);
-      alert('Gagal menyimpan kategori.');
+      if (error.message !== 'Auth expired') showToast('Gagal menyimpan kategori.', 'error');
     }
   });
 
@@ -360,4 +338,9 @@ import Icon from '../../components/ui/Icon.astro';
   window.toggleCategory = toggleCategory;
 
   loadCategories();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

@@ -82,6 +82,9 @@
 
   // Expose globally
   window.adminUtils = { showToast, checkAuth, adminFetch, API_BASE };
+  window.showToast = showToast;
+  window.checkAuth = checkAuth;
+  window.adminFetch = adminFetch;
 
   // Auto-check auth on page load
   checkAuth();

@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -291,12 +295,8 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadOrders() {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(API_BASE + '/orders', {
-        headers: {
-          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
-        }
-      });
+      const response = await adminFetch(API_BASE + '/orders');
+      if (response.status === 401 || response.status === 403) return;
       const data = await response.json();
       allOrders = data.orders || [];
       orderCurrentPage = 1;
@@ -344,7 +344,7 @@ import Icon from '../../components/ui/Icon.astro';
   function viewOrder(orderId: string) {
     try {
       const order = allOrders.find(function(o) { return o.id === orderId; });
-      if (!order) { alert('Pesanan tidak ditemukan.'); return; }
+      if (!order) { showToast('Pesanan tidak ditemukan.', 'error'); return; }
 
       const content = document.getElementById('detail-content');
       if (!content) return;
@@ -365,7 +365,7 @@ import Icon from '../../components/ui/Icon.astro';
       document.getElementById('detail-modal')?.classList.remove('hidden');
     } catch (error) {
       console.error('Error viewing order:', error);
-      alert('Gagal memuat detail pesanan.');
+      showToast('Gagal memuat detail pesanan.', 'error');
     }
   }
 
@@ -376,7 +376,7 @@ import Icon from '../../components/ui/Icon.astro';
   function editOrder(orderId: string) {
     try {
       const order = allOrders.find(function(o) { return o.id === orderId; });
-      if (!order) { alert('Pesanan tidak ditemukan.'); return; }
+      if (!order) { showToast('Pesanan tidak ditemukan.', 'error'); return; }
 
       (document.getElementById('edit-order-id') as HTMLInputElement).value = order.id;
       (document.getElementById('edit-user-name') as HTMLInputElement).value = order.user_name || '';
@@ -388,7 +388,7 @@ import Icon from '../../components/ui/Icon.astro';
       document.getElementById('edit-modal')?.classList.remove('hidden');
     } catch (error) {
       console.error('Error loading order for edit:', error);
-      alert('Gagal memuat data pesanan.');
+      showToast('Gagal memuat data pesanan.', 'error');
     }
   }
 
@@ -399,8 +399,6 @@ import Icon from '../../components/ui/Icon.astro';
   async function submitEditOrder(e: Event) {
     e.preventDefault();
     const orderId = (document.getElementById('edit-order-id') as HTMLInputElement).value;
-    const token = localStorage.getItem('admin_token');
-    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
 
     const body = {
       user_name: (document.getElementById('edit-user-name') as HTMLInputElement).value,
@@ -411,69 +409,60 @@ import Icon from '../../components/ui/Icon.astro';
     };
 
     try {
-      const response = await fetch(API_BASE + '/admin/orders/' + orderId, {
+      const response = await adminFetch(API_BASE + '/admin/orders/' + orderId, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify(body),
       });
       const result = await response.json();
       if (response.ok) {
-        alert('Pesanan berhasil diperbarui!');
+        showToast('Pesanan berhasil diperbarui!');
         closeEditModal();
         loadOrders();
       } else {
-        alert(result.error || 'Gagal memperbarui pesanan');
+        showToast(result.error || 'Gagal memperbarui pesanan', 'error');
       }
     } catch (error) {
       console.error('Error editing order:', error);
-      alert('Terjadi kesalahan.');
+      if (error.message !== 'Auth expired') showToast('Terjadi kesalahan.', 'error');
     }
   }
 
   async function deleteOrder(orderId: string) {
     if (!confirm('Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.')) return;
 
-    const token = localStorage.getItem('admin_token');
-    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
-
     try {
-      const response = await fetch(API_BASE + '/admin/orders/' + orderId, {
+      const response = await adminFetch(API_BASE + '/admin/orders/' + orderId, {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token },
       });
       const result = await response.json();
       if (response.ok) {
-        alert('Pesanan berhasil dihapus!');
+        showToast('Pesanan berhasil dihapus!');
         loadOrders();
       } else {
-        alert(result.error || 'Gagal menghapus pesanan');
+        showToast(result.error || 'Gagal menghapus pesanan', 'error');
       }
     } catch (error) {
       console.error('Error deleting order:', error);
-      alert('Terjadi kesalahan.');
+      if (error.message !== 'Auth expired') showToast('Terjadi kesalahan.', 'error');
     }
   }
 
   async function changeStatus(orderId: string, newStatus: string) {
-    const token = localStorage.getItem('admin_token');
-    if (!token) { alert('Session expired. Silakan login kembali.'); return; }
-
     try {
-      const response = await fetch(API_BASE + '/admin/orders/' + orderId + '/status', {
+      const response = await adminFetch(API_BASE + '/admin/orders/' + orderId + '/status', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ status: newStatus }),
       });
       const result = await response.json();
       if (response.ok) {
         loadOrders();
       } else {
-        alert(result.error || 'Gagal mengubah status');
+        showToast(result.error || 'Gagal mengubah status', 'error');
         loadOrders();
       }
     } catch (error) {
       console.error('Error changing status:', error);
-      alert('Terjadi kesalahan.');
+      if (error.message !== 'Auth expired') showToast('Terjadi kesalahan.', 'error');
       loadOrders();
     }
   }
@@ -552,4 +541,9 @@ import Icon from '../../components/ui/Icon.astro';
 
   // Load on page load
   loadOrders();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

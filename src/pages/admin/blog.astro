@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -338,10 +342,10 @@ import Icon from '../../components/ui/Icon.astro';
       if (res.ok) {
         loadPosts();
       } else {
-        alert('Gagal menghapus artikel');
+        showToast('Gagal menghapus artikel', 'error');
       }
     } catch (err) {
-      alert('Gagal menghapus artikel');
+      showToast('Gagal menghapus artikel', 'error');
       console.error('Delete failed:', err);
     }
   }
@@ -376,10 +380,10 @@ import Icon from '../../components/ui/Icon.astro';
         loadPosts();
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || 'Gagal menyimpan artikel');
+        showToast(err.message || 'Gagal menyimpan artikel', 'error');
       }
     } catch (err) {
-      alert('Gagal menyimpan artikel');
+      showToast('Gagal menyimpan artikel', 'error');
       console.error('Save failed:', err);
     }
   });
@@ -419,10 +423,10 @@ import Icon from '../../components/ui/Icon.astro';
         loadPosts();
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.message || 'Gagal menyimpan draft');
+        showToast(err.message || 'Gagal menyimpan draft', 'error');
       }
     } catch (err) {
-      alert('Gagal menyimpan draft');
+      showToast('Gagal menyimpan draft', 'error');
       console.error('Save draft failed:', err);
     }
   }
@@ -431,4 +435,9 @@ import Icon from '../../components/ui/Icon.astro';
 
   // Load posts on page load
   loadPosts();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

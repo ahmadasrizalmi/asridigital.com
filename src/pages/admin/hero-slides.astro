@@ -43,6 +43,10 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
@@ -310,10 +314,8 @@ import Icon from '../../components/ui/Icon.astro';
 
   async function loadSlides() {
     try {
-      const token = getAdminToken();
-      const res = await fetch(`${API_BASE}/admin/hero-slides`, {
-        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
-      });
+      const res = await adminFetch(`${API_BASE}/admin/hero-slides`);
+      if (res.status === 401 || res.status === 403) return;
       const data = await res.json() as any;
       renderSlides(data.slides || []);
     } catch (err) {
@@ -423,16 +425,11 @@ import Icon from '../../components/ui/Icon.astro';
     };
 
     try {
-      const token = getAdminToken();
       const url = id ? `${API_BASE}/admin/hero-slides/${id}` : `${API_BASE}/admin/hero-slides`;
       const method = id ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
         body: JSON.stringify(body)
       });
 
@@ -441,50 +438,41 @@ import Icon from '../../components/ui/Icon.astro';
         closeModal();
         loadSlides();
       } else {
-        alert(data.error || 'Gagal menyimpan slide');
+        showToast(data.error || 'Gagal menyimpan slide', 'error');
       }
     } catch (err) {
-      alert('Error: ' + err);
+      if (err.message !== 'Auth expired') showToast('Error: ' + err, 'error');
     }
   });
 
   (window as any).toggleSlide = async function(id: string, currentActive: number) {
     try {
-      const token = getAdminToken();
-      await fetch(`${API_BASE}/admin/hero-slides/${id}`, {
+      await adminFetch(`${API_BASE}/admin/hero-slides/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
         body: JSON.stringify({ is_active: currentActive ? 0 : 1 })
       });
       loadSlides();
     } catch (err) {
-      alert('Error: ' + err);
+      if (err.message !== 'Auth expired') showToast('Error: ' + err, 'error');
     }
   };
 
   (window as any).deleteSlide = async function(id: string) {
     if (!confirm('Yakin ingin menghapus slide ini?')) return;
     try {
-      const token = getAdminToken();
-      await fetch(`${API_BASE}/admin/hero-slides/${id}`, {
+      await adminFetch(`${API_BASE}/admin/hero-slides/${id}`, {
         method: 'DELETE',
-        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
       });
       loadSlides();
     } catch (err) {
-      alert('Error: ' + err);
+      if (err.message !== 'Auth expired') showToast('Error: ' + err, 'error');
     }
   };
 
   (window as any).moveSlide = async function(id: string, direction: number) {
     try {
-      const token = getAdminToken();
-      const res = await fetch(`${API_BASE}/admin/hero-slides`, {
-        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
-      });
+      const res = await adminFetch(`${API_BASE}/admin/hero-slides`);
+      if (res.status === 401 || res.status === 403) return;
       const data = await res.json() as any;
       const slides = data.slides || [];
       const idx = slides.findIndex((s: HeroSlide) => s.id === id);
@@ -500,20 +488,21 @@ import Icon from '../../components/ui/Icon.astro';
       newOrder[idx].sort_order = newOrder[idx + direction].sort_order;
       newOrder[idx + direction].sort_order = temp;
 
-      await fetch(`${API_BASE}/admin/hero-slides/reorder`, {
+      await adminFetch(`${API_BASE}/admin/hero-slides/reorder`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
         body: JSON.stringify({ order: newOrder })
       });
       loadSlides();
     } catch (err) {
-      alert('Error: ' + err);
+      if (err.message !== 'Auth expired') showToast('Error: ' + err, 'error');
     }
   };
 
   // Load on init
   loadSlides();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>
