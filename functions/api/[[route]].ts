@@ -265,6 +265,8 @@ function getAllowedOrigin(request: Request): string {
 
 // Module-level request reference for jsonResponse
 let _currentRequest: Request | null = null;
+// Module-level context reference for waitUntil (non-blocking deploy trigger)
+let _currentCtx: any = null;
 
 // Helper: JSON response
 function jsonResponse(data: any, status: number = 200, request?: Request, cacheControl?: string): Response {
@@ -300,10 +302,88 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(seconds / 86400)} hari`;
 }
 
+// ==================== AUTO-DEPLOY TRIGGER ====================
+// Triggers Cloudflare Pages rebuild after admin CRUD operations.
+// Uses D1 for debounce state since CF Workers are STATELESS (no setTimeout across requests).
+// Supports both deploy hook URL and direct CF API trigger.
+// Priority: 1) deploy_hook_url (webhook), 2) cf_api_token (direct CF API)
+const CF_ACCOUNT_ID = '6c18d33071f75f4fa94fc308a1fd4bd8';
+const CF_PROJECT_NAME = 'asridigital';
+const DEPLOY_DEBOUNCE_MS = 120000; // 2 minutes
+
+async function triggerDeploy(env: Env): Promise<void> {
+  try {
+    // Check last deploy time from site_settings
+    const lastDeploy = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'last_deploy_trigger'"
+    ).first();
+    
+    const now = Date.now();
+    const lastTime = lastDeploy ? parseInt(lastDeploy.value as string) : 0;
+    
+    // Only trigger if 2+ minutes since last trigger
+    if (now - lastTime < DEPLOY_DEBOUNCE_MS) {
+      console.log('Deploy skipped (debounce) - last trigger was', Math.floor((now - lastTime) / 1000), 'seconds ago');
+      return;
+    }
+    
+    // Update last trigger time FIRST to prevent race conditions
+    await env.DB.prepare(
+      "INSERT OR REPLACE INTO site_settings (key, value, updated_at) VALUES ('last_deploy_trigger', ?, datetime('now'))"
+    ).bind(now.toString()).run();
+    
+    // Option 1: Deploy hook URL (preferred - no API token needed in code)
+    const hookSetting = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'deploy_hook_url'"
+    ).first();
+    
+    if (hookSetting?.value) {
+      console.log('Triggering auto-deploy via deploy hook...');
+      const deployPromise = fetch(hookSetting.value as string, { method: 'POST' })
+        .then((r: Response) => { console.log('Deploy triggered via hook, status:', r.status); return r; })
+        .catch((e: any) => { console.error('Deploy hook trigger failed:', e); });
+      
+      if (_currentCtx?.waitUntil) {
+        _currentCtx.waitUntil(deployPromise);
+      }
+      return;
+    }
+    
+    // Option 2: Direct CF API trigger (needs cf_api_token in site_settings)
+    const tokenSetting = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'cf_api_token'"
+    ).first();
+    
+    if (tokenSetting?.value) {
+      console.log('Triggering auto-deploy via CF API...');
+      const deployUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT_NAME}/deployments`;
+      const deployPromise = fetch(deployUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${tokenSetting.value}`,
+          'Content-Type': 'application/json'
+        }
+      })
+        .then((r: Response) => { console.log('Deploy triggered via CF API, status:', r.status); return r; })
+        .catch((e: any) => { console.error('CF API deploy trigger failed:', e); });
+      
+      if (_currentCtx?.waitUntil) {
+        _currentCtx.waitUntil(deployPromise);
+      }
+      return;
+    }
+    
+    console.log('No deploy_hook_url or cf_api_token configured - skipping deploy trigger');
+  } catch (e) {
+    console.error('Deploy trigger error:', e);
+  }
+}
+
 // Main request handler
 export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
   _currentRequest = request;
+  _currentCtx = context;
 
   // Require JWT_SECRET to be configured
   if (!env.JWT_SECRET) {
@@ -1655,7 +1735,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true, coupon: { id: couponId, code: code.toUpperCase() } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, coupon: { id: couponId, code: code.toUpperCase() }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE COUPON ====================
@@ -1683,7 +1764,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE COUPON ====================
@@ -1696,7 +1778,8 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(couponId)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== CATEGORIES (PUBLIC) ====================
@@ -1730,7 +1813,8 @@ export async function onRequest(context: any): Promise<Response> {
          VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
       ).bind(catId, name, slug, description || null, icon || null, sort_order || 0, is_active !== false ? 1 : 0).run();
 
-      return jsonResponse({ success: true, category: { id: catId, name, slug } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, category: { id: catId, name, slug }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE CATEGORY ====================
@@ -1753,14 +1837,16 @@ export async function onRequest(context: any): Promise<Response> {
       values.push(catId);
 
       await env.DB.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE CATEGORY ====================
     if (route.startsWith('/admin/categories/') && method === 'DELETE') {
       const catId = route.split('/')[3];
       await env.DB.prepare('UPDATE categories SET is_active = 0 WHERE id = ?').bind(catId).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: PRODUCTS LIST ====================
@@ -1808,7 +1894,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true, product: { id: productId, title, slug } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, product: { id: productId, title, slug }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE PRODUCT ====================
@@ -1849,7 +1936,8 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(...values)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE PRODUCT ====================
@@ -1863,7 +1951,8 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(productId)
         .run();
 
-      return jsonResponse({ success: true, message: 'Produk berhasil dihapus' });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, message: 'Produk berhasil dihapus', deploy_triggered: true });
     }
 
     // ==================== ADMIN: BLOG POSTS LIST ====================
@@ -1904,7 +1993,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true, post: { id: postId, title, slug } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, post: { id: postId, title, slug }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE BLOG POST ====================
@@ -1933,7 +2023,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE BLOG POST ====================
@@ -1946,7 +2037,8 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(postId)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== PUBLIC: HERO SLIDES ====================
@@ -1990,7 +2082,8 @@ export async function onRequest(context: any): Promise<Response> {
         badge_text || null, badge_color || 'primary', sort_order || 0, is_active !== false ? 1 : 0
       ).run();
 
-      return jsonResponse({ success: true, slide: { id: slideId } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, slide: { id: slideId }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE HERO SLIDE ====================
@@ -2019,14 +2112,16 @@ export async function onRequest(context: any): Promise<Response> {
       values.push(slideId);
 
       await env.DB.prepare(`UPDATE hero_slides SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE HERO SLIDE ====================
     if (route.startsWith('/admin/hero-slides/') && method === 'DELETE') {
       const slideId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM hero_slides WHERE id = ?').bind(slideId).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: REORDER HERO SLIDES ====================
@@ -2044,7 +2139,8 @@ export async function onRequest(context: any): Promise<Response> {
         ).bind(item.sort_order, item.id).run();
       }
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== PUBLIC: SITE SETTINGS ====================
@@ -2129,7 +2225,8 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE ORDER STATUS ====================
@@ -2163,7 +2260,8 @@ export async function onRequest(context: any): Promise<Response> {
         }
       }
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: EDIT ORDER ====================
@@ -2189,14 +2287,16 @@ export async function onRequest(context: any): Promise<Response> {
       values.push(orderId);
 
       await env.DB.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE ORDER ====================
     if (route.match(/^\/admin\/orders\/[^/]+$/) && method === 'DELETE') {
       const orderId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM orders WHERE id = ?').bind(orderId).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== AUTH: LOGOUT ====================
@@ -2539,13 +2639,15 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.startsWith('/admin/contacts/') && method === 'PUT') {
       const msgId = route.split('/')[3];
       await env.DB.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').bind(msgId).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     if (route.startsWith('/admin/contacts/') && method === 'DELETE') {
       const msgId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM contact_messages WHERE id = ?').bind(msgId).run();
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: AFFILIATES CRUD ====================
