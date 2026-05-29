@@ -155,7 +155,7 @@ import Icon from '../../components/ui/Icon.astro';
               </button>
               <div class="flex-1"></div>
               <button type="button" onclick="togglePreview()" id="preview-toggle" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-primary text-xs font-medium px-3">
-                👁 Preview
+                <Icon name="eye" size={16} class="inline" /> Preview
               </button>
             </div>
 
@@ -209,7 +209,7 @@ import Icon from '../../components/ui/Icon.astro';
           {/* ====== MEDIA GALLERY SECTION ====== */}
           <div class="border-t border-border pt-4 mt-4">
             <h3 class="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              📸 Media Produk
+              <Icon name="image" size={16} class="text-primary" /> Media Produk
             </h3>
 
             {/* Gallery Images */}
@@ -245,7 +245,7 @@ import Icon from '../../components/ui/Icon.astro';
               <div id="video-preview" class="hidden mt-2">
                 <div class="flex items-center gap-2 p-2 bg-background rounded-lg">
                   <span class="text-sm text-text-main flex-1 truncate" id="video-url-display"></span>
-                  <button type="button" onclick="removeVideo()" class="text-red-500 hover:text-red-700 text-sm">✕ Hapus</button>
+                  <button type="button" onclick="removeVideo()" class="text-red-500 hover:text-red-700 text-sm"><Icon name="x" size={16} class="inline" /> Hapus</button>
                 </div>
               </div>
             </div>
@@ -331,11 +331,11 @@ import Icon from '../../components/ui/Icon.astro';
     previewVisible = !previewVisible;
     if (previewVisible) {
       preview.classList.remove('hidden');
-      btn.textContent = '✏️ Edit';
+      btn.textContent = 'Edit';
       updatePreview();
     } else {
       preview.classList.add('hidden');
-      btn.textContent = '👁 Preview';
+      btn.textContent = 'Preview';
     }
   };
 
@@ -395,11 +395,11 @@ import Icon from '../../components/ui/Icon.astro';
     grid.innerHTML = galleryImages.map((url, i) => `
       <div class="relative group rounded-lg overflow-hidden border-2 ${url === coverImage ? 'border-primary ring-2 ring-primary/30' : 'border-border'} aspect-square cursor-pointer" onclick="setCover(${i})">
         <img src="${url}" alt="Gambar ${i + 1}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f3f4f6%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2212%22>Error</text></svg>'" />
-        ${url === coverImage ? '<div class="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">⭐ Cover</div>' : ''}
+        ${url === coverImage ? '<div class="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">Cover</div>' : ''}
         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-          ${i > 0 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, -1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white">◀</button>` : ''}
-          ${i < galleryImages.length - 1 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, 1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white">▶</button>` : ''}
-          <button type="button" onclick="event.stopPropagation(); removeImage(${i})" class="bg-red-500/90 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs hover:bg-red-600">✕</button>
+          ${i > 0 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, -1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"/></svg></button>` : ''}
+          ${i < galleryImages.length - 1 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, 1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18L15 12L9 6"/></svg></button>` : ''}
+          <button type="button" onclick="event.stopPropagation(); removeImage(${i})" class="bg-red-500/90 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs hover:bg-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg></button>
         </div>
       </div>
     `).join('');

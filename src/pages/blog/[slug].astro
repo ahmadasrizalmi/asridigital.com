@@ -83,7 +83,7 @@ const { slug } = Astro.params;
           <!-- TOC - Mobile Collapsible -->
           <details id="toc-mobile" class="blog-toc-mobile">
             <summary style="padding:14px 16px;font-weight:600;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
-              <span>📋 Daftar Isi</span>
+              <span><Icon name="list" size={16} class="inline align-text-bottom" /> Daftar Isi</span>
               <span id="toc-arrow" style="transition:transform 0.2s;font-size:12px;">▼</span>
             </summary>
             <nav id="toc-mobile-list" style="padding:0 16px 14px;display:flex;flex-direction:column;gap:6px;"></nav>
@@ -108,16 +108,16 @@ const { slug } = Astro.params;
             <span style="font-size:13px;font-weight:600;color:#262626;margin-bottom:4px;">Bagikan:</span>
             <div class="blog-share-buttons">
               <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-wa">
-                💬 WhatsApp
+                <Icon name="message-circle" size={16} class="inline" /> WhatsApp
               </a>
               <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-tw">
-                🐦 Twitter
+                <Icon name="twitter" size={16} class="inline" /> Twitter
               </a>
               <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-fb">
                 f Facebook
               </a>
               <button id="share-copy" class="blog-share-btn blog-share-copy">
-                📋 Salin Link
+                <Icon name="copy" size={16} class="inline" /> Salin Link
               </button>
             </div>
           </div>
@@ -136,7 +136,7 @@ const { slug } = Astro.params;
 
           <!-- Related Posts -->
           <div id="related-posts" style="margin-top:40px;display:none;">
-            <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin-bottom:20px;">📖 Artikel Terkait</h2>
+            <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin-bottom:20px;"><Icon name="book-open" size={20} class="inline align-text-bottom" /> Artikel Terkait</h2>
             <div id="related-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;"></div>
           </div>
         </article>
@@ -144,10 +144,10 @@ const { slug } = Astro.params;
 
       <!-- Floating Share - Desktop Only -->
       <div id="floating-share" class="blog-floating-share">
-        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#25D366;" title="Share WhatsApp">💬</a>
-        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1DA1F2;" title="Share Twitter">🐦</a>
+        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#25D366;" title="Share WhatsApp"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5A8.38 8.38 0 0 1 12.5 21A8.38 8.38 0 0 1 3.5 12.5A8.38 8.38 0 0 1 12 3.5A8.38 8.38 0 0 1 21 11.5Z"/><path d="M22 2L22 2"/></svg></a>
+        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1DA1F2;" title="Share Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></a>
         <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1877F2;" title="Share Facebook">f</a>
-        <button id="float-copy" class="blog-float-btn" style="background:#f5f5f5;color:#262626;" title="Salin Link">📋</button>
+        <button id="float-copy" class="blog-float-btn" style="background:#f5f5f5;color:#262626;" title="Salin Link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9H11C9.89543 9 9 9.89543 9 11V20C9 21.1046 9.89543 22 11 22H20C21.1046 22 22 21.1046 22 20V11C22 9.89543 21.1046 9 20 9Z"/><path d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5"/></svg></button>
       </div>
     </div>
 
@@ -203,13 +203,13 @@ const { slug } = Astro.params;
 
     // Pre-process: convert [!TIP], [!WARNING], [!INFO] blocks
     content = content.replace(/>\s*\[!TIP\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
-      return `<div class="callout callout-tip">💡 <strong>Tips:</strong>${text}</div>`;
+      return `<div class="callout callout-tip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline align-text-bottom"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg> <strong>Tips:</strong>${text}</div>`;
     });
     content = content.replace(/>\s*\[!WARNING\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
-      return `<div class="callout callout-warning">⚠️ <strong>Peringatan:</strong>${text}</div>`;
+      return `<div class="callout callout-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline align-text-bottom"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <strong>Peringatan:</strong>${text}</div>`;
     });
     content = content.replace(/>\s*\[!INFO\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
-      return `<div class="callout callout-info">ℹ️ <strong>Info:</strong>${text}</div>`;
+      return `<div class="callout callout-info"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline align-text-bottom"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"/><path d="M12 16V12"/><path d="M12 8H12.01"/></svg> <strong>Info:</strong>${text}</div>`;
     });
 
     // Pre-process: highlight stats like **67%** or **10x** into stat cards
@@ -272,7 +272,7 @@ const { slug } = Astro.params;
         const btns = ['share-copy', 'float-copy'];
         btns.forEach(id => {
           const btn = document.getElementById(id);
-          if (btn) { btn.textContent = '✅ Tersalin!'; setTimeout(() => { btn.textContent = id === 'share-copy' ? '📋 Salin Link' : '📋'; }, 2000); }
+          if (btn) { btn.textContent = 'Tersalin!'; setTimeout(() => { btn.textContent = id === 'share-copy' ? 'Salin Link' : ''; }, 2000); }
         });
       });
     };
@@ -392,7 +392,7 @@ const { slug } = Astro.params;
         grid.innerHTML = DOMPurify.sanitize(relatedPosts.map(r => `
           <a href="/blog/${r.slug}" style="border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
             <div style="height:120px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:2.5rem;">📝</span>
+              <span style="font-size:2.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#10b981"><path d="M17 3A2.83 2.83 0 1 1 20 6L7.5 18.5L2 20L3.5 14.5L17 3Z"/></svg></span>
             </div>
             <div style="padding:14px;">
               <p style="font-size:11px;color:#737373;margin-bottom:4px;">${r.category || ''}</p>
