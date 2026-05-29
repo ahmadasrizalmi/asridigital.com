@@ -1,6 +1,6 @@
 ---
 import type { Product } from '../../types';
-import { formatIDR, parseTags } from '../../lib/utils';
+import { formatIDR, parseTags, optimizeImage } from '../../lib/utils';
 
 interface Props {
   product: Product;
@@ -32,7 +32,7 @@ const filterCat = catMap[product.category.toLowerCase()] || 'tools';
 <a href={`/product/${product.slug}`} class="product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full" data-category={filterCat} data-title={product.title.toLowerCase()} data-slug={product.slug}>
   <div class="relative overflow-hidden aspect-square bg-slate-50">
     <img
-      src={product.imageIcon || '/images/placeholder.jpg'}
+      src={optimizeImage(product.imageIcon || '/images/placeholder.jpg', { w: 400, h: 400 })}
       alt={product.title}
       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       loading="lazy"

@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
+import { optimizeImage } from '../../lib/utils';
 
 // Fetch blog posts from API at build time
 const apiBase = 'https://asridigital.com';
@@ -110,7 +111,7 @@ function getCategoryMeta(category: string) {
             <article class="card-hover overflow-hidden group" data-category={post.category?.toLowerCase() || 'general'}>
               <div class="relative overflow-hidden">
                 {post.image_url ? (
-                  <img src={`${post.image_url}?v=${Date.now()}`} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
+                  <img src={optimizeImage(post.image_url, { w: 800, h: 420 })} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
                 ) : (
                   <div class={`w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center`}>
                     <Icon name={icon} size={48} class={iconColor} />
@@ -171,6 +172,15 @@ function getCategoryMeta(category: string) {
 
 <script>
   // Blog filtering by category
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
+
   const articles = document.querySelectorAll('article[data-category]');
   const buttons = document.querySelectorAll('.flex.flex-wrap button');
   
@@ -230,7 +240,7 @@ function getCategoryMeta(category: string) {
     const safeExcerpt = post.excerpt ? post.excerpt.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])) : '';
     const safeAuthor = post.author_name ? post.author_name.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])) : 'Admin';
 
-    const safeImageUrl = post.image_url ? post.image_url.replace(/"/g, '&quot;') : '';
+    const safeImageUrl = post.image_url ? optimizeImg(post.image_url, 400, 210).replace(/"/g, '&quot;') : '';
     const imageSection = post.image_url
       ? `<img src="${safeImageUrl}" alt="${safeTitle}" class="w-full h-48 object-cover" loading="lazy" />`
       : `<div class="w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center">

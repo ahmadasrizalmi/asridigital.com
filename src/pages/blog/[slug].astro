@@ -168,6 +168,15 @@ const { slug } = Astro.params;
 <script define:vars={{ slug }}>
   const API_BASE = '/api';
 
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
+
   function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   }
@@ -348,11 +357,11 @@ const { slug } = Astro.params;
         // Set hero background image
         const heroBg = document.getElementById('hero-bg-image');
         if (heroBg) {
-          heroBg.style.background = `url('${post.image_url}') center/cover`;
+          heroBg.style.background = `url('${optimizeImg(post.image_url, 1200, 400)}') center/cover`;
         }
         const container = document.getElementById('post-image-container');
         const img = document.getElementById('post-image');
-        img.src = `${post.image_url}?v=${Date.now()}`;
+        img.src = optimizeImg(post.image_url, 1200, 630);
         img.alt = post.title;
         container.style.display = 'block';
       }

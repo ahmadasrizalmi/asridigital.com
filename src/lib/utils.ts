@@ -1,3 +1,25 @@
+/**
+ * Optimize Cloudinary image URL by adding width/height/crop transforms.
+ * Non-Cloudinary URLs are returned unchanged.
+ */
+export function optimizeImage(url: string, options: { w?: number; h?: number; c?: string } = {}): string {
+  if (!url) return url;
+  if (!url.includes('res.cloudinary.com')) return url;
+  
+  // Don't double-transform
+  if (url.includes('/upload/w_') || url.includes('/upload/c_')) return url;
+  
+  const { w, h, c = 'fill' } = options;
+  const transforms: string[] = [];
+  if (w) transforms.push(`w_${w}`);
+  if (h) transforms.push(`h_${h}`);
+  if (w || h) transforms.push(`c_${c}`);
+  
+  if (transforms.length === 0) return url;
+  
+  return url.replace('/upload/', `/upload/${transforms.join(',')}/`);
+}
+
 export function formatIDR(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',

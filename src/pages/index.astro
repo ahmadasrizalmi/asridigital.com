@@ -227,6 +227,15 @@ try {
 <script>
   // ===== DYNAMIC DATA FROM D1 VIA API =====
 
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
+
   const ICON_MAP: Record<string, string> = {
     'zap': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
     'lock': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>',
@@ -338,7 +347,7 @@ try {
         const catKey = post.category?.toLowerCase() || 'general';
         const meta = getBlogCategoryMeta(catKey);
         const pubDate = formatBlogDate(post.published_at);
-        const imgSrc = post.image_url ? `${post.image_url}` : '';
+        const imgSrc = post.image_url ? optimizeImg(post.image_url, 400, 210) : '';
 
         return `
           <article class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg transition-shadow group">
@@ -393,7 +402,7 @@ try {
     const filterCat = PRODUCT_CAT_MAP[catKey] || 'tools';
     const title = product.title || '';
     const slug = product.slug || '';
-    const imgSrc = product.image_icon || product.imageIcon || '/images/placeholder.jpg';
+    const imgSrc = optimizeImg(product.image_icon || product.imageIcon || '/images/placeholder.jpg', 400, 400);
     const shortDesc = product.short_description || product.shortDescription || product.description || '';
     const price = Number(product.price || 0);
     const compareAt = product.compare_at_price || product.compareAtPrice || null;
