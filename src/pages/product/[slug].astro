@@ -435,4 +435,145 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
       }
     } catch {}
   })();
+
+  // Silent background refresh: fetch latest product data from API and update DOM
+  (async function refreshProductData() {
+    try {
+      const slug = window.location.pathname.split('/').filter(Boolean).pop();
+      const res = await fetch(`/api/products/${slug}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const p = data.product;
+      if (!p) return;
+
+      // Helper: formatIDR (client-side version since server-side is Astro-only)
+      const formatIDRClient = (n) => {
+        if (n === 0) return 'Rp 0';
+        if (n == null) return '';
+        return 'Rp ' + Number(n).toLocaleString('id-ID');
+      };
+
+      // Helper: set meta tag content
+      const setMeta = (prop, val) => {
+        if (!val) return;
+        const el = document.querySelector(`meta[property="${prop}"], meta[name="${prop}"]`);
+        if (el) el.setAttribute('content', val);
+      };
+
+      // Update main image
+      const mainImg = document.getElementById('main-image');
+      if (mainImg && p.image_icon && mainImg.src !== p.image_icon && !mainImg.src.endsWith(p.image_icon)) {
+        mainImg.src = p.image_icon;
+      }
+
+      // Update title
+      const h1 = document.querySelector('h1');
+      if (h1 && p.title && h1.textContent.trim() !== p.title) {
+        h1.textContent = p.title;
+        document.title = `${p.title} - Asri Digital`;
+      }
+
+      // Update OG meta tags
+      if (p.image_icon) {
+        const imgUrl = p.image_icon.startsWith('http') ? p.image_icon : `https://asridigital.com${p.image_icon}`;
+        setMeta('og:image', imgUrl);
+        setMeta('twitter:image', imgUrl);
+      }
+      if (p.title) {
+        setMeta('og:title', `${p.title} - Asri Digital`);
+        setMeta('twitter:title', `${p.title} - Asri Digital`);
+      }
+      if (p.short_description || p.description) {
+        setMeta('og:description', p.short_description || p.description);
+        setMeta('twitter:description', p.short_description || p.description);
+        setMeta('description', p.short_description || p.description);
+      }
+
+      // Update gallery images
+      let images = [];
+      try {
+        images = p.gallery_images
+          ? (typeof p.gallery_images === 'string' ? JSON.parse(p.gallery_images) : p.gallery_images)
+          : (p.image_icon ? [p.image_icon] : []);
+      } catch { images = p.image_icon ? [p.image_icon] : []; }
+      if (images.length > 0) {
+        window.galleryImages = images;
+        // Rebuild gallery thumbnails if container exists
+        const galleryContainer = document.querySelector('button[onclick^="changeMainImage"]')?.parentElement;
+        if (galleryContainer && images.length > 1) {
+          galleryContainer.innerHTML = images.map((img, i) =>
+            `<button class="aspect-square rounded-xl overflow-hidden bg-slate-50 transition-all ${i === 0 ? 'border-2 border-slate-900' : 'border border-slate-200 opacity-60 hover:opacity-100'}" onclick="changeMainImage('${img}', ${i})">` +
+            `<img src="${img}" alt="${p.title || ''} ${i + 1}" class="w-full h-full object-cover" />` +
+            `</button>`
+          ).join('');
+        }
+      }
+
+      // Update price block
+      const priceBlock = document.querySelector('.bg-slate-50.border.border-slate-200.rounded-2xl.p-6');
+      if (priceBlock && p.price != null) {
+        const isFree = p.price === 0;
+        const hasDiscount = p.compare_at_price && p.compare_at_price > p.price;
+        const discount = hasDiscount ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0;
+
+        // Find the price content area (before the checkmarks)
+        const priceArea = priceBlock.querySelector('.space-y-3');
+        if (priceArea) {
+          let priceHTML = '';
+          if (isFree) {
+            priceHTML = '<div class="flex items-end mb-4"><span class="text-4xl font-extrabold text-green-600 tracking-tight">Gratis</span></div>';
+          } else {
+            if (hasDiscount) {
+              priceHTML += `<p class="text-sm text-slate-500 font-medium mb-1 line-through">Harga Normal: ${formatIDRClient(p.compare_at_price)}</p>`;
+            }
+            priceHTML += '<div class="flex items-end mb-4">';
+            priceHTML += `<span class="text-4xl font-extrabold text-slate-900 tracking-tight">${formatIDRClient(p.price)}</span>`;
+            if (hasDiscount) {
+              priceHTML += `<span class="ml-3 mb-1 text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded">Diskon ${discount}%</span>`;
+            }
+            priceHTML += '</div>';
+          }
+          // Insert price HTML before the checklist
+          const existingPriceArea = priceArea.previousElementSibling;
+          if (existingPriceArea) {
+            existingPriceArea.outerHTML = priceHTML;
+          }
+        }
+      }
+
+      // Update description (requires marked.js)
+      if (p.description) {
+        const proseEl = document.querySelector('.prose');
+        if (proseEl) {
+          if (typeof marked === 'undefined') {
+            // Load marked from CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+            script.onload = () => {
+              proseEl.innerHTML = marked.parse(p.description);
+            };
+            document.head.appendChild(script);
+          } else {
+            proseEl.innerHTML = marked.parse(p.description);
+          }
+        }
+      }
+
+      // Update JSON-LD structured data
+      const ldScript = document.querySelector('script[type="application/ld+json"]');
+      if (ldScript) {
+        try {
+          const ldData = JSON.parse(ldScript.textContent);
+          ldData.name = p.title || ldData.name;
+          ldData.description = p.description || ldData.description;
+          ldData.image = p.image_icon || ldData.image;
+          if (ldData.offers && p.price != null) {
+            ldData.offers.price = p.sale_price || p.price;
+          }
+          ldScript.textContent = JSON.stringify(ldData);
+        } catch {}
+      }
+
+    } catch (e) { /* silent fail */ }
+  })();
 </script>
