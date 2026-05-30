@@ -96,7 +96,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
   }
 })}></script>
 
-<BaseLayout title={`${product.title} - Asri Digital`} description={product.short_description || product.description} ogImage={product.image_icon ? (product.image_icon.startsWith('http') ? product.image_icon : `https://asridigital.com${product.image_icon}`) : undefined}>
+<BaseLayout title={`${product.title} - Asri Digital`} description={product.short_description || product.description} canonicalUrl={`https://asridigital.com/product/${productSlug}`} ogImage={product.image_icon ? (product.image_icon.startsWith('http') ? (product.image_icon.includes('cloudinary.com') ? product.image_icon.replace(/image\/upload\//, 'image/upload/w_1200,h_630,c_fill/') : product.image_icon) : `https://res.cloudinary.com/daj8fzinf/image/upload/w_1200,h_630,c_fill/q_auto/f_auto${product.image_icon}`) : undefined}>
   <Header />
 
   <main class="pt-28 pb-20">

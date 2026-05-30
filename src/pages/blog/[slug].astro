@@ -12,6 +12,11 @@ export async function getStaticPaths() {
     const posts = data.posts || [];
     return posts.map((post: any) => ({
       params: { slug: post.slug },
+      props: {
+        postTitle: post.title || 'Blog - Asri Digital',
+        postExcerpt: post.excerpt || post.title || '',
+        postImage: post.image_url || '',
+      },
     }));
   } catch (e) {
     return [];
@@ -19,9 +24,12 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
+const { postTitle, postExcerpt, postImage } = Astro.props;
+const blogCanonical = `https://asridigital.com/blog/${slug}`;
+const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `https://asridigital.com${postImage}`) : undefined;
 ---
 
-<BaseLayout title="Blog - Asri Digital">
+<BaseLayout title={`${postTitle} - Blog Asri Digital`} description={postExcerpt} canonicalUrl={blogCanonical} ogImage={blogOgImage}>
   <Header />
 
   <!-- Reading Progress Bar -->
