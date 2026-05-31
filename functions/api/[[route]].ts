@@ -9,6 +9,8 @@ interface Env {
   RESEND_KEY: string;
   JWT_SECRET: string;
   APP_URL: string;
+  TELEGRAM_BOT_TOKEN: string;
+  TELEGRAM_CHAT_ID: string;
 }
 
 // Rate limiting store (in-memory for simplicity, use KV in production)
@@ -654,6 +656,18 @@ export async function onRequest(context: any): Promise<Response> {
                 await sendOrderConfirmationEmail(env, paidOrder, magicToken, newUserPassword || undefined);
               }
 
+              // Telegram notification for paid order
+              try {
+                await notifyTelegram(env,
+                  `💰 <b>Order DIBAYAR</b>\n\n` +
+                  `📦 Produk: ${paidOrder?.product_title || order.product_title}\n` +
+                  `👤 Customer: ${paidOrder?.user_name || order.user_name}\n` +
+                  `📧 Email: ${paidOrder?.user_email || order.user_email}\n` +
+                  `💰 Total: Rp ${(paidOrder?.amount || order.amount || 0).toLocaleString('id-ID')}\n` +
+                  `🔖 ID: ${orderId}`
+                );
+              } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
+
               order.status = 'PAID';
               order.paid_at = new Date().toISOString();
             } else if (checkoutData.status === 'expired' || checkoutData.status === 'cancelled') {
@@ -1057,6 +1071,18 @@ export async function onRequest(context: any): Promise<Response> {
           await sendFreeProductEmail(env, { id: orderId, user_email: sanitizedEmail, user_name: sanitizedName, product_title: product.title, product_slug: product.slug, download_url: product.download_url });
         } catch (e: any) { console.log('FREE_EMAIL: Error:', e.message); }
 
+        // Telegram notification for new order
+        try {
+          await notifyTelegram(env,
+            `🆕 <b>Order Baru (GRATIS)</b>\n\n` +
+            `📦 Produk: ${product.title}\n` +
+            `👤 Customer: ${sanitizedName}\n` +
+            `📧 Email: ${sanitizedEmail}\n` +
+            `💰 Total: GRATIS\n` +
+            `🔖 Kode: INV-${Date.now().toString(36).toUpperCase()}`
+          );
+        } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
+
         return jsonResponse({ success: true, orderId, orderCode, paymentUrl: `${env.APP_URL}/success?order=${orderId}&free=true`, amount: 0, discount: discountAmount, isFree: true });
       }
 
@@ -1193,6 +1219,18 @@ export async function onRequest(context: any): Promise<Response> {
         } catch (emailErr: any) {
           console.error('EMAIL: Failed to send free order confirmation:', emailErr.message);
         }
+
+        // Telegram notification for free order
+        try {
+          await notifyTelegram(env,
+            `🆕 <b>Order Baru (GRATIS)</b>\n\n` +
+            `📦 Produk: ${product.title}\n` +
+            `👤 Customer: ${sanitizedName}\n` +
+            `📧 Email: ${sanitizedEmail}\n` +
+            `💰 Total: GRATIS\n` +
+            `🔖 Kode: ${orderCode}`
+          );
+        } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
 
         return jsonResponse({
           success: true,
@@ -2845,6 +2883,27 @@ export async function onRequest(context: any): Promise<Response> {
     console.error('API Error:', error);
     console.error('API Error stack:', error.stack);
     return jsonResponse({ error: 'Terjadi kesalahan pada server. Silakan coba lagi.' }, 500);
+  }
+}
+
+// Telegram notification helper
+async function notifyTelegram(env: Env, message: string) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
+    console.log('Telegram not configured, skipping notification');
+    return;
+  }
+  try {
+    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: env.TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'HTML',
+      }),
+    });
+  } catch (e: any) {
+    console.error('Telegram notification failed:', e.message);
   }
 }
 
