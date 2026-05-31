@@ -9,17 +9,17 @@ import Icon from '../../components/ui/Icon.astro';
     <AdminSidebar activePage="categories" />
     
     <main class="flex-1 bg-background">
-      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
+      <header class="bg-surface border-b border-border px-4 md:px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg" onclick="document.getElementById('admin-sidebar')?.classList.remove('-translate-x-full'); document.getElementById('sidebar-overlay')?.classList.remove('hidden')">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg mr-2" onclick="window.__openSidebar?.()">
               <Icon name="menu" size={24} class="text-text-secondary" />
             </button>
             <h1 class="text-xl font-bold text-text-primary">Kelola Kategori</h1>
           </div>
           
           <div class="flex items-center gap-3">
-            <input type="text" id="category-search" class="input w-48 sm:w-64" placeholder="Cari kategori..." />
+            <input type="text" id="category-search" class="input w-48 md:w-64" placeholder="Cari kategori..." />
             <button onclick="openModal()" class="btn-primary">
               <Icon name="plus" size={18} />
               Tambah Kategori
@@ -28,18 +28,18 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
       </header>
       
-      <div class="p-4 sm:p-6">
+      <div class="p-4 md:p-6">
         <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-background">
                   <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Nama</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Slug</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Deskripsi</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Icon</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Urutan</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase hidden md:table-cell">Slug</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase hidden md:table-cell">Deskripsi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase hidden md:table-cell">Icon</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase hidden md:table-cell">Urutan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase hidden md:table-cell">Status</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Aksi</th>
                 </tr>
               </thead>
@@ -68,7 +68,7 @@ import Icon from '../../components/ui/Icon.astro';
   <!-- Add/Edit Category Modal -->
   <div id="category-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-      <div class="bg-surface rounded-xl max-w-lg w-full">
+      <div class="bg-surface rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-border">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-text-primary" id="modal-title">Tambah Kategori</h2>
@@ -96,7 +96,7 @@ import Icon from '../../components/ui/Icon.astro';
             <textarea id="category-description" class="input" rows="3" placeholder="Deskripsi kategori..."></textarea>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Icon (Emoji)</label>
               <input type="text" id="category-icon" class="input" placeholder="monitor" maxlength="10" />
@@ -188,11 +188,11 @@ import Icon from '../../components/ui/Icon.astro';
           : '<span class="badge-error">Nonaktif</span>';
         return '<tr class="hover:bg-background/50">' +
           '<td class="px-6 py-4 font-medium text-text-primary">' + c.name + '</td>' +
-          '<td class="px-6 py-4"><code class="text-xs bg-background px-2 py-1 rounded">' + c.slug + '</code></td>' +
-          '<td class="px-6 py-4">' + descDisplay + '</td>' +
-          '<td class="px-6 py-4">' + iconDisplay + '</td>' +
-          '<td class="px-6 py-4 text-text-main">' + (c.sort_order || 0) + '</td>' +
-          '<td class="px-6 py-4">' + statusBadge + '</td>' +
+          '<td class="px-6 py-4 hidden md:table-cell"><code class="text-xs bg-background px-2 py-1 rounded">' + c.slug + '</code></td>' +
+          '<td class="px-6 py-4 hidden md:table-cell">' + descDisplay + '</td>' +
+          '<td class="px-6 py-4 hidden md:table-cell">' + iconDisplay + '</td>' +
+          '<td class="px-6 py-4 text-text-main hidden md:table-cell">' + (c.sort_order || 0) + '</td>' +
+          '<td class="px-6 py-4 hidden md:table-cell">' + statusBadge + '</td>' +
           '<td class="px-6 py-4">' +
             '<div class="flex items-center gap-2">' +
               '<button onclick=\'window.editCategory(' + JSON.stringify(c) + ')\' class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">' +

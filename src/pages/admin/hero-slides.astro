@@ -9,10 +9,10 @@ import Icon from '../../components/ui/Icon.astro';
     <AdminSidebar activePage="hero-slides" />
     
     <main class="flex-1 bg-background">
-      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
+      <header class="bg-surface border-b border-border px-4 md:px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg" onclick="document.getElementById('admin-sidebar')?.classList.remove('-translate-x-full'); document.getElementById('sidebar-overlay')?.classList.remove('hidden')">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg mr-2" onclick="window.__openSidebar?.()">
               <Icon name="menu" size={24} class="text-text-secondary" />
             </button>
             <div>
@@ -28,7 +28,7 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
       </header>
       
-      <div class="p-4 sm:p-6">
+      <div class="p-4 md:p-6">
         <!-- Slides list -->
         <div id="slides-container" class="space-y-4">
           <div class="text-center py-12 text-text-muted">Loading...</div>
@@ -63,7 +63,7 @@ import Icon from '../../components/ui/Icon.astro';
             <textarea id="slide-subtitle" class="input" rows="2" placeholder="Deskripsi singkat slide..."></textarea>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Teks CTA</label>
               <input type="text" id="slide-cta-text" class="input" placeholder="Beli Sekarang" />
@@ -74,7 +74,7 @@ import Icon from '../../components/ui/Icon.astro';
             </div>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Link Type</label>
               <select id="slide-link-type" class="input">
@@ -107,7 +107,7 @@ import Icon from '../../components/ui/Icon.astro';
             </div>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Badge Teks</label>
               <input type="text" id="slide-badge-text" class="input" placeholder="Promo" />
@@ -203,15 +203,15 @@ import Icon from '../../components/ui/Icon.astro';
 
     container.innerHTML = slides.map((slide, i) => `
       <div class="bg-surface rounded-xl border border-border overflow-hidden" data-id="${slide.id}">
-        <div class="flex flex-col sm:flex-row">
+        <div class="flex flex-col md:flex-row">
           <!-- Preview image -->
-          <div class="sm:w-64 h-40 sm:h-auto bg-background shrink-0 relative">
+          <div class="md:w-64 h-40 md:h-auto bg-background shrink-0 relative">
             <img src="${slide.image_desktop}" alt="${slide.title}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 100%22><rect fill=%22%23f3f4f6%22 width=%22200%22 height=%22100%22/><text x=%22100%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2212%22>No Image</text></svg>'" />
             ${slide.badge_text ? `<span class="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold ${getBadgeColorClasses(slide.badge_color)}">${slide.badge_text}</span>` : ''}
           </div>
           
           <!-- Info -->
-          <div class="flex-1 p-4 sm:p-5">
+          <div class="flex-1 p-4 md:p-5">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
                 <h3 class="font-bold text-base text-text-primary truncate">${slide.title}</h3>
