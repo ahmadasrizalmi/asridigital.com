@@ -739,9 +739,29 @@ import Icon from '../../components/ui/Icon.astro';
       const result = await response.json() as any;
       
       if (response.ok) {
+        const isNew = !productId;
+        const savedProductId = isNew ? (result.product?.id || productId) : productId;
         showToast('Produk berhasil ' + (productId ? 'diupdate' : 'ditambahkan'));
         closeModal();
         loadProducts();
+
+        // Auto-notify subscribers when product is active/published
+        if (productData.is_active && savedProductId) {
+          try {
+            const notifyRes = await adminFetch(`${API_BASE}/admin/notify-subscribers`, {
+              method: 'POST',
+              body: JSON.stringify({ product_id: savedProductId }),
+            });
+            if (notifyRes.ok) {
+              const notifyData = await notifyRes.json() as any;
+              if (notifyData.sent > 0) {
+                showToast(`📬 Notifikasi terkirim ke ${notifyData.sent} subscriber`);
+              }
+            }
+          } catch (notifyErr) {
+            console.error('Subscriber notification failed:', notifyErr);
+          }
+        }
       } else {
         showToast(result.error || 'Terjadi kesalahan', 'error');
       }

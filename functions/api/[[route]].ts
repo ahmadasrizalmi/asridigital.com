@@ -2778,6 +2778,66 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ totalActive: total?.count || 0, newThisWeek: thisWeek?.count || 0, newThisMonth: thisMonth?.count || 0 });
     }
 
+    // ==================== ADMIN: NOTIFY SUBSCRIBERS (new product) ====================
+    if (route === '/admin/notify-subscribers' && method === 'POST') {
+      const body = await request.json();
+      const { product_id } = body;
+
+      if (!product_id) {
+        return jsonResponse({ error: 'product_id wajib diisi' }, 400);
+      }
+
+      // Fetch product details
+      const product = await env.DB.prepare(
+        'SELECT id, title, slug, description, short_description, price, image_icon, category FROM products WHERE id = ?'
+      ).bind(product_id).first();
+
+      if (!product) {
+        return jsonResponse({ error: 'Produk tidak ditemukan' }, 404);
+      }
+
+      // Fetch all active subscribers
+      const subscribers = await env.DB.prepare(
+        'SELECT id, email, name FROM subscribers WHERE is_active = 1'
+      ).all();
+
+      if (!subscribers.results || subscribers.results.length === 0) {
+        return jsonResponse({ success: true, sent: 0, message: 'Tidak ada subscriber aktif' });
+      }
+
+      // Send notification to each subscriber
+      let sentCount = 0;
+      let failedCount = 0;
+      const productUrl = `${env.APP_URL}/product/${product.slug}`;
+
+      for (const sub of subscribers.results as any[]) {
+        try {
+          await sendSubscriberNewProductEmail(env, {
+            to_email: sub.email,
+            to_name: sub.name || 'Sobat Asri',
+            product_title: product.title,
+            product_description: product.short_description || product.description || '',
+            product_price: product.price,
+            product_image: product.image_icon,
+            product_url: productUrl,
+            product_category: product.category,
+          });
+          sentCount++;
+        } catch (e: any) {
+          console.error(`Failed to send to ${sub.email}:`, e.message);
+          failedCount++;
+        }
+      }
+
+      return jsonResponse({
+        success: true,
+        sent: sentCount,
+        failed: failedCount,
+        total: subscribers.results.length,
+        message: `Notifikasi terkirim ke ${sentCount} subscriber${sentCount !== 1 ? 's' : ''}`
+      });
+    }
+
     // ==================== DEFAULT 404 ====================
     return jsonResponse({ error: 'Endpoint not found' }, 404);
 
@@ -2939,5 +2999,107 @@ async function sendFreeProductEmail(env: Env, order: any) {
   });
   const result = await response.json() as any;
   try { await env.DB.prepare(`INSERT INTO email_logs (to_email, subject, type, status, sent_at) VALUES (?, ?, 'FREE_PRODUCT', 'SENT', datetime('now'))`).bind(order.user_email, subject).run(); } catch(e) {}
+  return result;
+}
+
+// Email helper: notify subscriber about new product
+async function sendSubscriberNewProductEmail(env: Env, data: {
+  to_email: string;
+  to_name: string;
+  product_title: string;
+  product_description: string;
+  product_price: number;
+  product_image: string;
+  product_url: string;
+  product_category: string;
+}) {
+  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) return;
+
+  const priceDisplay = data.product_price === 0 ? 'GRATIS' : `Rp ${Number(data.product_price).toLocaleString('id-ID')}`;
+  const subject = `🆕 Produk Baru: ${data.product_title}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f4f5;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
+    <!-- Header -->
+    <div style="background:#5C7A36;padding:28px 32px;text-align:center;">
+      <h1 style="color:#ffffff;margin:0;font-size:20px;font-weight:600;letter-spacing:-0.01em;">Asri Digital</h1>
+      <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">Produk Baru Untuk Anda</p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:32px;">
+      <p style="color:#18181b;font-size:15px;line-height:1.6;margin:0 0 20px;">
+        Halo <strong>${data.to_name}</strong>,
+      </p>
+      <p style="color:#3f3f46;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Kami baru saja merilis produk baru yang mungkin Anda minati:
+      </p>
+
+      <!-- Product Card -->
+      <div style="border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;margin:0 0 24px;">
+        <div style="background:#fafafa;padding:20px;text-align:center;">
+          <span style="display:inline-block;background:#5C7A36;color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.03em;">${data.product_category}</span>
+        </div>
+        <div style="padding:20px 24px;">
+          <h2 style="color:#18181b;font-size:17px;font-weight:600;margin:0 0 8px;line-height:1.3;">${data.product_title}</h2>
+          <p style="color:#525252;font-size:14px;line-height:1.5;margin:0 0 16px;">${data.product_description.substring(0, 150)}${data.product_description.length > 150 ? '...' : ''}</p>
+          <p style="color:#5C7A36;font-size:18px;font-weight:700;margin:0;">${priceDisplay}</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;margin:0 0 28px;">
+        <a href="${data.product_url}" style="display:inline-block;background:#5C7A36;color:#ffffff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+          Lihat Produk →
+        </a>
+      </div>
+
+      <p style="color:#a1a1aa;font-size:13px;line-height:1.5;margin:0;text-align:center;">
+        Anda menerima email ini karena terdaftar sebagai subscriber Asri Digital.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f4f4f5;padding:20px 32px;text-align:center;border-top:1px solid #e4e4e7;">
+      <p style="color:#a1a1aa;font-size:12px;margin:0;">© 2026 Asri Digital. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${env.RESEND_KEY}`
+    },
+    body: JSON.stringify({
+      from: 'Asri Digital <noreply@asridigital.com>',
+      to: data.to_email,
+      subject,
+      html
+    })
+  });
+
+  const result = await response.json() as any;
+  const emailStatus = response.ok ? 'SENT' : 'FAILED';
+  const errorMsg = response.ok ? null : (result?.message || result?.error || `HTTP ${response.status}`);
+
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_logs (to_email, subject, type, status, error_message, sent_at)
+       VALUES (?, ?, 'NEW_PRODUCT_NOTIFY', ?, ?, datetime('now'))`
+    ).bind(data.to_email, subject, emailStatus, errorMsg).run();
+  } catch (e) {
+    console.error('Email log insert failed:', e);
+  }
+
+  if (!response.ok) {
+    throw new Error(`Email send failed: ${response.status} - ${JSON.stringify(result)}`);
+  }
+
   return result;
 }
