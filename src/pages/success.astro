@@ -6,6 +6,7 @@ import Icon from '../components/ui/Icon.astro';
 // Get order ID from URL
 const url = new URL(Astro.request.url);
 const orderId = url.searchParams.get('order') || 'INV-UNKNOWN';
+const isFree = url.searchParams.get('free') === 'true';
 ---
 
 <BaseLayout title="Pembayaran Berhasil - Asri Digital">
@@ -20,11 +21,13 @@ const orderId = url.searchParams.get('order') || 'INV-UNKNOWN';
       
       <!-- Success Message -->
       <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4 animate-slide-up">
-        Pembayaran Berhasil! 🎉
+        {isFree ? 'Download Berhasil! 🎁' : 'Pembayaran Berhasil! 🎉'}
       </h1>
       
       <p class="text-lg text-text-secondary mb-8 animate-slide-up" style="animation-delay: 0.1s">
-        Terima kasih atas pembelian Anda. Link akses produk telah dikirim ke email Anda.
+        {isFree 
+          ? 'Produk gratis Anda sudah siap! Link download telah dikirim ke email Anda.'
+          : 'Terima kasih atas pembelian Anda. Link akses produk telah dikirim ke email Anda.'}
       </p>
       
       <!-- Order Details -->

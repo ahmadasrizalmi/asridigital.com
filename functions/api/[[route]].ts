@@ -799,6 +799,62 @@ export async function onRequest(context: any): Promise<Response> {
       const orderId = generateId();
       const orderCode = `INV-${Date.now().toString(36).toUpperCase()}`;
 
+      // ==================== FREE PRODUCT CHECKOUT ====================
+      if (finalAmount <= 0) {
+        // Create order as PAID immediately
+        await env.DB.prepare(
+          `INSERT INTO orders (id, user_id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'FREE', ?, 'PAID', datetime('now'), datetime('now'))`
+        )
+          .bind(orderId, null, sanitizedEmail, sanitizedName, customerPhone || null, product.id, product.title, 0, couponId)
+          .run();
+
+        // Save to subscribers table
+        try {
+          await env.DB.prepare(
+            `INSERT OR IGNORE INTO subscribers (id, email, whatsapp, name, source, product_id, product_title, created_at, updated_at)
+             VALUES (?, ?, ?, ?, 'free_product', ?, ?, datetime('now'), datetime('now'))`
+          )
+            .bind(generateId(), sanitizedEmail, customerPhone || null, sanitizedName, product.id, product.title)
+            .run();
+        } catch (e: any) {
+          console.log('SUBSCRIBER: Already exists or error:', e.message);
+        }
+
+        // Update coupon usage
+        if (couponId) {
+          await env.DB.prepare(
+            'UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ?'
+          )
+            .bind(couponId)
+            .run();
+        }
+
+        // Send free product email with download link
+        try {
+          await sendFreeProductEmail(env, {
+            id: orderId,
+            user_email: sanitizedEmail,
+            user_name: sanitizedName,
+            product_title: product.title,
+            product_slug: product.slug,
+            download_url: product.download_url
+          });
+        } catch (e: any) {
+          console.log('FREE_EMAIL: Error sending:', e.message);
+        }
+
+        return jsonResponse({
+          success: true,
+          orderId,
+          orderCode,
+          paymentUrl: `${env.APP_URL}/success?order=${orderId}&free=true`,
+          amount: 0,
+          discount: discountAmount,
+          isFree: true
+        });
+      }
+
       // Get affiliate referral from cookie or request body
       let affiliateReferral = referredBy || null;
       
@@ -1889,6 +1945,99 @@ export async function onRequest(context: any): Promise<Response> {
       }
     }
 
+    // ==================== ADMIN: SUBSCRIBERS LIST ====================
+    if (route === '/admin/subscribers' && method === 'GET') {
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '50');
+      const status = url.searchParams.get('status') || 'all';
+      const search = url.searchParams.get('search') || '';
+      const offset = (page - 1) * limit;
+
+      let whereClause = '1=1';
+      const bindings: any[] = [];
+
+      if (status === 'active') {
+        whereClause += ' AND is_active = 1';
+      } else if (status === 'unsubscribed') {
+        whereClause += ' AND is_active = 0';
+      }
+
+      if (search) {
+        whereClause += ' AND (email LIKE ? OR name LIKE ? OR whatsapp LIKE ?)';
+        bindings.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      }
+
+      const countResult = await env.DB.prepare(
+        `SELECT COUNT(*) as total FROM subscribers WHERE ${whereClause}`
+      ).bind(...bindings).first();
+
+      const subscribers = await env.DB.prepare(
+        `SELECT * FROM subscribers WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      ).bind(...bindings, limit, offset).all();
+
+      return jsonResponse({
+        subscribers: subscribers.results,
+        total: countResult?.total || 0,
+        page,
+        limit,
+        totalPages: Math.ceil((countResult?.total || 0) / limit)
+      });
+    }
+
+    // ==================== ADMIN: UPDATE SUBSCRIBER ====================
+    if (route.startsWith('/admin/subscribers/') && method === 'PATCH') {
+      const subscriberId = route.split('/')[3];
+      const body = await request.json();
+      const { is_active, email_notifications, whatsapp_notifications } = body;
+
+      const updates: string[] = [];
+      const vals: any[] = [];
+
+      if (is_active !== undefined) {
+        updates.push('is_active = ?');
+        vals.push(is_active);
+        if (!is_active) {
+          updates.push('unsubscribed_at = datetime(\'now\')');
+        } else {
+          updates.push('unsubscribed_at = NULL');
+        }
+      }
+      if (email_notifications !== undefined) {
+        updates.push('email_notifications = ?');
+        vals.push(email_notifications);
+      }
+      if (whatsapp_notifications !== undefined) {
+        updates.push('whatsapp_notifications = ?');
+        vals.push(whatsapp_notifications);
+      }
+
+      updates.push('updated_at = datetime(\'now\')');
+      vals.push(subscriberId);
+
+      await env.DB.prepare(
+        `UPDATE subscribers SET ${updates.join(', ')} WHERE id = ?`
+      ).bind(...vals).run();
+
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: SUBSCRIBER STATS ====================
+    if (route === '/admin/subscribers/stats' && method === 'GET') {
+      const total = await env.DB.prepare('SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1').first();
+      const thisWeek = await env.DB.prepare(
+        "SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1 AND created_at >= datetime('now', '-7 days')"
+      ).first();
+      const thisMonth = await env.DB.prepare(
+        "SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1 AND created_at >= datetime('now', '-30 days')"
+      ).first();
+
+      return jsonResponse({
+        totalActive: total?.count || 0,
+        newThisWeek: thisWeek?.count || 0,
+        newThisMonth: thisMonth?.count || 0
+      });
+    }
+
     // ==================== DEFAULT 404 ====================
     return jsonResponse({ error: 'Endpoint not found' }, 404);
 
@@ -2005,6 +2154,97 @@ async function sendOrderConfirmationEmail(env: Env, order: any) {
   await env.DB.prepare(
     `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
      VALUES (?, ?, 'ORDER_CONFIRMATION', 'SENT', datetime('now'))`
+  )
+    .bind(order.user_email, subject)
+    .run();
+
+  return result;
+}
+
+// Email helper function for free products
+async function sendFreeProductEmail(env: Env, order: any) {
+  if (!env.RESEND_API_KEY || env.RESEND_API_KEY.startsWith('re_your_')) {
+    console.log('Resend API key not configured, skipping email');
+    return;
+  }
+
+  const subject = `🎁 Produk Gratis Anda - ${order.product_title}`;
+  const downloadLink = order.download_url || `${env.APP_URL}/dashboard`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background-color: #f5f5f5;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #10b981 0%, #f59e0b 100%); padding: 32px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🎁 Produk Gratis Anda!</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Asri Digital</p>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 32px;">
+          <p style="color: #171717; font-size: 16px; line-height: 1.6;">
+            Halo <strong>${order.user_name}</strong>,
+          </p>
+          <p style="color: #525252; font-size: 15px; line-height: 1.6;">
+            Terima kasih telah mengunduh produk gratis kami! Berikut detailnya:
+          </p>
+
+          <!-- Product Info -->
+          <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <h3 style="color: #10b981; margin: 0 0 8px 0; font-size: 18px;">${order.product_title}</h3>
+            <p style="color: #525252; margin: 0; font-size: 14px;">Order ID: ${order.id}</p>
+          </div>
+
+          <!-- CTA Button -->
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${downloadLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #f59e0b 100%); color: #ffffff; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px;">
+              Download Sekarang →
+            </a>
+          </div>
+
+          <p style="color: #737373; font-size: 14px; text-align: center; line-height: 1.6;">
+            Anda akan mendapatkan notifikasi saat kami merilis produk baru.<br>
+            Pastikan email ini tidak masuk spam! 📬
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #f5f5f5; padding: 24px; text-align: center; border-top: 1px solid #e5e5e5;">
+          <p style="color: #a3a3a3; font-size: 12px; margin: 0;">
+            © 2026 Asri Digital. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`
+    },
+    body: JSON.stringify({
+      from: 'Asri Digital <noreply@asridigital.com>',
+      to: order.user_email,
+      subject,
+      html
+    })
+  });
+
+  const result = await response.json() as any;
+
+  // Log email
+  await env.DB.prepare(
+    `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
+     VALUES (?, ?, 'FREE_PRODUCT', 'SENT', datetime('now'))`
   )
     .bind(order.user_email, subject)
     .run();
