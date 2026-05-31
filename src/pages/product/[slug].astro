@@ -318,7 +318,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
       {relatedProducts.length > 0 && (
         <section class="mt-20 border-t border-slate-200 pt-12">
           <h3 class="text-2xl font-bold text-slate-900 mb-8 text-center">Produk Lainnya</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {relatedProducts.map((rp: any) => (
               <a href={`/product/${rp.slug}`} class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-float hover:-translate-y-1 transition-all duration-300 group">
                 <div class="overflow-hidden aspect-square bg-slate-50">

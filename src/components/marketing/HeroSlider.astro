@@ -2,14 +2,14 @@
 // HeroSlider.astro — CSS opacity-based hero slider with responsive mobile/desktop layouts
 ---
 
-<header class="relative w-full overflow-hidden" style="height:100vh;min-height:600px;">
+<header class="relative w-full overflow-hidden" style="height:100dvh;min-height:480px;">
   <!-- Slider Images Container -->
   <div id="hero-slider" class="absolute inset-0 w-full h-full">
     <!-- Slides rendered by JS -->
   </div>
 
   <!-- MOBILE LAYOUT: text top, no glass, CTA bottom -->
-  <div class="relative z-10 flex flex-col justify-between h-full sm:hidden" style="padding-top:100px;padding-bottom:80px;">
+  <div class="relative z-10 flex flex-col justify-between h-full md:hidden" style="padding-top:100px;padding-bottom:80px;">
     <!-- Text at top -->
     <div class="px-6">
       <h1 id="hero-main-title-mobile" class="text-3xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-3">
@@ -28,7 +28,7 @@
   </div>
 
   <!-- DESKTOP LAYOUT: glass card left, image right -->
-  <div class="relative z-10 hidden sm:flex items-center h-full">
+  <div class="relative z-10 hidden md:flex items-center h-full">
     <!-- Overlay gradient for text readability -->
     <div class="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent z-[2]" style="width:66%;"></div>
 
