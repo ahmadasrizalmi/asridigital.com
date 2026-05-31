@@ -26,10 +26,10 @@ import Icon from '../../components/ui/Icon.astro';
               <option value="FAILED">Gagal</option>
               <option value="CANCELLED">Dibatalkan</option>
             </select>
-            <button onclick="window.exportOrders()" class="btn-tertiary py-2">
-              <Icon name="download" size={16} />
-              Export
-            </button>
+          <button onclick="exportOrders()" class="btn-tertiary">
+            <Icon name="download" size={18} />
+            <span class="hidden sm:inline">Export</span>
+          </button>
           </div>
         </div>
       </header>

@@ -211,7 +211,7 @@ try {
 
         {/* View All Button */}
         <div class="text-center mt-12" id="blog-view-all" style="display:none;">
-          <a href="/blog" class="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-all shadow-sm hover:shadow-md">
+          <a href="/blog" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-full hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-md hover:shadow-lg">
             Lihat Semua Artikel
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
           </a>
@@ -311,7 +311,7 @@ try {
     'tips': { label: 'Tips & Trik', color: 'bg-emerald-500 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
     'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
     'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
-    'berita': { label: 'Berita', color: 'bg-slate-600 text-white', bgColor: 'bg-slate-50' },
+    'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
     'ai': { label: 'AI', color: 'bg-emerald-600 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
     'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
     'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
@@ -416,7 +416,7 @@ try {
 
     const a = document.createElement('a');
     a.href = '/product/' + slug;
-    a.className = 'product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float transition-all duration-200 group flex flex-col h-full';
+    a.className = 'product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full';
     a.setAttribute('data-category', filterCat);
     a.setAttribute('data-title', title.toLowerCase());
     a.setAttribute('data-slug', slug);
@@ -443,7 +443,7 @@ try {
       '<p class="text-slate-500 text-sm mb-6 flex-grow leading-relaxed line-clamp-2">' + safeDesc + '</p>' +
       '<div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-300">' +
       priceHtml +
-      '<button class="buy-btn bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-primary group-hover:text-white transition-all duration-200">Lihat Detail</button>' +
+      '<button class="buy-btn bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all duration-300">Lihat Detail</button>' +
       '</div></div>';
 
     return a;

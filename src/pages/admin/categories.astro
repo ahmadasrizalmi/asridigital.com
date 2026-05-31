@@ -19,10 +19,10 @@ import Icon from '../../components/ui/Icon.astro';
           </div>
           
           <div class="flex items-center gap-3">
-            <input type="text" id="category-search" class="input w-48 md:w-64" placeholder="Cari kategori..." />
+            <input type="text" id="category-search" class="input hidden md:block w-64" placeholder="Cari kategori..." />
             <button onclick="openModal()" class="btn-primary">
               <Icon name="plus" size={18} />
-              Tambah Kategori
+              <span class="hidden sm:inline">Tambah Kategori</span>
             </button>
           </div>
         </div>

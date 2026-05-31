@@ -44,17 +44,18 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 rounded-lg;
+    @apply inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 rounded-lg whitespace-nowrap;
     padding: 0.625rem 1.25rem;
   }
 
   .btn-primary {
-    @apply btn bg-primary text-white font-semibold;
-    border-radius: 0.75rem;
+    @apply btn bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 font-bold shadow-sm;
+    border-radius: 9999px;
   }
   .btn-primary:hover {
-    @apply bg-primary-hover;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    @apply from-emerald-400 to-yellow-200;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.2);
   }
 
   .btn-secondary {
@@ -63,6 +64,7 @@
   }
   .btn-secondary:hover {
     @apply bg-carbon-hover;
+    transform: translateY(-2px);
   }
 
   .btn-tertiary {
@@ -71,6 +73,7 @@
   }
   .btn-tertiary:hover {
     @apply border-slate-300 bg-slate-50;
+    transform: translateY(-1px);
   }
 
   .btn-ghost {
@@ -85,6 +88,7 @@
   }
   .card-hover:hover {
     @apply shadow-float;
+    transform: translateY(-4px);
   }
 
   .badge {

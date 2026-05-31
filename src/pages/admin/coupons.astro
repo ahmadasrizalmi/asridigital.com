@@ -18,11 +18,11 @@ import Icon from '../../components/ui/Icon.astro';
             <h1 class="text-xl font-bold text-text-primary">Kelola Kupon</h1>
           </div>
           
-          <div class="flex items-center gap-3">
-            <input type="text" id="coupon-search" class="input w-48 md:w-64" placeholder="Cari kupon..." />
+          <div class="flex items-center gap-2 md:gap-3">
+            <input type="text" id="coupon-search" class="input hidden md:block w-64" placeholder="Cari kupon..." />
             <button onclick="openModal()" class="btn-primary">
               <Icon name="plus" size={18} />
-              Tambah Kupon
+              <span class="hidden sm:inline">Tambah Kupon</span>
             </button>
           </div>
         </div>
