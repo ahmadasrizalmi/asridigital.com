@@ -3,12 +3,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import ProductCard from '../components/marketing/ProductCard.astro';
+import HeroSlider from '../components/marketing/HeroSlider.astro';
+import PromoCard from '../components/marketing/PromoCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
-import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
 import type { Product } from '../types/index';
 
-// Fallback product data; production tries DB/API first.
 const allAccessProduct: Product = {
   id: 'ALL-ACCESS',
   title: 'Lifetime All-Access Pass',
@@ -27,73 +27,24 @@ const allAccessProduct: Product = {
 };
 
 let products: Product[] = [
-  {
-    id: 'gpt-animasi-muslim',
-    title: 'Animasi Muslim Kids Studio',
-    slug: 'animasi-muslim-kids-studio',
-    description: 'GPT khusus untuk membuat konten animasi Islami untuk anak-anak.',
-    shortDescription: 'Buat konten animasi Islami untuk anak-anak dengan AI',
-    price: 99000,
-    compareAtPrice: 149000,
-    gptUrl: null,
-    imageIcon: '/images/animasi-muslim.jpg',
-    category: 'kreatif',
-    tags: ['animasi', 'islami', 'anak'],
-    isActive: true,
-    isFeatured: true,
-    sortOrder: 1,
-  },
-  {
-    id: 'gpt-sahabat-guru',
-    title: 'Sahabat Guru PAUD Islami',
-    slug: 'sahabat-guru-paud-islami',
-    description: 'GPT asisten untuk guru PAUD Islami.',
-    shortDescription: 'Asisten AI untuk guru PAUD Islami',
-    price: 79000,
-    compareAtPrice: null,
-    gptUrl: null,
-    imageIcon: '/images/sahabat-guru.jpg',
-    category: 'pendidikan',
-    tags: ['guru', 'paud', 'islami', 'pendidikan'],
-    isActive: true,
-    isFeatured: false,
-    sortOrder: 2,
-  },
-  {
-    id: 'gpt-content-creator',
-    title: 'Content Creator Pro',
-    slug: 'content-creator-pro',
-    description: 'GPT untuk membuat konten marketing yang engaging.',
-    shortDescription: 'Buat konten marketing viral dengan AI',
-    price: 89000,
-    compareAtPrice: 129000,
-    gptUrl: null,
-    imageIcon: '/images/content-creator.jpg',
-    category: 'marketing',
-    tags: ['content', 'marketing', 'social-media'],
-    isActive: true,
-    isFeatured: false,
-    sortOrder: 3,
-  },
+  { id: 'gpt-animasi-muslim', title: 'Animasi Muslim Kids Studio', slug: 'animasi-muslim-kids-studio', description: 'GPT khusus untuk membuat konten animasi Islami untuk anak-anak.', shortDescription: 'Buat konten animasi Islami untuk anak-anak dengan AI', price: 99000, compareAtPrice: 149000, gptUrl: null, imageIcon: '/images/animasi-muslim.jpg', category: 'kreatif', tags: ['animasi', 'islami', 'anak'], isActive: true, isFeatured: true, sortOrder: 1 },
+  { id: 'gpt-sahabat-guru', title: 'Sahabat Guru PAUD Islami', slug: 'sahabat-guru-paud-islami', description: 'GPT asisten untuk guru PAUD Islami.', shortDescription: 'Asisten AI untuk guru PAUD Islami', price: 79000, compareAtPrice: null, gptUrl: null, imageIcon: '/images/sahabat-guru.jpg', category: 'pendidikan', tags: ['guru', 'paud', 'islami', 'pendidikan'], isActive: true, isFeatured: false, sortOrder: 2 },
+  { id: 'gpt-content-creator', title: 'Content Creator Pro', slug: 'content-creator-pro', description: 'GPT untuk membuat konten marketing yang engaging.', shortDescription: 'Buat konten marketing viral dengan AI', price: 89000, compareAtPrice: 129000, gptUrl: null, imageIcon: '/images/content-creator.jpg', category: 'marketing', tags: ['content', 'marketing', 'social-media'], isActive: true, isFeatured: false, sortOrder: 3 },
 ];
 
 function normalizeProduct(raw: any): Product {
   return {
-    id: raw.id,
-    title: raw.title,
-    slug: raw.slug,
+    id: raw.id, title: raw.title, slug: raw.slug,
     description: raw.description || '',
     shortDescription: raw.shortDescription ?? raw.short_description ?? null,
     price: Number(raw.price || 0),
     compareAtPrice: raw.compareAtPrice ?? raw.compare_at_price ?? null,
-    gptUrl: null,  // API no longer returns gpt_url for security
+    gptUrl: null,
     imageIcon: raw.imageIcon ?? raw.image_icon ?? null,
     galleryImages: raw.galleryImages ?? raw.gallery_images ?? null,
     galleryVideos: raw.galleryVideos ?? raw.gallery_videos ?? null,
     videoEmbedUrl: raw.videoEmbedUrl ?? raw.video_embed_url ?? null,
-    features: raw.features ?? null,
-    specs: raw.specs ?? null,
-    faq: raw.faq ?? null,
+    features: raw.features ?? null, specs: raw.specs ?? null, faq: raw.faq ?? null,
     category: raw.category || 'produk',
     tags: Array.isArray(raw.tags) ? raw.tags : (() => { try { return JSON.parse(raw.tags || '[]'); } catch { return []; } })(),
     isActive: Boolean(raw.isActive ?? raw.is_active ?? true),
@@ -104,349 +55,497 @@ function normalizeProduct(raw: any): Product {
 
 try {
   const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-  const response = await fetch(`${apiBase}/api/products?limit=12`);
+  const response = await fetch(`${apiBase}/api/products?limit=100`);
   if (response.ok) {
     const data = await response.json() as any;
     const dbProducts = (data.products || [])
       .filter((p: any) => p.slug !== allAccessProduct.slug)
       .map(normalizeProduct);
-
-    if (dbProducts.length > 0) {
-      products = dbProducts;
-    }
+    if (dbProducts.length > 0) products = dbProducts;
   }
 } catch (error) {
   console.warn('Using fallback products because API products failed:', error);
 }
-
-const features = [
-  { icon: 'zap', title: 'Instant Akses', description: 'Langsung bisa pakai setelah bayar' },
-  { icon: 'lock', title: 'Aman Bayar', description: 'Pembayaran terenkripsi & aman' },
-  { icon: 'message-square', title: 'Bahasa Indonesia', description: 'Semua GPT berbahasa Indonesia' },
-  { icon: 'refresh-cw', title: 'Update Gratis', description: 'Dapat update terbaru otomatis' },
-];
-
-// TODO: These stats should be fetched dynamically from /api/settings or database
-// For now using hardcoded values that can be updated via admin panel
-const stats = [
-  { value: '500+', label: 'Pengguna Aktif', icon: 'users' },
-  { value: '1,000+', label: 'Produk Terjual', icon: 'trending-up' },
-  { value: '4.9/5', label: 'Rating', icon: 'star' },
-  { value: '10+', label: 'Custom GPT', icon: 'sparkles' },
-];
 ---
 
-<BaseLayout structuredData={
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Asri Digital",
-    "url": "https://asridigital.com",
-    "description": "Custom GPT Marketplace untuk Profesional Indonesia",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://asridigital.com/blog?search={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+<BaseLayout structuredData={{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Asri Digital",
+  "url": "https://asridigital.com",
+  "description": "Solusi Bisnis Digital & AI untuk Profesional Indonesia",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://asridigital.com/blog?search={search_term_string}",
+    "query-input": "required name=search_term_string"
   }
-}>
+}}>
   <Header />
-  
+
   <main class="flex-1">
-    {/* HERO SECTION */}
-    <section class="relative py-20 lg:py-32 bg-surface overflow-hidden">
-      {/* Subtle Background Decoration */}
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-      </div>
-      
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-4xl mx-auto">
-          {/* Announcement Badge */}
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-8 animate-fade-in">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            <span class="text-sm text-primary font-medium">🚀 Promo Launching - Diskon 50%</span>
-          </div>
-          
-          {/* Main Heading */}
-          <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 animate-slide-up text-text-primary">
-            Custom GPT untuk
-            <span class="text-primary">Profesional Indonesia</span>
-          </h1>
-          
-          {/* Subheading */}
-          <p class="text-xl text-text-secondary mb-10 max-w-2xl mx-auto animate-slide-up" style="animation-delay: 0.1s">
-            Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. 
-            <strong class="text-text-main">Bayar sekali, akses seumur hidup.</strong>
-          </p>
-          
-          {/* CTA Buttons */}
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-12 animate-slide-up" style="animation-delay: 0.2s">
-            <a 
-              href="#all-access" 
-              class="btn-primary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto justify-center"
-            >
-              <Icon name="crown" size={18} class="sm:w-5" />
-              <span>Beli All-Access Pass</span>
-            </a>
-            <a 
-              href="#produk" 
-              class="btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto justify-center"
-            >
-              <Icon name="eye" size={18} class="sm:w-5" />
-              <span>Lihat Produk</span>
-            </a>
-          </div>
-          
-          {/* Price Preview */}
-          <div class="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-text-muted animate-slide-up text-xs sm:text-sm" style="animation-delay: 0.3s">
-            <span class="flex items-center gap-1.5">
-              <Icon name="shield" size={14} class="text-primary" />
-              Garansi 7 hari
-            </span>
-            <span class="hidden sm:inline">•</span>
-            <span class="flex items-center gap-1.5">
-              <Icon name="lock" size={14} class="text-primary" />
-              Pembayaran aman
-            </span>
-            <span class="hidden sm:inline">•</span>
-            <span class="flex items-center gap-1.5">
-              <Icon name="zap" size={14} class="text-primary" />
-              Akses instant
-            </span>
-          </div>
+    {/* HERO SLIDER */}
+    <HeroSlider />
+
+    {/* SOCIAL PROOF BAR */}
+    {/* SOCIAL PROOF — from site_settings */}
+    <section id="social-proof" class="border-b border-slate-100 bg-white py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center" id="stats-container">
+          <div class="text-slate-400 text-sm">Loading...</div>
         </div>
       </div>
     </section>
 
-    {/* SOCIAL PROOF BAR */}
-    <section class="py-6 border-y border-border bg-background">
+    {/* PRODUCT SECTION */}
+    <section id="produk" class="py-24 bg-slate-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <div class="flex items-center gap-3 justify-center">
-              <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Icon name={stat.icon} size={20} class="text-primary" />
-              </div>
-              <div>
-                <div class="text-lg font-bold text-text-primary">{stat.value}</div>
-                <div class="text-xs text-text-muted">{stat.label}</div>
-              </div>
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <h2 id="catalog-title" class="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">Eksplorasi Katalog Digital</h2>
+          <p id="catalog-desc" class="text-slate-500">Temukan tools dan aset digital yang dirancang khusus untuk mempercepat alur kerja dan riset pasar Anda.</p>
+        </div>
+
+        {/* Search + Filter Tabs — categories from D1 */}
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+          <div class="relative w-full md:w-96">
+            <input type="text" id="product-search" placeholder="Cari aplikasi, data, atau asisten AI..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 shadow-soft transition-shadow" />
+            <svg class="absolute left-4 top-3.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <div class="flex space-x-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide" id="filter-tabs">
+            <button class="filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap" data-filter="all">Semua</button>
+          </div>
+        </div>
+
+        {/* Product Grid */}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
+          {/* Loading skeletons — replaced by JS after fetch */}
+          <div class="product-skeleton bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-square bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-6 w-1/3 bg-slate-200 rounded animate-pulse mt-4"></div>
             </div>
-          ))}
+          </div>
+          <div class="product-skeleton hidden md:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-square bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-6 w-1/3 bg-slate-200 rounded animate-pulse mt-4"></div>
+            </div>
+          </div>
+          <div class="product-skeleton hidden lg:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-square bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-6 w-1/3 bg-slate-200 rounded animate-pulse mt-4"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Empty State */}
+        <div id="no-results" class="hidden text-center py-12">
+          <p class="text-slate-500 text-lg">Maaf, produk tidak ditemukan. Coba kata kunci lain.</p>
         </div>
       </div>
     </section>
 
     {/* ALL-ACCESS PASS */}
-    <section id="all-access" class="py-20 scroll-mt-20">
+    <PromoCard />
+
+    {/* FEATURES — from site_settings */}
+    <section class="py-16 bg-white border-b border-slate-100">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="relative card overflow-hidden">
-          {/* Subtle Gradient */}
-          <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5"></div>
-          
-          <div class="relative p-6 sm:p-8 md:p-12 lg:p-16">
-            <div class="flex flex-col lg:flex-row items-start gap-6 sm:gap-8 lg:gap-12">
-              {/* Left Content */}
-              <div class="flex-1 min-w-0">
-                <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 text-amber-700 rounded-full font-semibold mb-4 sm:mb-6 text-xs sm:text-sm">
-                  <Icon name="crown" size={14} class="sm:w-4" />
-                  <span>BEST VALUE</span>
-                </div>
-
-                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-text-primary leading-tight">
-                  Lifetime
-                  <span class="text-primary block sm:inline"> All-Access Pass</span>
-                </h2>
-
-                <div class="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 mb-6 sm:mb-8">
-                  <span class="text-4xl sm:text-5xl font-extrabold text-text-primary">{formatIDR(allAccessProduct.price)}</span>
-                  <span class="text-xl sm:text-2xl text-text-muted line-through">{formatIDR(allAccessProduct.compareAtPrice!)}</span>
-                  <span class="badge-danger text-sm sm:text-lg px-2 sm:px-3 py-1 sm:py-1.5 inline-flex items-center whitespace-nowrap">
-                    HEMAT 50%
-                  </span>
-                </div>
-                
-                <ul class="space-y-3 sm:space-y-4 mb-6 sm:mb-10">
-                  {[
-                    'Akses SEMUA GPT yang ada & akan datang',
-                    'Update lifetime gratis',
-                    'Prioritas support',
-                    'Komunitas eksklusif',
-                  ].map((feature) => (
-                    <li class="flex items-start gap-2 sm:gap-3 text-text-main text-sm sm:text-base">
-                      <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <Icon name="check" size={10} class="sm:w-3.5 text-primary" />
-                      </div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <a 
-                  href={`/checkout?product=${allAccessProduct.slug}`}
-                  class="btn-primary text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 inline-flex w-full sm:w-auto justify-center"
-                >
-                  <Icon name="zap" size={18} class="sm:w-5" />
-                  <span class="whitespace-nowrap">Dapatkan All-Access Sekarang</span>
-                </a>
-                
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-4 sm:mt-6 text-xs sm:text-sm text-text-muted text-center sm:text-left">
-                  <div class="flex items-center gap-1.5 sm:gap-2 justify-center">
-                    <Icon name="shield" size={14} class="text-primary" />
-                    <span>Garansi 7 hari</span>
-                  </div>
-                  <span class="hidden sm:inline">•</span>
-                  <div class="flex items-center gap-1.5 sm:gap-2 justify-center">
-                    <Icon name="lock" size={14} class="text-primary" />
-                    <span>Sekali bayar, akses seumur hidup</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Right Visual */}
-              <div class="hidden lg:block w-80 shrink-0">
-                <div class="card p-6 text-center">
-                  <div class="w-20 h-20 mx-auto mb-4 bg-amber-100 rounded-2xl flex items-center justify-center">
-                    <Icon name="crown" size={40} class="text-amber-600" />
-                  </div>
-                  <h3 class="text-xl font-bold mb-2 text-text-primary">VIP Member</h3>
-                  <p class="text-sm text-text-secondary mb-4">Akses unlimited ke semua produk</p>
-                  <div class="space-y-2">
-                    {products.map((p) => (
-                      <div class="flex items-center gap-2 text-sm text-text-secondary">
-                        <Icon name="check-circle" size={16} class="text-primary" />
-                        <span class="truncate">{p.title}</span>
-                      </div>
-                    ))}
-                    <div class="flex items-center gap-2 text-sm text-text-muted">
-                      <Icon name="plus" size={16} />
-                      <span>Dan produk lainnya...</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" id="features-container">
+          <div class="col-span-full text-slate-400 text-sm">Loading...</div>
         </div>
       </div>
     </section>
 
-    {/* PRODUCT GRID */}
-    <section id="produk" class="py-20 bg-surface scroll-mt-20">
+    {/* ARTIKEL TERBARU — Latest Blog Posts */}
+    <section id="artikel-terbaru" class="py-24 bg-slate-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
-            <Icon name="sparkles" size={16} class="text-primary" />
-            <span class="text-sm text-primary font-medium">Koleksi GPT</span>
-          </div>
-          <h2 class="text-4xl font-extrabold mb-4 text-text-primary">
-            Pilih GPT Sesuai <span class="text-primary">Kebutuhan</span>
-          </h2>
-          <p class="text-text-secondary text-lg max-w-2xl mx-auto">
-            Setiap Custom GPT dirancang khusus untuk membantu produktivitas Anda.
-          </p>
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">Artikel Terbaru</h2>
+          <p class="text-slate-500">Tips, tutorial, dan insight tentang AI & digital tools</p>
         </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, i) => (
-            <div class="animate-slide-up" style={`animation-delay: ${i * 0.1}s`}>
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
-        
-        {/* CTA Below Products */}
-        <div class="text-center mt-12">
-          <p class="text-text-muted mb-4">Ingin akses semua produk di atas?</p>
-          <a href="#all-access" class="btn-secondary">
-            <Icon name="crown" size={18} />
-            Dapatkan All-Access Pass
-          </a>
-        </div>
-      </div>
-    </section>
 
-    {/* FEATURES GRID */}
-    <section class="py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, i) => (
-            <div class="card-hover p-6 text-center animate-slide-up" style={`animation-delay: ${i * 0.1}s`}>
-              <div class="w-14 h-14 mx-auto mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Icon name={feature.icon} size={28} class="text-primary" />
-              </div>
-              <h3 class="font-semibold text-lg mb-2 text-text-primary">{feature.title}</h3>
-              <p class="text-sm text-text-secondary">{feature.description}</p>
+        {/* Blog Posts Grid */}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="blog-posts-grid">
+          {/* Loading skeletons */}
+          <div class="blog-skeleton bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
             </div>
-          ))}
+          </div>
+          <div class="blog-skeleton hidden md:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
+            </div>
+          </div>
+          <div class="blog-skeleton hidden lg:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
+              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
 
-    {/* TESTIMONIAL */}
-    <section class="py-20 bg-surface">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="card p-12">
-          <div class="flex justify-center gap-1 mb-6">
-            {[1,2,3,4,5].map(() => (
-              <Icon name="star" size={24} class="text-amber-400 fill-amber-400" />
-            ))}
-          </div>
-          
-          <blockquote class="text-2xl font-medium mb-6 text-text-main">
-            "GPT dari Asri Digital sangat membantu pekerjaan saya. 
-            Investasi terbaik untuk produktivitas!"
-          </blockquote>
-          
-          <div class="flex items-center justify-center gap-4 mb-8">
-            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
-              S
-            </div>
-            <div class="text-left">
-              <div class="font-semibold text-text-primary">S***</div>
-              <div class="text-sm text-text-muted">Marketing Manager</div>
-            </div>
-          </div>
-          
-          <a href="#produk" class="btn-primary text-lg px-8 py-4">
-            <Icon name="shopping-cart" size={20} />
-            Mulai Belanja Sekarang
+        {/* View All Button */}
+        <div class="text-center mt-12" id="blog-view-all" style="display:none;">
+          <a href="/blog" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-full hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-md hover:shadow-lg">
+            Lihat Semua Artikel
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
           </a>
         </div>
       </div>
     </section>
   </main>
-  
+
   <Footer />
   <FOMOPopup />
 </BaseLayout>
 
 <script>
-  // Track affiliate click if ref parameter exists
+  // ===== DYNAMIC DATA FROM D1 VIA API =====
+
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
+
+  const ICON_MAP: Record<string, string> = {
+    'zap': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
+    'lock': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>',
+    'message-square': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>',
+    'refresh-cw': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>',
+  };
+
+  async function loadDynamicContent() {
+    try {
+      const [settingsRes, categoriesRes] = await Promise.all([
+        fetch('/api/site-settings?keys=catalog_section_title,catalog_section_description,stat_active_users,stat_active_users_label,stat_products_sold,stat_products_sold_label,stat_rating,stat_rating_label,feature_1_title,feature_1_description,feature_1_icon,feature_2_title,feature_2_description,feature_2_icon,feature_3_title,feature_3_description,feature_3_icon,feature_4_title,feature_4_description,feature_4_icon'),
+        fetch('/api/categories')
+      ]);
+
+      const settings = await settingsRes.json();
+      const catData = await categoriesRes.json();
+
+      // Catalog section title
+      if (settings.catalog_section_title) document.getElementById('catalog-title')!.textContent = settings.catalog_section_title;
+      if (settings.catalog_section_description) document.getElementById('catalog-desc')!.textContent = settings.catalog_section_description;
+
+      // Stats
+      const statsContainer = document.getElementById('stats-container')!;
+      const statsHtml = [
+        { value: settings.stat_active_users || '500+', label: settings.stat_active_users_label || 'Pengguna Aktif' },
+        { value: settings.stat_products_sold || '1,000+', label: settings.stat_products_sold_label || 'Produk Terjual' },
+        { value: settings.stat_rating || '4.9/5', label: settings.stat_rating_label || 'Rating Kepuasan', hasStar: true },
+      ].map((s, i) => `
+        ${i > 0 ? '<div class="hidden sm:block w-px h-8 bg-slate-200"></div>' : ''}
+        <div>
+          <p class="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center">${s.value}${s.hasStar ? ' <svg class="w-5 h-5 text-yellow-400 ml-1 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' : ''}</p>
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">${s.label}</p>
+        </div>
+      `).join('');
+      statsContainer.innerHTML = statsHtml;
+
+      // Filter tabs from categories
+      const tabsContainer = document.getElementById('filter-tabs')!;
+      const categories = catData.categories || [];
+      if (categories.length > 0) {
+        tabsContainer.innerHTML = `<button class="filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap" data-filter="all">Semua</button>` +
+          categories.map((cat: any) =>
+            `<button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 whitespace-nowrap" data-filter="${cat.slug}">${cat.name}</button>`
+          ).join('');
+        // Re-bind filter click events
+        bindFilterTabs();
+      }
+
+      // Features
+      const featuresContainer = document.getElementById('features-container')!;
+      const featureKeys = ['feature_1', 'feature_2', 'feature_3', 'feature_4'];
+      const featuresHtml = featureKeys.map(key => {
+        const title = settings[`${key}_title`];
+        const desc = settings[`${key}_description`];
+        const icon = settings[`${key}_icon`] || 'zap';
+        if (!title) return '';
+        return `
+          <div>
+            <div class="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center mb-4 text-emerald-600">${ICON_MAP[icon] || ICON_MAP['zap']}</div>
+            <h4 class="font-bold text-slate-900 mb-2">${title}</h4>
+            <p class="text-sm text-slate-500">${desc || ''}</p>
+          </div>`;
+      }).filter(Boolean).join('');
+      if (featuresHtml) featuresContainer.innerHTML = featuresHtml;
+
+    } catch (err) {
+      console.error('Dynamic content load failed:', err);
+    }
+  }
+
+  // ===== LATEST BLOG POSTS =====
+  const CATEGORY_META: Record<string, { label: string; color: string; bgColor: string }> = {
+    'tips': { label: 'Tips & Trik', color: 'bg-emerald-500 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
+    'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+    'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+    'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+    'ai': { label: 'AI', color: 'bg-emerald-600 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
+    'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+    'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
+  };
+
+  function getBlogCategoryMeta(category: string) {
+    const key = category?.toLowerCase() || 'general';
+    return CATEGORY_META[key] || CATEGORY_META['general'];
+  }
+
+  function formatBlogDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
+
+  async function loadLatestBlogPosts() {
+    const grid = document.getElementById('blog-posts-grid');
+    const viewAll = document.getElementById('blog-view-all');
+    if (!grid) return;
+
+    try {
+      const res = await fetch('/api/blog/posts?limit=3');
+      const data = await res.json();
+      const posts = (data.posts || []).slice(0, 3);
+
+      if (posts.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada artikel tersedia.</div>';
+        return;
+      }
+
+      grid.innerHTML = posts.map((post: any) => {
+        const catKey = post.category?.toLowerCase() || 'general';
+        const meta = getBlogCategoryMeta(catKey);
+        const pubDate = formatBlogDate(post.published_at);
+        const imgSrc = post.image_url ? optimizeImg(post.image_url, 400, 210) : '';
+
+        return `
+          <article class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg transition-shadow group">
+            <a href="/blog/${post.slug}/" class="block">
+              <div class="relative overflow-hidden">
+                ${imgSrc
+                  ? `<img src="${imgSrc}" alt="${post.title}" class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />`
+                  : `<div class="w-full aspect-video bg-gradient-to-br ${meta.bgColor} flex items-center justify-center">
+                       <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                     </div>`
+                }
+                <div class="absolute top-3 left-3">
+                  <span class="px-3 py-1 ${meta.color} text-xs font-medium rounded-full">${meta.label}</span>
+                </div>
+              </div>
+            </a>
+            <div class="p-5">
+              <a href="/blog/${post.slug}/" class="block">
+                <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">${post.title}</h3>
+              </a>
+              <p class="text-sm text-slate-500 mb-4 line-clamp-2">${post.excerpt || ''}</p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400">${pubDate}</span>
+                <a href="/blog/${post.slug}/" class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+                  Baca Artikel
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      if (viewAll) viewAll.style.display = 'block';
+    } catch (err) {
+      console.error('Failed to load blog posts:', err);
+      grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Gagal memuat artikel.</div>';
+    }
+  }
+
+  // ===== PRODUCTS — loaded client-side from API =====
+  const PRODUCT_CAT_MAP: Record<string, string> = {
+    marketing: 'ai', coding: 'ai', kreatif: 'tools', pendidikan: 'data', membership: 'ai'
+  };
+
+  function formatIDRClient(amount: number): string {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+  }
+
+  function createProductCard(product: any): HTMLElement {
+    const catKey = (product.category || 'tools').toLowerCase();
+    const filterCat = PRODUCT_CAT_MAP[catKey] || 'tools';
+    const title = product.title || '';
+    const slug = product.slug || '';
+    const imgSrc = optimizeImg(product.image_icon || product.imageIcon || '/images/placeholder.jpg', 400, 400);
+    const shortDesc = product.short_description || product.shortDescription || product.description || '';
+    const price = Number(product.price || 0);
+    const compareAt = product.compare_at_price || product.compareAtPrice || null;
+    const hasDiscount = compareAt && Number(compareAt) > price;
+    const isFree = price === 0;
+    const discount = hasDiscount ? Math.round((1 - price / Number(compareAt)) * 100) : 0;
+    const isFeatured = Boolean(product.is_featured || product.isFeatured);
+
+    const safeTitle = title.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c] as string));
+    const safeDesc = shortDesc.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c] as string));
+
+    const a = document.createElement('a');
+    a.href = '/product/' + slug;
+    a.className = 'product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full';
+    a.setAttribute('data-category', filterCat);
+    a.setAttribute('data-title', title.toLowerCase());
+    a.setAttribute('data-slug', slug);
+
+    let badgeHtml = '';
+    if (hasDiscount && !isFree) badgeHtml = '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">-' + discount + '%</span></div>';
+    else if (isFree) badgeHtml = '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">GRATIS</span></div>';
+    const featuredBadge = isFeatured ? '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm">Best Seller</span></div>' : '';
+
+    let priceHtml = '';
+    if (isFree) {
+      priceHtml = '<span class="text-xl font-bold text-slate-900">Gratis</span>';
+    } else {
+      const discountLine = hasDiscount ? '<span class="text-xs text-slate-400 line-through block mb-0.5">' + formatIDRClient(Number(compareAt)) + '</span>' : '';
+      priceHtml = '<div>' + discountLine + '<span class="text-xl font-bold text-slate-900">' + formatIDRClient(price) + '</span></div>';
+    }
+
+    a.innerHTML = '<div class="relative overflow-hidden aspect-square bg-slate-50">' +
+      '<img src="' + imgSrc + '" alt="' + safeTitle + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />' +
+      badgeHtml + featuredBadge +
+      '</div>' +
+      '<div class="p-6 flex flex-col flex-grow">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-2 transition-colors">' + safeTitle + '</h3>' +
+      '<p class="text-slate-500 text-sm mb-6 flex-grow leading-relaxed line-clamp-2">' + safeDesc + '</p>' +
+      '<div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-300">' +
+      priceHtml +
+      '<button class="buy-btn bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all duration-300">Lihat Detail</button>' +
+      '</div></div>';
+
+    return a;
+  }
+
+  async function loadProducts() {
+    const grid = document.getElementById('product-grid');
+    if (!grid) return;
+    try {
+      const res = await fetch('/api/products?limit=100');
+      const data = await res.json();
+      const allAccessSlug = 'lifetime-all-access-pass';
+      const apiProducts = (data.products || []).filter((p: any) => p.slug !== allAccessSlug);
+
+      if (apiProducts.length > 0) {
+        grid.innerHTML = '';
+        apiProducts.forEach((product: any) => {
+          grid.appendChild(createProductCard(product));
+        });
+        // Re-bind filter after products are rendered
+        filterProducts();
+      } else {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada produk tersedia.</div>';
+      }
+    } catch (err) {
+      console.error('Failed to load products:', err);
+      // Keep skeletons visible as fallback
+    }
+  }
+
+  loadDynamicContent();
+  loadLatestBlogPosts();
+  loadProducts();
+  bindFilterTabs(); // Bind initial "Semua" tab
+
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      navbar?.classList.add('shadow-soft');
+    } else {
+      navbar?.classList.remove('shadow-soft');
+    }
+  });
+
+  // Product filtering & search
+  const filterTabs = document.querySelectorAll('.filter-tab');
+  const productCards = document.querySelectorAll('.product-card');
+  const searchInput = document.getElementById('product-search') as HTMLInputElement;
+  const noResults = document.getElementById('no-results');
+
+  function filterProducts() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const activeTab = document.querySelector('.filter-tab.active') as HTMLElement;
+    const activeCategory = activeTab?.dataset.filter || 'all';
+    let visibleCount = 0;
+
+    productCards.forEach(card => {
+      const el = card as HTMLElement;
+      const title = el.dataset.title || '';
+      const category = el.dataset.category || '';
+      const matchesSearch = title.includes(searchTerm);
+      const matchesCategory = (activeCategory === 'all' || category === activeCategory);
+
+      if (matchesSearch && matchesCategory) {
+        el.style.display = 'flex';
+        visibleCount++;
+      } else {
+        el.style.display = 'none';
+      }
+    });
+
+    if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  }
+
+  function bindFilterTabs() {
+    const tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => {
+          t.classList.remove('active', 'bg-carbon', 'text-white');
+          t.classList.add('bg-white', 'text-slate-600');
+        });
+        tab.classList.add('active', 'bg-carbon', 'text-white');
+        tab.classList.remove('bg-white', 'text-slate-600');
+        filterProducts();
+      });
+    });
+  }
+
+  searchInput?.addEventListener('input', filterProducts);
+
+  // Affiliate tracking
   const urlParams = new URLSearchParams(window.location.search);
   const ref = urlParams.get('ref');
-  
   if (ref) {
-    // Set cookie
     document.cookie = `asri_ref=${ref};max-age=${30*24*60*60};path=/;SameSite=Lax`;
-    
-    // Track click
     fetch('/api/affiliate/click', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        referralCode: ref,
-        page: window.location.pathname
-      })
-    }).catch(err => console.log('Click tracking failed:', err));
-    
-    // Clean URL
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
+      body: JSON.stringify({ referralCode: ref, page: window.location.pathname })
+    }).catch(() => {});
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
 </script>

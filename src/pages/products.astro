@@ -1,0 +1,171 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import ProductCard from '../components/marketing/ProductCard.astro';
+import { formatIDR } from '../lib/utils';
+import type { Product } from '../types/index';
+
+let products: Product[] = [
+  { id: 'gpt-animasi-muslim', title: 'Animasi Muslim Kids Studio', slug: 'animasi-muslim-kids-studio', description: 'GPT khusus untuk membuat konten animasi Islami untuk anak-anak.', shortDescription: 'Buat konten animasi Islami untuk anak-anak dengan AI', price: 99000, compareAtPrice: 149000, gptUrl: null, imageIcon: '/images/animasi-muslim.jpg', category: 'kreatif', tags: ['animasi', 'islami', 'anak'], isActive: true, isFeatured: true, sortOrder: 1 },
+  { id: 'gpt-sahabat-guru', title: 'Sahabat Guru PAUD Islami', slug: 'sahabat-guru-paud-islami', description: 'GPT asisten untuk guru PAUD Islami.', shortDescription: 'Asisten AI untuk guru PAUD Islami', price: 79000, compareAtPrice: null, gptUrl: null, imageIcon: '/images/sahabat-guru.jpg', category: 'pendidikan', tags: ['guru', 'paud', 'islami', 'pendidikan'], isActive: true, isFeatured: false, sortOrder: 2 },
+  { id: 'gpt-content-creator', title: 'Content Creator Pro', slug: 'content-creator-pro', description: 'GPT untuk membuat konten marketing yang engaging.', shortDescription: 'Buat konten marketing viral dengan AI', price: 89000, compareAtPrice: 129000, gptUrl: null, imageIcon: '/images/content-creator.jpg', category: 'marketing', tags: ['content', 'marketing', 'social-media'], isActive: true, isFeatured: false, sortOrder: 3 },
+];
+
+function normalizeProduct(raw: any): Product {
+  return {
+    id: raw.id, title: raw.title, slug: raw.slug,
+    description: raw.description || '',
+    shortDescription: raw.shortDescription ?? raw.short_description ?? null,
+    price: Number(raw.price || 0),
+    compareAtPrice: raw.compareAtPrice ?? raw.compare_at_price ?? null,
+    gptUrl: null,
+    imageIcon: raw.imageIcon ?? raw.image_icon ?? null,
+    galleryImages: raw.galleryImages ?? raw.gallery_images ?? null,
+    galleryVideos: raw.galleryVideos ?? raw.gallery_videos ?? null,
+    videoEmbedUrl: raw.videoEmbedUrl ?? raw.video_embed_url ?? null,
+    features: raw.features ?? null, specs: raw.specs ?? null, faq: raw.faq ?? null,
+    category: raw.category || 'produk',
+    tags: Array.isArray(raw.tags) ? raw.tags : (() => { try { return JSON.parse(raw.tags || '[]'); } catch { return []; } })(),
+    isActive: Boolean(raw.isActive ?? raw.is_active ?? true),
+    isFeatured: Boolean(raw.isFeatured ?? raw.is_featured ?? false),
+    sortOrder: Number(raw.sortOrder ?? raw.sort_order ?? 0),
+  };
+}
+
+try {
+  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
+  const response = await fetch(`${apiBase}/api/products?limit=100`);
+  if (response.ok) {
+    const data = await response.json() as any;
+    const dbProducts = (data.products || []).map(normalizeProduct);
+    if (dbProducts.length > 0) products = dbProducts;
+  }
+} catch (error) {
+  console.warn('Using fallback products because API failed:', error);
+}
+
+const categories = [...new Set(products.map(p => p.category))];
+---
+
+<BaseLayout
+  title="Semua Produk Digital — Asri Digital"
+  description="Jelajahi seluruh katalog produk digital & AI dari Asri Digital. Tools, template, dan asisten AI untuk mempercepat bisnis Anda."
+  structuredData={{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Semua Produk Digital",
+    "url": "https://asridigital.com/products",
+    "description": "Katalog lengkap produk digital & AI dari Asri Digital"
+  }}
+>
+  <Header />
+
+  <main class="flex-1">
+    {/* HERO */}
+    <section class="relative bg-gradient-to-br from-carbon via-slate-900 to-slate-800 text-white py-20 md:py-28 overflow-hidden">
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-teal-400 rounded-full blur-3xl"></div>
+      </div>
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1.5 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-emerald-300 text-sm font-medium mb-6">
+          Katalog Lengkap
+        </span>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+          Semua <span class="text-emerald-400">Produk Digital</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
+          Jelajahi seluruh koleksi tools, template, dan asisten AI yang dirancang untuk mempercepat alur kerja Anda.
+        </p>
+      </div>
+    </section>
+
+    {/* CATALOG */}
+    <section class="py-16 md:py-24 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Search + Filter */}
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+          <div class="relative w-full md:w-96">
+            <input type="text" id="product-search" placeholder="Cari produk digital..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 shadow-sm transition-shadow" />
+            <svg class="absolute left-4 top-3.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <div class="flex space-x-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide" id="filter-tabs">
+            <button class="filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-carbon text-white" data-filter="all">Semua</button>
+            {categories.map(cat => (
+              <button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100" data-filter={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Count */}
+        <p class="text-sm text-slate-500 mb-6" id="product-count">Menampilkan {products.length} produk</p>
+
+        {/* Product Grid */}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
+          {products.map((product) => (
+            <ProductCard product={product} />
+          ))}
+        </div>
+
+        {/* Empty State */}
+        <div id="no-results" class="hidden text-center py-16">
+          <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <p class="text-slate-500 text-lg font-medium">Produk tidak ditemukan</p>
+          <p class="text-slate-400 text-sm mt-1">Coba kata kunci atau kategori lain.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  // Filter & search
+  const filterTabs = document.querySelectorAll('.filter-tab');
+  const productCards = document.querySelectorAll('.product-card');
+  const searchInput = document.getElementById('product-search') as HTMLInputElement;
+  const noResults = document.getElementById('no-results');
+  const productCount = document.getElementById('product-count');
+
+  function filterProducts() {
+    const searchTerm = (searchInput?.value || '').toLowerCase();
+    const activeTab = document.querySelector('.filter-tab.active') as HTMLElement;
+    const activeCategory = activeTab?.dataset.filter || 'all';
+    let visibleCount = 0;
+
+    productCards.forEach(card => {
+      const el = card as HTMLElement;
+      const title = (el.dataset.title || '').toLowerCase();
+      const category = el.dataset.category || '';
+      const matchesSearch = title.includes(searchTerm);
+      const matchesCategory = (activeCategory === 'all' || category === activeCategory);
+
+      if (matchesSearch && matchesCategory) {
+        el.style.display = 'flex';
+        visibleCount++;
+      } else {
+        el.style.display = 'none';
+      }
+    });
+
+    if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    if (productCount) productCount.textContent = `Menampilkan ${visibleCount} produk`;
+  }
+
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      filterTabs.forEach(t => {
+        t.classList.remove('active', 'bg-carbon', 'text-white');
+        t.classList.add('bg-white', 'text-slate-600');
+      });
+      tab.classList.add('active', 'bg-carbon', 'text-white');
+      tab.classList.remove('bg-white', 'text-slate-600');
+      filterProducts();
+    });
+  });
+
+  searchInput?.addEventListener('input', filterProducts);
+</script>

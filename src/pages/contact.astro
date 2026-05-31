@@ -7,8 +7,8 @@ import Icon from '../components/ui/Icon.astro';
 
 <BaseLayout
   title="Kontak Kami - Asri Digital"
-  description="Hubungi tim Asri Digital untuk pertanyaan, dukungan, atau kerjasama. Kami siap membantu Anda dalam 24-48 jam."
-  canonicalUrl="https://asridigital.com/contact"
+  description="Hubungi Asri Digital untuk pertanyaan tentang produk digital, Custom GPT, dan kerjasama."
+  canonicalUrl="https://asridigital.com/contact/"
 >
   <Header />
 
@@ -86,6 +86,12 @@ import Icon from '../components/ui/Icon.astro';
                   <span class="font-medium">Pesan berhasil dikirim! Kami akan merespons dalam 24-48 jam.</span>
                 </div>
               </div>
+              <div id="form-error" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div class="flex items-center gap-2">
+                  <Icon name="alert-circle" size={20} />
+                  <span id="form-error-msg" class="font-medium">Terjadi kesalahan. Silakan coba lagi.</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -119,12 +125,12 @@ import Icon from '../components/ui/Icon.astro';
               <h3 class="font-bold text-lg mb-4 text-text-primary">Media Sosial</h3>
               <div class="space-y-3">
                 {[
-                  { name: 'Instagram', icon: 'camera', url: '#' },
-                  { name: 'Twitter / X', icon: 'twitter', url: '#' },
-                  { name: 'YouTube', icon: 'play', url: '#' },
-                  { name: 'TikTok', icon: 'music', url: '#' },
+                  { name: 'Instagram', icon: 'camera', url: 'https://www.instagram.com/asridigital', key: 'instagram' },
+                  { name: 'Twitter / X', icon: 'twitter', url: 'https://x.com/asridigital', key: 'twitter' },
+                  { name: 'YouTube', icon: 'play', url: 'https://www.youtube.com/@asridigital', key: 'youtube' },
+                  { name: 'TikTok', icon: 'music', url: 'https://www.tiktok.com/@asridigital', key: 'tiktok' },
                 ].map((social) => (
-                  <a href={social.url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-3 rounded-lg hover:bg-background transition-colors group">
+                  <a href={social.url} target="_blank" rel="noopener noreferrer" data-social={social.key} class="flex items-center gap-3 p-3 rounded-lg hover:bg-background transition-colors group">
                     <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                       <Icon name={social.icon} size={18} class="text-primary" />
                     </div>
@@ -174,17 +180,70 @@ import Icon from '../components/ui/Icon.astro';
 <script>
   const form = document.getElementById('contact-form') as HTMLFormElement;
   const success = document.getElementById('form-success');
+  const errorDiv = document.getElementById('form-error');
+  const errorMsg = document.getElementById('form-error-msg');
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // Simulate form submission
     const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const originalHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = 'Mengirim...';
+    errorDiv?.classList.add('hidden');
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const formData = new FormData(form);
+    const body = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      subject: formData.get('subject') as string,
+      message: formData.get('message') as string,
+    };
 
-    form.classList.add('hidden');
-    success?.classList.remove('hidden');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        form.classList.add('hidden');
+        success?.classList.remove('hidden');
+      } else {
+        if (errorMsg) errorMsg.textContent = data.message || 'Terjadi kesalahan. Silakan coba lagi.';
+        errorDiv?.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    } catch (err) {
+      if (errorMsg) errorMsg.textContent = 'Tidak dapat menghubungi server. Periksa koneksi Anda.';
+      errorDiv?.classList.remove('hidden');
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
   });
+</script>
+<script>
+  // Fetch social media links from site settings
+  (async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (!res.ok) return;
+      const data = await res.json();
+      const settings = data.settings || {};
+      const map: Record<string, string> = {
+        instagram: settings.instagram,
+        twitter: settings.twitter || settings.twitter_x,
+        youtube: settings.youtube,
+        tiktok: settings.tiktok,
+      };
+      for (const [key, url] of Object.entries(map)) {
+        if (url) {
+          const el = document.querySelector(`a[data-social="${key}"]`) as HTMLAnchorElement;
+          if (el) el.href = url;
+        }
+      }
+    } catch {}
+  })();
 </script>

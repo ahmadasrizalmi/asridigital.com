@@ -1,30 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
-import Icon from '../../components/ui/Icon.astro';
-import ProductCard from '../../components/marketing/ProductCard.astro';
-import { formatIDR, parseTags } from '../../lib/utils';
-
-interface Feature {
-  icon?: string;
-  title: string;
-  description: string;
-}
+import Footer from '../../components/layout/Footer.astro';
+import { formatIDR, optimizeImage } from '../../lib/utils';
+import { markdownToHtml } from '../../lib/markdown';
 
 export async function getStaticPaths() {
   const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-
   try {
     const res = await fetch(`${apiBase}/api/products`);
     const data = await res.json() as any;
-    const products = data.products || [];
-
-    return products.map((p: any) => ({
-      params: { slug: p.slug },
-    }));
-  } catch {
-    return [];
-  }
+    return (data.products || []).map((p: any) => ({ params: { slug: p.slug } }));
+  } catch { return []; }
 }
 
 const productSlug = Astro.params.slug || '';
@@ -32,398 +19,324 @@ const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').re
 
 let product: any = null;
 let relatedProducts: any[] = [];
-let notFound = false;
 
-// Fetch product from database/API
 try {
-  const apiResponse = await fetch(`${apiBase}/api/products/${productSlug}`);
-  if (apiResponse.ok) {
-    const data = await apiResponse.json();
+  const res = await fetch(`${apiBase}/api/products/${productSlug}`);
+  if (res.ok) {
+    const data = await res.json();
     product = data.product;
-
-    // Fetch related products (same category, excluding current)
     if (product?.category) {
-      const relatedResponse = await fetch(`${apiBase}/api/products?category=${product.category}&limit=4`);
-      if (relatedResponse.ok) {
-        const relatedData = await relatedResponse.json();
-        relatedProducts = (relatedData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
+      const relRes = await fetch(`${apiBase}/api/products?category=${product.category}&limit=4`);
+      if (relRes.ok) {
+        const relData = await relRes.json();
+        relatedProducts = (relData.products || []).filter((p: any) => p.id !== product.id).slice(0, 3);
       }
     }
-  } else {
-    notFound = true;
   }
-} catch (e) {
-  console.error('Error fetching product:', e);
-  notFound = true;
-}
+} catch (e) { console.error('Product fetch error:', e); }
 
-if (!product && notFound) {
-  return Astro.redirect('/#produk');
-}
+if (!product) return Astro.redirect('/#produk');
 
-// Parse product data
-const galleryImages: string[] = product?.gallery_images
-  ? typeof product.gallery_images === 'string'
-    ? JSON.parse(product.gallery_images)
-    : product.gallery_images
-  : (product?.image_icon ? [product.image_icon] : []);
+// Parse fields from D1
+let galleryImages: string[] = [];
+try {
+  galleryImages = product.gallery_images
+    ? (typeof product.gallery_images === 'string' ? JSON.parse(product.gallery_images) : product.gallery_images)
+    : (product.image_icon ? [product.image_icon] : []);
+} catch { galleryImages = product.image_icon ? [product.image_icon] : []; }
 
-const galleryVideos: string[] = product?.gallery_videos
-  ? typeof product.gallery_videos === 'string'
-    ? JSON.parse(product.gallery_videos)
-    : product.gallery_videos
-  : [];
+const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+const isFree = product.price === 0;
+const discount = hasDiscount ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
 
-const features: Feature[] = product?.features
-  ? typeof product.features === 'string'
-    ? JSON.parse(product.features)
-    : product.features
-  : [];
+// Build features list from product.features or generate from description
+let features: Array<{title: string; description: string}> = [];
+try {
+  features = product.features
+    ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features)
+    : [];
+} catch { features = []; }
 
-const specs: Record<string, string> = product?.specs
-  ? typeof product.specs === 'string'
-    ? JSON.parse(product.specs)
-    : product.specs
-  : {};
+// Build specs from product.specs
+let specs: Record<string, string> = {};
+try {
+  specs = product.specs
+    ? (typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs)
+    : {};
+} catch { specs = {}; }
 
-const faqs: Array<{question: string; answer: string}> = product?.faq
-  ? typeof product.faq === 'string'
-    ? JSON.parse(product.faq)
-    : product.faq
-  : [];
+// Build FAQ from product.faq
+let faqs: Array<{question: string; answer: string}> = [];
+try {
+  faqs = product.faq
+    ? (typeof product.faq === 'string' ? JSON.parse(product.faq) : product.faq)
+    : [];
+} catch { faqs = []; }
 
-const hasDiscount = product?.compare_at_price && product.compare_at_price > product.price;
-const discount = hasDiscount
-  ? Math.round((1 - product.price / product.compare_at_price) * 100)
-  : 0;
-
-const tags = parseTags(product?.tags);
+// Category badge text
+const categoryBadge: Record<string, string> = {
+  marketing: 'MARKETING', coding: 'CODE', kreatif: 'KREATIF',
+  pendidikan: 'PENDIDIKAN', membership: 'ALL-ACCESS', tools: 'TOOLS',
+  data: 'DATA', ai: 'AI',
+};
+const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.category || 'DIGITAL').toUpperCase();
 ---
 
-<BaseLayout title={`${product?.title || 'Produk'} - Asri Digital`}>
+<script type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: product.title,
+  description: product.description,
+  image: product.image_icon,
+  offers: {
+    '@type': 'Offer',
+    price: product.sale_price || product.price,
+    priceCurrency: 'IDR',
+    availability: 'https://schema.org/InStock'
+  }
+})}></script>
+
+<BaseLayout title={`${product.title} - Asri Digital`} description={product.short_description || product.description} canonicalUrl={`https://asridigital.com/product/${productSlug}`} ogImage={product.image_icon ? (product.image_icon.startsWith('http') ? (product.image_icon.includes('cloudinary.com') ? product.image_icon.replace(/image\/upload\//, 'image/upload/w_1200,h_630,c_fill/') : product.image_icon) : `https://res.cloudinary.com/daj8fzinf/image/upload/w_1200,h_630,c_fill/q_auto/f_auto${product.image_icon}`) : undefined}>
   <Header />
 
-  <main class="flex-1 py-8 sm:py-12">
+  <main class="pt-28 pb-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
       <!-- Breadcrumb -->
-      <nav class="flex items-center gap-2 text-sm text-text-muted mb-6 sm:mb-8 flex-wrap" aria-label="Breadcrumb">
-        <a href="/" class="hover:text-primary transition-colors">Beranda</a>
-        <Icon name="chevron-right" size={14} />
-        <a href="/#produk" class="hover:text-primary transition-colors">Produk</a>
-        <Icon name="chevron-right" size={14} />
-        <span class="text-text-primary font-medium truncate max-w-[200px]">{product?.title}</span>
+      <nav class="flex text-sm text-slate-500 mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 flex-wrap">
+          <li class="inline-flex items-center">
+            <a href="/" class="hover:text-slate-900 transition-colors">Beranda</a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <svg class="w-3 h-3 mx-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+              <a href="/#produk" class="hover:text-slate-900 transition-colors ml-1 md:ml-2">Katalog Produk</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <svg class="w-3 h-3 mx-1 text-slate-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+              <span class="ml-1 md:ml-2 text-slate-800 font-medium">{product.title}</span>
+            </div>
+          </li>
+        </ol>
       </nav>
 
-      <!-- Product Header -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
-        <!-- Product Gallery -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <!-- LEFT: Image Gallery -->
         <div class="space-y-4">
-          <!-- Main Image/Video -->
-          <div class="relative aspect-square rounded-2xl overflow-hidden bg-background">
-            {product?.video_embed_url ? (
-              <div class="w-full h-full">
-                <iframe
-                  src={product.video_embed_url}
-                  class="w-full h-full"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                ></iframe>
-              </div>
-            ) : (
-              <img
-                id="main-image"
-                src={galleryImages[0] || '/images/placeholder.jpg'}
-                alt={product?.title}
-                class="w-full h-full object-cover cursor-pointer transition-transform duration-300 hover:scale-105"
-              />
+          <div class="aspect-square rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 relative group">
+            <span class="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-slate-100">{badgeText}</span>
+            {hasDiscount && !isFree && (
+              <span class="absolute top-4 right-4 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">-{discount}%</span>
             )}
-
-            {/* Badges */}
-            <div class="absolute top-4 left-4 flex flex-wrap gap-2">
-              {hasDiscount && (
-                <span class="badge-danger">
-                  HEMAT {discount}%
-                </span>
-              )}
-              {product?.is_featured && (
-                <span class="badge-warning">
-                  <Icon name="star" size={12} />
-                  POPULER
-                </span>
-              )}
-            </div>
-
-            <!-- Image Counter -->
-            {galleryImages.length > 1 && (
-              <div class="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm">
-                <span id="image-counter">1</span> / {galleryImages.length}
-              </div>
+            {isFree && (
+              <span class="absolute top-4 right-4 z-10 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">GRATIS</span>
             )}
+            <img id="main-image" src={optimizeImage(galleryImages[0] || product.image_icon || '/images/placeholder.jpg', { w: 800, h: 800 })} alt={product.title} class="w-full h-full object-cover" />
           </div>
-
-          <!-- Thumbnail Gallery -->
           {galleryImages.length > 1 && (
-            <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
-              {galleryImages.map((img: string, index: number) => (
-                <button
-                  class={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                    index === 0 ? 'border-primary' : 'border-border hover:border-primary/50'
-                  }`}
-                  onclick={`changeMainImage('${img}', ${index})`}
-                >
-                  <img
-                    src={img}
-                    alt={`Gallery ${index + 1}`}
-                    class="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-
-          <!-- Video Thumbnails -->
-          {galleryVideos.length > 0 && (
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
-              {galleryVideos.map((video: string, index: number) => (
-                <button
-                  class="aspect-video rounded-lg overflow-hidden border-2 border-border hover:border-primary/50 transition-all relative group"
-                  onclick="openVideoModal('{video}')"
-                >
-                  <video
-                    src={video}
-                    class="w-full h-full object-cover"
-                    muted
-                  ></video>
-                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                      <Icon name="play" size={20} class="text-primary ml-1" />
-                    </div>
-                  </div>
-                  <span class="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                    Video {index + 1}
-                  </span>
+            <div class="grid grid-cols-4 gap-4">
+              {galleryImages.map((img: string, i: number) => (
+                <button class={`aspect-square rounded-xl overflow-hidden bg-slate-50 transition-all ${i === 0 ? 'border-2 border-slate-900' : 'border border-slate-200 opacity-60 hover:opacity-100'}`} onclick={`changeMainImage('${img}', ${i})`}>
+                  <img src={optimizeImage(img, { w: 200, h: 200 })} alt={`${product.title} ${i + 1}`} class="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <!-- Product Info -->
-        <div class="space-y-6">
-          <!-- Category -->
-          <div>
-            <a
-              href={`/#produk?category=${product?.category}`}
-              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            >
-              <Icon name="folder" size={14} />
-              {product?.category}
-            </a>
+        <!-- RIGHT: Product Details -->
+        <div class="flex flex-col">
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">{product.title}</h1>
+
+          <div class="flex items-center space-x-4 mb-6">
+            <span class="text-sm font-medium text-green-700 bg-green-50 px-2.5 py-0.5 rounded">Tersedia Instan</span>
           </div>
 
-          <!-- Title -->
-          <h1 class="text-2xl sm:text-3xl font-bold text-text-primary">
-            {product?.title}
-          </h1>
+          <p class="text-slate-600 text-base leading-relaxed mb-8">
+            {product.short_description || product.description}
+          </p>
 
-          <!-- Tags -->
-          {tags.length > 0 && (
-            <div class="flex flex-wrap gap-2">
-              {tags.map((tag: string) => (
-                <span class="px-3 py-1 bg-background border border-border rounded-full text-sm text-text-muted">
-                  #{tag}
-                </span>
+          <!-- Price Block -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-8">
+            {isFree ? (
+              <>
+                <div class="flex items-end mb-4">
+                  <span class="text-4xl font-extrabold text-green-600 tracking-tight">Gratis</span>
+                </div>
+              </>
+            ) : (
+              <>
+                {hasDiscount && (
+                  <p class="text-sm text-slate-500 font-medium mb-1 line-through">Harga Normal: {formatIDR(product.compare_at_price)}</p>
+                )}
+                <div class="flex items-end mb-4">
+                  <span class="text-4xl font-extrabold text-slate-900 tracking-tight">{formatIDR(product.price)}</span>
+                  {hasDiscount && (
+                    <span class="ml-3 mb-1 text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded">Diskon {discount}%</span>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Akses instan setelah pembayaran</span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Lisensi seumur hidup</span>
+              </div>
+              <div class="flex items-center text-sm text-slate-600">
+                <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Gratis update versi mendatang</span>
+              </div>
+              {features.length > 0 && features.slice(0, 3).map((f: {title: string}) => (
+                <div class="flex items-center text-sm text-slate-600">
+                  <svg class="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  <span>{f.title}</span>
+                </div>
               ))}
+            </div>
+
+            <a id="buy-button" href={`/checkout?product=${product.slug}`} class="w-full bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 py-4 rounded-xl font-bold text-lg transition-all shadow-sm hover:shadow-md hover:from-emerald-400 hover:to-yellow-200 transform hover:-translate-y-0.5 flex items-center justify-center">
+              <svg class="w-5 h-5 mr-2 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              {isFree ? 'Download Gratis' : 'Beli & Download Instan'}
+            </a>
+            <p class="text-center text-xs text-slate-400 mt-4 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              Pembayaran dijamin aman via Payment Gateway
+            </p>
+          </div>
+
+          {product.slug !== 'lifetime-all-access-pass' && (
+            <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-900">Tersedia di All-Access Pass</p>
+                <p class="text-xs text-slate-500">Bayar sekali, akses semua produk seumur hidup</p>
+              </div>
+              <a href="/checkout?product=lifetime-all-access-pass" class="text-emerald-600 text-sm font-semibold hover:underline shrink-0">Lihat →</a>
             </div>
           )}
 
-          <!-- Price -->
-          <div class="space-y-2">
-            <div class="flex items-baseline gap-3">
-              <span class="text-3xl sm:text-4xl font-bold text-primary">
-                {formatIDR(product?.price)}
-              </span>
-              {hasDiscount && (
-                <span class="text-xl text-text-muted line-through">
-                  {formatIDR(product?.compare_at_price)}
-                </span>
-              )}
-            </div>
-            {hasDiscount && (
-              <p class="text-green-600 text-sm font-medium">
-                Hemat {formatIDR(product?.compare_at_price - product?.price)} ({discount}%)
-              </p>
-            )}
+          <!-- Share Buttons -->
+          <div class="flex items-center gap-2 mt-4">
+            <span class="text-xs text-slate-400 mr-1">Bagikan:</span>
+            <button onclick="shareProduct('whatsapp')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-medium hover:bg-green-600 transition-colors" title="Share ke WhatsApp">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp
+            </button>
+            <button onclick="shareProduct('twitter')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-800 transition-colors" title="Share ke X/Twitter">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Twitter
+            </button>
+            <button onclick="shareProduct('copy')" id="product-copy-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200 transition-colors" title="Salin link">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+              Salin Link
+            </button>
           </div>
+        </div>
+      </div>
 
-          <!-- Description -->
-          <div class="prose prose-sm max-w-none text-text-secondary">
-            <p>{product?.description}</p>
-          </div>
-
-          <!-- GPT URL - Only shown to authenticated owners -->
-          <div id="gpt-access-section" class="hidden">
-            <a
-              id="gpt-preview-link"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-            >
-              <Icon name="sparkles" size={16} />
-              Buka GPT
-              <Icon name="external-link" size={14} />
-            </a>
-          </div>
-
-          <!-- CTA Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 pt-4">
-            <a
-              id="buy-button"
-              href={`/checkout?product=${product?.slug}`}
-              class="btn-primary justify-center text-lg py-4"
-            >
-              <Icon name="shopping-cart" size={20} />
-              Beli Sekarang
-            </a>
-            <div id="gpt-demo-section" class="hidden">
-              <a
-                id="gpt-demo-link"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-tertiary justify-center text-lg py-4"
-              >
-                <Icon name="play-circle" size={20} />
-                Buka GPT
-              </a>
-            </div>
-          </div>
-
-          <!-- Trust Badges -->
-          <div class="grid grid-cols-2 gap-3 pt-4">
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="shield" size={16} class="text-green-600" />
-              <span>Garansi 7 hari</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="download" size={16} class="text-blue-600" />
-              <span>Akses instan</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="refresh-cw" size={16} class="text-purple-600" />
-              <span>Update gratis</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-text-muted">
-              <Icon name="message-circle" size={16} class="text-amber-600" />
-              <span>Support premium</span>
-            </div>
-          </div>
-
-          <!-- All-Access Badge -->
-          <div class="flex items-center gap-2 p-4 bg-primary/5 rounded-xl border border-primary/20">
-            <Icon name="crown" size={20} class="text-amber-500" />
-            <div>
-              <p class="text-sm font-medium text-text-primary">Tersedia di All-Access Pass</p>
-              <p class="text-xs text-text-muted">Bayar sekali, akses semua produk seumur hidup</p>
-            </div>
-            <a href="/checkout?product=lifetime-all-access-pass" class="ml-auto text-primary text-sm font-medium hover:underline">
-              Lihat →
-            </a>
+      <!-- Description (Markdown rendered) -->
+      <div class="mt-20 border-t border-slate-200 pt-12">
+        <div class="max-w-3xl">
+          <h3 class="text-2xl font-bold text-slate-900 mb-6">Deskripsi Lengkap</h3>
+          <div class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:text-slate-600 prose-li:leading-relaxed prose-strong:text-slate-800 prose-ol:space-y-1 prose-ul:space-y-1" set:html={markdownToHtml(product.description)}>
           </div>
         </div>
       </div>
 
       <!-- Features Section -->
       {features.length > 0 && (
-        <section class="mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="star" size={24} class="text-primary" />
-            Fitur Utama
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((feature: Feature) => (
-              <div class="card p-5 hover:border-primary/30 transition-colors">
-                <div class="flex items-start gap-4">
-                  <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                    {feature.icon ? (
-                      <Icon name={feature.icon} size={20} class="text-primary" />
-                    ) : (
-                      <Icon name="check-circle" size={20} class="text-primary" />
-                    )}
+        <section class="mt-12">
+          <div class="max-w-3xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Fitur Utama</h3>
+            <div class="space-y-4">
+              {features.map((feature: {title: string; description: string}) => (
+                <div class="flex items-start gap-4 p-4 bg-white border border-slate-100 rounded-xl hover:shadow-float transition-all">
+                  <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                   </div>
                   <div>
-                    <h3 class="font-semibold text-text-primary mb-1">{feature.title}</h3>
-                    <p class="text-sm text-text-secondary">{feature.description}</p>
+                    <h4 class="font-semibold text-slate-900 mb-1">{feature.title}</h4>
+                    <p class="text-sm text-slate-500">{feature.description}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      <!-- Specifications Section -->
+      <!-- Specifications -->
       {Object.keys(specs).length > 0 && (
-        <section class="mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="list" size={24} class="text-primary" />
-            Spesifikasi
-          </h2>
-          <div class="card overflow-hidden">
-            <table class="w-full">
-              <tbody class="divide-y divide-border">
-                {Object.entries(specs).map(([key, value]) => (
-                  <tr>
-                    <td class="px-6 py-4 bg-background font-medium text-text-primary w-1/3">
-                      {key}
-                    </td>
-                    <td class="px-6 py-4 text-text-secondary">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <section class="mt-12">
+          <div class="max-w-3xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Spesifikasi</h3>
+            <div class="border border-slate-200 rounded-2xl overflow-hidden">
+              {Object.entries(specs).map(([key, value], i) => (
+                <div class={`flex ${i > 0 ? 'border-t border-slate-100' : ''}`}>
+                  <div class="w-1/3 px-6 py-4 bg-slate-50 font-medium text-slate-900 text-sm">{key}</div>
+                  <div class="flex-1 px-6 py-4 text-slate-600 text-sm">{value}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      <!-- FAQ Section -->
+      <!-- FAQ -->
       {faqs.length > 0 && (
-        <section class="mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="help-circle" size={24} class="text-primary" />
-            Pertanyaan yang Sering Diajukan
-          </h2>
-          <div class="space-y-3">
-            {faqs.map((faq: {question: string; answer: string}, index: number) => (
-              <div class="card overflow-hidden">
-                <button
-                  onclick={`toggleFaq(${index})`}
-                  class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-background/50 transition-colors"
-                >
-                  <span class="font-medium text-text-primary">{faq.question}</span>
-                  <Icon id={`faq-icon-${index}`} name="chevron-down" size={20} class="text-text-muted transition-transform" />
-                </button>
-                <div id={`faq-content-${index}`} class="hidden px-6 pb-4">
-                  <p class="text-text-secondary">{faq.answer}</p>
+        <section class="mt-12">
+          <div class="max-w-3xl">
+            <h3 class="text-2xl font-bold text-slate-900 mb-6">Pertanyaan Umum</h3>
+            <div class="space-y-3">
+              {faqs.map((faq: {question: string; answer: string}, index: number) => (
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                  <button onclick={`toggleFaq(${index})`} class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 transition-colors">
+                    <span class="font-semibold text-slate-900 text-sm pr-4">{faq.question}</span>
+                    <svg id={`faq-icon-${index}`} class="w-5 h-5 text-slate-400 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                  <div id={`faq-content-${index}`} class="hidden px-6 pb-4">
+                    <p class="text-sm text-slate-600 leading-relaxed">{faq.answer}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
       )}
 
       <!-- Related Products -->
       {relatedProducts.length > 0 && (
-        <section>
-          <h2 class="text-xl sm:text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <Icon name="sparkles" size={24} class="text-primary" />
-            Produk Lainnya
-          </h2>
+        <section class="mt-20 border-t border-slate-200 pt-12">
+          <h3 class="text-2xl font-bold text-slate-900 mb-8 text-center">Produk Lainnya</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedProducts.map((relatedProduct: any) => (
-              <ProductCard product={relatedProduct} />
+            {relatedProducts.map((rp: any) => (
+              <a href={`/product/${rp.slug}`} class="bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-float hover:-translate-y-1 transition-all duration-300 group">
+                <div class="overflow-hidden aspect-square bg-slate-50">
+                  <img src={optimizeImage(rp.image_icon || '/images/placeholder.jpg', { w: 400, h: 400 })} alt={rp.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                </div>
+                <div class="p-5">
+                  <h4 class="font-bold text-slate-900 mb-2 line-clamp-1">{rp.title}</h4>
+                  <p class="text-sm text-slate-500 mb-4 line-clamp-2">{rp.short_description || rp.description}</p>
+                  <div class="flex items-center justify-between pt-3 border-t border-slate-50">
+                    {rp.price === 0 ? (
+                      <span class="text-lg font-bold text-slate-900">Gratis</span>
+                    ) : (
+                      <span class="text-lg font-bold text-slate-900">{formatIDR(rp.price)}</span>
+                    )}
+                    <span class="bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all">Detail</span>
+                  </div>
+                </div>
+              </a>
             ))}
           </div>
         </section>
@@ -431,132 +344,245 @@ const tags = parseTags(product?.tags);
     </div>
   </main>
 
-  <!-- Video Modal -->
-  <div id="video-modal" class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4">
-    <button
-      onclick="closeVideoModal()"
-      class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
-    >
-      <Icon name="x" size={32} />
-    </button>
-    <video id="modal-video" controls class="max-w-full max-h-[80vh] rounded-lg"></video>
-  </div>
+  <Footer />
 </BaseLayout>
 
-<script define:vars={{ galleryImages, galleryVideos }}>
-  let currentImageIndex = 0;
+<script define:vars={{ galleryImages }}>
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
 
-  function changeMainImage(src: string, index: number) {
-    const mainImage = document.getElementById('main-image') as HTMLImageElement;
-    const counter = document.getElementById('image-counter')!;
-
-    mainImage.src = src;
-    currentImageIndex = index;
-    counter.textContent = (index + 1).toString();
-
-    // Update thumbnail borders
+  function changeMainImage(src, index) {
+    const mainImage = document.getElementById('main-image');
+    if (mainImage) mainImage.src = src;
     const thumbnails = document.querySelectorAll('button[onclick^="changeMainImage"]');
     thumbnails.forEach((thumb, i) => {
       if (i === index) {
-        thumb.classList.remove('border-border');
-        thumb.classList.add('border-primary');
+        thumb.classList.remove('border-slate-200', 'opacity-60');
+        thumb.classList.add('border-2', 'border-slate-900', 'opacity-100');
       } else {
-        thumb.classList.remove('border-primary');
-        thumb.classList.add('border-border');
+        thumb.classList.remove('border-2', 'border-slate-900', 'opacity-100');
+        thumb.classList.add('border-slate-200', 'opacity-60');
       }
     });
   }
 
-  function openVideoModal(videoSrc: string) {
-    const modal = document.getElementById('video-modal')!;
-    const video = document.getElementById('modal-video') as HTMLVideoElement;
-
-    video.src = videoSrc;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    video.play();
+  function toggleFaq(index) {
+    const content = document.getElementById('faq-content-' + index);
+    const icon = document.getElementById('faq-icon-' + index);
+    if (content) content.classList.toggle('hidden');
+    if (icon) icon.classList.toggle('rotate-180');
   }
 
-  function closeVideoModal() {
-    const modal = document.getElementById('video-modal')!;
-    const video = document.getElementById('modal-video') as HTMLVideoElement;
+  window.changeMainImage = changeMainImage;
+  window.toggleFaq = toggleFaq;
 
-    video.pause();
-    video.src = '';
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
+  // Share product function
+  function shareProduct(platform) {
+    const url = window.location.href;
+    const title = document.title.replace(' - Asri Digital', '');
+    const text = `Cek produk ini: ${title}`;
 
-  function toggleFaq(index: number) {
-    const content = document.getElementById(`faq-content-${index}`)!;
-    const icon = document.getElementById(`faq-icon-${index}`)!;
-
-    content.classList.toggle('hidden');
-    icon.classList.toggle('rotate-180');
-  }
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeVideoModal();
+    switch (platform) {
+      case 'whatsapp':
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url).then(() => {
+          const btn = document.getElementById('product-copy-btn');
+          if (btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tersalin!';
+            setTimeout(() => { btn.innerHTML = original; }, 2000);
+          }
+        });
+        break;
     }
-  });
 
-  // Make functions globally available
-  (window as any).changeMainImage = changeMainImage;
-  (window as any).openVideoModal = openVideoModal;
-  (window as any).closeVideoModal = closeVideoModal;
-  (window as any).toggleFaq = toggleFaq;
+    // Track share event
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('share', { method: platform, content_type: 'product' });
+    }
+  }
+  window.shareProduct = shareProduct;
 
-  // Check if user owns this product and show GPT link
+  // Tracking: ViewContent
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('view_content', {
+      content_name: document.title,
+      content_type: 'product',
+      content_ids: [window.location.pathname.split('/').filter(Boolean).pop()]
+    });
+  }
+
+  // Check product access
   (async function checkProductAccess() {
-    const token = document.cookie.split('; ').find(c => c.startsWith('token='))?.split('=')[1];
-    if (!token) return; // Not logged in
-
-    const currentSlug = window.location.pathname.split('/').filter(Boolean).pop();
-
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
     try {
-      // Check if user has access to this product
-      const res = await fetch('/api/user/products', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
+      const res = await fetch('/api/user/products', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) return;
-
       const data = await res.json();
-      const userProducts = data.products || [];
-
-      // Find current product in user's products
-      const ownedProduct = userProducts.find((p: any) => p.slug === currentSlug);
-
-      if (ownedProduct && ownedProduct.gpt_url && ownedProduct.gpt_url !== '#') {
-        // Show GPT access section
-        const accessSection = document.getElementById('gpt-access-section');
-        const previewLink = document.getElementById('gpt-preview-link') as HTMLAnchorElement;
-        const demoSection = document.getElementById('gpt-demo-section');
-        const demoLink = document.getElementById('gpt-demo-link') as HTMLAnchorElement;
-        const buyButton = document.getElementById('buy-button');
-
-        if (accessSection && previewLink) {
-          previewLink.href = ownedProduct.gpt_url;
-          accessSection.classList.remove('hidden');
-        }
-
-        if (demoSection && demoLink) {
-          demoLink.href = ownedProduct.gpt_url;
-          demoSection.classList.remove('hidden');
-        }
-
-        // Change buy button to "Sudah Dibeli" style
-        if (buyButton) {
-          buyButton.classList.remove('btn-primary');
-          buyButton.classList.add('btn-tertiary', 'opacity-60', 'cursor-default');
-          buyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sudah Dibeli';
-          buyButton.removeAttribute('href');
+      const slug = window.location.pathname.split('/').filter(Boolean).pop();
+      const owned = (data.products || []).find((p) => p.slug === slug);
+      if (owned) {
+        const btn = document.getElementById('buy-button');
+        if (btn) {
+          btn.classList.remove('from-emerald-300', 'to-yellow-100');
+          btn.classList.add('bg-white', 'border-2', 'border-slate-200', 'hover:border-slate-400');
+          btn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15"/><path d="M10 17L15 12L10 7"/><path d="M15 12H3"/></svg> Akses Produk';
+          btn.setAttribute('href', '/dashboard');
         }
       }
-    } catch (e) {
-      // Silently fail - user just won't see the GPT link
-    }
+    } catch {}
+  })();
+
+  // Silent background refresh: fetch latest product data from API and update DOM
+  (async function refreshProductData() {
+    try {
+      const slug = window.location.pathname.split('/').filter(Boolean).pop();
+      const res = await fetch(`/api/products/${slug}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const p = data.product;
+      if (!p) return;
+
+      // Helper: formatIDR (client-side version since server-side is Astro-only)
+      const formatIDRClient = (n) => {
+        if (n === 0) return 'Rp 0';
+        if (n == null) return '';
+        return 'Rp ' + Number(n).toLocaleString('id-ID');
+      };
+
+      // Helper: set meta tag content
+      const setMeta = (prop, val) => {
+        if (!val) return;
+        const el = document.querySelector(`meta[property="${prop}"], meta[name="${prop}"]`);
+        if (el) el.setAttribute('content', val);
+      };
+
+      // Update main image
+      const mainImg = document.getElementById('main-image');
+      if (mainImg && p.image_icon) {
+        mainImg.src = optimizeImg(p.image_icon, 800, 800);
+      }
+
+      // Update title
+      const h1 = document.querySelector('h1');
+      if (h1 && p.title && h1.textContent.trim() !== p.title) {
+        h1.textContent = p.title;
+        document.title = `${p.title} - Asri Digital`;
+      }
+
+      // Update OG meta tags
+      if (p.image_icon) {
+        const imgUrl = optimizeImg(p.image_icon.startsWith('http') ? p.image_icon : `https://asridigital.com${p.image_icon}`, 1200, 630);
+        setMeta('og:image', imgUrl);
+        setMeta('twitter:image', imgUrl);
+      }
+      if (p.title) {
+        setMeta('og:title', `${p.title} - Asri Digital`);
+        setMeta('twitter:title', `${p.title} - Asri Digital`);
+      }
+      if (p.short_description || p.description) {
+        setMeta('og:description', p.short_description || p.description);
+        setMeta('twitter:description', p.short_description || p.description);
+        setMeta('description', p.short_description || p.description);
+      }
+
+      // Update gallery images
+      let images = [];
+      try {
+        images = p.gallery_images
+          ? (typeof p.gallery_images === 'string' ? JSON.parse(p.gallery_images) : p.gallery_images)
+          : (p.image_icon ? [p.image_icon] : []);
+      } catch { images = p.image_icon ? [p.image_icon] : []; }
+      if (images.length > 0) {
+        window.galleryImages = images;
+        // Rebuild gallery thumbnails if container exists
+        const galleryContainer = document.querySelector('button[onclick^="changeMainImage"]')?.parentElement;
+        if (galleryContainer && images.length > 1) {
+          galleryContainer.innerHTML = images.map((img, i) =>
+            `<button class="aspect-square rounded-xl overflow-hidden bg-slate-50 transition-all ${i === 0 ? 'border-2 border-slate-900' : 'border border-slate-200 opacity-60 hover:opacity-100'}" onclick="changeMainImage('${img}', ${i})">` +
+            `<img src="${optimizeImg(img, 200, 200)}" alt="${p.title || ''} ${i + 1}" class="w-full h-full object-cover" />` +
+            `</button>`
+          ).join('');
+        }
+      }
+
+      // Update price block
+      const priceBlock = document.querySelector('.bg-slate-50.border.border-slate-200.rounded-2xl.p-6');
+      if (priceBlock && p.price != null) {
+        const isFree = p.price === 0;
+        const hasDiscount = p.compare_at_price && p.compare_at_price > p.price;
+        const discount = hasDiscount ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0;
+
+        // Find the price content area (before the checkmarks)
+        const priceArea = priceBlock.querySelector('.space-y-3');
+        if (priceArea) {
+          let priceHTML = '';
+          if (isFree) {
+            priceHTML = '<div class="flex items-end mb-4"><span class="text-4xl font-extrabold text-green-600 tracking-tight">Gratis</span></div>';
+          } else {
+            if (hasDiscount) {
+              priceHTML += `<p class="text-sm text-slate-500 font-medium mb-1 line-through">Harga Normal: ${formatIDRClient(p.compare_at_price)}</p>`;
+            }
+            priceHTML += '<div class="flex items-end mb-4">';
+            priceHTML += `<span class="text-4xl font-extrabold text-slate-900 tracking-tight">${formatIDRClient(p.price)}</span>`;
+            if (hasDiscount) {
+              priceHTML += `<span class="ml-3 mb-1 text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded">Diskon ${discount}%</span>`;
+            }
+            priceHTML += '</div>';
+          }
+          // Insert price HTML before the checklist
+          const existingPriceArea = priceArea.previousElementSibling;
+          if (existingPriceArea) {
+            existingPriceArea.outerHTML = priceHTML;
+          }
+        }
+      }
+
+      // Update description (requires marked.js)
+      if (p.description) {
+        const proseEl = document.querySelector('.prose');
+        if (proseEl) {
+          if (typeof marked === 'undefined') {
+            // Load marked from CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+            script.onload = () => {
+              proseEl.innerHTML = marked.parse(p.description);
+            };
+            document.head.appendChild(script);
+          } else {
+            proseEl.innerHTML = marked.parse(p.description);
+          }
+        }
+      }
+
+      // Update JSON-LD structured data
+      const ldScript = document.querySelector('script[type="application/ld+json"]');
+      if (ldScript) {
+        try {
+          const ldData = JSON.parse(ldScript.textContent);
+          ldData.name = p.title || ldData.name;
+          ldData.description = p.description || ldData.description;
+          ldData.image = p.image_icon || ldData.image;
+          if (ldData.offers && p.price != null) {
+            ldData.offers.price = p.sale_price || p.price;
+          }
+          ldScript.textContent = JSON.stringify(ldData);
+        } catch {}
+      }
+
+    } catch (e) { /* silent fail */ }
   })();
 </script>

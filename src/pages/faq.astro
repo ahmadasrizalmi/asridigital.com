@@ -72,10 +72,23 @@ const faqCategories = [
 ];
 ---
 
+<script type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqCategories.flatMap((cat: any) => cat.items.map((item: any) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.a
+    }
+  })))
+})}></script>
+
 <BaseLayout
   title="FAQ - Pertanyaan yang Sering Diajukan - Asri Digital"
-  description="Temukan jawaban atas pertanyaan umum tentang Custom GPT, pembelian, pembayaran, dan penggunaan produk Asri Digital."
-  canonicalUrl="https://asridigital.com/faq"
+  description="Temukan jawaban untuk pertanyaan umum tentang produk digital Asri Digital, cara pembelian, dan akses produk."
+  canonicalUrl="https://asridigital.com/faq/"
 >
   <Header />
 

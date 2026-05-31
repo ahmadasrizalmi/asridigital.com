@@ -2,90 +2,88 @@
 import Icon from '../ui/Icon.astro';
 
 const navLinks = [
-  { label: 'Produk', href: '/#produk' },
+  { label: 'Semua Produk', href: '/#produk' },
   { label: 'Blog', href: '/blog' },
   { label: 'Harga', href: '/#harga' },
 ];
 ---
 
-<header class="navbar sticky top-0 z-50">
+<nav class="fixed w-full z-50 glass transition-all duration-300" id="navbar">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
+    <div class="flex justify-between items-center h-20">
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-2 sm:gap-2.5 group">
-        <div class="w-8 h-8 sm:w-9 sm:h-9 bg-primary rounded-lg flex items-center justify-center shadow-btn-primary">
-          <Icon name="sparkles" size={16} class="sm:w-[18px] text-white" />
-        </div>
-        <span class="text-lg sm:text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
-          Asri Digital
-        </span>
-      </a>
-
-      <!-- Desktop Nav -->
-      <nav class="hidden md:flex items-center gap-6 lg:gap-8">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors relative group"
-          >
-            {link.label}
-            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-          </a>
-        ))}
-      </nav>
-
-      <!-- Auth Buttons - Desktop -->
-      <div class="hidden md:flex items-center gap-3">
-        <a href="/dashboard" class="btn-tertiary text-sm px-4 py-2">
-          <Icon name="user" size={16} />
-          Login
-        </a>
-        <a href="/#produk" class="btn-primary text-sm px-4 py-2">
-          Mulai Gratis
+      <div class="flex-shrink-0 flex items-center">
+        <a href="/">
+          <img class="h-8 w-auto" src="https://res.cloudinary.com/daj8fzinf/image/upload/w_200/q_auto/f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png" alt="Asri Digital Logo" />
         </a>
       </div>
 
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex items-center space-x-8">
+        {navLinks.map((link) => (
+          <a href={link.href} class="text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">
+            {link.label}
+          </a>
+        ))}
+      </div>
+
+      <!-- Desktop Auth -->
+      <div class="hidden md:flex items-center space-x-4">
+        <div id="auth-guest-desktop" class="flex items-center space-x-4">
+          <a href="/dashboard" class="text-slate-500 hover:text-slate-900 text-sm font-medium px-3 py-2 rounded-lg transition">Masuk</a>
+          <a href="/#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-sm font-bold px-6 py-2.5 rounded-full shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
+            Mulai Eksplorasi
+          </a>
+        </div>
+        <div id="auth-user-desktop" class="hidden items-center space-x-4">
+          <a href="/dashboard" class="text-slate-500 hover:text-slate-900 text-sm font-medium px-3 py-2 rounded-lg transition">
+            <span id="header-user-name-desktop">Dashboard</span>
+          </a>
+          <button id="header-logout-desktop" class="text-slate-500 hover:text-slate-900 text-sm font-medium px-3 py-2 rounded-lg transition">Logout</button>
+        </div>
+      </div>
+
       <!-- Mobile Menu Button -->
-      <button id="mobile-menu-toggle" class="md:hidden p-2 text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-background">
+      <button id="mobile-menu-toggle" class="md:hidden p-2 text-slate-500 hover:text-slate-900 transition-colors rounded-lg" aria-label="Buka menu navigasi">
         <Icon name="menu" size={24} />
       </button>
     </div>
   </div>
+</nav>
 
-  <!-- Mobile Menu - Responsive width -->
-  <div id="mobile-menu" class="hidden md:hidden" style="position:fixed;inset:0;z-index:9999;">
-    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);" id="mobile-menu-overlay"></div>
-    <div style="position:absolute;right:0;top:0;height:100%;width:280px;background:#FFFFFF;border-left:1px solid #E5E5E5;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
-        <span style="font-weight:700;font-size:20px;color:#171717;">Menu</span>
-        <button id="mobile-menu-close" style="padding:8px;border-radius:8px;background:transparent;border:none;cursor:pointer;">
-          <Icon name="x" size={24} />
-        </button>
-      </div>
-
-      <nav style="display:flex;flex-direction:column;gap:8px;">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            style="display:block;padding:12px 16px;color:#262626;font-weight:500;font-size:16px;text-decoration:none;border-radius:8px;"
-          >
-            {link.label}
-          </a>
-        ))}
-
-        <hr style="border:none;border-top:1px solid #E5E5E5;margin:16px 0;" />
-
-        <a href="/dashboard" class="btn-tertiary justify-center w-full">
-          <Icon name="user" size={18} />
-          Login
-        </a>
-        <a href="/#produk" class="btn-primary justify-center w-full">
-          Mulai Gratis
-        </a>
-      </nav>
+<!-- Mobile Menu -->
+<div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-[9999]">
+  <div id="mobile-menu-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+  <div class="absolute right-0 top-0 h-full w-[280px] bg-white border-l border-slate-100 shadow-xl p-6">
+    <div class="flex justify-between items-center mb-8">
+      <span class="font-bold text-lg text-slate-900">Menu</span>
+      <button id="mobile-menu-close" class="p-2 rounded-lg hover:bg-slate-50 transition" aria-label="Tutup menu">
+        <Icon name="x" size={20} />
+      </button>
     </div>
+
+    <nav class="flex flex-col gap-2">
+      {navLinks.map((link) => (
+        <a href={link.href} class="block px-4 py-3 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition">
+          {link.label}
+        </a>
+      ))}
+
+      <hr class="border-slate-100 my-4" />
+
+      <div id="auth-guest-mobile" class="flex flex-col gap-2">
+        <a href="/dashboard" class="btn-tertiary justify-center">Masuk</a>
+        <a href="/#produk" class="btn-primary justify-center">Mulai Eksplorasi</a>
+      </div>
+      <div id="auth-user-mobile" class="hidden flex-col gap-2">
+        <a href="/dashboard" class="btn-tertiary justify-center">
+          <span id="header-user-name-mobile">Dashboard</span>
+        </a>
+        <button id="header-logout-mobile" class="btn-primary justify-center">Logout</button>
+      </div>
+    </nav>
   </div>
-</header>
+</div>
 
 <script>
   const toggle = document.getElementById('mobile-menu-toggle');
@@ -107,13 +105,59 @@ const navLinks = [
   overlay?.addEventListener('click', closeMenu);
   close?.addEventListener('click', closeMenu);
 
-  // Close menu when clicking on links
   menu?.querySelectorAll('a[href]').forEach(link => {
     link.addEventListener('click', closeMenu);
   });
 
-  // Close on escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeMenu();
+  });
+
+  // Auth state
+  function syncHeaderAuth() {
+    const token = localStorage.getItem('auth_token');
+    const userStr = localStorage.getItem('user');
+
+    const guestDesktop = document.getElementById('auth-guest-desktop');
+    const userDesktop = document.getElementById('auth-user-desktop');
+    const nameDesktop = document.getElementById('header-user-name-desktop');
+    const guestMobile = document.getElementById('auth-guest-mobile');
+    const userMobile = document.getElementById('auth-user-mobile');
+    const nameMobile = document.getElementById('header-user-name-mobile');
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        const userName = user.name || 'Dashboard';
+        if (guestDesktop) guestDesktop.style.display = 'none';
+        if (userDesktop) { userDesktop.style.display = 'flex'; userDesktop.classList.remove('hidden'); }
+        if (nameDesktop) nameDesktop.textContent = userName;
+        if (guestMobile) guestMobile.style.display = 'none';
+        if (userMobile) userMobile.style.display = 'flex';
+        if (nameMobile) nameMobile.textContent = userName;
+      } catch {}
+    } else {
+      if (guestDesktop) guestDesktop.style.display = 'flex';
+      if (userDesktop) userDesktop.style.display = 'none';
+      if (guestMobile) guestMobile.style.display = 'flex';
+      if (userMobile) userMobile.style.display = 'none';
+    }
+  }
+
+  syncHeaderAuth();
+  window.addEventListener('auth-changed', () => syncHeaderAuth());
+
+  document.getElementById('header-logout-desktop')?.addEventListener('click', () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    window.dispatchEvent(new Event('auth-changed'));
+    window.location.href = '/';
+  });
+
+  document.getElementById('header-logout-mobile')?.addEventListener('click', () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    window.dispatchEvent(new Event('auth-changed'));
+    window.location.href = '/';
   });
 </script>

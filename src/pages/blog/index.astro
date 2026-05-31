@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
+import { optimizeImage } from '../../lib/utils';
 
 // Fetch blog posts from API at build time
 const apiBase = 'https://asridigital.com';
@@ -15,16 +16,41 @@ try {
   console.error('Failed to fetch blog posts:', e);
 }
 
-// Category metadata
+// Category metadata — keys are lowercased post.category values
 const categoryMeta: Record<string, { label: string; color: string; bgColor: string }> = {
-  'tips': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
-  'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
-  'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
-  'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
   'ai': { label: 'AI', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
   'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  'tips & trik': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+  'studi kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+  'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
   'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
 };
+
+// Derive unique categories dynamically from posts
+const categoryColorPalette = [
+  { color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+  { color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+  { color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+  { color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+  { color: 'bg-emerald-500 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
+  { color: 'bg-rose-500 text-white', bgColor: 'from-rose-100 to-rose-50' },
+  { color: 'bg-cyan-500 text-white', bgColor: 'from-cyan-100 to-cyan-50' },
+];
+
+const uniqueCategories: string[] = [...new Set(posts.map((p: any) => p.category).filter(Boolean))] as string[];
+
+// Ensure every category from posts has a meta entry
+uniqueCategories.forEach((cat, i) => {
+  const key = cat.toLowerCase();
+  if (!categoryMeta[key]) {
+    categoryMeta[key] = {
+      label: cat,
+      color: categoryColorPalette[i % categoryColorPalette.length].color,
+      bgColor: categoryColorPalette[i % categoryColorPalette.length].bgColor,
+    };
+  }
+});
 
 const iconNames = ['sparkles', 'code', 'video', 'lightbulb', 'rocket', 'star', 'zap'];
 const iconColors = ['text-primary', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-emerald-500', 'text-rose-500', 'text-cyan-500'];
@@ -43,38 +69,35 @@ function getCategoryMeta(category: string) {
 }
 ---
 
-<BaseLayout title="Blog - Asri Digital">
+<BaseLayout title="Blog - Asri Digital" description="Baca tips, tutorial, dan insight tentang AI, Custom GPT, dan tools digital untuk profesional Indonesia.">
   <Header />
   
-  <main class="flex-1 py-12">
+  <main class="flex-1 pt-28 pb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Hero Section -->
       <div class="text-center mb-12">
         <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">
-          Blog & Tips AI 📚
+          <Icon name="book-open" size={28} class="inline align-text-bottom text-primary" /> Blog & Tips AI
         </h1>
         <p class="text-lg text-text-secondary max-w-2xl mx-auto">
           Artikel, tutorial, dan tips tentang cara menggunakan Custom GPT untuk meningkatkan produktivitas dan bisnis Anda.
         </p>
       </div>
       
-      <!-- Category Filter -->
+      <!-- Category Filter (dynamically generated from posts) -->
       <div class="flex flex-wrap justify-center gap-2 mb-8">
         <button data-category="all" class="px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
           Semua
         </button>
-        <button data-category="tips" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Tips & Trik
-        </button>
-        <button data-category="tutorial" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Tutorial
-        </button>
-        <button data-category="studi-kasus" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Studi Kasus
-        </button>
-        <button data-category="berita" class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
-          Berita
-        </button>
+        {uniqueCategories.map((cat: string) => {
+          const key = cat.toLowerCase();
+          const meta = getCategoryMeta(key);
+          return (
+            <button data-category={key} class="px-4 py-2 rounded-full text-sm font-medium bg-surface border border-border text-text-secondary hover:text-primary hover:border-primary">
+              {meta.label}
+            </button>
+          );
+        })}
       </div>
       
       <!-- Blog Grid -->
@@ -88,7 +111,7 @@ function getCategoryMeta(category: string) {
             <article class="card-hover overflow-hidden group" data-category={post.category?.toLowerCase() || 'general'}>
               <div class="relative overflow-hidden">
                 {post.image_url ? (
-                  <img src={`${post.image_url}?v=${Date.now()}`} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
+                  <img src={optimizeImage(post.image_url, { w: 800, h: 420 })} alt={post.title} class="w-full h-48 object-cover" loading="lazy" />
                 ) : (
                   <div class={`w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center`}>
                     <Icon name={icon} size={48} class={iconColor} />
@@ -149,6 +172,15 @@ function getCategoryMeta(category: string) {
 
 <script>
   // Blog filtering by category
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
+
   const articles = document.querySelectorAll('article[data-category]');
   const buttons = document.querySelectorAll('.flex.flex-wrap button');
   
@@ -176,12 +208,122 @@ function getCategoryMeta(category: string) {
   });
 
   // Load more button handler
-  document.getElementById('load-more')?.addEventListener('click', () => {
-    const btn = document.getElementById('load-more');
-    if (btn) {
-      btn.textContent = 'Semua artikel sudah ditampilkan';
-      (btn as HTMLButtonElement).disabled = true;
-      btn.classList.add('opacity-50', 'cursor-not-allowed');
+  let currentPage = 1;
+  let allLoaded = false;
+
+  function createPostCard(post: any, index: number) {
+    const categoryMeta: Record<string, { label: string; color: string; bgColor: string }> = {
+      'ai': { label: 'AI', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+      'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+      'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
+      'tips & trik': { label: 'Tips & Trik', color: 'bg-primary text-white', bgColor: 'from-primary/20 to-primary/5' },
+      'studi kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
+      'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
+      'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
+    };
+    const iconNames = ['sparkles', 'code', 'video', 'lightbulb', 'rocket', 'star', 'zap'];
+    const iconColors = ['text-primary', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-emerald-500', 'text-rose-500', 'text-cyan-500'];
+
+    const catKey = post.category?.toLowerCase() || 'general';
+    const meta = categoryMeta[catKey] || categoryMeta['general'];
+    const iconName = iconNames[index % iconNames.length];
+    const iconCol = iconColors[index % iconColors.length];
+
+    const card = document.createElement('article');
+    card.className = 'card-hover overflow-hidden group';
+    card.setAttribute('data-category', catKey);
+
+    const publishedDate = new Date(post.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Sanitize user-controlled fields before inserting into innerHTML
+    const safeTitle = post.title ? post.title.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])) : '';
+    const safeExcerpt = post.excerpt ? post.excerpt.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])) : '';
+    const safeAuthor = post.author_name ? post.author_name.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])) : 'Admin';
+
+    const safeImageUrl = post.image_url ? optimizeImg(post.image_url, 400, 210).replace(/"/g, '&quot;') : '';
+    const imageSection = post.image_url
+      ? `<img src="${safeImageUrl}" alt="${safeTitle}" class="w-full h-48 object-cover" loading="lazy" />`
+      : `<div class="w-full h-48 bg-gradient-to-br ${meta.bgColor} flex items-center justify-center">
+           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${iconCol}"><use href="#icon-${iconName}"/></svg>
+         </div>`;
+
+    card.innerHTML = `
+      <div class="relative overflow-hidden">
+        ${imageSection}
+        <div class="absolute top-3 left-3">
+          <span class="px-3 py-1 ${meta.color} text-xs font-medium rounded-full">${meta.label}</span>
+        </div>
+      </div>
+      <div class="p-5">
+        <div class="flex items-center gap-3 text-sm text-text-muted mb-3">
+          <span class="flex items-center gap-1">${safeAuthor}</span>
+          <span>•</span>
+          <span class="flex items-center gap-1">${publishedDate}</span>
+        </div>
+        <h2 class="text-lg font-semibold text-text-primary mb-2 group-hover:text-primary transition-colors line-clamp-2">${safeTitle}</h2>
+        <p class="text-sm text-text-secondary mb-4 line-clamp-3">${safeExcerpt}</p>
+        <a href="/blog/${post.slug}/" class="text-primary hover:underline font-medium text-sm flex items-center gap-1">
+          Baca Selengkapnya
+        </a>
+      </div>
+    `;
+    return card;
+  }
+
+  document.getElementById('load-more')?.addEventListener('click', async () => {
+    const btn = document.getElementById('load-more') as HTMLButtonElement;
+    if (!btn || allLoaded) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Memuat...';
+
+    try {
+      currentPage++;
+      const res = await fetch(`/api/blog/posts?page=${currentPage}&limit=6`);
+      const data = await res.json();
+      const newPosts = data.posts || [];
+
+      if (newPosts.length === 0) {
+        allLoaded = true;
+        btn.textContent = 'Semua artikel sudah ditampilkan';
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      const grid = document.getElementById('blog-grid');
+      const existingCount = grid?.querySelectorAll('article').length || 0;
+      newPosts.forEach((post: any, i: number) => {
+        const card = createPostCard(post, existingCount + i);
+        grid?.appendChild(card);
+      });
+
+      // Update filtering to include new articles
+      const allArticles = document.querySelectorAll('article[data-category]');
+      const activeBtn = document.querySelector('.flex.flex-wrap button.bg-primary');
+      const activeCategory = (activeBtn as HTMLElement)?.getAttribute('data-category') || 'all';
+      if (activeCategory !== 'all') {
+        allArticles.forEach(article => {
+          if (activeCategory === 'all' || (article as HTMLElement).getAttribute('data-category') === activeCategory) {
+            (article as HTMLElement).style.display = '';
+          } else {
+            (article as HTMLElement).style.display = 'none';
+          }
+        });
+      }
+
+      if (newPosts.length < 6) {
+        allLoaded = true;
+        btn.textContent = 'Semua artikel sudah ditampilkan';
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Muat Lebih Banyak';
+      }
+    } catch (e) {
+      console.error('Failed to load more posts:', e);
+      btn.disabled = false;
+      btn.textContent = 'Muat Lebih Banyak';
+      currentPage--;
     }
   });
 </script>

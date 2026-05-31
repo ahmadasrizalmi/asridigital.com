@@ -1,28 +1,29 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
 import Icon from '../components/ui/Icon.astro';
 import { formatIDR } from '../lib/utils';
 ---
 
-<BaseLayout title="Dashboard - Asri Digital">
+<BaseLayout title="Dashboard - Asri Digital" description="Dashboard member Asri Digital — akses semua produk digital yang sudah dibeli.">
   <Header />
   
   <main class="flex-1 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Welcome Banner -->
       <div id="welcome-banner" class="card p-6 mb-8 bg-gradient-to-r from-primary/5 to-primary/10">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 class="text-2xl font-bold text-text-primary mb-2">
-              Selamat datang, <span id="user-name">Guest</span>! 👋
+              Selamat datang, <span id="user-name">Guest</span>! <Icon name="user" size={20} class="inline text-primary" />
             </h1>
             <p class="text-text-secondary" id="user-status">Silakan login untuk mengakses dashboard Anda.</p>
           </div>
           <div id="all-access-badge" class="hidden">
             <div class="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-full">
               <Icon name="crown" size={20} />
-              <span class="font-semibold">ALL-ACCESS MEMBER</span>
+              <span class="font-semibold text-sm sm:text-base">ALL-ACCESS MEMBER</span>
             </div>
           </div>
         </div>
@@ -41,13 +42,41 @@ import { formatIDR } from '../lib/utils';
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Password</label>
-              <input type="password" id="login-password" name="password" class="input" placeholder="Masukkan password" required />
+              <div class="relative">
+                <input type="password" id="login-password" name="password" class="input pr-10" placeholder="Masukkan password" required />
+                <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary" data-target="login-password">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"/><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-off-icon hidden"><path d="M1 1L23 23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55A10.94 10.94 0 0 1 7.28 11.06"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9A15.91 15.91 0 0 1 4.63 6.64"/><path d="M8.53 16.11A6 6 0 0 1 15.47 16.11"/><path d="M12 20H12.01"/></svg>
+                </button>
+              </div>
             </div>
             <button type="submit" class="btn-primary w-full">
               <Icon name="log-in" size={18} />
               Login
             </button>
           </form>
+
+          <div class="mt-3 text-center">
+            <button id="show-forgot" class="text-sm text-primary hover:underline">Lupa Password?</button>
+          </div>
+
+          <!-- Forgot Password Form (hidden by default) -->
+          <form id="forgot-form" class="space-y-4 hidden">
+            <p class="text-sm text-text-secondary text-center">Masukkan email Anda, kami akan mengirim link reset password.</p>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Email</label>
+              <input type="email" id="forgot-email" name="email" class="input" placeholder="email@contoh.com" required />
+            </div>
+            <button type="submit" class="btn-primary w-full">
+              <Icon name="send" size={18} />
+              Kirim Link Reset
+            </button>
+            <div class="text-center">
+              <button id="back-to-login" class="text-sm text-text-muted hover:text-primary hover:underline">← Kembali ke Login</button>
+            </div>
+          </form>
+
+          <div id="forgot-success" class="mt-4 text-sm text-green-600 text-center hidden"></div>
 
           <div class="mt-4 text-center">
             <p class="text-sm text-text-muted">
@@ -68,7 +97,13 @@ import { formatIDR } from '../lib/utils';
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Password</label>
-              <input type="password" id="register-password" name="password" class="input" placeholder="Minimal 6 karakter" required minlength="6" />
+              <div class="relative">
+                <input type="password" id="register-password" name="password" class="input pr-10" placeholder="Minimal 6 karakter" required minlength="6" />
+                <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary" data-target="register-password">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"/><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-off-icon hidden"><path d="M1 1L23 23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55A10.94 10.94 0 0 1 7.28 11.06"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9A15.91 15.91 0 0 1 4.63 6.64"/><path d="M8.53 16.11A6 6 0 0 1 15.47 16.11"/><path d="M12 20H12.01"/></svg>
+                </button>
+              </div>
             </div>
             <button type="submit" class="btn-primary w-full">
               <Icon name="user-plus" size={18} />
@@ -182,14 +217,14 @@ import { formatIDR } from '../lib/utils';
           </h2>
           <div class="card p-6">
             <p class="text-sm text-text-secondary mb-3">Bagikan link referral Anda dan dapatkan komisi!</p>
-            <div class="flex gap-2 mb-4">
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
               <input type="text" id="referral-link" class="input flex-1" readonly value="Loading..." />
               <button onclick="copyReferralLink()" class="btn-secondary px-4">
                 <Icon name="copy" size={16} />
                 Copy
               </button>
             </div>
-            <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div class="p-3 bg-background rounded-lg">
                 <p class="text-xl font-bold text-primary" id="affiliate-conversions">0</p>
                 <p class="text-xs text-text-muted">Konversi</p>
@@ -206,21 +241,38 @@ import { formatIDR } from '../lib/utils';
           </div>
         </div>
 
-        <!-- Logout Button -->
-        <div class="text-center mt-8">
-          <button id="logout-btn" class="btn-tertiary">
-            <Icon name="log-out" size={18} />
-            Logout
-          </button>
-        </div>
       </div>
     </div>
   </main>
+  <Footer />
 </BaseLayout>
 
 <script>
   // API helper
   const API_BASE = '/api';
+
+  // Read token from URL fragment (magic login redirect)
+  (function() {
+    const hash = window.location.hash;
+    if (hash && hash.includes('token=')) {
+      const token = hash.split('token=')[1];
+      if (token) {
+        localStorage.setItem('auth_token', token);
+        // Clean URL
+        window.history.replaceState({}, '', '/dashboard');
+        // Fetch user info with the token
+        fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(data => {
+            if (data.user) {
+              localStorage.setItem('user', JSON.stringify(data.user));
+              location.reload();
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  })();
 
   function getToken(): string | null {
     return localStorage.getItem('auth_token');
@@ -276,7 +328,29 @@ import { formatIDR } from '../lib/utils';
   const registerForm = document.getElementById('register-form') as HTMLFormElement;
   const showRegisterBtn = document.getElementById('show-register');
   const authError = document.getElementById('auth-error');
-  const logoutBtn = document.getElementById('logout-btn');
+  const logoutBtn = null; // Logout now in header
+
+  // Password toggle (eye icon)
+  document.querySelectorAll('.toggle-password').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const input = document.getElementById(targetId) as HTMLInputElement;
+      if (!input) return;
+
+      const eyeIcon = btn.querySelector('.eye-icon');
+      const eyeOffIcon = btn.querySelector('.eye-off-icon');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon?.classList.add('hidden');
+        eyeOffIcon?.classList.remove('hidden');
+      } else {
+        input.type = 'password';
+        eyeIcon?.classList.remove('hidden');
+        eyeOffIcon?.classList.add('hidden');
+      }
+    });
+  });
 
   // Show/hide auth forms
   showRegisterBtn?.addEventListener('click', () => {
@@ -304,6 +378,7 @@ import { formatIDR } from '../lib/utils';
       }
 
       setAuth(data.token, data.user);
+      window.dispatchEvent(new Event('auth-changed'));
       showDashboard();
     } catch (error: any) {
       if (authError) {
@@ -333,10 +408,70 @@ import { formatIDR } from '../lib/utils';
       }
 
       setAuth(data.token, data.user);
+      window.dispatchEvent(new Event('auth-changed'));
+
+      // Tracking: Lead (registration)
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('lead', {
+          content_name: 'registration',
+          content_type: 'user',
+          email: data.user?.email
+        });
+      }
+
       showDashboard();
     } catch (error: any) {
       if (authError) {
         authError.textContent = error.message || 'Registrasi gagal';
+        authError.classList.remove('hidden');
+      }
+    }
+  });
+
+  // Forgot password handler
+  const showForgotBtn = document.getElementById('show-forgot');
+  const forgotForm = document.getElementById('forgot-form') as HTMLFormElement;
+  const forgotSuccess = document.getElementById('forgot-success');
+  const backToLoginBtn = document.getElementById('back-to-login');
+
+  showForgotBtn?.addEventListener('click', () => {
+    loginForm?.classList.add('hidden');
+    showForgotBtn.classList.add('hidden');
+    forgotForm?.classList.remove('hidden');
+    authError?.classList.add('hidden');
+    forgotSuccess?.classList.add('hidden');
+  });
+
+  backToLoginBtn?.addEventListener('click', () => {
+    forgotForm?.classList.add('hidden');
+    loginForm?.classList.remove('hidden');
+    showForgotBtn?.classList.remove('hidden');
+    forgotSuccess?.classList.add('hidden');
+  });
+
+  forgotForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError?.classList.add('hidden');
+    forgotSuccess?.classList.add('hidden');
+
+    const email = (document.getElementById('forgot-email') as HTMLInputElement).value;
+
+    try {
+      const data = await apiRequest('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+
+      if (data.error) throw new Error(data.error);
+
+      if (forgotSuccess) {
+        forgotSuccess.textContent = 'Link reset password sudah dikirim ke email Anda. Cek inbox/spam.';
+        forgotSuccess.classList.remove('hidden');
+      }
+      forgotForm.reset();
+    } catch (error: any) {
+      if (authError) {
+        authError.textContent = error.message || 'Gagal mengirim link reset';
         authError.classList.remove('hidden');
       }
     }

@@ -16,7 +16,7 @@ const {
 } = Astro.props;
 
 const siteUrl = 'https://asridigital.com';
-const defaultOgImage = `${siteUrl}/og-default.jpg`;
+const defaultOgImage = 'https://res.cloudinary.com/daj8fzinf/image/upload/w_1200,h_630,c_fill/q_auto/f_auto/v1779955544/Gemini_Generated_Image_vnna1ivnna1ivnna_kblwno.png';
 const currentPath = Astro.url.pathname;
 const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
 ---
@@ -36,8 +36,10 @@ const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="id_ID" />
-  <meta property="og:url" content={canonicalUrl || siteUrl} />
+  <meta property="og:url" content={fullCanonicalUrl} />
   <meta property="og:image" content={ogImage || defaultOgImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:site_name" content="Asri Digital" />
   
   <!-- Twitter Card -->
@@ -47,24 +49,24 @@ const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
   <meta name="twitter:image" content={ogImage || defaultOgImage} />
   
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
   
   <!-- Google Fonts - Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <title>{title}</title>
 
   <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://*.cloudflareinsights.com;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://*.cloudflareinsights.com https://www.googletagmanager.com https://connect.facebook.net https://www.googleadservices.com https://googleads.g.doubleclick.net;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' data: https: blob:;
+    img-src 'self' data: https: blob: https://www.facebook.com;
     font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;
-    connect-src 'self' https: wss: https://*.cloudflareinsights.com;
-    frame-src 'self' https://chatgpt.com;
+    connect-src 'self' https: wss: https://*.cloudflareinsights.com https://www.google-analytics.com https://analytics.google.com https://www.facebook.com;
+    frame-src 'self' https://chatgpt.com https://www.googletagmanager.com https://td.doubleclick.net;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
@@ -83,6 +85,97 @@ const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
+  <!-- Tracking Scripts (injected dynamically from admin settings) -->
+  <script is:inline>
+    (function() {
+      fetch('/api/tracking-config')
+        .then(r => r.json())
+        .then(function(config) {
+          // Google Tag Manager
+          if (config.gtm_id) {
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer',config.gtm_id);
+
+            // GTM noscript fallback
+            var ns = document.createElement('noscript');
+            ns.innerHTML = '<iframe src="https://www.googletagmanager.com/ns.html?id=' + config.gtm_id + '" height="0" width="0" style="display:none;visibility:hidden"></iframe>';
+            document.body.insertBefore(ns, document.body.firstChild);
+          }
+
+          // Meta Pixel
+          if (config.meta_pixel_id) {
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', config.meta_pixel_id);
+            fbq('track', 'PageView');
+          }
+
+          // Google Ads Conversion (gtag.js)
+          if (config.google_ads_id) {
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + config.google_ads_id;
+            document.head.appendChild(s);
+
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', config.google_ads_id);
+          }
+
+          // Store config globally for event tracking
+          window.__tracking_config = config;
+        })
+        .catch(function() {});
+    })();
+  </script>
+
   <slot />
+
+  <!-- Conversion Event Helpers -->
+  <script is:inline>
+    // Tracking event helpers — call these from any page
+    window.trackEvent = function(eventName, params) {
+      var config = window.__tracking_config;
+      if (!config) return;
+
+      // GTM / dataLayer
+      if (config.gtm_id && window.dataLayer) {
+        window.dataLayer.push(Object.assign({ event: eventName }, params || {}));
+      }
+
+      // Meta Pixel
+      if (config.meta_pixel_id && window.fbq) {
+        var metaMap = {
+          'view_content': 'ViewContent',
+          'initiate_checkout': 'InitiateCheckout',
+          'purchase': 'Purchase',
+          'lead': 'Lead'
+        };
+        var metaEvent = metaMap[eventName] || 'CustomEvent';
+        window.fbq('track', metaEvent, params || {});
+      }
+
+      // Google Ads conversion
+      if (config.google_ads_id && window.gtag) {
+        if (eventName === 'purchase' && config.google_ads_label) {
+          window.gtag('event', 'conversion', {
+            'send_to': config.google_ads_id + '/' + config.google_ads_label,
+            'value': params?.value || 0,
+            'currency': params?.currency || 'IDR'
+          });
+        }
+      }
+    };
+  </script>
 </body>
 </html>

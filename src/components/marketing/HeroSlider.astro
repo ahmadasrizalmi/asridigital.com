@@ -1,0 +1,169 @@
+---
+// HeroSlider.astro — CSS opacity-based hero slider with responsive mobile/desktop layouts
+---
+
+<header class="relative w-full overflow-hidden" style="height:100vh;min-height:600px;">
+  <!-- Slider Images Container -->
+  <div id="hero-slider" class="absolute inset-0 w-full h-full">
+    <!-- Slides rendered by JS -->
+  </div>
+
+  <!-- MOBILE LAYOUT: text top, no glass, CTA bottom -->
+  <div class="relative z-10 flex flex-col justify-between h-full sm:hidden" style="padding-top:100px;padding-bottom:80px;">
+    <!-- Text at top -->
+    <div class="px-6">
+      <h1 id="hero-main-title-mobile" class="text-3xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-3">
+        Loading...
+      </h1>
+      <p id="hero-main-subtitle-mobile" class="text-base text-slate-600 leading-relaxed">
+        Loading...
+      </p>
+    </div>
+    <!-- CTA at bottom -->
+    <div class="px-6">
+      <a id="hero-main-cta-mobile" href="#produk" class="block w-full bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center py-4 rounded-full font-bold text-base shadow-sm">
+        Loading...
+      </a>
+    </div>
+  </div>
+
+  <!-- DESKTOP LAYOUT: glass card left, image right -->
+  <div class="relative z-10 hidden sm:flex items-center h-full">
+    <!-- Overlay gradient for text readability -->
+    <div class="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent z-[2]" style="width:66%;"></div>
+
+    <!-- Glass Card -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div id="hero-glass-card" class="max-w-xl" style="background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:2rem 2.5rem;border-radius:1.5rem;border:1px solid rgba(255,255,255,0.5);box-shadow:0 8px 24px -4px rgba(0,0,0,0.04);">
+        <h1 id="hero-main-title" class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tighter leading-tight mb-6">
+          Loading...
+        </h1>
+        <p id="hero-main-subtitle" class="text-lg text-slate-600 mb-8 leading-relaxed">
+          Loading...
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a id="hero-main-cta" href="#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-center px-8 py-3.5 rounded-full font-bold shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
+            Loading...
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slider Dots -->
+  <div id="hero-dots" class="absolute bottom-8 left-0 right-0 z-20 flex justify-center space-x-3"></div>
+</header>
+
+<style>
+  .hero-slide { opacity: 0; transition: opacity 1s ease-in-out; position: absolute; inset: 0; z-index: 0; }
+  .hero-slide.active { opacity: 1; z-index: 1; }
+</style>
+
+<script>
+  interface Slide {
+    id: string; title: string; subtitle: string | null;
+    cta_text: string | null; cta_link: string | null;
+    image_desktop: string; image_mobile: string;
+    link_type: string; link_target: string | null;
+    badge_text: string | null; badge_color: string;
+    sort_order: number; is_active: number;
+  }
+
+  const DATA: Slide[] = [];
+  let currentSlide = 0;
+  let slideTimer: ReturnType<typeof setInterval> | null = null;
+
+  function renderSlides(): void {
+    const container = document.getElementById('hero-slider')!;
+    container.innerHTML = DATA.map((s, i) => `
+      <div class="hero-slide${i === 0 ? ' active' : ''}">
+        <picture>
+          <source media="(max-width: 768px)" srcset="${s.image_mobile}" />
+          <img src="${s.image_desktop}" alt="${s.title}" class="w-full h-full object-cover object-center" loading="${i === 0 ? 'eager' : 'lazy'}" />
+        </picture>
+      </div>
+    `).join('');
+  }
+
+  function renderDots(): void {
+    const el = document.getElementById('hero-dots')!;
+    if (DATA.length <= 1) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+    el.innerHTML = DATA.map((_, i) =>
+      `<button class="slider-dot w-3 h-3 rounded-full transition-colors ${i === 0 ? 'bg-slate-800' : 'bg-slate-300'}" data-slide="${i}" aria-label="Slide ${i + 1}"></button>`
+    ).join('');
+
+    el.querySelectorAll('.slider-dot').forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        clearInterval(slideTimer!);
+        goToSlide(i);
+        slideTimer = setInterval(nextSlide, 5000);
+      });
+    });
+  }
+
+  function goToSlide(n: number): void {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.replace('bg-slate-800', 'bg-slate-300');
+    currentSlide = (n + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.replace('bg-slate-300', 'bg-slate-800');
+  }
+
+  function nextSlide(): void { goToSlide(currentSlide + 1); }
+
+  async function init() {
+    try {
+      // Fetch hero content + slides in parallel
+      const [settingsRes, slidesRes] = await Promise.all([
+        fetch('/api/site-settings?keys=hero_title,hero_subtitle,hero_cta_text,hero_cta_link'),
+        fetch('/api/hero-slides')
+      ]);
+
+      // Apply hero content from site_settings — both mobile and desktop
+      const settings = await settingsRes.json();
+      if (settings.hero_title) {
+        document.getElementById('hero-main-title')!.textContent = settings.hero_title;
+        document.getElementById('hero-main-title-mobile')!.textContent = settings.hero_title;
+      }
+      if (settings.hero_subtitle) {
+        document.getElementById('hero-main-subtitle')!.textContent = settings.hero_subtitle;
+        document.getElementById('hero-main-subtitle-mobile')!.textContent = settings.hero_subtitle;
+      }
+      if (settings.hero_cta_text) {
+        document.getElementById('hero-main-cta')!.textContent = settings.hero_cta_text;
+        document.getElementById('hero-main-cta-mobile')!.textContent = settings.hero_cta_text;
+      }
+      if (settings.hero_cta_link) {
+        document.getElementById('hero-main-cta')!.setAttribute('href', settings.hero_cta_link);
+        document.getElementById('hero-main-cta-mobile')!.setAttribute('href', settings.hero_cta_link);
+      }
+
+      // Apply slider slides from hero_slides
+      const json = await slidesRes.json();
+      DATA.push(...((json.slides || []) as Slide[]));
+
+      if (DATA.length === 0) return;
+
+      renderSlides();
+      renderDots();
+      slideTimer = setInterval(nextSlide, 5000);
+
+      // Touch swipe
+      let x0 = 0;
+      const header = document.querySelector('header')!;
+      header.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; clearInterval(slideTimer!); }, { passive: true });
+      header.addEventListener('touchend', e => {
+        const dx = x0 - e.changedTouches[0].clientX;
+        if (Math.abs(dx) > 50) { dx > 0 ? nextSlide() : goToSlide(currentSlide - 1); }
+        slideTimer = setInterval(nextSlide, 5000);
+      }, { passive: true });
+    } catch (err) {
+      console.error('Hero slider failed:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>

@@ -1,109 +1,101 @@
 ---
-import Icon from '../ui/Icon.astro';
-
 const currentYear = new Date().getFullYear();
-
-const footerLinks = [
-  {
-    title: 'Produk',
-    links: [
-      { label: 'Semua GPT', href: '/#produk' },
-      { label: 'All-Access Pass', href: '/#all-access' },
-      { label: 'Promo Hari Ini', href: '/#promo' },
-    ],
-  },
-  {
-    title: 'Perusahaan',
-    links: [
-      { label: 'Blog', href: '/blog' },
-      { label: 'Tentang Kami', href: '/about' },
-      { label: 'Kontak', href: '/contact' },
-    ],
-  },
-  {
-    title: 'Dukungan',
-    links: [
-      { label: 'FAQ', href: '/faq' },
-      { label: 'Cara Pembelian', href: '/guide' },
-      { label: 'Kebijakan Privasi', href: '/privacy' },
-    ],
-  },
-];
 ---
 
-<footer class="bg-surface border-t border-border mt-auto">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-      <!-- Brand Section -->
-      <div class="lg:col-span-2 space-y-6">
-        <a href="/" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <Icon name="sparkles" size={18} class="text-white" />
+<footer class="bg-white pt-12 pb-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- MOBILE + SMALL TABLET: simplified layout (< 1024px) -->
+    <div class="lg:hidden">
+      <h4 class="font-bold text-slate-900 text-lg mb-3">Asri Digital</h4>
+      <p class="text-slate-500 text-sm mb-5 leading-relaxed">
+        Solusi Bisnis Digital & AI untuk Profesional Indonesia.
+      </p>
+      
+      <!-- Quick links -->
+      <div class="flex flex-wrap gap-x-5 gap-y-2 mb-6 text-sm">
+        <a href="/about" class="text-slate-500 hover:text-slate-900">About</a>
+        <a href="/blog" class="text-slate-500 hover:text-slate-900">Blog</a>
+        <a href="/faq" class="text-slate-500 hover:text-slate-900">FAQ</a>
+        <a href="/contact" class="text-slate-500 hover:text-slate-900">Support</a>
+        <a href="/terms" class="text-slate-500 hover:text-slate-900">Terms</a>
+        <a href="/privacy" class="text-slate-500 hover:text-slate-900">Privacy</a>
+      </div>
+
+      <!-- Social + Copyright -->
+      <div class="flex items-center justify-between pt-5 border-t border-slate-100">
+        <p class="text-xs text-slate-400">&copy; {currentYear} Asri Digital</p>
+        <div class="flex space-x-2">
+          <a href="https://www.linkedin.com/company/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="LinkedIn">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          </a>
+          <a href="https://x.com/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="X (Twitter)">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESKTOP: full layout (>= 1024px) -->
+    <div class="hidden lg:block">
+      <div class="grid grid-cols-4 gap-12 mb-16">
+        
+        <!-- Brand & Newsletter -->
+        <div class="col-span-1">
+          <h4 class="font-bold text-slate-900 text-lg mb-4">Asri Digital</h4>
+          <p class="text-slate-500 text-sm mb-6 leading-relaxed pr-4">
+            Dapatkan inspirasi alur kerja, update software, dan tips produktivitas harian.
+          </p>
+          <div class="relative w-full">
+            <input type="email" placeholder="Enter your email" class="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 text-slate-900 transition-colors" />
+            <button class="absolute right-1.5 top-1.5 bottom-1.5 bg-carbon text-white px-3 rounded-md hover:bg-carbon-hover transition flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
           </div>
-          <span class="text-xl font-bold text-text-primary group-hover:text-primary transition-colors">
-            Asri Digital
-          </span>
-        </a>
-        
-        <p class="text-text-secondary text-sm leading-relaxed max-w-sm">
-          Custom GPT untuk Profesional Indonesia. Akses instant, bayar sekali, pakai selamanya.
-        </p>
-        
-        <div class="flex items-center gap-2 text-sm text-text-muted">
-          <Icon name="mail" size={16} />
-          <span>support@asridigital.com</span>
         </div>
         
-        <!-- Social Proof -->
-        <div class="flex items-center gap-4 pt-2">
-          <div class="flex -space-x-2">
-            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">S</div>
-            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">A</div>
-            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">B</div>
-            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border-2 border-surface">R</div>
-          </div>
-          <div class="text-xs text-text-muted">
-            <span class="text-text-primary font-bold">500+</span> pengguna aktif
-          </div>
+        <!-- Company -->
+        <div>
+          <h5 class="font-bold text-slate-900 text-sm mb-5">Company</h5>
+          <ul class="space-y-4 text-sm">
+            <li><a href="/about" class="text-slate-500 hover:text-slate-900 transition-colors">About</a></li>
+            <li><a href="/terms" class="text-slate-500 hover:text-slate-900 transition-colors">Terms</a></li>
+            <li><a href="/privacy" class="text-slate-500 hover:text-slate-900 transition-colors">Privacy</a></li>
+          </ul>
+        </div>
+        
+        <!-- Product -->
+        <div>
+          <h5 class="font-bold text-slate-900 text-sm mb-5">Product</h5>
+          <ul class="space-y-4 text-sm">
+            <li><a href="/#produk" class="text-slate-500 hover:text-slate-900 transition-colors">Features</a></li>
+            <li><a href="/#harga" class="text-slate-500 hover:text-slate-900 transition-colors">Pricing</a></li>
+            <li><a href="/faq" class="text-slate-500 hover:text-slate-900 transition-colors">FAQ</a></li>
+          </ul>
+        </div>
+        
+        <!-- Resources -->
+        <div>
+          <h5 class="font-bold text-slate-900 text-sm mb-5">Resources</h5>
+          <ul class="space-y-4 text-sm">
+            <li><a href="/blog" class="text-slate-500 hover:text-slate-900 transition-colors">Blog</a></li>
+            <li><a href="/contact" class="text-slate-500 hover:text-slate-900 transition-colors">Support</a></li>
+          </ul>
         </div>
       </div>
 
-      <!-- Footer Links -->
-      {footerLinks.map((section) => (
-        <div>
-          <h3 class="font-semibold text-text-primary mb-4">{section.title}</h3>
-          <ul class="space-y-3">
-            {section.links.map((link) => (
-              <li>
-                <a 
-                  href={link.href} 
-                  class="text-sm text-text-secondary hover:text-primary transition-colors"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-
-    <!-- Bottom Bar -->
-    <div class="border-t border-border mt-12 pt-8">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-text-muted">
-          &copy; {currentYear} Asri Digital. All rights reserved.
+      <!-- Bottom Footer -->
+      <div class="flex justify-between items-center pt-8 border-t border-slate-100">
+        <p class="text-sm text-slate-400">
+          &copy; {currentYear} Asri Digital by Creator. All rights reserved.
         </p>
-        
-        <div class="flex items-center gap-6 text-sm text-text-muted">
-          <a href="/privacy" class="hover:text-primary transition-colors">Privacy Policy</a>
-          <a href="/terms" class="hover:text-primary transition-colors">Terms of Service</a>
-        </div>
-        
-        <!-- Payment Methods -->
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-text-muted">Powered by</span>
-          <span class="text-sm font-semibold text-primary">DompetX</span>
+        <div class="flex space-x-3">
+          <a href="https://www.linkedin.com/company/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="LinkedIn">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          </a>
+          <a href="https://x.com/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="X (Twitter)">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
         </div>
       </div>
     </div>

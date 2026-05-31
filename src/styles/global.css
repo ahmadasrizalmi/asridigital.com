@@ -2,164 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Color Palette Variables */
-:root {
-  /* 1. Warna Dasar */
-  --color-background: #FAFAFA;
-  --color-surface: #FFFFFF;
-  
-  /* 2. Warna Teks */
-  --color-text-primary: #171717;
-  --color-text-main: #262626;
-  --color-text-secondary: #737373;
-  --color-text-muted: #9CA3AF;
-  
-  /* 3. Warna Garis */
-  --color-border: #E5E5E5;
-  
-  /* 4. Warna Aksen */
-  --color-primary: #5C7A36;
-  --color-primary-hover: #4A6628;
-}
-
 @layer base {
   body {
-    @apply bg-background text-text-main antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-white text-slate-800 antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 }
 
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+::selection {
+  @apply bg-slate-200 text-slate-900;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.hero-slide {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.filter-tab.active {
+  background-color: #1c1c1c;
+  color: white;
+}
+
 @layer components {
-  /* ========================================= */
-  /* BUTTON STYLES                             */
-  /* ========================================= */
-  
   .btn {
     @apply inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 rounded-lg;
     padding: 0.625rem 1.25rem;
   }
-  
-  /* Primary Button - Solid Sage Green */
+
   .btn-primary {
-    @apply btn bg-primary text-white shadow-btn-primary;
+    @apply btn bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 font-bold shadow-sm;
+    border-radius: 9999px;
   }
-  
   .btn-primary:hover {
-    @apply bg-primary-hover;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(92, 122, 54, 0.35);
+    @apply from-emerald-400 to-yellow-200;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.2);
   }
-  
-  .btn-primary:active {
-    transform: translateY(0);
-  }
-  
-  /* Secondary Button - Bold Outline */
+
   .btn-secondary {
-    @apply btn bg-transparent border-2 border-text-primary text-text-primary;
+    @apply btn bg-carbon text-white;
+    border-radius: 0.75rem;
   }
-  
   .btn-secondary:hover {
-    @apply bg-text-primary text-white;
+    @apply bg-carbon-hover;
+    transform: translateY(-2px);
   }
-  
-  /* Tertiary Button - Soft Surface */
+
   .btn-tertiary {
     @apply btn bg-surface border border-border text-text-main shadow-card;
+    border-radius: 0.75rem;
   }
-  
   .btn-tertiary:hover {
-    @apply border-text-muted;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    @apply border-slate-300 bg-slate-50;
+    transform: translateY(-1px);
   }
-  
-  /* Ghost Button */
+
   .btn-ghost {
-    @apply btn text-text-secondary hover:text-text-primary hover:bg-background;
+    @apply btn text-text-secondary hover:text-text-primary hover:bg-slate-50;
   }
-  
-  /* ========================================= */
-  /* CARD STYLES                               */
-  /* ========================================= */
-  
+
   .card {
-    @apply bg-surface border border-border rounded-xl overflow-hidden shadow-card;
+    @apply bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-soft;
   }
-  
   .card-hover {
     @apply card transition-all duration-300;
   }
-  
   .card-hover:hover {
-    @apply shadow-card-hover;
+    @apply shadow-float;
     transform: translateY(-4px);
   }
-  
-  /* ========================================= */
-  /* BADGE STYLES                              */
-  /* ========================================= */
-  
+
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
   }
-  
-  .badge-primary {
-    @apply badge bg-primary/10 text-primary;
-  }
-  
-  .badge-muted {
-    @apply badge bg-background text-text-secondary;
-  }
-  
-  .badge-success {
-    @apply badge bg-green-50 text-green-700;
-  }
-  
-  .badge-warning {
-    @apply badge bg-amber-50 text-amber-700;
-  }
-  
-  .badge-danger {
-    @apply badge bg-red-50 text-red-600;
-  }
-  
-  /* ========================================= */
-  /* INPUT STYLES                              */
-  /* ========================================= */
-  
+  .badge-primary { @apply badge bg-primary/10 text-primary; }
+  .badge-muted { @apply badge bg-slate-100 text-text-secondary; }
+  .badge-success { @apply badge bg-green-50 text-green-700; }
+  .badge-warning { @apply badge bg-amber-50 text-amber-700; }
+  .badge-danger { @apply badge bg-red-50 text-red-600; }
+
   .input {
     @apply w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all;
   }
-  
-  /* ========================================= */
-  /* NAVBAR STYLES                             */
-  /* ========================================= */
-  
+
   .navbar {
     @apply bg-surface/95 border-b border-border shadow-nav;
   }
 }
 
-@layer utilities {
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary to-green-700 bg-clip-text text-transparent;
-  }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
-/* Custom Scrollbar (Light Theme) */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-background;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full hover:bg-text-muted;
-}
-
-/* Selection */
-::selection {
-  @apply bg-primary/20 text-text-primary;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

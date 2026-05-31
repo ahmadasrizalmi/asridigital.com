@@ -1,0 +1,390 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+---
+
+<BaseLayout title="Kelola Kategori - Admin Asri Digital">
+  <div class="flex min-h-screen">
+    <aside id="admin-sidebar" class="w-64 bg-surface border-r border-border shrink-0 fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
+      <div class="sticky top-0 h-screen overflow-y-auto p-4">
+        <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
+          <img src="https://res.cloudinary.com/daj8fzinf/image/upload/w_40/q_auto/f_auto/v1779951905/fav_icon_asri_digital_rktguz.png" alt="Asri Digital" class="h-8 w-auto rounded-lg" />
+          <span class="text-xs text-text-muted font-medium">Admin</span>
+        </a>
+        
+        <nav class="space-y-1">
+          {[
+            { icon: 'bar-chart', label: 'Dashboard', href: '/admin' },
+            { icon: 'sparkles', label: 'Produk', href: '/admin/products' },
+            { icon: 'shopping-cart', label: 'Pesanan', href: '/admin/orders' },
+            { icon: 'tag', label: 'Kupon', href: '/admin/coupons' },
+            { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
+            { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
+            { icon: 'image', label: 'Hero Slides', href: '/admin/hero-slides' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories', active: true },
+            { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
+          ].map((link) => (
+            <a
+              href={link.href}
+              class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                link.active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-background'
+              }`}
+            >
+              <Icon name={link.icon} size={18} />
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        
+        <div class="mt-8 pt-4 border-t border-border">
+          <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-background transition-colors">
+            <Icon name="external-link" size={18} />
+            Lihat Website
+          </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full');this.classList.add('hidden')"></div>
+    
+    <main class="flex-1 bg-background">
+      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
+              <Icon name="menu" size={24} class="text-text-secondary" />
+            </button>
+            <h1 class="text-xl font-bold text-text-primary">Kelola Kategori</h1>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <input type="text" id="category-search" class="input w-48 sm:w-64" placeholder="Cari kategori..." />
+            <button onclick="openModal()" class="btn-primary">
+              <Icon name="plus" size={18} />
+              Tambah Kategori
+            </button>
+          </div>
+        </div>
+      </header>
+      
+      <div class="p-4 sm:p-6">
+        <div class="card">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border bg-background">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Nama</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Slug</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Deskripsi</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Icon</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Urutan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="categories-table" class="divide-y divide-border">
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-text-muted">
+                    Loading...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="category-pagination" class="flex items-center justify-between px-4 py-3 border-t border-border">
+          <span id="category-page-info" class="text-sm text-text-muted"></span>
+          <div class="flex items-center gap-2">
+            <button id="cat-prev" class="btn-tertiary text-sm" onclick="catPrevPage()">← Prev</button>
+            <span id="cat-page-num" class="text-sm text-text-secondary px-2"></span>
+            <button id="cat-next" class="btn-tertiary text-sm" onclick="catNextPage()">Next →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Category Modal -->
+  <div id="category-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-lg w-full">
+        <div class="p-6 border-b border-border">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-text-primary" id="modal-title">Tambah Kategori</h2>
+            <button onclick="closeModal()" class="p-2 hover:bg-background rounded-lg">
+              <Icon name="x" size={20} class="text-text-secondary" />
+            </button>
+          </div>
+        </div>
+        
+        <form id="category-form" class="p-6 space-y-4">
+          <input type="hidden" id="category-id" />
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Nama Kategori *</label>
+            <input type="text" id="category-name" class="input" required placeholder="Contoh: VPS Cloud" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Slug *</label>
+            <input type="text" id="category-slug" class="input" required placeholder="vps-cloud" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">Deskripsi</label>
+            <textarea id="category-description" class="input" rows="3" placeholder="Deskripsi kategori..."></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Icon (Emoji)</label>
+              <input type="text" id="category-icon" class="input" placeholder="monitor" maxlength="10" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Urutan</label>
+              <input type="number" id="category-sort-order" class="input" value="0" min="0" />
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="category-active" class="rounded" checked />
+            <label for="category-active" class="text-sm text-text-main">Kategori aktif</label>
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-4 border-t border-border">
+            <button type="button" onclick="closeModal()" class="btn-tertiary">Batal</button>
+            <button type="submit" class="btn-primary">Simpan Kategori</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('admin-sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) overlay.classList.toggle('hidden');
+      });
+    }
+  });
+</script>
+
+</BaseLayout>
+
+<script is:inline src="/js/admin-utils.js?v=2"></script>
+<script>
+  function getAdminToken() {
+    return localStorage.getItem('admin_token');
+  }
+
+  function generateSlug(name) {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  }
+
+  let allCategories: any[] = [];
+  let catPage = 1;
+  const catPageSize = 20;
+
+  async function loadCategories() {
+    const table = document.getElementById('categories-table');
+    try {
+      const res = await adminFetch('/api/admin/categories');
+      if (res.status === 401 || res.status === 403) return;
+      if (!res.ok) throw new Error('Failed to fetch categories');
+      const data = await res.json();
+      allCategories = data.categories || [];
+      catPage = 1;
+      renderCategoryPage();
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Gagal memuat data kategori.</td></tr>';
+    }
+  }
+
+  function getFilteredCategories() {
+    const q = (document.getElementById('category-search') as HTMLInputElement)?.value?.toLowerCase() || '';
+    if (!q) return allCategories;
+    return allCategories.filter((c: any) =>
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.slug || '').toLowerCase().includes(q) ||
+      (c.description || '').toLowerCase().includes(q)
+    );
+  }
+
+  function renderCategoryPage() {
+    const table = document.getElementById('categories-table');
+    const filtered = getFilteredCategories();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / catPageSize));
+    if (catPage > totalPages) catPage = totalPages;
+    const start = (catPage - 1) * catPageSize;
+    const pageItems = filtered.slice(start, start + catPageSize);
+
+    if (filtered.length === 0) {
+      table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-text-muted">Tidak ada kategori ditemukan.</td></tr>';
+    } else {
+      table.innerHTML = pageItems.map(function(c) {
+        var iconDisplay = c.icon ? '<span class="text-2xl">' + c.icon + '</span>' : '<span class="text-text-muted">-</span>';
+        var descDisplay = c.description ? '<span class="text-sm text-text-secondary line-clamp-2 max-w-xs">' + c.description + '</span>' : '<span class="text-text-muted">-</span>';
+        var statusBadge = c.is_active
+          ? '<span class="badge-success">Aktif</span>'
+          : '<span class="badge-error">Nonaktif</span>';
+        return '<tr class="hover:bg-background/50">' +
+          '<td class="px-6 py-4 font-medium text-text-primary">' + c.name + '</td>' +
+          '<td class="px-6 py-4"><code class="text-xs bg-background px-2 py-1 rounded">' + c.slug + '</code></td>' +
+          '<td class="px-6 py-4">' + descDisplay + '</td>' +
+          '<td class="px-6 py-4">' + iconDisplay + '</td>' +
+          '<td class="px-6 py-4 text-text-main">' + (c.sort_order || 0) + '</td>' +
+          '<td class="px-6 py-4">' + statusBadge + '</td>' +
+          '<td class="px-6 py-4">' +
+            '<div class="flex items-center gap-2">' +
+              '<button onclick=\'window.editCategory(' + JSON.stringify(c) + ')\' class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+              '</button>' +
+              '<button onclick="window.toggleCategory(\'' + c.id + '\', ' + (c.is_active ? 'false' : 'true') + ')" class="p-2.5 hover:bg-yellow-50 rounded-lg text-text-secondary hover:text-yellow-600" title="' + (c.is_active ? 'Nonaktifkan' : 'Aktifkan') + '">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>' +
+              '</button>' +
+              '<button onclick="window.deleteCategory(\'' + c.id + '\')" class="p-2.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>' +
+              '</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    var info = document.getElementById('category-page-info')!;
+    var pageNum = document.getElementById('cat-page-num')!;
+    info.textContent = filtered.length > 0 ? 'Menampilkan ' + (start + 1) + '-' + Math.min(start + catPageSize, filtered.length) + ' dari ' + filtered.length + ' kategori' : '';
+    pageNum.textContent = 'Halaman ' + catPage + ' / ' + totalPages;
+    (document.getElementById('cat-prev') as HTMLButtonElement).disabled = catPage <= 1;
+    (document.getElementById('cat-next') as HTMLButtonElement).disabled = catPage >= totalPages;
+  }
+
+  function catPrevPage() { if (catPage > 1) { catPage--; renderCategoryPage(); } }
+  function catNextPage() { catPage++; renderCategoryPage(); }
+  (window as any).catPrevPage = catPrevPage;
+  (window as any).catNextPage = catNextPage;
+
+  document.getElementById('category-search')?.addEventListener('input', function() { catPage = 1; renderCategoryPage(); });
+  function openModal() {
+    document.getElementById('category-modal').classList.remove('hidden');
+    document.getElementById('category-form').reset();
+    document.getElementById('category-id').value = '';
+    document.getElementById('category-active').checked = true;
+    document.getElementById('category-sort-order').value = '0';
+    document.getElementById('modal-title').textContent = 'Tambah Kategori';
+  }
+
+  function editCategory(category) {
+    document.getElementById('modal-title').textContent = 'Edit Kategori';
+    document.getElementById('category-modal').classList.remove('hidden');
+    document.getElementById('category-id').value = category.id;
+    document.getElementById('category-name').value = category.name;
+    document.getElementById('category-slug').value = category.slug;
+    document.getElementById('category-description').value = category.description || '';
+    document.getElementById('category-icon').value = category.icon || '';
+    document.getElementById('category-sort-order').value = category.sort_order || 0;
+    document.getElementById('category-active').checked = !!category.is_active;
+  }
+
+  async function deleteCategory(id) {
+    if (!confirm('Yakin ingin menghapus kategori ini?')) return;
+    try {
+      const res = await adminFetch('/api/admin/categories/' + id, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete category');
+      loadCategories();
+    } catch (error) {
+      if (error.message !== 'Auth expired') showToast('Gagal menghapus kategori.', 'error');
+    }
+  }
+
+  async function toggleCategory(id, activate) {
+    try {
+      const res = await adminFetch('/api/admin/categories/' + id, {
+        method: 'PUT',
+        body: JSON.stringify({ is_active: activate })
+      });
+      if (!res.ok) throw new Error('Failed to toggle category');
+      loadCategories();
+    } catch (error) {
+      if (error.message !== 'Auth expired') showToast('Gagal mengubah status kategori.', 'error');
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('category-modal').classList.add('hidden');
+  }
+
+  // Auto-generate slug from name
+  document.getElementById('category-name').addEventListener('input', function(e) {
+    var slugInput = document.getElementById('category-slug');
+    // Only auto-generate if slug is empty or matches previous auto-generated value
+    var currentSlug = slugInput.value;
+    var nameValue = e.target.value;
+    var autoSlug = generateSlug(nameValue);
+    if (!currentSlug || currentSlug === generateSlug(e.target.dataset.prevName || '')) {
+      slugInput.value = autoSlug;
+    }
+    e.target.dataset.prevName = nameValue;
+  });
+
+  document.getElementById('category-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    var id = document.getElementById('category-id').value;
+    var categoryData = {
+      name: document.getElementById('category-name').value,
+      slug: document.getElementById('category-slug').value,
+      description: document.getElementById('category-description').value,
+      icon: document.getElementById('category-icon').value,
+      sort_order: parseInt(document.getElementById('category-sort-order').value) || 0,
+      is_active: document.getElementById('category-active').checked
+    };
+
+    try {
+      var isEdit = !!id;
+      var url = isEdit ? '/api/admin/categories/' + id : '/api/admin/categories';
+      var method = isEdit ? 'PUT' : 'POST';
+      var res = await adminFetch(url, {
+        method: method,
+        body: JSON.stringify(categoryData)
+      });
+      if (!res.ok) throw new Error('Failed to save category');
+      closeModal();
+      loadCategories();
+    } catch (error) {
+      if (error.message !== 'Auth expired') showToast('Gagal menyimpan kategori.', 'error');
+    }
+  });
+
+  // Expose to global scope for onclick handlers
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.editCategory = editCategory;
+  window.deleteCategory = deleteCategory;
+  window.toggleCategory = toggleCategory;
+
+  loadCategories();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
+</script>

@@ -5,13 +5,18 @@ import Footer from '../../components/layout/Footer.astro';
 import Icon from '../../components/ui/Icon.astro';
 
 export async function getStaticPaths() {
-  const apiBase = 'https://asridigital.com';
+  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
   try {
     const res = await fetch(`${apiBase}/api/blog/posts`);
     const data = await res.json();
     const posts = data.posts || [];
     return posts.map((post: any) => ({
       params: { slug: post.slug },
+      props: {
+        postTitle: post.title || 'Blog - Asri Digital',
+        postExcerpt: post.excerpt || post.title || '',
+        postImage: post.image_url || '',
+      },
     }));
   } catch (e) {
     return [];
@@ -19,15 +24,18 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
+const { postTitle, postExcerpt, postImage } = Astro.props;
+const blogCanonical = `https://asridigital.com/blog/${slug}`;
+const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `https://asridigital.com${postImage}`) : undefined;
 ---
 
-<BaseLayout title="Blog - Asri Digital">
+<BaseLayout title={`${postTitle} - Blog Asri Digital`} description={postExcerpt} canonicalUrl={blogCanonical} ogImage={blogOgImage}>
   <Header />
 
   <!-- Reading Progress Bar -->
-  <div id="reading-progress" style="position:fixed;top:0;left:0;height:3px;background:#5C7A36;z-index:9999;width:0;transition:width 0.1s;"></div>
+  <div id="reading-progress" style="position:fixed;top:0;left:0;height:3px;background:#10b981;z-index:9999;width:0;transition:width 0.1s;"></div>
 
-  <main class="flex-1">
+  <main class="flex-1 pt-20">
     <!-- Loading State -->
     <div id="loading-state" class="text-center py-20 sm:py-40 px-4">
       <div class="animate-spin w-10 h-10 sm:w-12 sm:h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -38,8 +46,8 @@ const { slug } = Astro.params;
     <div id="article-content" class="hidden">
 
       <!-- Hero Header -->
-      <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#1a2e0a 0%,#2d4a1a 50%,#5C7A36 100%);">
-        <div style="position:absolute;inset:0;background:url('https://picsum.photos/seed/asridigital-blog/1200/600') center/cover;opacity:0.15;"></div>
+      <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#10b981 100%);">
+        <div id="hero-bg-image" style="position:absolute;inset:0;opacity:0.15;"></div>
         <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
         <div style="position:relative;max-width:800px;margin:0 auto;padding:80px 16px 32px;">
           <!-- Breadcrumb -->
@@ -50,13 +58,7 @@ const { slug } = Astro.params;
             <span>›</span>
             <span id="breadcrumb-title" style="color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
           </nav>
-          <!-- Category + Date + Reading Time -->
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <span id="post-category" style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.2);color:#fff;"></span>
-            <span id="post-date" style="font-size:13px;color:rgba(255,255,255,0.8);"></span>
-            <span style="color:rgba(255,255,255,0.4);">•</span>
-            <span id="reading-time" style="font-size:13px;color:rgba(255,255,255,0.8);"></span>
-          </div>
+          <!-- Category + Date + Reading Time removed per request -->
           <!-- Title -->
           <h1 id="post-title" style="font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;color:#fff;line-height:1.25;margin-bottom:16px;"></h1>
           <!-- Author -->
@@ -89,7 +91,7 @@ const { slug } = Astro.params;
           <!-- TOC - Mobile Collapsible -->
           <details id="toc-mobile" class="blog-toc-mobile">
             <summary style="padding:14px 16px;font-weight:600;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
-              <span>📋 Daftar Isi</span>
+              <span><Icon name="list" size={16} class="inline align-text-bottom" /> Daftar Isi</span>
               <span id="toc-arrow" style="transition:transform 0.2s;font-size:12px;">▼</span>
             </summary>
             <nav id="toc-mobile-list" style="padding:0 16px 14px;display:flex;flex-direction:column;gap:6px;"></nav>
@@ -114,16 +116,16 @@ const { slug } = Astro.params;
             <span style="font-size:13px;font-weight:600;color:#262626;margin-bottom:4px;">Bagikan:</span>
             <div class="blog-share-buttons">
               <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-wa">
-                💬 WhatsApp
+                <Icon name="message-circle" size={16} class="inline" /> WhatsApp
               </a>
               <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-tw">
-                🐦 Twitter
+                <Icon name="twitter" size={16} class="inline" /> Twitter
               </a>
               <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-fb">
                 f Facebook
               </a>
               <button id="share-copy" class="blog-share-btn blog-share-copy">
-                📋 Salin Link
+                <Icon name="copy" size={16} class="inline" /> Salin Link
               </button>
             </div>
           </div>
@@ -142,7 +144,7 @@ const { slug } = Astro.params;
 
           <!-- Related Posts -->
           <div id="related-posts" style="margin-top:40px;display:none;">
-            <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin-bottom:20px;">📖 Artikel Terkait</h2>
+            <h2 style="font-size:1.25rem;font-weight:700;color:#171717;margin-bottom:20px;"><Icon name="book-open" size={20} class="inline align-text-bottom" /> Artikel Terkait</h2>
             <div id="related-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;"></div>
           </div>
         </article>
@@ -150,10 +152,10 @@ const { slug } = Astro.params;
 
       <!-- Floating Share - Desktop Only -->
       <div id="floating-share" class="blog-floating-share">
-        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#25D366;" title="Share WhatsApp">💬</a>
-        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1DA1F2;" title="Share Twitter">🐦</a>
+        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#25D366;" title="Share WhatsApp"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5A8.38 8.38 0 0 1 12.5 21A8.38 8.38 0 0 1 3.5 12.5A8.38 8.38 0 0 1 12 3.5A8.38 8.38 0 0 1 21 11.5Z"/><path d="M22 2L22 2"/></svg></a>
+        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1DA1F2;" title="Share Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></a>
         <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1877F2;" title="Share Facebook">f</a>
-        <button id="float-copy" class="blog-float-btn" style="background:#f5f5f5;color:#262626;" title="Salin Link">📋</button>
+        <button id="float-copy" class="blog-float-btn" style="background:#f5f5f5;color:#262626;" title="Salin Link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9H11C9.89543 9 9 9.89543 9 11V20C9 21.1046 9.89543 22 11 22H20C21.1046 22 22 21.1046 22 20V11C22 9.89543 21.1046 9 20 9Z"/><path d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5"/></svg></button>
       </div>
     </div>
 
@@ -170,8 +172,18 @@ const { slug } = Astro.params;
 </BaseLayout>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js" defer></script>
 <script define:vars={{ slug }}>
   const API_BASE = '/api';
+
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
+    const t = [];
+    if (w) t.push('w_' + w);
+    if (h) t.push('h_' + h);
+    if (t.length) t.push('c_fill');
+    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+  }
 
   function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -184,19 +196,19 @@ const { slug } = Astro.params;
   }
 
   const categoryColors = {
-    'AI': { bg: 'rgba(92,122,54,0.15)', color: '#fff' },
-    'Tips & Trik': { bg: 'rgba(220,38,38,0.15)', color: '#fff' },
-    'Tutorial': { bg: 'rgba(59,130,246,0.15)', color: '#fff' },
-    'Studi Kasus': { bg: 'rgba(245,158,11,0.15)', color: '#fff' },
-    'Productivity': { bg: 'rgba(147,51,234,0.15)', color: '#fff' },
+    'tips': { bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
+    'tutorial': { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
+    'studi-kasus': { bg: 'rgba(168,85,247,0.15)', color: '#a855f7' },
+    'berita': { bg: 'rgba(249,115,22,0.15)', color: '#f97316' },
+    'news': { bg: 'rgba(249,115,22,0.15)', color: '#f97316' },
   };
 
-  async function waitForMarked(maxWait = 5000) {
+  async function waitForDependencies(maxWait = 5000) {
     const start = Date.now();
-    while (typeof marked === 'undefined' && Date.now() - start < maxWait) {
+    while ((typeof marked === 'undefined' || typeof DOMPurify === 'undefined') && Date.now() - start < maxWait) {
       await new Promise(r => setTimeout(r, 100));
     }
-    return typeof marked !== 'undefined';
+    return typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined';
   }
 
   // Custom renderer for special blocks
@@ -208,13 +220,13 @@ const { slug } = Astro.params;
 
     // Pre-process: convert [!TIP], [!WARNING], [!INFO] blocks
     content = content.replace(/>\s*\[!TIP\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
-      return `<div class="callout callout-tip">💡 <strong>Tips:</strong>${text}</div>`;
+      return `<div class="callout callout-tip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline align-text-bottom"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg> <strong>Tips:</strong>${text}</div>`;
     });
     content = content.replace(/>\s*\[!WARNING\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
-      return `<div class="callout callout-warning">⚠️ <strong>Peringatan:</strong>${text}</div>`;
+      return `<div class="callout callout-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline align-text-bottom"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <strong>Peringatan:</strong>${text}</div>`;
     });
     content = content.replace(/>\s*\[!INFO\]\s*\n([\s\S]*?)(?=\n[^>]|\n$)/g, (_, text) => {
-      return `<div class="callout callout-info">ℹ️ <strong>Info:</strong>${text}</div>`;
+      return `<div class="callout callout-info"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline align-text-bottom"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"/><path d="M12 16V12"/><path d="M12 8H12.01"/></svg> <strong>Info:</strong>${text}</div>`;
     });
 
     // Pre-process: highlight stats like **67%** or **10x** into stat cards
@@ -222,7 +234,12 @@ const { slug } = Astro.params;
       return `<span class="stat-highlight"><span class="stat-number">${num}</span><span class="stat-desc">${desc.trim()}</span></span>`;
     });
 
-    return marked.parse(content);
+    try {
+      return marked.parse(content);
+    } catch (e) {
+      console.error('Markdown parse error:', e);
+      return content.replace(/\n/g, '<br>');
+    }
   }
 
   function generateTOC() {
@@ -237,7 +254,7 @@ const { slug } = Astro.params;
       h.id = id;
       const isH3 = h.tagName === 'H3';
       const style = isH3 ? 'padding-left:16px;font-size:13px;' : 'font-size:14px;font-weight:600;';
-      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#5C7A36'" onmouseout="this.style.style='#525252'">${h.textContent}</a>`;
+      html += `<a href="#${id}" style="${style}color:#525252;text-decoration:none;padding:6px 0;display:block;border-radius:6px;transition:color 0.2s;" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#525252'">${h.textContent}</a>`;
     });
     if (tocList) tocList.innerHTML = html;
     if (tocMobileList) tocMobileList.innerHTML = html;
@@ -272,7 +289,7 @@ const { slug } = Astro.params;
         const btns = ['share-copy', 'float-copy'];
         btns.forEach(id => {
           const btn = document.getElementById(id);
-          if (btn) { btn.textContent = '✅ Tersalin!'; setTimeout(() => { btn.textContent = id === 'share-copy' ? '📋 Salin Link' : '📋'; }, 2000); }
+          if (btn) { btn.textContent = 'Tersalin!'; setTimeout(() => { btn.textContent = id === 'share-copy' ? 'Salin Link' : ''; }, 2000); }
         });
       });
     };
@@ -291,7 +308,7 @@ const { slug } = Astro.params;
 
   async function loadBlogPost() {
     try {
-      await waitForMarked();
+      await waitForDependencies();
       const response = await fetch(`${API_BASE}/blog/${slug}`);
       const data = await response.json();
       if (!data.post) throw new Error('Post not found');
@@ -300,28 +317,66 @@ const { slug } = Astro.params;
       const relatedPosts = data.relatedPosts || [];
 
       document.title = `${post.title} - Blog Asri Digital`;
+
+      // Update meta tags for SEO/social sharing
+      const setMeta = (attr, key, val) => {
+        if (!val) return;
+        let el = document.querySelector(`meta[${attr}="${key}"]`);
+        if (!el) { el = document.createElement('meta'); el.setAttribute(attr, key); document.head.appendChild(el); }
+        el.setAttribute('content', val);
+      };
+      const desc = post.excerpt || post.title;
+      const img = post.image_url || '';
+      const postUrl = window.location.href;
+      setMeta('property', 'og:title', post.title);
+      setMeta('property', 'og:description', desc);
+      setMeta('property', 'og:image', img);
+      setMeta('property', 'og:url', postUrl);
+      setMeta('property', 'og:type', 'article');
+      setMeta('name', 'twitter:title', post.title);
+      setMeta('name', 'twitter:description', desc);
+      setMeta('name', 'twitter:image', img);
+      setMeta('name', 'description', desc);
+
+      // Inject JSON-LD Article schema
+      const existingLd = document.getElementById('blog-article-jsonld');
+      if (existingLd) existingLd.remove();
+      const ldScript = document.createElement('script');
+      ldScript.id = 'blog-article-jsonld';
+      ldScript.type = 'application/ld+json';
+      ldScript.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        description: post.excerpt || '',
+        image: post.image_url || '',
+        author: { '@type': 'Person', name: post.author_name || 'Admin Asri Digital' },
+        datePublished: post.published_at || '',
+        publisher: { '@type': 'Organization', name: 'Asri Digital' }
+      });
+      document.head.appendChild(ldScript);
       document.getElementById('breadcrumb-title').textContent = post.title;
 
-      const catEl = document.getElementById('post-category');
-      catEl.textContent = post.category;
-
-      document.getElementById('post-date').textContent = formatDate(post.published_at);
-      document.getElementById('reading-time').textContent = calcReadingTime(post.content);
       document.getElementById('post-title').textContent = post.title;
       document.getElementById('post-author').textContent = post.author_name || 'Admin Asri Digital';
       document.getElementById('author-box-name').textContent = post.author_name || 'Admin Asri Digital';
 
       if (post.image_url) {
+        // Set hero background image
+        const heroBg = document.getElementById('hero-bg-image');
+        if (heroBg) {
+          heroBg.style.background = `url('${optimizeImg(post.image_url, 1200, 400)}') center/cover`;
+        }
         const container = document.getElementById('post-image-container');
         const img = document.getElementById('post-image');
-        img.src = `${post.image_url}?v=${Date.now()}`;
+        img.src = optimizeImg(post.image_url, 1200, 630);
         img.alt = post.title;
         container.style.display = 'block';
       }
 
       // Render content
       const contentEl = document.getElementById('post-content');
-      contentEl.innerHTML = renderMarkdown(post.content);
+      contentEl.innerHTML = DOMPurify.sanitize(renderMarkdown(post.content));
 
       // Wrap tables for horizontal scroll
       contentEl.querySelectorAll('table').forEach(table => {
@@ -338,9 +393,9 @@ const { slug } = Astro.params;
       if (post.tags) {
         try {
           const tags = JSON.parse(post.tags);
-          document.getElementById('post-tags').innerHTML = tags.map(t =>
+          document.getElementById('post-tags').innerHTML = DOMPurify.sanitize(tags.map(t =>
             `<span style="padding:4px 12px;background:#f5f5f5;border-radius:999px;font-size:12px;color:#525252;">#${t}</span>`
-          ).join('');
+          ).join(''));
         } catch(e) {}
       }
 
@@ -351,10 +406,10 @@ const { slug } = Astro.params;
       // Related posts
       if (relatedPosts.length > 0) {
         const grid = document.getElementById('related-grid');
-        grid.innerHTML = relatedPosts.map(r => `
+        grid.innerHTML = DOMPurify.sanitize(relatedPosts.map(r => `
           <a href="/blog/${r.slug}" style="border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-            <div style="height:120px;background:linear-gradient(135deg,#5C7A36 0%,#4A6628 100%);display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:2.5rem;">📝</span>
+            <div style="height:120px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:2.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#10b981"><path d="M17 3A2.83 2.83 0 1 1 20 6L7.5 18.5L2 20L3.5 14.5L17 3Z"/></svg></span>
             </div>
             <div style="padding:14px;">
               <p style="font-size:11px;color:#737373;margin-bottom:4px;">${r.category || ''}</p>
@@ -362,7 +417,7 @@ const { slug } = Astro.params;
               <p style="font-size:12px;color:#737373;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${r.excerpt || ''}</p>
             </div>
           </a>
-        `).join('');
+        `).join(''), { ADD_ATTR: ['onmouseover', 'onmouseout'] });
         document.getElementById('related-posts').style.display = 'block';
       }
 
@@ -488,7 +543,7 @@ const { slug } = Astro.params;
     width: 56px;
     height: 56px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #5C7A36, #4A6628);
+    background: linear-gradient(135deg, #10b981, #059669);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -557,9 +612,9 @@ const { slug } = Astro.params;
   .prose code { background-color: #f5f5f5; padding: 0.15em 0.35em; border-radius: 0.25rem; font-size: 0.85em; font-family: ui-monospace, monospace; word-break: break-word; }
   .prose pre { background-color: #171717; color: #e5e5e5; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; -webkit-overflow-scrolling: touch; }
   .prose pre code { background-color: transparent; padding: 0; color: inherit; word-break: normal; }
-  .prose a { color: #5C7A36; text-decoration: underline; text-underline-offset: 2px; }
-  .prose a:hover { color: #4A6628; }
-  .prose blockquote { border-left: 4px solid #5C7A36; padding: 0.75rem 1rem; margin: 1.25rem 0; background: linear-gradient(135deg, #f0f7e6 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #3a5a1e; font-size: 1rem; font-style: italic; }
+  .prose a { color: #10b981; text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: #059669; }
+  .prose blockquote { border-left: 4px solid #10b981; padding: 0.75rem 1rem; margin: 1.25rem 0; background: linear-gradient(135deg, #ecfdf5 0%, #f9fafb 100%); border-radius: 0 12px 12px 0; color: #065f46; font-size: 1rem; font-style: italic; }
   .prose blockquote p:last-child { margin-bottom: 0; }
   .prose hr { border: none; border-top: 1px solid #e5e5e5; margin: 2rem 0; }
   .prose img { border-radius: 12px; margin: 1.25rem 0; max-width: 100%; height: auto; }
@@ -576,8 +631,8 @@ const { slug } = Astro.params;
   .callout-info { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
 
   /* ===== Stat highlight ===== */
-  .stat-highlight { display: inline-flex; align-items: baseline; gap: 4px; background: linear-gradient(135deg, #f0f7e6, #e8f5e0); padding: 2px 8px; border-radius: 6px; }
-  .stat-number { font-size: 1em; font-weight: 800; color: #5C7A36; }
+  .stat-highlight { display: inline-flex; align-items: baseline; gap: 4px; background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 2px 8px; border-radius: 6px; }
+  .stat-number { font-size: 1em; font-weight: 800; color: #10b981; }
 
   /* ===== Responsive: Tablet (640px+) ===== */
   @media (min-width: 640px) {

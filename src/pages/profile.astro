@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
 import Icon from '../components/ui/Icon.astro';
 ---
 
-<BaseLayout title="Profil Saya - Asri Digital">
+<BaseLayout title="Profil Saya - Asri Digital" description="Kelola profil akun Asri Digital Anda — update nama, email, dan password.">
   <Header />
   
   <main class="flex-1 py-8">
@@ -61,7 +62,7 @@ import Icon from '../components/ui/Icon.astro';
             <h3 class="text-lg font-semibold text-text-primary mb-4">Informasi Profil</h3>
             
             <form id="profile-form" class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-main mb-2">Nama Lengkap</label>
                   <input type="text" id="input-name" class="input" placeholder="Nama Anda" />
@@ -96,7 +97,7 @@ import Icon from '../components/ui/Icon.astro';
                 <input type="password" id="current-password" class="input" placeholder="Masukkan password lama" />
               </div>
               
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-text-main mb-2">Password Baru</label>
                   <input type="password" id="new-password" class="input" placeholder="Minimal 6 karakter" />
@@ -129,6 +130,7 @@ import Icon from '../components/ui/Icon.astro';
       </div>
     </div>
   </main>
+  <Footer />
 </BaseLayout>
 
 <script>
