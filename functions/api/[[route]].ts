@@ -7,6 +7,7 @@ interface Env {
   DOMPETX_WEBHOOK_SECRET: string;
   DOMPETX_API_URL: string;
   RESEND_KEY: string;
+  RESEND_API_KEY: string;
   JWT_SECRET: string;
   APP_URL: string;
   TELEGRAM_BOT_TOKEN: string;
@@ -386,6 +387,9 @@ export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
   _currentRequest = request;
   _currentCtx = context;
+
+  // Env var compatibility: RESEND_API_KEY (wrangler.toml/dashboard) → RESEND_KEY (code)
+  if (!env.RESEND_KEY && env.RESEND_API_KEY) env.RESEND_KEY = env.RESEND_API_KEY;
 
   // Require JWT_SECRET to be configured
   if (!env.JWT_SECRET) {
