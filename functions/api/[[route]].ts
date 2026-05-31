@@ -5,8 +5,8 @@ interface Env {
   DB: D1Database;
   DOMPETX_API_KEY: string;
   DOMPETX_WEBHOOK_SECRET: string;
-  DOMPETX_BASE_URL: string;
-  RESEND_API_KEY: string;
+  DOMPETX_API_URL: string;
+  RESEND_KEY: string;
   JWT_SECRET: string;
   APP_URL: string;
 }
@@ -145,7 +145,8 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
 // Helper: Create JWT token
 async function createJWT(payload: any, secret: string, expiresIn: string = '24h'): Promise<string> {
   // Ensure secret is not empty
-  const secretKey = secret || 'asri-digital-default-jwt-secret-key-2026';
+  if (!secret) throw new Error('JWT_SECRET is required but was not provided');
+  const secretKey = secret;
   
   const header = { alg: 'HS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);
@@ -191,7 +192,8 @@ async function createJWT(payload: any, secret: string, expiresIn: string = '24h'
 // Helper: Verify JWT token
 async function verifyJWT(token: string, secret: string): Promise<any> {
   try {
-    const secretKey = secret || 'asri-digital-default-jwt-secret-key-2026';
+    if (!secret) throw new Error('JWT_SECRET is required but was not provided');
+    const secretKey = secret;
     
     const parts = token.split('.');
     if (parts.length !== 3) return null;
@@ -254,19 +256,38 @@ async function getUser(request: Request, env: Env): Promise<any> {
   return user;
 }
 
+// Helper: Get allowed CORS origin
+function getAllowedOrigin(request: Request): string {
+  const origin = request.headers.get('Origin') || '';
+  const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com', 'http://localhost:4321'];
+  return allowedOrigins.includes(origin) ? origin : 'https://asridigital.com';
+}
+
+// Module-level request reference for jsonResponse
+let _currentRequest: Request | null = null;
+// Module-level context reference for waitUntil (non-blocking deploy trigger)
+let _currentCtx: any = null;
+
 // Helper: JSON response
-function jsonResponse(data: any, status: number = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': 'https://asridigital.com',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Credentials': 'true',
-      'Vary': 'Origin'
-    }
-  });
+function jsonResponse(data: any, status: number = 200, request?: Request, cacheControl?: string): Response {
+  const req = request || _currentRequest;
+  const origin = req ? getAllowedOrigin(req) : 'https://asridigital.com';
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+    'Vary': 'Origin'
+  };
+  // For mutable methods (POST/PUT/DELETE), never cache
+  if (cacheControl) {
+    headers['Cache-Control'] = cacheControl;
+  } else if (req && req.method !== 'GET') {
+    headers['Cache-Control'] = 'no-store';
+  }
+  // For GET requests, rely on Cloudflare Pages _headers Cache-Control
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 // Helper: Calculate time ago
@@ -281,9 +302,97 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(seconds / 86400)} hari`;
 }
 
+// ==================== AUTO-DEPLOY TRIGGER ====================
+// Triggers Cloudflare Pages rebuild after admin CRUD operations.
+// Uses D1 for debounce state since CF Workers are STATELESS (no setTimeout across requests).
+// Supports both deploy hook URL and direct CF API trigger.
+// Priority: 1) deploy_hook_url (webhook), 2) cf_api_token (direct CF API)
+const CF_ACCOUNT_ID = '6c18d33071f75f4fa94fc308a1fd4bd8';
+const CF_PROJECT_NAME = 'asridigital';
+const DEPLOY_DEBOUNCE_MS = 120000; // 2 minutes
+
+async function triggerDeploy(env: Env): Promise<void> {
+  try {
+    // Check last deploy time from site_settings
+    const lastDeploy = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'last_deploy_trigger'"
+    ).first();
+    
+    const now = Date.now();
+    const lastTime = lastDeploy ? parseInt(lastDeploy.value as string) : 0;
+    
+    // Only trigger if 2+ minutes since last trigger
+    if (now - lastTime < DEPLOY_DEBOUNCE_MS) {
+      console.log('Deploy skipped (debounce) - last trigger was', Math.floor((now - lastTime) / 1000), 'seconds ago');
+      return;
+    }
+    
+    // Update last trigger time FIRST to prevent race conditions
+    await env.DB.prepare(
+      "INSERT OR REPLACE INTO site_settings (key, value, updated_at) VALUES ('last_deploy_trigger', ?, datetime('now'))"
+    ).bind(now.toString()).run();
+    
+    // Option 1: Deploy hook URL (preferred - no API token needed in code)
+    const hookSetting = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'deploy_hook_url'"
+    ).first();
+    
+    if (hookSetting?.value) {
+      console.log('Triggering auto-deploy via deploy hook...');
+      const deployPromise = fetch(hookSetting.value as string, { method: 'POST' })
+        .then((r: Response) => { console.log('Deploy triggered via hook, status:', r.status); return r; })
+        .catch((e: any) => { console.error('Deploy hook trigger failed:', e); });
+      
+      if (_currentCtx?.waitUntil) {
+        _currentCtx.waitUntil(deployPromise);
+      }
+      return;
+    }
+    
+    // Option 2: Direct CF API trigger (needs cf_api_token in site_settings)
+    const tokenSetting = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'cf_api_token'"
+    ).first();
+    
+    if (tokenSetting?.value) {
+      console.log('Triggering auto-deploy via CF API...');
+      const deployUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT_NAME}/deployments`;
+      const deployPromise = fetch(deployUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${tokenSetting.value}`,
+          'Content-Type': 'application/json'
+        }
+      })
+        .then((r: Response) => { console.log('Deploy triggered via CF API, status:', r.status); return r; })
+        .catch((e: any) => { console.error('CF API deploy trigger failed:', e); });
+      
+      if (_currentCtx?.waitUntil) {
+        _currentCtx.waitUntil(deployPromise);
+      }
+      return;
+    }
+    
+    console.log('No deploy_hook_url or cf_api_token configured - skipping deploy trigger');
+  } catch (e) {
+    console.error('Deploy trigger error:', e);
+  }
+}
+
 // Main request handler
 export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
+  _currentRequest = request;
+  _currentCtx = context;
+
+  // Require JWT_SECRET to be configured
+  if (!env.JWT_SECRET) {
+    return new Response(JSON.stringify({ error: 'Server configuration error: JWT_SECRET not set' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
@@ -294,7 +403,7 @@ export async function onRequest(context: any): Promise<Response> {
   // Handle CORS preflight
   if (method === 'OPTIONS') {
     const origin = request.headers.get('Origin') || '';
-    const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com'];
+    const allowedOrigins = ['https://asridigital.com', 'https://www.asridigital.com', 'http://localhost:4321', 'http://localhost:4322'];
     const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://asridigital.com';
     return new Response(null, {
       headers: {
@@ -375,8 +484,8 @@ export async function onRequest(context: any): Promise<Response> {
     if (route === '/products' && method === 'GET') {
       const category = url.searchParams.get('category');
       const search = url.searchParams.get('search');
-      const page = parseInt(url.searchParams.get('page') || '1');
-      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1') || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20') || 20));
       const offset = (page - 1) * limit;
 
       let query = 'SELECT * FROM products WHERE is_active = 1';
@@ -457,6 +566,126 @@ export async function onRequest(context: any): Promise<Response> {
     }
 
     // ==================== AUTH ====================
+    // ==================== ORDER STATUS (PUBLIC) ====================
+    if (route.startsWith('/orders/') && method === 'GET') {
+      const orderId = route.split('/')[2];
+      if (!orderId) {
+        return jsonResponse({ error: 'Order ID diperlukan' }, 400);
+      }
+
+      const order = await env.DB.prepare(
+        'SELECT id, product_title, amount, status, paid_at, created_at, dompetx_id, payment_url FROM orders WHERE id = ?'
+      ).bind(orderId).first();
+
+      if (!order) {
+        return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
+      }
+
+      // If order is still PENDING and has a DompetX checkout ID, poll for status
+      if (order.status === 'PENDING' && order.dompetx_id) {
+        try {
+          const apiKey = env.DOMPETX_API_KEY || '';
+          const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
+
+          // DompetX: GET /payments/checkout/check-status/{id} with signed headers
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          const encoder = new TextEncoder();
+          const hmacKey = await crypto.subtle.importKey(
+            'raw', encoder.encode(apiKey),
+            { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+          );
+          const sigInput = `${timestamp}.{}`;
+          const sigBuffer = await crypto.subtle.sign('HMAC', hmacKey, encoder.encode(sigInput));
+          const signature = Array.from(new Uint8Array(sigBuffer))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+
+          const dompetxResponse = await fetch(`${baseUrl}/payments/checkout/check-status/${order.dompetx_id}`, {
+            headers: {
+              'X-DOMPAY-API-Key': apiKey,
+              'X-DOMPAY-Signature': signature,
+              'X-DOMPAY-Timestamp': timestamp
+            }
+          });
+
+          if (dompetxResponse.ok) {
+            const checkoutData = await dompetxResponse.json() as any;
+            console.log('ORDER STATUS: DompetX poll result', checkoutData.status);
+
+            if (checkoutData.status === 'paid' || checkoutData.status === 'confirmed') {
+              // Update order to PAID
+              await env.DB.prepare(
+                "UPDATE orders SET status = 'PAID', paid_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
+              ).bind(orderId).run();
+
+              // Auto-create user + magic link (same as webhook handler)
+              const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+              if (paidOrder) {
+                let user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email).first();
+                let magicToken = '';
+                let newUserPassword = '';
+
+                if (!user) {
+                  const userId = generateId();
+                  newUserPassword = crypto.randomUUID().slice(0, 12);
+                  const passwordHash = await hashPassword(newUserPassword);
+                  try {
+                    await env.DB.prepare(
+                      'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
+                    ).bind(userId, paidOrder.user_email, paidOrder.user_name, passwordHash, paidOrder.product_id === 'ALL-ACCESS' ? 1 : 0).run();
+                    user = { id: userId };
+                  } catch (e) {
+                    user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email.toLowerCase()).first();
+                  }
+                }
+
+                if (user && paidOrder.product_id === 'ALL-ACCESS') {
+                  await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
+                }
+
+                if (user) {
+                  await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(user.id, orderId).run();
+                  magicToken = await createJWT(
+                    { userId: user.id, email: paidOrder.user_email, type: 'magic_login' },
+                    env.JWT_SECRET,
+                    '720h'
+                  );
+                }
+
+                await sendOrderConfirmationEmail(env, paidOrder, magicToken, newUserPassword || undefined);
+              }
+
+              order.status = 'PAID';
+              order.paid_at = new Date().toISOString();
+            } else if (checkoutData.status === 'expired' || checkoutData.status === 'cancelled') {
+              await env.DB.prepare(
+                "UPDATE orders SET status = 'FAILED', updated_at = datetime('now') WHERE id = ?"
+              ).bind(orderId).run();
+              order.status = 'FAILED';
+            }
+          }
+        } catch (pollError) {
+          console.error('ORDER STATUS: DompetX poll error', pollError);
+        }
+      }
+
+      // Generate dashboard URL for PAID orders
+      let dashboardUrl = '';
+      if (order.status === 'PAID') {
+        // Get full order with user_id
+        const fullOrder = await env.DB.prepare('SELECT user_id FROM orders WHERE id = ?').bind(orderId).first();
+        if (fullOrder?.user_id) {
+          const magicToken = await createJWT(
+            { userId: fullOrder.user_id, type: 'magic_login' },
+            env.JWT_SECRET,
+            '720h'
+          );
+          dashboardUrl = `/api/auth/magic-login?token=${magicToken}`;
+        }
+      }
+
+      return jsonResponse({ order: { ...order, dashboardUrl } });
+    }
+
     if (route === '/auth/register' && method === 'POST') {
       const { email, password, name } = await request.json();
 
@@ -487,7 +716,7 @@ export async function onRequest(context: any): Promise<Response> {
       const existingUser = await env.DB.prepare(
         'SELECT id FROM users WHERE email = ?'
       )
-        .bind(email)
+        .bind(sanitizedEmail)
         .first();
 
       if (existingUser) {
@@ -502,11 +731,11 @@ export async function onRequest(context: any): Promise<Response> {
       await env.DB.prepare(
         'INSERT INTO users (id, email, name, password, is_all_access, created_at, updated_at) VALUES (?, ?, ?, ?, 0, datetime("now"), datetime("now"))'
       )
-        .bind(userId, email, name, passwordHash)
+        .bind(userId, sanitizedEmail, sanitizedName, passwordHash)
         .run();
 
       // Create JWT token
-      const token = await createJWT({ userId, email, name, role: 'user' }, env.JWT_SECRET);
+      const token = await createJWT({ userId, email: sanitizedEmail, name: sanitizedName, role: 'user' }, env.JWT_SECRET);
 
       return jsonResponse({
         success: true,
@@ -522,11 +751,13 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Email dan password wajib diisi' }, 400);
       }
 
+      const normalizedEmail = sanitizeInput(email).toLowerCase();
+
       // Find user
       const user = await env.DB.prepare(
         'SELECT * FROM users WHERE email = ?'
       )
-        .bind(email)
+        .bind(normalizedEmail)
         .first();
 
       if (!user) {
@@ -583,11 +814,13 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Email wajib diisi' }, 400);
       }
 
-      // Check if user exists
+      const normalizedEmail = sanitizeInput(email).toLowerCase();
+
+      // Find user
       const user = await env.DB.prepare(
-        'SELECT id, email, name FROM users WHERE email = ?'
+        'SELECT * FROM users WHERE email = ?'
       )
-        .bind(email)
+        .bind(normalizedEmail)
         .first();
 
       // Always return success to prevent email enumeration
@@ -608,14 +841,14 @@ export async function onRequest(context: any): Promise<Response> {
 
       // Send reset email
       try {
-        if (env.RESEND_API_KEY && !env.RESEND_API_KEY.startsWith('re_your_')) {
+        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
           const resetUrl = `${env.APP_URL}/reset-password?token=${resetToken}`;
           
           await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${env.RESEND_API_KEY}`
+              'Authorization': `Bearer ${env.RESEND_KEY}`
             },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
@@ -739,11 +972,25 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== CHECKOUT ====================
     if (route === '/checkout' && method === 'POST') {
       console.log('CHECKOUT: Starting checkout process');
+      try {
       const body = await request.json();
       const { productSlug, customerEmail, customerName, customerPhone, couponCode, paymentMethod, referredBy, csrfToken } = body;
       console.log('CHECKOUT: Body parsed', { productSlug, customerEmail, paymentMethod });
 
-      if (!productSlug || !customerEmail || !customerName || !paymentMethod) {
+      // Get product first to check if it's free
+      const product = await env.DB.prepare(
+        'SELECT * FROM products WHERE slug = ? AND is_active = 1'
+      )
+        .bind(productSlug)
+        .first();
+
+      if (!product) {
+        return jsonResponse({ error: 'Produk tidak ditemukan' }, 404);
+      }
+
+      // For free products, paymentMethod is optional
+      const isFree = product.price === 0;
+      if (!productSlug || !customerEmail || !customerName || (!isFree && !paymentMethod)) {
         return jsonResponse({ error: 'Data tidak lengkap' }, 400);
       }
 
@@ -754,17 +1001,6 @@ export async function onRequest(context: any): Promise<Response> {
       // Validate email
       if (!isValidEmail(sanitizedEmail)) {
         return jsonResponse({ error: 'Format email tidak valid' }, 400);
-      }
-
-      // Get product
-      const product = await env.DB.prepare(
-        'SELECT * FROM products WHERE slug = ? AND is_active = 1'
-      )
-        .bind(productSlug)
-        .first();
-
-      if (!product) {
-        return jsonResponse({ error: 'Produk tidak ditemukan' }, 404);
       }
 
       let discountAmount = 0;
@@ -781,7 +1017,7 @@ export async function onRequest(context: any): Promise<Response> {
         if (coupon) {
           const now = new Date().toISOString();
           const isValid = (!coupon.expires_at || coupon.expires_at > now) &&
-                         (coupon.current_uses < coupon.max_uses) &&
+                         (!coupon.max_uses || coupon.current_uses < coupon.max_uses) &&
                          (!coupon.min_purchase || product.price >= coupon.min_purchase);
 
           if (isValid) {
@@ -801,58 +1037,27 @@ export async function onRequest(context: any): Promise<Response> {
 
       // ==================== FREE PRODUCT CHECKOUT ====================
       if (finalAmount <= 0) {
-        // Create order as PAID immediately
         await env.DB.prepare(
           `INSERT INTO orders (id, user_id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'FREE', ?, 'PAID', datetime('now'), datetime('now'))`
-        )
-          .bind(orderId, null, sanitizedEmail, sanitizedName, customerPhone || null, product.id, product.title, 0, couponId)
-          .run();
+        ).bind(orderId, null, sanitizedEmail, sanitizedName, customerPhone || null, product.id, product.title, 0, couponId).run();
 
-        // Save to subscribers table
         try {
           await env.DB.prepare(
             `INSERT OR IGNORE INTO subscribers (id, email, whatsapp, name, source, product_id, product_title, created_at, updated_at)
              VALUES (?, ?, ?, ?, 'free_product', ?, ?, datetime('now'), datetime('now'))`
-          )
-            .bind(generateId(), sanitizedEmail, customerPhone || null, sanitizedName, product.id, product.title)
-            .run();
-        } catch (e: any) {
-          console.log('SUBSCRIBER: Already exists or error:', e.message);
-        }
+          ).bind(generateId(), sanitizedEmail, customerPhone || null, sanitizedName, product.id, product.title).run();
+        } catch (e: any) { console.log('SUBSCRIBER: Error:', e.message); }
 
-        // Update coupon usage
         if (couponId) {
-          await env.DB.prepare(
-            'UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ?'
-          )
-            .bind(couponId)
-            .run();
+          await env.DB.prepare('UPDATE coupons SET current_uses = current_uses + 1 WHERE id = ?').bind(couponId).run();
         }
 
-        // Send free product email with download link
         try {
-          await sendFreeProductEmail(env, {
-            id: orderId,
-            user_email: sanitizedEmail,
-            user_name: sanitizedName,
-            product_title: product.title,
-            product_slug: product.slug,
-            download_url: product.download_url
-          });
-        } catch (e: any) {
-          console.log('FREE_EMAIL: Error sending:', e.message);
-        }
+          await sendFreeProductEmail(env, { id: orderId, user_email: sanitizedEmail, user_name: sanitizedName, product_title: product.title, product_slug: product.slug, download_url: product.download_url });
+        } catch (e: any) { console.log('FREE_EMAIL: Error:', e.message); }
 
-        return jsonResponse({
-          success: true,
-          orderId,
-          orderCode,
-          paymentUrl: `${env.APP_URL}/success?order=${orderId}&free=true`,
-          amount: 0,
-          discount: discountAmount,
-          isFree: true
-        });
+        return jsonResponse({ success: true, orderId, orderCode, paymentUrl: `${env.APP_URL}/success?order=${orderId}&free=true`, amount: 0, discount: discountAmount, isFree: true });
       }
 
       // Get affiliate referral from cookie or request body
@@ -898,75 +1103,115 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      // Create DompetX payment (signed request)
+      // Create DompetX checkout session - skip for free products
       let paymentUrl = null;
       let paymentData = null;
 
-      try {
-        const apiKey = env.DOMPETX_API_KEY || '';
-        const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
-        const timestamp = Math.floor(Date.now() / 1000).toString();
-        
-        const requestBody = JSON.stringify({
-          ref_id: orderId,
-          amount: finalAmount,
-          currency: 'IDR',
-          description: `Pembelian ${product.title}`,
-          customer_email: customerEmail,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          payment_method: paymentMethod,
-          return_url: `${env.APP_URL}/success?order=${orderId}`,
-          expiry_minutes: 60
-        });
+      if (!isFree && finalAmount > 0) {
+        try {
+          const apiKey = env.DOMPETX_API_KEY || '';
+          const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
 
-        // HMAC-SHA256 signature: timestamp + '.' + body
-        const encoder = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          'raw', encoder.encode(apiKey), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-        );
-        const signatureBuffer = await crypto.subtle.sign(
-          'HMAC', key, encoder.encode(timestamp + '.' + requestBody)
-        );
-        const signature = Array.from(new Uint8Array(signatureBuffer))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
+          // Generate HMAC-SHA256 signature per DompetX docs
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          const requestBodyObj = {
+            amount: finalAmount,
+            currency: 'IDR',
+            reference: orderId,  // Use orderId (UUID) so webhook can look it up directly
+            metadata: {
+              order_id: orderId,
+              product_slug: productSlug,
+              customer_email: sanitizedEmail,
+              customer_name: sanitizedName
+            }
+          };
+          const requestBody = JSON.stringify(requestBodyObj);
 
-        console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
-        
-        const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-DOMPAY-API-Key': apiKey,
-            'X-DOMPAY-Timestamp': timestamp,
-            'X-DOMPAY-Signature': signature
-          },
-          body: requestBody
-        });
+          // Signature = HMAC-SHA256(timestamp + "." + body, apiKey)
+          const encoder = new TextEncoder();
+          const key = await crypto.subtle.importKey(
+            'raw', encoder.encode(apiKey),
+            { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+          );
+          const sigInput = `${timestamp}.${requestBody}`;
+          const sigBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(sigInput));
+          const signature = Array.from(new Uint8Array(sigBuffer))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
 
-        const dompetxData = await dompetxResponse.json() as any;
-        console.log('DOMPETX: Response', JSON.stringify(dompetxData));
+          const idempotencyKey = `req_${orderId}`;
 
-        if (dompetxData.payment_url || dompetxData.id) {
-          paymentUrl = dompetxData.payment_url;
-          paymentData = dompetxData;
+          console.log('DOMPETX: Creating checkout', { orderId, amount: finalAmount });
 
-          // Update order with DompetX reference
-          await env.DB.prepare(
-            'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
-          )
-            .bind(paymentUrl, dompetxData.id, orderId)
-            .run();
-        } else {
-          console.error('DOMPETX: Checkout failed', dompetxData);
+          const dompetxResponse = await fetch(`${baseUrl}/payments/checkout`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-DOMPAY-API-Key': apiKey,
+              'X-DOMPAY-Signature': signature,
+              'X-DOMPAY-Timestamp': timestamp,
+              'Idempotency-Key': idempotencyKey
+            },
+            body: requestBody
+          });
+
+          const dompetxData = await dompetxResponse.json() as any;
+          console.log('DOMPETX: Response', JSON.stringify(dompetxData));
+
+          // DompetX returns payment_url
+          if (dompetxData.payment_url || dompetxData.id) {
+            paymentUrl = dompetxData.payment_url;
+            paymentData = dompetxData;
+
+            // Update order with DompetX reference
+            await env.DB.prepare(
+              'UPDATE orders SET payment_url = ?, dompetx_id = ? WHERE id = ?'
+            )
+              .bind(paymentUrl, dompetxData.id, orderId)
+              .run();
+          } else {
+            console.error('DOMPETX: Checkout failed', dompetxData);
+          }
+        } catch (error: any) {
+          console.error('DOMPETX: Error', error.message);
         }
-      } catch (error: any) {
-        console.error('DOMPETX: Error', error.message);
+      } else {
+        console.log('CHECKOUT: Free product, skipping payment gateway');
       }
 
-      // If DompetX fails, fall back to direct success
+      // Free products (price=0 or coupon covers full amount) - skip payment
+      if (finalAmount <= 0) {
+        await env.DB.prepare(
+          "UPDATE orders SET status = 'PAID', paid_at = datetime('now') WHERE id = ?"
+        ).bind(orderId).run();
+
+        // Send confirmation email for free orders too
+        try {
+          const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+          if (paidOrder) {
+            await sendOrderConfirmationEmail(env, paidOrder);
+          }
+        } catch (emailErr: any) {
+          console.error('EMAIL: Failed to send free order confirmation:', emailErr.message);
+        }
+
+        return jsonResponse({
+          success: true,
+          orderId,
+          orderCode,
+          amount: finalAmount,
+          discount: discountAmount
+          // No paymentUrl - frontend will redirect to success page
+        });
+      }
+
+      // If DompetX fails, don't fake success - return error
       if (!paymentUrl) {
-        paymentUrl = `${env.APP_URL}/success?order=${orderId}`;
+        return jsonResponse({
+          success: false,
+          error: 'Payment gateway sedang bermasalah. Silakan coba beberapa saat lagi atau hubungi support.',
+          orderId,
+          orderCode
+        }, 502);
       }
 
       return jsonResponse({
@@ -978,6 +1223,13 @@ export async function onRequest(context: any): Promise<Response> {
         amount: finalAmount,
         discount: discountAmount
       });
+      } catch (checkoutError: any) {
+        console.error('CHECKOUT: Unhandled error', checkoutError.message, checkoutError.stack);
+        return jsonResponse({ 
+          error: 'Terjadi kesalahan server. Silakan coba lagi.',
+          details: checkoutError.message 
+        }, 500);
+      }
     }
 
     // ==================== COUPON ====================
@@ -1004,7 +1256,7 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ valid: false, message: 'Kupon sudah kedaluwarsa' });
       }
 
-      if (coupon.current_uses >= coupon.max_uses) {
+      if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
         return jsonResponse({ valid: false, message: 'Kupon sudah habis' });
       }
 
@@ -1044,37 +1296,26 @@ export async function onRequest(context: any): Promise<Response> {
       const user = await getUser(request, env);
       
       let orders;
-      if (user) {
+      if (user && user.role === 'admin') {
+        // Admin sees ALL orders
+        orders = await env.DB.prepare(
+          'SELECT * FROM orders ORDER BY created_at DESC LIMIT 100'
+        ).all();
+      } else if (user) {
         orders = await env.DB.prepare(
           'SELECT * FROM orders WHERE user_email = ? ORDER BY created_at DESC LIMIT 50'
         )
           .bind(user.email)
           .all();
       } else {
-        // For admin or testing - return recent orders
+        // Unauthenticated - return only minimal FOMO data (no PII leak)
         orders = await env.DB.prepare(
-          'SELECT * FROM orders ORDER BY created_at DESC LIMIT 50'
+          "SELECT id, product_title, amount, status, created_at, SUBSTR(user_name, 1, 1) || '***' as user_name FROM orders WHERE status = 'PAID' ORDER BY created_at DESC LIMIT 10"
         )
           .all();
       }
 
       return jsonResponse({ orders: orders.results });
-    }
-
-    if (route.startsWith('/orders/') && method === 'GET') {
-      const orderId = route.split('/')[2];
-      
-      const order = await env.DB.prepare(
-        'SELECT o.*, p.title as product_title, p.image_icon as product_image FROM orders o LEFT JOIN products p ON o.product_id = p.id WHERE o.id = ?'
-      )
-        .bind(orderId)
-        .first();
-
-      if (!order) {
-        return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
-      }
-
-      return jsonResponse({ order });
     }
 
     // ==================== RECENT SALES (FOMO) ====================
@@ -1105,64 +1346,69 @@ export async function onRequest(context: any): Promise<Response> {
       const rawBody = await request.text();
       let body: any;
       
+      // Verify webhook signature if secret is configured
+      if (env.DOMPETX_WEBHOOK_SECRET) {
+        const signature = request.headers.get('X-Dompay-Signature') || request.headers.get('X-Signature') || '';
+        const timestamp = request.headers.get('X-Dompay-Timestamp') || request.headers.get('X-Timestamp') || '';
+        if (signature) {
+          const encoder = new TextEncoder();
+          const key = await crypto.subtle.importKey('raw', encoder.encode(env.DOMPETX_WEBHOOK_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+          const dataToSign = timestamp ? timestamp + rawBody : rawBody;
+          const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(dataToSign));
+          const expectedSig = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+          if (expectedSig !== signature.replace('sha256=', '')) {
+            console.error('WEBHOOK: Invalid signature');
+            return jsonResponse({ error: 'Invalid signature' }, 401);
+          }
+        }
+      }
+      
       try {
         body = JSON.parse(rawBody);
       } catch (e) {
         return jsonResponse({ error: 'Invalid JSON' }, 400);
       }
-      
-      // Verify webhook signature if secret is set
-      if (env.DOMPETX_WEBHOOK_SECRET && env.DOMPETX_WEBHOOK_SECRET !== 'placeholder-set-after-dompetx-config') {
-        const signature = request.headers.get('X-DompetX-Signature');
-        
-        if (!signature) {
-          return jsonResponse({ error: 'Missing signature' }, 401);
-        }
-        
-        // Verify HMAC-SHA256 signature
-        try {
-          const encoder = new TextEncoder();
-          const key = await crypto.subtle.importKey(
-            'raw',
-            encoder.encode(env.DOMPETX_WEBHOOK_SECRET),
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['sign']
-          );
-          
-          const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody));
-          const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-          
-          if (signature !== expectedSignature) {
-            return jsonResponse({ error: 'Invalid signature' }, 401);
-          }
-        } catch (verifyError) {
-          console.error('Signature verification error:', verifyError);
-          return jsonResponse({ error: 'Signature verification failed' }, 401);
-        }
+
+      console.log('WEBHOOK: Received DompetX webhook', JSON.stringify(body).substring(0, 500));
+
+      // DompetX webhook format per docs:
+      // { "data": { "id": "...", "amount": ..., "status": "paid", "currency": "IDR", "reference": "INV-XXX" }, "eventType": "deposit", "paymentId": "..." }
+      const eventType = body.eventType || '';
+      const webhookData = body.data || body;
+      const checkoutStatus = webhookData.status || '';
+
+      // Find order by reference (our orderCode, e.g. INV-xxx)
+      const orderCode = webhookData.reference || '';
+      const dompetxId = webhookData.id || body.paymentId || '';
+
+      // Only process paid events
+      const isPaidEvent = checkoutStatus === 'paid' || checkoutStatus === 'confirmed' || eventType === 'deposit';
+
+      if (!orderCode && !dompetxId) {
+        console.error('WEBHOOK: No reference or ID found');
+        return jsonResponse({ error: 'Missing reference' }, 400);
       }
 
-      const { ref_id, status, amount, payment_method, paid_at } = body;
+      console.log('WEBHOOK: Processing', { eventType, orderCode, dompetxId, status: checkoutStatus });
 
-      if (!ref_id) {
-        return jsonResponse({ error: 'Missing ref_id' }, 400);
+      // Find order by reference (orderId UUID) or dompetx_id
+      let order: any = null;
+      if (orderCode) {
+        // reference is now orderId (UUID), direct lookup
+        order = await env.DB.prepare('SELECT * FROM orders WHERE id = ?')
+          .bind(orderCode).first();
       }
-
-      // Find order
-      const order = await env.DB.prepare(
-        'SELECT * FROM orders WHERE id = ?'
-      )
-        .bind(ref_id)
-        .first();
+      if (!order && dompetxId) {
+        order = await env.DB.prepare('SELECT * FROM orders WHERE dompetx_id = ?')
+          .bind(dompetxId).first();
+      }
 
       if (!order) {
         return jsonResponse({ error: 'Order not found' }, 404);
       }
 
       // Update order status
-      if (status === 'SUCCESS' || status === 'PAID') {
+      if (isPaidEvent) {
         await env.DB.prepare(
           `UPDATE orders 
            SET status = 'PAID', 
@@ -1171,25 +1417,53 @@ export async function onRequest(context: any): Promise<Response> {
                updated_at = datetime('now')
            WHERE id = ?`
         )
-          .bind(payment_method || order.payment_method, ref_id)
+          .bind(webhookData.payment_method || order.payment_method, order.id)
           .run();
 
-        // Check if All-Access Pass
-        if (order.product_id === 'ALL-ACCESS') {
-          // Find or create user by email
-          let user = await env.DB.prepare(
-            'SELECT id FROM users WHERE email = ?'
-          )
-            .bind(order.user_email)
-            .first();
+        // Auto-create user account after payment (for ALL products)
+        let user = await env.DB.prepare(
+          'SELECT id FROM users WHERE email = ?'
+        )
+          .bind(order.user_email)
+          .first();
 
-          if (user) {
+        let magicToken = '';
+        let newUserPassword = '';
+        if (!user) {
+          // Create new user with random password
+          const userId = generateId();
+          newUserPassword = crypto.randomUUID().slice(0, 12);
+          const passwordHash = await hashPassword(newUserPassword);
+
+          try {
             await env.DB.prepare(
-              'UPDATE users SET is_all_access = 1 WHERE id = ?'
-            )
-              .bind(user.id)
-              .run();
+              'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
+            ).bind(userId, order.user_email, order.user_name, passwordHash, order.product_id === 'ALL-ACCESS' ? 1 : 0).run();
+
+            user = { id: userId };
+          } catch (e) {
+            // User might already exist with different casing
+            user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(order.user_email.toLowerCase()).first();
           }
+        }
+
+        // Set all_access for ALL-ACCESS products
+        if (user && order.product_id === 'ALL-ACCESS') {
+          await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
+        }
+
+        // Generate magic login link (valid 30 days)
+        if (user) {
+          magicToken = await createJWT(
+            { userId: user.id, email: order.user_email, type: 'magic_login' },
+            env.JWT_SECRET,
+            '720h' // 30 days
+          );
+
+          // Store magic link in order for success page
+          await env.DB.prepare(
+            'UPDATE orders SET user_id = ? WHERE id = ?'
+          ).bind(user.id, order.id).run();
         }
 
         // Process affiliate commission if order has referral
@@ -1226,25 +1500,67 @@ export async function onRequest(context: any): Promise<Response> {
           }
         }
 
-        // Send confirmation email
+        // Send confirmation email with magic link
         try {
-          await sendOrderConfirmationEmail(env, order);
+          await sendOrderConfirmationEmail(env, order, magicToken, newUserPassword || undefined);
         } catch (emailError) {
           console.error('Email error:', emailError);
         }
 
-      } else if (status === 'FAILED') {
+      } else if (checkoutStatus === 'FAILED') {
         await env.DB.prepare(
           `UPDATE orders 
            SET status = 'FAILED', 
                updated_at = datetime('now')
            WHERE id = ?`
         )
-          .bind(ref_id)
+          .bind(order.id)
           .run();
       }
 
       return jsonResponse({ success: true });
+    }
+
+    // ==================== WEBHOOK RESEND (email delivery tracking) ====================
+    if (route === '/webhooks/resend' && method === 'POST') {
+      try {
+        const rawBody = await request.text();
+        const body = JSON.parse(rawBody);
+        const eventType = body.type || '';
+        const data = body.data || {};
+
+        console.log('RESEND WEBHOOK:', eventType, JSON.stringify(data).substring(0, 300));
+
+        // Update email_logs based on delivery status
+        if (data.email_id || data.to) {
+          const statusMap: Record<string, string> = {
+            'email.sent': 'SENT',
+            'email.delivered': 'DELIVERED',
+            'email.delivery_delayed': 'DELAYED',
+            'email.bounced': 'BOUNCED',
+            'email.complained': 'COMPLAINED',
+          };
+          const newStatus = statusMap[eventType] || eventType;
+
+          // Try to find and update the email log
+          if (data.to && Array.isArray(data.to)) {
+            for (const toEmail of data.to) {
+              await env.DB.prepare(
+                `UPDATE email_logs SET status = ?, resend_id = ? WHERE to_email = ? AND type = 'ORDER_CONFIRMATION' ORDER BY sent_at DESC LIMIT 1`
+              ).bind(newStatus, data.email_id || null, toEmail).run();
+            }
+          } else if (data.to && typeof data.to === 'string') {
+            await env.DB.prepare(
+              `UPDATE email_logs SET status = ?, resend_id = ? WHERE to_email = ? AND type = 'ORDER_CONFIRMATION' ORDER BY sent_at DESC LIMIT 1`
+            ).bind(newStatus, data.email_id || null, data.to).run();
+          }
+        }
+
+        return jsonResponse({ received: true });
+      } catch (webhookErr) {
+        console.error('Resend webhook error:', webhookErr);
+        return jsonResponse({ error: 'Webhook processing failed' }, 500);
+      }
     }
 
     // ==================== USER PRODUCTS ====================
@@ -1298,8 +1614,8 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== BLOG POSTS ====================
     if (route === '/blog/posts' && method === 'GET') {
       const category = url.searchParams.get('category');
-      const page = parseInt(url.searchParams.get('page') || '1');
-      const limit = parseInt(url.searchParams.get('limit') || '10');
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1') || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '10') || 10));
       const offset = (page - 1) * limit;
 
       let query = 'SELECT id, title, slug, excerpt, image_url, category, tags, published_at, author_name FROM blog_posts WHERE is_published = 1';
@@ -1344,6 +1660,7 @@ export async function onRequest(context: any): Promise<Response> {
 
     // ==================== ADMIN MIDDLEWARE ====================
     // All admin routes require authentication and admin role
+    let adminUser: any = null;
     if (route.startsWith('/admin')) {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -1351,7 +1668,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
       
       const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       
       if (!payload) {
         return jsonResponse({ error: 'Invalid token' }, 401);
@@ -1359,12 +1676,13 @@ export async function onRequest(context: any): Promise<Response> {
       
       // Check if user is admin
       const user = await env.DB.prepare(
-        'SELECT role FROM users WHERE id = ?'
+        'SELECT role, name FROM users WHERE id = ?'
       ).bind(payload.userId).first();
       
       if (!user || user.role !== 'admin') {
         return jsonResponse({ error: 'Forbidden - Admin access required' }, 403);
       }
+      adminUser = { ...payload, name: user.name || payload.name };
     }
 
     // ==================== ADMIN STATS ====================
@@ -1442,7 +1760,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true, coupon: { id: couponId, code: code.toUpperCase() } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, coupon: { id: couponId, code: code.toUpperCase() }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE COUPON ====================
@@ -1470,7 +1789,8 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE COUPON ====================
@@ -1483,7 +1803,75 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(couponId)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== CATEGORIES (PUBLIC) ====================
+    if (route === '/categories' && method === 'GET') {
+      const categories = await env.DB.prepare(
+        'SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC'
+      ).all();
+      return jsonResponse({ categories: categories.results });
+    }
+
+    // ==================== ADMIN: CATEGORIES LIST ====================
+    if (route === '/admin/categories' && method === 'GET') {
+      const categories = await env.DB.prepare(
+        'SELECT * FROM categories ORDER BY sort_order ASC'
+      ).all();
+      return jsonResponse({ categories: categories.results });
+    }
+
+    // ==================== ADMIN: CREATE CATEGORY ====================
+    if (route === '/admin/categories' && method === 'POST') {
+      const body = await request.json();
+      const { name, slug, description, icon, sort_order, is_active } = body;
+
+      if (!name || !slug) {
+        return jsonResponse({ error: 'Name dan slug wajib diisi' }, 400);
+      }
+
+      const catId = 'cat-' + slug;
+      await env.DB.prepare(
+        `INSERT INTO categories (id, name, slug, description, icon, sort_order, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+      ).bind(catId, name, slug, description || null, icon || null, sort_order || 0, is_active !== false ? 1 : 0).run();
+
+      triggerDeploy(env);
+      return jsonResponse({ success: true, category: { id: catId, name, slug }, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: UPDATE CATEGORY ====================
+    if (route.startsWith('/admin/categories/') && method === 'PUT') {
+      const catId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.name !== undefined) { updates.push('name = ?'); values.push(body.name); }
+      if (body.slug !== undefined) { updates.push('slug = ?'); values.push(body.slug); }
+      if (body.description !== undefined) { updates.push('description = ?'); values.push(body.description); }
+      if (body.icon !== undefined) { updates.push('icon = ?'); values.push(body.icon); }
+      if (body.sort_order !== undefined) { updates.push('sort_order = ?'); values.push(body.sort_order); }
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
+
+      if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+
+      updates.push("updated_at = datetime('now')");
+      values.push(catId);
+
+      await env.DB.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: DELETE CATEGORY ====================
+    if (route.startsWith('/admin/categories/') && method === 'DELETE') {
+      const catId = route.split('/')[3];
+      await env.DB.prepare('UPDATE categories SET is_active = 0 WHERE id = ?').bind(catId).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: PRODUCTS LIST ====================
@@ -1498,17 +1886,17 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== ADMIN: CREATE PRODUCT ====================
     if (route === '/admin/products' && method === 'POST') {
       const body = await request.json();
-      const { id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured } = body;
+      const { id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured, image_icon, gallery_images, gallery_videos, video_embed_url } = body;
 
-      if (!title || !slug || !price) {
+      if (!title || !slug || price === undefined || price === null) {
         return jsonResponse({ error: 'Title, slug, dan price wajib diisi' }, 400);
       }
 
       const productId = id || generateId();
       
       await env.DB.prepare(
-        `INSERT INTO products (id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, image_icon, tags, is_active, is_featured, sort_order, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+        `INSERT INTO products (id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, image_icon, gallery_images, gallery_videos, video_embed_url, tags, is_active, is_featured, sort_order, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
       )
         .bind(
           productId,
@@ -1520,7 +1908,10 @@ export async function onRequest(context: any): Promise<Response> {
           compare_at_price || null,
           category || 'general',
           gpt_url || null,
-          `/images/${slug}.jpg`,
+          image_icon || `/images/${slug}.jpg`,
+          gallery_images || null,
+          gallery_videos || null,
+          video_embed_url || null,
           typeof tags === 'string' ? tags : JSON.stringify(tags || []),
           is_active !== false ? 1 : 0,
           is_featured ? 1 : 0,
@@ -1528,53 +1919,65 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      return jsonResponse({ success: true, product: { id: productId, title, slug } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, product: { id: productId, title, slug }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE PRODUCT ====================
     if (route.startsWith('/admin/products/') && method === 'PUT') {
       const productId = route.split('/')[3];
       const body = await request.json();
-      const { title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured } = body;
+
+      // Build dynamic SET clause - only update fields that were provided
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.title !== undefined) { updates.push('title = ?'); values.push(body.title); }
+      if (body.slug !== undefined) { updates.push('slug = ?'); values.push(body.slug); }
+      if (body.description !== undefined) { updates.push('description = ?'); values.push(body.description); }
+      if (body.short_description !== undefined) { updates.push('short_description = ?'); values.push(body.short_description); }
+      if (body.price !== undefined) { updates.push('price = ?'); values.push(body.price); }
+      if (body.compare_at_price !== undefined) { updates.push('compare_at_price = ?'); values.push(body.compare_at_price); }
+      if (body.category !== undefined) { updates.push('category = ?'); values.push(body.category); }
+      if (body.gpt_url !== undefined) { updates.push('gpt_url = ?'); values.push(body.gpt_url); }
+      if (body.tags !== undefined) { updates.push('tags = ?'); values.push(typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags)); }
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
+      if (body.is_featured !== undefined) { updates.push('is_featured = ?'); values.push(body.is_featured ? 1 : 0); }
+      if (body.image_icon !== undefined) { updates.push('image_icon = ?'); values.push(body.image_icon); }
+      if (body.gallery_images !== undefined) { updates.push('gallery_images = ?'); values.push(body.gallery_images); }
+      if (body.gallery_videos !== undefined) { updates.push('gallery_videos = ?'); values.push(body.gallery_videos); }
+      if (body.video_embed_url !== undefined) { updates.push('video_embed_url = ?'); values.push(body.video_embed_url); }
+
+      if (updates.length === 0) {
+        return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+      }
+
+      updates.push("updated_at = datetime('now')");
+      values.push(productId);
 
       await env.DB.prepare(
-        `UPDATE products 
-         SET title = ?, slug = ?, description = ?, short_description = ?, price = ?, 
-             compare_at_price = ?, category = ?, gpt_url = ?, tags = ?, 
-             is_active = ?, is_featured = ?, updated_at = datetime('now')
-         WHERE id = ?`
+        `UPDATE products SET ${updates.join(', ')} WHERE id = ?`
       )
-        .bind(
-          title,
-          slug,
-          description,
-          short_description,
-          price,
-          compare_at_price,
-          category,
-          gpt_url,
-          typeof tags === 'string' ? tags : JSON.stringify(tags),
-          is_active !== false ? 1 : 0,
-          is_featured ? 1 : 0,
-          productId
-        )
+        .bind(...values)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE PRODUCT ====================
     if (route.startsWith('/admin/products/') && method === 'DELETE') {
       const productId = route.split('/')[3];
 
-      // Soft delete - set is_active to false
+      // Hard delete - remove product from database
       await env.DB.prepare(
-        'UPDATE products SET is_active = 0 WHERE id = ?'
+        'DELETE FROM products WHERE id = ?'
       )
         .bind(productId)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, message: 'Produk berhasil dihapus', deploy_triggered: true });
     }
 
     // ==================== ADMIN: BLOG POSTS LIST ====================
@@ -1598,8 +2001,8 @@ export async function onRequest(context: any): Promise<Response> {
       const postId = generateId();
       
       await env.DB.prepare(
-        `INSERT INTO blog_posts (id, title, slug, content, excerpt, image_url, category, tags, author_name, author_email, is_published, published_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))`
+        `INSERT INTO blog_posts (id, title, slug, content, excerpt, image_url, category, tags, author_name, is_published, published_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))`
       )
         .bind(
           postId,
@@ -1610,13 +2013,13 @@ export async function onRequest(context: any): Promise<Response> {
           image_url || null,
           category || 'general',
           typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-          author_name || 'Admin',
-          'admin@asridigital.com',
+          adminUser?.name || author_name || 'Admin',
           is_published !== false ? 1 : 0
         )
         .run();
 
-      return jsonResponse({ success: true, post: { id: postId, title, slug } });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, post: { id: postId, title, slug }, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE BLOG POST ====================
@@ -1639,13 +2042,14 @@ export async function onRequest(context: any): Promise<Response> {
           image_url,
           category,
           typeof tags === 'string' ? tags : JSON.stringify(tags),
-          author_name,
+          adminUser?.name || author_name || 'Admin',
           is_published ? 1 : 0,
           postId
         )
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: DELETE BLOG POST ====================
@@ -1658,7 +2062,165 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(postId)
         .run();
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== PUBLIC: HERO SLIDES ====================
+    if (route === '/hero-slides' && method === 'GET') {
+      try {
+        const slides = await env.DB.prepare(
+          'SELECT * FROM hero_slides WHERE is_active = 1 ORDER BY sort_order ASC'
+        ).all();
+        return jsonResponse({ slides: slides.results });
+      } catch (e) {
+        // Table might not exist yet
+        return jsonResponse({ slides: [] });
+      }
+    }
+
+    // ==================== ADMIN: HERO SLIDES LIST ====================
+    if (route === '/admin/hero-slides' && method === 'GET') {
+      const slides = await env.DB.prepare(
+        'SELECT * FROM hero_slides ORDER BY sort_order ASC'
+      ).all();
+      return jsonResponse({ slides: slides.results });
+    }
+
+    // ==================== ADMIN: CREATE HERO SLIDE ====================
+    if (route === '/admin/hero-slides' && method === 'POST') {
+      const body = await request.json();
+      const { title, subtitle, cta_text, cta_link, image_desktop, image_mobile, link_type, link_target, badge_text, badge_color, sort_order, is_active } = body;
+
+      if (!title || !image_desktop || !image_mobile) {
+        return jsonResponse({ error: 'Title, image_desktop, dan image_mobile wajib diisi' }, 400);
+      }
+
+      const slideId = 'slide-' + generateId().substring(0, 8);
+
+      await env.DB.prepare(
+        `INSERT INTO hero_slides (id, title, subtitle, cta_text, cta_link, image_desktop, image_mobile, link_type, link_target, badge_text, badge_color, sort_order, is_active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+      ).bind(
+        slideId, title, subtitle || null, cta_text || null, cta_link || null,
+        image_desktop, image_mobile, link_type || 'none', link_target || null,
+        badge_text || null, badge_color || 'primary', sort_order || 0, is_active !== false ? 1 : 0
+      ).run();
+
+      triggerDeploy(env);
+      return jsonResponse({ success: true, slide: { id: slideId }, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: UPDATE HERO SLIDE ====================
+    if (route.startsWith('/admin/hero-slides/') && method === 'PUT') {
+      const slideId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.title !== undefined) { updates.push('title = ?'); values.push(body.title); }
+      if (body.subtitle !== undefined) { updates.push('subtitle = ?'); values.push(body.subtitle); }
+      if (body.cta_text !== undefined) { updates.push('cta_text = ?'); values.push(body.cta_text); }
+      if (body.cta_link !== undefined) { updates.push('cta_link = ?'); values.push(body.cta_link); }
+      if (body.image_desktop !== undefined) { updates.push('image_desktop = ?'); values.push(body.image_desktop); }
+      if (body.image_mobile !== undefined) { updates.push('image_mobile = ?'); values.push(body.image_mobile); }
+      if (body.link_type !== undefined) { updates.push('link_type = ?'); values.push(body.link_type); }
+      if (body.link_target !== undefined) { updates.push('link_target = ?'); values.push(body.link_target); }
+      if (body.badge_text !== undefined) { updates.push('badge_text = ?'); values.push(body.badge_text); }
+      if (body.badge_color !== undefined) { updates.push('badge_color = ?'); values.push(body.badge_color); }
+      if (body.sort_order !== undefined) { updates.push('sort_order = ?'); values.push(body.sort_order); }
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
+
+      if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+
+      updates.push("updated_at = datetime('now')");
+      values.push(slideId);
+
+      await env.DB.prepare(`UPDATE hero_slides SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: DELETE HERO SLIDE ====================
+    if (route.startsWith('/admin/hero-slides/') && method === 'DELETE') {
+      const slideId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM hero_slides WHERE id = ?').bind(slideId).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: REORDER HERO SLIDES ====================
+    if (route === '/admin/hero-slides/reorder' && method === 'POST') {
+      const body = await request.json();
+      const { order } = body; // array of { id, sort_order }
+
+      if (!Array.isArray(order)) {
+        return jsonResponse({ error: 'Order harus berupa array' }, 400);
+      }
+
+      for (const item of order) {
+        await env.DB.prepare(
+          'UPDATE hero_slides SET sort_order = ?, updated_at = datetime(\'now\') WHERE id = ?'
+        ).bind(item.sort_order, item.id).run();
+      }
+
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== PUBLIC: SITE SETTINGS ====================
+    if (route === '/site-settings' && method === 'GET') {
+      try {
+        const keysParam = url.searchParams.get('keys');
+        let query = 'SELECT key, value FROM site_settings';
+        let params: any[] = [];
+
+        if (keysParam) {
+          const keys = keysParam.split(',').map(k => k.trim()).filter(Boolean);
+          if (keys.length > 0) {
+            const placeholders = keys.map(() => '?').join(',');
+            query += ` WHERE key IN (${placeholders})`;
+            params = keys;
+          }
+        }
+
+        const settings = await env.DB.prepare(query).bind(...params).all();
+        const result: Record<string, string> = {};
+        (settings.results || []).forEach((s: any) => {
+          if (s.value && s.value.trim()) result[s.key] = s.value.trim();
+        });
+        return jsonResponse(result);
+      } catch (e) {
+        return jsonResponse({});
+      }
+    }
+
+    // ==================== PUBLIC: CATEGORIES ====================
+    if (route === '/categories' && method === 'GET') {
+      try {
+        const categories = await env.DB.prepare(
+          'SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC'
+        ).all();
+        return jsonResponse({ categories: categories.results });
+      } catch (e) {
+        return jsonResponse({ categories: [] });
+      }
+    }
+
+    // ==================== PUBLIC: TRACKING CONFIG ====================
+    if (route === '/tracking-config' && method === 'GET') {
+      const keys = ['gtm_id', 'meta_pixel_id', 'google_ads_id', 'google_ads_label'];
+      const placeholders = keys.map(() => '?').join(',');
+      const settings = await env.DB.prepare(
+        `SELECT key, value FROM site_settings WHERE key IN (${placeholders})`
+      ).bind(...keys).all();
+
+      const config: any = {};
+      settings.results.forEach((s: any) => {
+        if (s.value && s.value.trim()) config[s.key] = s.value.trim();
+      });
+
+      return jsonResponse(config);
     }
 
     // ==================== ADMIN: SETTINGS ====================
@@ -1688,7 +2250,8 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== ADMIN: UPDATE ORDER STATUS ====================
@@ -1722,7 +2285,43 @@ export async function onRequest(context: any): Promise<Response> {
         }
       }
 
-      return jsonResponse({ success: true });
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: EDIT ORDER ====================
+    if (route.match(/^\/admin\/orders\/[^/]+$/) && !route.endsWith('/status') && method === 'PUT') {
+      const orderId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (body.user_name !== undefined) { updates.push('user_name = ?'); values.push(body.user_name); }
+      if (body.user_email !== undefined) { updates.push('user_email = ?'); values.push(body.user_email); }
+      if (body.user_phone !== undefined) { updates.push('user_phone = ?'); values.push(body.user_phone); }
+      if (body.amount !== undefined) { updates.push('amount = ?'); values.push(body.amount); }
+      if (body.payment_method !== undefined) { updates.push('payment_method = ?'); values.push(body.payment_method); }
+      if (body.status !== undefined) {
+        updates.push('status = ?'); values.push(body.status);
+        if (body.status === 'PAID') { updates.push("paid_at = datetime('now')"); }
+      }
+
+      if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
+
+      updates.push("updated_at = datetime('now')");
+      values.push(orderId);
+
+      await env.DB.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: DELETE ORDER ====================
+    if (route.match(/^\/admin\/orders\/[^/]+$/) && method === 'DELETE') {
+      const orderId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM orders WHERE id = ?').bind(orderId).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     // ==================== AUTH: LOGOUT ====================
@@ -1730,6 +2329,49 @@ export async function onRequest(context: any): Promise<Response> {
       // For JWT, logout is handled client-side by removing token
       // We can add token blacklist here if needed
       return jsonResponse({ success: true, message: 'Logged out successfully' });
+    }
+
+    // ==================== MAGIC LOGIN ====================
+    if (route === '/auth/magic-login' && method === 'GET') {
+      const token = url.searchParams.get('token');
+      if (!token) {
+        return new Response('<html><body>Token tidak valid</body></html>', {
+          status: 400,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+
+      const payload = await verifyJWT(token, env.JWT_SECRET);
+      if (!payload || payload.type !== 'magic_login') {
+        return new Response('<html><body>Token tidak valid atau sudah expired</body></html>', {
+          status: 400,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+
+      // Get user info
+      const user = await env.DB.prepare('SELECT id, email, name, role, is_all_access FROM users WHERE id = ?')
+        .bind(payload.userId).first();
+
+      if (!user) {
+        return new Response('<html><body>User tidak ditemukan</body></html>', {
+          status: 404,
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+
+      // Create a regular JWT for the user
+      const authToken = await createJWT(
+        { userId: user.id, email: user.email, name: user.name, role: user.role || 'user' },
+        env.JWT_SECRET
+      );
+
+      // Redirect to dashboard with token in URL fragment (client-side reads it)
+      const dashboardUrl = `${env.APP_URL}/dashboard#token=${authToken}`;
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': dashboardUrl }
+      });
     }
 
     // ==================== AFFILIATE: STATS ====================
@@ -1741,7 +2383,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       if (!payload) {
         return jsonResponse({ error: 'Invalid token' }, 401);
       }
@@ -1807,7 +2449,7 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET || 'asri-digital-default-jwt-secret-key-2026');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
       if (!payload) {
         return jsonResponse({ error: 'Invalid token' }, 401);
       }
@@ -1869,7 +2511,7 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ valid: false, message: 'Kupon sudah kedaluwarsa' });
       }
 
-      if (coupon.current_uses >= coupon.max_uses) {
+      if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
         return jsonResponse({ valid: false, message: 'Kupon sudah habis' });
       }
 
@@ -1941,8 +2583,160 @@ export async function onRequest(context: any): Promise<Response> {
         });
       } catch (error: any) {
         console.error('Error updating admin:', error);
-        return jsonResponse({ error: error.message || 'Update failed' }, 500);
+        return jsonResponse({ error: 'Terjadi kesalahan pada server. Silakan coba lagi.' }, 500);
       }
+    }
+
+    // ==================== CONTACT FORM ====================
+    if (route === '/contact' && method === 'POST') {
+      const body = await request.json();
+      const { name, email, subject, message } = body;
+
+      if (!name || !email || !message) {
+        return jsonResponse({ error: 'Nama, email, dan pesan wajib diisi' }, 400);
+      }
+
+      const sanitizedName = sanitizeInput(name);
+      const sanitizedEmail = sanitizeInput(email).toLowerCase();
+      const sanitizedSubject = sanitizeInput(subject || 'Pesan dari Kontak');
+      const sanitizedMessage = sanitizeInput(message);
+
+      if (!isValidEmail(sanitizedEmail)) {
+        return jsonResponse({ error: 'Format email tidak valid' }, 400);
+      }
+
+      // Store in DB
+      try {
+        await env.DB.prepare(
+          `INSERT INTO contact_messages (id, name, email, subject, message, is_read, created_at)
+           VALUES (?, ?, ?, ?, ?, 0, datetime('now'))`
+        ).bind(generateId(), sanitizedName, sanitizedEmail, sanitizedSubject, sanitizedMessage).run();
+      } catch (dbErr) {
+        // Table might not exist, create it
+        try {
+          await env.DB.prepare(
+            `CREATE TABLE IF NOT EXISTS contact_messages (
+              id TEXT PRIMARY KEY, name TEXT, email TEXT, subject TEXT, message TEXT, is_read INTEGER DEFAULT 0, created_at TEXT
+            )`
+          ).run();
+          await env.DB.prepare(
+            `INSERT INTO contact_messages (id, name, email, subject, message, is_read, created_at)
+             VALUES (?, ?, ?, ?, ?, 0, datetime('now'))`
+          ).bind(generateId(), sanitizedName, sanitizedEmail, sanitizedSubject, sanitizedMessage).run();
+        } catch (e) {
+          console.error('Contact form DB error:', e);
+        }
+      }
+
+      // Send email notification
+      try {
+        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+            body: JSON.stringify({
+              from: 'Asri Digital <noreply@asridigital.com>',
+              to: 'ahmadasrizalmi@gmail.com',
+              subject: `[Kontak] ${sanitizedSubject} - dari ${sanitizedName}`,
+              html: `<p><strong>Dari:</strong> ${sanitizedName} (${sanitizedEmail})</p><p><strong>Pesan:</strong></p><p>${sanitizedMessage.replace(/\n/g, '<br>')}</p>`
+            })
+          });
+        }
+      } catch (emailErr) {
+        console.error('Contact email error:', emailErr);
+      }
+
+      return jsonResponse({ success: true, message: 'Pesan berhasil dikirim' });
+    }
+
+    // ==================== ADMIN: CONTACT MESSAGES ====================
+    if (route === '/admin/contacts' && method === 'GET') {
+      try {
+        const messages = await env.DB.prepare(
+          'SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 100'
+        ).all();
+        return jsonResponse({ messages: messages.results || [] });
+      } catch (e) {
+        return jsonResponse({ messages: [] });
+      }
+    }
+
+    if (route.startsWith('/admin/contacts/') && method === 'PUT') {
+      const msgId = route.split('/')[3];
+      await env.DB.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').bind(msgId).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    if (route.startsWith('/admin/contacts/') && method === 'DELETE') {
+      const msgId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM contact_messages WHERE id = ?').bind(msgId).run();
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: AFFILIATES CRUD ====================
+    if (route === '/admin/affiliates' && method === 'GET') {
+      try {
+        const affiliates = await env.DB.prepare(
+          `SELECT u.id, u.email, u.name, u.created_at,
+            (SELECT COUNT(*) FROM affiliate_transactions WHERE referrer_user_id = u.id) as total_transactions,
+            (SELECT COALESCE(SUM(commission_amount), 0) FROM affiliate_transactions WHERE referrer_user_id = u.id) as total_commission,
+            (SELECT COALESCE(SUM(commission_amount), 0) FROM affiliate_transactions WHERE referrer_user_id = u.id AND status = 'PAID') as paid_commission
+           FROM users u WHERE u.role = 'affiliate' OR u.id IN (SELECT DISTINCT referrer_user_id FROM affiliate_transactions)
+           ORDER BY total_commission DESC`
+        ).all();
+
+        const stats = await env.DB.prepare(
+          `SELECT COUNT(DISTINCT referrer_user_id) as total_affiliates,
+            COALESCE(SUM(commission_amount), 0) as total_commission,
+            COUNT(*) as total_transactions
+           FROM affiliate_transactions`
+        ).first();
+
+        return jsonResponse({ affiliates: affiliates.results || [], stats: stats || { total_affiliates: 0, total_commission: 0, total_transactions: 0 } });
+      } catch (e) {
+        console.error('Affiliates error:', e);
+        return jsonResponse({ affiliates: [], stats: { total_affiliates: 0, total_commission: 0, total_transactions: 0 } });
+      }
+    }
+
+    if (route === '/admin/affiliates' && method === 'POST') {
+      const body = await request.json();
+      const { user_id, commission_percent } = body;
+
+      if (!user_id) {
+        return jsonResponse({ error: 'User ID wajib diisi' }, 400);
+      }
+
+      // Set user role to affiliate
+      await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?')
+        .bind('affiliate', user_id).run();
+
+      // Update commission percent in settings if provided
+      if (commission_percent) {
+        await env.DB.prepare(
+          `INSERT INTO site_settings (key, value, updated_at) VALUES ('commission_percent', ?, datetime('now'))
+           ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')`
+        ).bind(String(commission_percent), String(commission_percent)).run();
+      }
+
+      return jsonResponse({ success: true });
+    }
+
+    if (route.startsWith('/admin/affiliates/') && method === 'DELETE') {
+      const userId = route.split('/')[3];
+      await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?')
+        .bind('user', userId).run();
+      return jsonResponse({ success: true });
+    }
+
+    // ==================== ADMIN: USERS LIST (for affiliate dropdown) ====================
+    if (route === '/admin/users' && method === 'GET') {
+      const users = await env.DB.prepare(
+        'SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC LIMIT 100'
+      ).all();
+      return jsonResponse({ users: users.results || [] });
     }
 
     // ==================== ADMIN: SUBSCRIBERS LIST ====================
@@ -1952,141 +2746,36 @@ export async function onRequest(context: any): Promise<Response> {
       const status = url.searchParams.get('status') || 'all';
       const search = url.searchParams.get('search') || '';
       const offset = (page - 1) * limit;
-
       let whereClause = '1=1';
       const bindings: any[] = [];
-
-      if (status === 'active') {
-        whereClause += ' AND is_active = 1';
-      } else if (status === 'unsubscribed') {
-        whereClause += ' AND is_active = 0';
-      }
-
-      if (search) {
-        whereClause += ' AND (email LIKE ? OR name LIKE ? OR whatsapp LIKE ?)';
-        bindings.push(`%${search}%`, `%${search}%`, `%${search}%`);
-      }
-
-      const countResult = await env.DB.prepare(
-        `SELECT COUNT(*) as total FROM subscribers WHERE ${whereClause}`
-      ).bind(...bindings).first();
-
-      const subscribers = await env.DB.prepare(
-        `SELECT * FROM subscribers WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`
-      ).bind(...bindings, limit, offset).all();
-
-      return jsonResponse({
-        subscribers: subscribers.results,
-        total: countResult?.total || 0,
-        page,
-        limit,
-        totalPages: Math.ceil((countResult?.total || 0) / limit)
-      });
+      if (status === 'active') whereClause += ' AND is_active = 1';
+      else if (status === 'unsubscribed') whereClause += ' AND is_active = 0';
+      if (search) { whereClause += ' AND (email LIKE ? OR name LIKE ? OR whatsapp LIKE ?)'; bindings.push(`%${search}%`, `%${search}%`, `%${search}%`); }
+      const countResult = await env.DB.prepare(`SELECT COUNT(*) as total FROM subscribers WHERE ${whereClause}`).bind(...bindings).first();
+      const subscribers = await env.DB.prepare(`SELECT * FROM subscribers WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(...bindings, limit, offset).all();
+      return jsonResponse({ subscribers: subscribers.results, total: countResult?.total || 0, page, limit, totalPages: Math.ceil((countResult?.total || 0) / limit) });
     }
 
     // ==================== ADMIN: UPDATE SUBSCRIBER ====================
-    if (route.startsWith('/admin/subscribers/') && method === 'PATCH') {
+    if (route.startsWith('/admin/subscribers/') && route.split('/').length === 4 && method === 'PATCH') {
       const subscriberId = route.split('/')[3];
       const body = await request.json();
-      const { is_active, email_notifications, whatsapp_notifications } = body;
-
       const updates: string[] = [];
       const vals: any[] = [];
-
-      if (is_active !== undefined) {
-        updates.push('is_active = ?');
-        vals.push(is_active);
-        if (!is_active) {
-          updates.push('unsubscribed_at = datetime(\'now\')');
-        } else {
-          updates.push('unsubscribed_at = NULL');
-        }
-      }
-      if (email_notifications !== undefined) {
-        updates.push('email_notifications = ?');
-        vals.push(email_notifications);
-      }
-      if (whatsapp_notifications !== undefined) {
-        updates.push('whatsapp_notifications = ?');
-        vals.push(whatsapp_notifications);
-      }
-
-      updates.push('updated_at = datetime(\'now\')');
-      vals.push(subscriberId);
-
-      await env.DB.prepare(
-        `UPDATE subscribers SET ${updates.join(', ')} WHERE id = ?`
-      ).bind(...vals).run();
-
+      if (body.is_active !== undefined) { updates.push('is_active = ?'); vals.push(body.is_active); updates.push(body.is_active ? 'unsubscribed_at = NULL' : "unsubscribed_at = datetime('now')"); }
+      if (body.email_notifications !== undefined) { updates.push('email_notifications = ?'); vals.push(body.email_notifications); }
+      if (body.whatsapp_notifications !== undefined) { updates.push('whatsapp_notifications = ?'); vals.push(body.whatsapp_notifications); }
+      updates.push("updated_at = datetime('now')"); vals.push(subscriberId);
+      await env.DB.prepare(`UPDATE subscribers SET ${updates.join(', ')} WHERE id = ?`).bind(...vals).run();
       return jsonResponse({ success: true });
     }
 
     // ==================== ADMIN: SUBSCRIBER STATS ====================
     if (route === '/admin/subscribers/stats' && method === 'GET') {
       const total = await env.DB.prepare('SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1').first();
-      const thisWeek = await env.DB.prepare(
-        "SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1 AND created_at >= datetime('now', '-7 days')"
-      ).first();
-      const thisMonth = await env.DB.prepare(
-        "SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1 AND created_at >= datetime('now', '-30 days')"
-      ).first();
-
-      return jsonResponse({
-        totalActive: total?.count || 0,
-        newThisWeek: thisWeek?.count || 0,
-        newThisMonth: thisMonth?.count || 0
-      });
-    }
-
-    // ==================== PUBLIC: SITE-SETTINGS ====================
-    if (route === '/site-settings' && method === 'GET') {
-      try {
-        const keysParam = url.searchParams.get('keys');
-        let query = 'SELECT key, value FROM site_settings';
-        let params: any[] = [];
-
-        if (keysParam) {
-          const keys = keysParam.split(',').map(k => k.trim()).filter(Boolean);
-          if (keys.length > 0) {
-            const placeholders = keys.map(() => '?').join(',');
-            query += ` WHERE key IN (${placeholders})`;
-            params = keys;
-          }
-        }
-
-        const settings = await env.DB.prepare(query).bind(...params).all();
-        const result: Record<string, string> = {};
-        (settings.results || []).forEach((s: any) => {
-          if (s.value && s.value.trim()) result[s.key] = s.value.trim();
-        });
-        return jsonResponse(result);
-      } catch (e) {
-        return jsonResponse({});
-      }
-    }
-
-    // ==================== PUBLIC: CATEGORIES ====================
-    if (route === '/categories' && method === 'GET') {
-      try {
-        const categories = await env.DB.prepare(
-          'SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC'
-        ).all();
-        return jsonResponse({ categories: categories.results });
-      } catch (e) {
-        return jsonResponse({ categories: [] });
-      }
-    }
-
-    // ==================== PUBLIC: HERO-SLIDES ====================
-    if (route === '/hero-slides' && method === 'GET') {
-      try {
-        const slides = await env.DB.prepare(
-          'SELECT * FROM hero_slides WHERE is_active = 1 ORDER BY sort_order ASC'
-        ).all();
-        return jsonResponse({ slides: slides.results });
-      } catch (e) {
-        return jsonResponse({ slides: [] });
-      }
+      const thisWeek = await env.DB.prepare("SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1 AND created_at >= datetime('now', '-7 days')").first();
+      const thisMonth = await env.DB.prepare("SELECT COUNT(*) as count FROM subscribers WHERE is_active = 1 AND created_at >= datetime('now', '-30 days')").first();
+      return jsonResponse({ totalActive: total?.count || 0, newThisWeek: thisWeek?.count || 0, newThisMonth: thisMonth?.count || 0 });
     }
 
     // ==================== DEFAULT 404 ====================
@@ -2095,18 +2784,21 @@ export async function onRequest(context: any): Promise<Response> {
   } catch (error: any) {
     console.error('API Error:', error);
     console.error('API Error stack:', error.stack);
-    return jsonResponse({ error: error.message || 'Internal server error' }, 500);
+    return jsonResponse({ error: 'Terjadi kesalahan pada server. Silakan coba lagi.' }, 500);
   }
 }
 
 // Email helper function
-async function sendOrderConfirmationEmail(env: Env, order: any) {
-  if (!env.RESEND_API_KEY || env.RESEND_API_KEY.startsWith('re_your_')) {
+async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: string, userPassword?: string) {
+  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) {
     console.log('Resend API key not configured, skipping email');
     return;
   }
 
   const isAllAccess = order.product_id === 'ALL-ACCESS';
+  const dashboardUrl = magicToken
+    ? `${env.APP_URL}/api/auth/magic-login?token=${magicToken}`
+    : `${env.APP_URL}/dashboard`;
   const subject = isAllAccess
     ? '🏆 Selamat! All-Access Pass Anda Aktif'
     : `🎉 Pembayaran Berhasil - ${order.product_title}`;
@@ -2164,10 +2856,22 @@ async function sendOrderConfirmationEmail(env: Env, order: any) {
           
           <!-- CTA Button -->
           <div style="text-align: center; margin: 32px 0;">
-            <a href="${env.APP_URL}/dashboard" style="display: inline-block; background-color: #5C7A36; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #5C7A36; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
               Buka Dashboard →
             </a>
           </div>
+          
+          ${userPassword ? `
+          <!-- Login Credentials -->
+          <div style="background-color: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin: 16px 0;">
+            <p style="color: #92400e; font-size: 14px; font-weight: 600; margin: 0 0 8px;">🔐 Info Login Anda</p>
+            <p style="color: #78350f; font-size: 13px; margin: 0; line-height: 1.6;">
+              <strong>Email:</strong> ${order.user_email}<br/>
+              <strong>Password:</strong> <code style="background: #fef3c7; padding: 2px 6px; border-radius: 4px;">${userPassword}</code>
+            </p>
+            <p style="color: #92400e; font-size: 12px; margin: 8px 0 0;">Simpan info ini atau ganti password Anda di Dashboard.</p>
+          </div>
+          ` : ''}
           
           <p style="color: #737373; font-size: 14px; text-align: center;">
             Jika ada pertanyaan, balas email ini atau hubungi kami via WhatsApp.
@@ -2189,7 +2893,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.RESEND_API_KEY}`
+      'Authorization': `Bearer ${env.RESEND_KEY}`
     },
     body: JSON.stringify({
       from: 'Asri Digital <noreply@asridigital.com>',
@@ -2201,104 +2905,39 @@ async function sendOrderConfirmationEmail(env: Env, order: any) {
 
   const result = await response.json() as any;
 
-  // Log email
-  await env.DB.prepare(
-    `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
-     VALUES (?, ?, 'ORDER_CONFIRMATION', 'SENT', datetime('now'))`
-  )
-    .bind(order.user_email, subject)
-    .run();
+  // Log email (best effort) — check response status
+  const emailStatus = response.ok ? 'SENT' : 'FAILED';
+  const errorMsg = response.ok ? null : (result?.message || result?.error || `HTTP ${response.status}`);
+  
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_logs (to_email, subject, type, status, error_message, sent_at)
+       VALUES (?, ?, 'ORDER_CONFIRMATION', ?, ?, datetime('now'))`
+    )
+      .bind(order.user_email, subject, emailStatus, errorMsg)
+      .run();
+  } catch (logErr) {
+    console.error('Email log insert failed:', logErr);
+  }
+
+  if (!response.ok) {
+    console.error(`Email send failed: ${response.status} - ${JSON.stringify(result)}`);
+  }
 
   return result;
 }
 
 // Email helper function for free products
 async function sendFreeProductEmail(env: Env, order: any) {
-  if (!env.RESEND_API_KEY || env.RESEND_API_KEY.startsWith('re_your_')) {
-    console.log('Resend API key not configured, skipping email');
-    return;
-  }
-
+  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) return;
   const subject = `🎁 Produk Gratis Anda - ${order.product_title}`;
   const downloadLink = order.download_url || `${env.APP_URL}/dashboard`;
-
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background-color: #f5f5f5;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-        <!-- Header -->
-        <div style="background: linear-gradient(135deg, #10b981 0%, #f59e0b 100%); padding: 32px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🎁 Produk Gratis Anda!</h1>
-          <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Asri Digital</p>
-        </div>
-
-        <!-- Content -->
-        <div style="padding: 32px;">
-          <p style="color: #171717; font-size: 16px; line-height: 1.6;">
-            Halo <strong>${order.user_name}</strong>,
-          </p>
-          <p style="color: #525252; font-size: 15px; line-height: 1.6;">
-            Terima kasih telah mengunduh produk gratis kami! Berikut detailnya:
-          </p>
-
-          <!-- Product Info -->
-          <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin: 24px 0;">
-            <h3 style="color: #10b981; margin: 0 0 8px 0; font-size: 18px;">${order.product_title}</h3>
-            <p style="color: #525252; margin: 0; font-size: 14px;">Order ID: ${order.id}</p>
-          </div>
-
-          <!-- CTA Button -->
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="${downloadLink}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #f59e0b 100%); color: #ffffff; padding: 14px 32px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px;">
-              Download Sekarang →
-            </a>
-          </div>
-
-          <p style="color: #737373; font-size: 14px; text-align: center; line-height: 1.6;">
-            Anda akan mendapatkan notifikasi saat kami merilis produk baru.<br>
-            Pastikan email ini tidak masuk spam! 📬
-          </p>
-        </div>
-
-        <!-- Footer -->
-        <div style="background-color: #f5f5f5; padding: 24px; text-align: center; border-top: 1px solid #e5e5e5;">
-          <p style="color: #a3a3a3; font-size: 12px; margin: 0;">
-            © 2026 Asri Digital. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;font-family:sans-serif;background:#f5f5f5;"><div style="max-width:600px;margin:0 auto;background:#fff;"><div style="background:linear-gradient(135deg,#10b981,#f59e0b);padding:32px;text-align:center;"><h1 style="color:#fff;margin:0;font-size:24px;">🎁 Produk Gratis Anda!</h1></div><div style="padding:32px;"><p style="color:#171717;font-size:16px;">Halo <strong>${order.user_name}</strong>,</p><p style="color:#525252;">Terima kasih telah mengunduh produk gratis kami!</p><div style="background:#f0fdf4;border-left:4px solid #10b981;border-radius:8px;padding:20px;margin:24px 0;"><h3 style="color:#10b981;margin:0 0 8px;">${order.product_title}</h3><p style="color:#525252;margin:0;font-size:14px;">Order ID: ${order.id}</p></div><div style="text-align:center;margin:32px 0;"><a href="${downloadLink}" style="display:inline-block;background:linear-gradient(135deg,#10b981,#f59e0b);color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:600;">Download Sekarang →</a></div><p style="color:#737373;font-size:14px;text-align:center;">Anda akan mendapat notifikasi saat produk baru dirilis. 📬</p></div><div style="background:#f5f5f5;padding:24px;text-align:center;border-top:1px solid #e5e5e5;"><p style="color:#a3a3a3;font-size:12px;margin:0;">© 2026 Asri Digital</p></div></div></body></html>`;
   const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.RESEND_API_KEY}`
-    },
-    body: JSON.stringify({
-      from: 'Asri Digital <noreply@asridigital.com>',
-      to: order.user_email,
-      subject,
-      html
-    })
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+    body: JSON.stringify({ from: 'Asri Digital <noreply@asridigital.com>', to: order.user_email, subject, html })
   });
-
   const result = await response.json() as any;
-
-  // Log email
-  await env.DB.prepare(
-    `INSERT INTO email_logs (to_email, subject, type, status, sent_at)
-     VALUES (?, ?, 'FREE_PRODUCT', 'SENT', datetime('now'))`
-  )
-    .bind(order.user_email, subject)
-    .run();
-
+  try { await env.DB.prepare(`INSERT INTO email_logs (to_email, subject, type, status, sent_at) VALUES (?, ?, 'FREE_PRODUCT', 'SENT', datetime('now'))`).bind(order.user_email, subject).run(); } catch(e) {}
   return result;
 }

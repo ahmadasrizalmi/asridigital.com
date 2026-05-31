@@ -5,16 +5,11 @@ import Icon from '../../components/ui/Icon.astro';
 
 <BaseLayout title="Kelola Affiliate - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
+    <aside id="admin-sidebar" class="w-64 bg-surface border-r border-border shrink-0 fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
-          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <Icon name="sparkles" size={18} class="text-white" />
-          </div>
-          <div>
-            <span class="font-bold text-text-primary block">Asri Digital</span>
-            <span class="text-xs text-text-muted">Admin Panel</span>
-          </div>
+          <img src="https://res.cloudinary.com/daj8fzinf/image/upload/w_40/q_auto/f_auto/v1779951905/fav_icon_asri_digital_rktguz.png" alt="Asri Digital" class="h-8 w-auto rounded-lg" />
+          <span class="text-xs text-text-muted font-medium">Admin</span>
         </a>
         
         <nav class="space-y-1">
@@ -26,6 +21,8 @@ import Icon from '../../components/ui/Icon.astro';
             { icon: 'link', label: 'Affiliate', href: '/admin/affiliates', active: true },
             { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
             { icon: 'users', label: 'Subscribers', href: '/admin/subscribers' },
+            { icon: 'image', label: 'Hero Slides', href: '/admin/hero-slides' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
             { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
           ].map((link) => (
             <a
@@ -47,12 +44,17 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full');this.classList.add('hidden')"></div>
     
     <main class="flex-1 bg-background">
-      <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
+      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
@@ -68,7 +70,7 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
       </header>
       
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div class="card p-4">
@@ -78,7 +80,7 @@ import Icon from '../../components/ui/Icon.astro';
               </div>
               <div>
                 <p class="text-sm text-text-muted">Total Affiliate</p>
-                <p id="stat-affiliates" class="text-xl font-bold text-text-primary">3</p>
+                <p id="stat-affiliates" class="text-xl font-bold text-text-primary">-</p>
               </div>
             </div>
           </div>
@@ -89,7 +91,7 @@ import Icon from '../../components/ui/Icon.astro';
               </div>
               <div>
                 <p class="text-sm text-text-muted">Total Komisi</p>
-                <p id="stat-commission" class="text-xl font-bold text-text-primary">Rp 0</p>
+                <p id="stat-commission" class="text-xl font-bold text-text-primary">-</p>
               </div>
             </div>
           </div>
@@ -99,8 +101,8 @@ import Icon from '../../components/ui/Icon.astro';
                 <Icon name="link" size={20} class="text-amber-600" />
               </div>
               <div>
-                <p class="text-sm text-text-muted">Total Referral</p>
-                <p id="stat-referrals" class="text-xl font-bold text-text-primary">12</p>
+                <p class="text-sm text-text-muted">Total Transaksi</p>
+                <p id="stat-transactions" class="text-xl font-bold text-text-primary">-</p>
               </div>
             </div>
           </div>
@@ -122,82 +124,7 @@ import Icon from '../../components/ui/Icon.astro';
                 </tr>
               </thead>
               <tbody id="affiliates-table" class="divide-y divide-border">
-                <!-- Mock data - replace with API call -->
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div>
-                      <p class="font-medium text-text-primary">Ahmad Rizalmi</p>
-                      <p class="text-xs text-text-muted">ahmad@example.com</p>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">AHMAD20</span>
-                  </td>
-                  <td class="px-6 py-4 font-medium text-text-primary">20%</td>
-                  <td class="px-6 py-4 text-text-main">5</td>
-                  <td class="px-6 py-4 font-medium text-green-600">Rp 149.500</td>
-                  <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div>
-                      <p class="font-medium text-text-primary">Siti Nurhaliza</p>
-                      <p class="text-xs text-text-muted">siti@example.com</p>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">SITI15</span>
-                  </td>
-                  <td class="px-6 py-4 font-medium text-text-primary">15%</td>
-                  <td class="px-6 py-4 text-text-main">3</td>
-                  <td class="px-6 py-4 font-medium text-green-600">Rp 59.700</td>
-                  <td class="px-6 py-4"><span class="badge-success">Aktif</span></td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div>
-                      <p class="font-medium text-text-primary">Budi Santoso</p>
-                      <p class="text-xs text-text-muted">budi@example.com</p>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">BUDI10</span>
-                  </td>
-                  <td class="px-6 py-4 font-medium text-text-primary">10%</td>
-                  <td class="px-6 py-4 text-text-main">4</td>
-                  <td class="px-6 py-4 font-medium text-green-600">Rp 39.600</td>
-                  <td class="px-6 py-4"><span class="badge-warning">Pending</span></td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="eye" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colspan="7" class="px-6 py-12 text-center text-text-muted">Memuat data affiliate...</td></tr>
               </tbody>
             </table>
           </div>
@@ -222,20 +149,14 @@ import Icon from '../../components/ui/Icon.astro';
         <form id="affiliate-form" class="p-6 space-y-4">
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Pilih User</label>
-            <select class="input" id="affiliate-user">
-              <option value="">Pilih user...</option>
-              <!-- Will be populated from API -->
+            <select class="input" id="affiliate-user" required>
+              <option value="">Memuat daftar user...</option>
             </select>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-text-main mb-2">Kode Affiliate</label>
-            <input type="text" class="input" id="affiliate-code" placeholder="Contoh: AHMAD20" />
-          </div>
-          
-          <div>
             <label class="block text-sm font-medium text-text-main mb-2">Komisi (%)</label>
-            <input type="number" class="input" id="affiliate-commission" value="15" min="5" max="50" />
+            <input type="number" class="input" id="affiliate-commission" value="15" min="1" max="100" required />
           </div>
           
           <div class="flex justify-end gap-3 pt-4 border-t border-border">
@@ -246,20 +167,287 @@ import Icon from '../../components/ui/Icon.astro';
       </div>
     </div>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-md w-full p-6">
+        <h2 class="text-xl font-bold text-text-primary mb-2">Hapus Affiliate?</h2>
+        <p class="text-text-secondary mb-1">Anda yakin ingin menghapus affiliate <strong id="delete-affiliate-name"></strong>?</p>
+        <p class="text-sm text-text-muted mb-6">Tindakan ini tidak dapat dibatalkan.</p>
+        <div class="flex justify-end gap-3">
+          <button onclick="closeDeleteModal()" class="btn-tertiary">Batal</button>
+          <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('admin-sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) overlay.classList.toggle('hidden');
+      });
+    }
+  });
+</script>
+
 </BaseLayout>
 
+<script is:inline src="/js/admin-utils.js?v=2"></script>
 <script>
+  const API_BASE = '/api';
+
+  function getAdminToken(): string | null {
+    return localStorage.getItem('admin_token');
+  }
+
+  function authHeaders(): Record<string, string> {
+    const token = getAdminToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  }
+
+  // --- Modal management ---
   function openModal() {
     document.getElementById('affiliate-modal')!.classList.remove('hidden');
+    loadUsers();
   }
+  (window as any).openModal = openModal;
 
   function closeModal() {
     document.getElementById('affiliate-modal')!.classList.add('hidden');
+    const form = document.getElementById('affiliate-form') as HTMLFormElement;
+    form?.reset();
+    (document.getElementById('affiliate-commission') as HTMLInputElement)!.value = '15';
+  }
+  (window as any).closeModal = closeModal;
+
+  function openDeleteModal(userId: number, name: string) {
+    document.getElementById('delete-affiliate-name')!.textContent = name;
+    document.getElementById('delete-modal')!.classList.remove('hidden');
+    const confirmBtn = document.getElementById('confirm-delete-btn')!;
+    const newBtn = confirmBtn.cloneNode(true) as HTMLElement;
+    newBtn.addEventListener('click', () => deleteAffiliate(userId));
+    confirmBtn.parentNode!.replaceChild(newBtn, confirmBtn);
+  }
+  (window as any).openDeleteModal = openDeleteModal;
+
+  function closeDeleteModal() {
+    document.getElementById('delete-modal')!.classList.add('hidden');
+  }
+  (window as any).closeDeleteModal = closeDeleteModal;
+
+  // --- Copy referral code ---
+  async function copyReferralCode(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = code;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    showToast(`Kode referral "${code}" berhasil disalin!`);
+  }
+  (window as any).copyReferralCode = copyReferralCode;
+
+  let allAffiliates: any[] = [];
+
+  // --- Load affiliates from API ---
+  async function loadAffiliates() {
+    const table = document.getElementById('affiliates-table')!;
+    try {
+      const res = await adminFetch(`${API_BASE}/admin/affiliates`);
+      if (res.status === 401 || res.status === 403) return;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as any;
+
+      allAffiliates = data.affiliates || [];
+      const stats = data.stats || {};
+
+      // Update stats from API response
+      const statAffEl = document.getElementById('stat-affiliates');
+      const statCommEl = document.getElementById('stat-commission');
+      const statTransEl = document.getElementById('stat-transactions');
+
+      if (statAffEl) statAffEl.textContent = (stats.total_affiliates ?? allAffiliates.length).toString();
+      if (statCommEl) statCommEl.textContent = formatIDR(stats.total_commission ?? 0);
+      if (statTransEl) statTransEl.textContent = (stats.total_transactions ?? 0).toString();
+
+      renderAffiliateTable();
+    } catch (error) {
+      table.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Gagal memuat data affiliate.</td></tr>`;
+    }
   }
 
+  // --- Render affiliate table ---
+  function renderAffiliateTable() {
+    const table = document.getElementById('affiliates-table')!;
+
+    if (allAffiliates.length === 0) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="7" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center gap-2">
+              <p class="text-text-muted text-sm">Belum ada affiliate terdaftar.</p>
+              <p class="text-text-muted text-xs">Klik "Tambah Affiliate" untuk menambahkan affiliate baru.</p>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    table.innerHTML = allAffiliates.map((a: any) => {
+      const name = a.user_name || a.name || '-';
+      const email = a.user_email || a.email || '-';
+      const code = a.referral_code || a.code || '-';
+      const commission = a.commission_percent || a.commission || 0;
+      const referrals = a.total_referrals ?? a.totalReferrals ?? 0;
+      const totalComm = a.total_commission ?? a.totalCommission ?? 0;
+      const userId = a.user_id || a.id;
+      const isActive = a.is_active !== false;
+      const badge = isActive
+        ? '<span class="badge-success">Aktif</span>'
+        : '<span class="badge-warning">Nonaktif</span>';
+
+      const nameEsc = name.replace(/'/g, "\\'");
+
+      return `
+        <tr class="hover:bg-background/50">
+          <td class="px-6 py-4">
+            <div>
+              <p class="font-medium text-text-primary">${name}</p>
+              <p class="text-xs text-text-muted">${email}</p>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="font-mono text-sm bg-primary/10 text-primary px-2 py-1 rounded">${code}</span>
+          </td>
+          <td class="px-6 py-4 font-medium text-text-primary">${commission}%</td>
+          <td class="px-6 py-4 text-text-main">${referrals}</td>
+          <td class="px-6 py-4 font-medium text-green-600">${formatIDR(totalComm)}</td>
+          <td class="px-6 py-4">${badge}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+              <button onclick="copyReferralCode('${code}')" class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Salin kode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+              <button onclick="openDeleteModal(${userId}, '${nameEsc}')" class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-red-600" title="Hapus affiliate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // --- Load users for dropdown ---
+  async function loadUsers() {
+    const select = document.getElementById('affiliate-user') as HTMLSelectElement;
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Memuat daftar user...</option>';
+
+    try {
+      const res = await adminFetch(`${API_BASE}/admin/users`);
+      if (res.status === 401 || res.status === 403) return;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as any;
+      const users: any[] = data.users || [];
+
+      // Filter out users who are already affiliates
+      const affiliateUserIds = new Set(allAffiliates.map((a: any) => a.user_id));
+      const availableUsers = users.filter((u: any) => !affiliateUserIds.has(u.id));
+
+      select.innerHTML = '<option value="">Pilih user...</option>';
+      availableUsers.forEach((user: any) => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `${user.name || user.email || 'User #' + user.id} (${user.email || '-'})`;
+        select.appendChild(option);
+      });
+
+      if (availableUsers.length === 0) {
+        select.innerHTML = '<option value="">Semua user sudah menjadi affiliate</option>';
+      }
+    } catch (error) {
+      select.innerHTML = '<option value="">Gagal memuat daftar user</option>';
+    }
+  }
+
+  // --- Delete affiliate ---
+  async function deleteAffiliate(userId: number) {
+    try {
+      const res = await adminFetch(`${API_BASE}/admin/affiliates/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as any;
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      closeDeleteModal();
+      showToast('Affiliate berhasil dihapus!');
+      loadAffiliates();
+    } catch (error: any) {
+      showToast(error.message || 'Gagal menghapus affiliate.', 'error');
+    }
+  }
+
+  // --- Form submit handler ---
   document.getElementById('affiliate-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    alert('Fitur tambah affiliate akan segera tersedia.');
-    closeModal();
+
+    const userSelect = document.getElementById('affiliate-user') as HTMLSelectElement;
+    const commissionInput = document.getElementById('affiliate-commission') as HTMLInputElement;
+
+    const userId = userSelect?.value;
+    const commission = commissionInput?.value;
+
+    if (!userId) {
+      showToast('Harap pilih user.', 'error');
+      return;
+    }
+    try {
+      const res = await adminFetch(`${API_BASE}/admin/affiliates`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: Number(userId),
+          commission_percent: Number(commission)
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as any;
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      showToast('Affiliate berhasil ditambahkan!');
+      closeModal();
+      loadAffiliates();
+    } catch (error: any) {
+      showToast(error.message || 'Gagal menambahkan affiliate.', 'error');
+    }
   });
+
+  // --- Init ---
+  const existingToken = getAdminToken();
+  if (existingToken) {
+    loadAffiliates();
+  } else {
+    window.location.href = '/admin/login';
+  }
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

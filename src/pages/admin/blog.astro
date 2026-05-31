@@ -5,16 +5,11 @@ import Icon from '../../components/ui/Icon.astro';
 
 <BaseLayout title="Kelola Blog - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
+    <aside id="admin-sidebar" class="w-64 bg-surface border-r border-border shrink-0 fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
-          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <Icon name="sparkles" size={18} class="text-white" />
-          </div>
-          <div>
-            <span class="font-bold text-text-primary block">Asri Digital</span>
-            <span class="text-xs text-text-muted">Admin Panel</span>
-          </div>
+          <img src="https://res.cloudinary.com/daj8fzinf/image/upload/w_40/q_auto/f_auto/v1779951905/fav_icon_asri_digital_rktguz.png" alt="Asri Digital" class="h-8 w-auto rounded-lg" />
+          <span class="text-xs text-text-muted font-medium">Admin</span>
         </a>
         
         <nav class="space-y-1">
@@ -26,6 +21,8 @@ import Icon from '../../components/ui/Icon.astro';
             { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
 { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
             { icon: 'users', label: 'Subscribers', href: '/admin/subscribers' },
+            { icon: 'image', label: 'Hero Slides', href: '/admin/hero-slides' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
             { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
           ].map((link) => (
             <a
@@ -47,12 +44,17 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full');this.classList.add('hidden')"></div>
     
     <main class="flex-1 bg-background">
-      <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
+      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
@@ -61,14 +63,17 @@ import Icon from '../../components/ui/Icon.astro';
             <h1 class="text-xl font-bold text-text-primary">Kelola Blog</h1>
           </div>
           
-          <button onclick="openModal()" class="btn-primary">
-            <Icon name="plus" size={18} />
-            Tulis Artikel
-          </button>
+          <div class="flex items-center gap-3">
+            <input type="text" id="blog-search" class="input w-48 sm:w-64" placeholder="Cari artikel..." />
+            <button onclick="openModal()" class="btn-primary">
+              <Icon name="plus" size={18} />
+              Tulis Artikel
+            </button>
+          </div>
         </div>
       </header>
       
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
         <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
@@ -83,95 +88,17 @@ import Icon from '../../components/ui/Icon.astro';
                 </tr>
               </thead>
               <tbody id="blog-table" class="divide-y divide-border">
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <Icon name="file-text" size={16} class="text-primary" />
-                      </div>
-                      <div>
-                        <p class="font-medium text-text-primary">5 Cara Custom GPT Meningkatkan Produktivitas Bisnis Anda</p>
-                        <p class="text-xs text-text-muted">custom-gpt-untuk-bisnis</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Tips & Trik</span>
-                  </td>
-                  <td class="px-6 py-4 text-text-main">Admin</td>
-                  <td class="px-6 py-4"><span class="badge-success">Published</span></td>
-                  <td class="px-6 py-4 text-sm text-text-muted">14 Mei 2026</td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                        <Icon name="trash-2" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Icon name="file-text" size={16} class="text-blue-500" />
-                      </div>
-                      <div>
-                        <p class="font-medium text-text-primary">Panduan Lengkap Menggunakan ChatGPT untuk Pemula</p>
-                        <p class="text-xs text-text-muted">cara-menggunakan-chatgpt</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">Tutorial</span>
-                  </td>
-                  <td class="px-6 py-4 text-text-main">Admin</td>
-                  <td class="px-6 py-4"><span class="badge-success">Published</span></td>
-                  <td class="px-6 py-4 text-sm text-text-muted">12 Mei 2026</td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                        <Icon name="trash-2" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="hover:bg-background/50">
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <Icon name="file-text" size={16} class="text-amber-500" />
-                      </div>
-                      <div>
-                        <p class="font-medium text-text-primary">Case Study: Membuat Konten YouTube 10x Lebih Cepat</p>
-                        <p class="text-xs text-text-muted">case-study-konten-youtube</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="px-2 py-1 bg-amber-100 text-amber-600 text-xs rounded-full">Studi Kasus</span>
-                  </td>
-                  <td class="px-6 py-4 text-text-main">Admin</td>
-                  <td class="px-6 py-4"><span class="badge-warning">Draft</span></td>
-                  <td class="px-6 py-4 text-sm text-text-muted">10 Mei 2026</td>
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                      <button class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                        <Icon name="edit" size={16} />
-                      </button>
-                      <button class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                        <Icon name="trash-2" size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Loading...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        <div id="blog-pagination" class="flex items-center justify-between px-4 py-3 border-t border-border">
+          <span id="blog-page-info" class="text-sm text-text-muted"></span>
+          <div class="flex items-center gap-2">
+            <button id="blog-prev" class="btn-tertiary text-sm" onclick="blogPrevPage()">← Prev</button>
+            <span id="blog-page-num" class="text-sm text-text-secondary px-2"></span>
+            <button id="blog-next" class="btn-tertiary text-sm" onclick="blogNextPage()">Next →</button>
           </div>
         </div>
       </div>
@@ -192,8 +119,8 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
         
         <form id="blog-form" class="p-6 space-y-4">
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
               <label class="block text-sm font-medium text-text-main mb-2">Judul Artikel *</label>
               <input type="text" class="input text-lg" id="blog-title" required placeholder="Judul artikel Anda..." />
             </div>
@@ -203,7 +130,7 @@ import Icon from '../../components/ui/Icon.astro';
             </div>
           </div>
           
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Kategori</label>
               <select class="input" id="blog-category">
@@ -230,45 +157,311 @@ import Icon from '../../components/ui/Icon.astro';
             <label class="block text-sm font-medium text-text-main mb-2">Excerpt</label>
             <textarea class="input" id="blog-excerpt" rows="2" placeholder="Ringkasan singkat artikel..."></textarea>
           </div>
-          
+        
+          <div>
+            <label class="block text-sm font-medium text-text-main mb-2">URL Gambar</label>
+            <input type="url" class="input" id="blog-image-url" placeholder="https://res.cloudinary.com/xxx/image.jpg" />
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Konten *</label>
+            <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+              <button type="button" onclick="insertMd('**','**','teks tebal')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">B</button>
+              <button type="button" onclick="insertMd('## ','','Heading')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">H</button>
+              <button type="button" onclick="insertMd('[','](url)','link text')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13A5 5 0 0 0 14.54 15.46L17.07 18"/><path d="M14 17A5 5 0 0 0 9.46 8.54L6.93 6"/><path d="M6.93 18L1.46 12.54"/><path d="M17.07 6L22.54 11.46"/></svg></button>
+              <button type="button" onclick="insertMd('![','](url)','alt text')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5A2 2 0 0 0 3 5V19A2 2 0 0 0 5 21H19A2 2 0 0 0 21 19V5A2 2 0 0 0 19 3Z"/><path d="M8.5 10A1.5 1.5 0 1 0 8.5 7A1.5 1.5 0 0 0 8.5 10Z"/><path d="M21 15L16 10L5 21"/></svg></button>
+              <button type="button" onclick="insertMd('- ','','list item')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">• List</button>
+            </div>
             <textarea class="input font-mono" id="blog-content" rows="12" required placeholder="Tulis konten artikel dalam format Markdown..."></textarea>
           </div>
           
           <div class="flex justify-end gap-3 pt-4 border-t border-border">
             <button type="button" onclick="closeModal()" class="btn-tertiary">Batal</button>
-            <button type="button" class="btn-tertiary">Simpan Draft</button>
+            <button type="button" onclick="window.saveDraft()" class="btn-tertiary">Simpan Draft</button>
             <button type="submit" class="btn-primary">Publish</button>
           </div>
         </form>
       </div>
     </div>
   </div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('admin-sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) overlay.classList.toggle('hidden');
+      });
+    }
+  });
+</script>
+
 </BaseLayout>
 
+<script is:inline src="/js/admin-utils.js?v=2"></script>
 <script>
+  let currentEditId: number | null = null;
+
+  function getAdminToken(): string | null {
+    return localStorage.getItem('admin_token');
+  }
+
   function openModal() {
     document.getElementById('blog-modal')!.classList.remove('hidden');
   }
 
   function closeModal() {
     document.getElementById('blog-modal')!.classList.add('hidden');
+    currentEditId = null;
+    (document.getElementById('blog-form') as HTMLFormElement).reset();
+    document.querySelector('#blog-modal h2')!.textContent = 'Tulis Artikel Baru';
   }
 
-  // Auto-generate slug
-  document.getElementById('blog-title')?.addEventListener('input', (e) => {
-    const title = (e.target as HTMLInputElement).value;
-    const slug = title.toLowerCase()
+  function generateSlug(title: string): string {
+    return title.toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
-    (document.getElementById('blog-slug') as HTMLInputElement).value = slug;
+  }
+
+  // Auto-generate slug from title
+  document.getElementById('blog-title')?.addEventListener('input', (e) => {
+    const title = (e.target as HTMLInputElement).value;
+    (document.getElementById('blog-slug') as HTMLInputElement).value = generateSlug(title);
   });
+
+  let allPosts: any[] = [];
+  let blogPage = 1;
+  const blogPageSize = 20;
+
+  async function loadPosts() {
+    /* auth handled by admin-utils.js */
+
+    const tbody = document.getElementById('blog-table')!;
+    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Loading...</td></tr>';
+
+    try {
+      const res = await adminFetch('/api/admin/blog');
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/admin/login';
+        return;
+      }
+      if (!res.ok) { showToast('Gagal memuat artikel', 'error'); return; }
+      const data = await res.json();
+      allPosts = data.posts || [];
+      blogPage = 1;
+      renderBlogPage();
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-500">Gagal memuat data</td></tr>';
+      console.error('Failed to load posts:', err);
+    }
+  }
+
+  function getFilteredPosts() {
+    const q = (document.getElementById('blog-search') as HTMLInputElement)?.value?.toLowerCase() || '';
+    if (!q) return allPosts;
+    return allPosts.filter((p: any) =>
+      (p.title || '').toLowerCase().includes(q) ||
+      (p.slug || '').toLowerCase().includes(q) ||
+      (p.category || '').toLowerCase().includes(q) ||
+      (p.author_name || '').toLowerCase().includes(q)
+    );
+  }
+
+  function renderBlogPage() {
+    const tbody = document.getElementById('blog-table')!;
+    const filtered = getFilteredPosts();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / blogPageSize));
+    if (blogPage > totalPages) blogPage = totalPages;
+    const start = (blogPage - 1) * blogPageSize;
+    const pageItems = filtered.slice(start, start + blogPageSize);
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Tidak ada artikel ditemukan</td></tr>';
+    } else {
+      const categoryColors: Record<string, string> = {
+        'tips': 'bg-primary/10 text-primary',
+        'tutorial': 'bg-blue-100 text-blue-600',
+        'studi-kasus': 'bg-purple-100 text-purple-600',
+        'berita': 'bg-green-100 text-green-600',
+        'news': 'bg-green-100 text-green-600',
+      };
+      const categoryLabels: Record<string, string> = {
+        'tips': 'Tips & Trik', 'tutorial': 'Tutorial', 'studi-kasus': 'Studi Kasus', 'berita': 'Berita', 'news': 'News',
+      };
+
+      tbody.innerHTML = pageItems.map((post: any) => {
+        const catColor = categoryColors[post.category] || 'bg-gray-100 text-gray-600';
+        const catLabel = categoryLabels[post.category] || post.category;
+        const statusBadge = post.is_published ? '<span class="badge-success">Published</span>' : '<span class="badge-warning">Draft</span>';
+        const dateStr = post.published_at || post.created_at;
+        const formattedDate = dateStr ? new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+        return `<tr class="hover:bg-background/50">
+          <td class="px-6 py-4"><div><p class="font-medium text-text-primary">${escapeHtml(post.title)}</p><p class="text-xs text-text-muted">${escapeHtml(post.slug)}</p></div></td>
+          <td class="px-6 py-4"><span class="px-2 py-1 ${catColor} text-xs rounded-full">${escapeHtml(catLabel)}</span></td>
+          <td class="px-6 py-4 text-text-main">${escapeHtml(post.author_name || 'Admin')}</td>
+          <td class="px-6 py-4">${statusBadge}</td>
+          <td class="px-6 py-4 text-sm text-text-muted">${formattedDate}</td>
+          <td class="px-6 py-4"><div class="flex items-center gap-2">
+            <button onclick='editPost(${JSON.stringify(post).replace(/'/g, "&#39;")})' class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button onclick="deletePost('${post.id}')" class="p-2.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600" title="Hapus"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+          </div></td>
+        </tr>`;
+      }).join('');
+    }
+
+    const info = document.getElementById('blog-page-info')!;
+    const pageNum = document.getElementById('blog-page-num')!;
+    info.textContent = filtered.length > 0 ? `Menampilkan ${start + 1}-${Math.min(start + blogPageSize, filtered.length)} dari ${filtered.length} artikel` : '';
+    pageNum.textContent = `Halaman ${blogPage} / ${totalPages}`;
+    (document.getElementById('blog-prev') as HTMLButtonElement).disabled = blogPage <= 1;
+    (document.getElementById('blog-next') as HTMLButtonElement).disabled = blogPage >= totalPages;
+  }
+
+  function blogPrevPage() { if (blogPage > 1) { blogPage--; renderBlogPage(); } }
+  function blogNextPage() { blogPage++; renderBlogPage(); }
+  (window as any).blogPrevPage = blogPrevPage;
+  (window as any).blogNextPage = blogNextPage;
+
+  document.getElementById('blog-search')?.addEventListener('input', () => { blogPage = 1; renderBlogPage(); });
+  function insertMd(before: string, after: string, placeholder: string) {
+    const ta = document.getElementById('blog-content') as HTMLTextAreaElement;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end) || placeholder;
+    ta.value = ta.value.substring(0, start) + before + selected + after + ta.value.substring(end);
+    ta.focus();
+    ta.setSelectionRange(start + before.length, start + before.length + selected.length);
+  }
+  (window as any).insertMd = insertMd;
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function editPost(post: any) {
+    currentEditId = post.id;
+    document.querySelector('#blog-modal h2')!.textContent = 'Edit Artikel';
+    (document.getElementById('blog-title') as HTMLInputElement).value = post.title || '';
+    (document.getElementById('blog-slug') as HTMLInputElement).value = post.slug || '';
+    (document.getElementById('blog-category') as HTMLSelectElement).value = post.category || 'tips';
+    (document.getElementById('blog-tags') as HTMLInputElement).value = post.tags || '';
+    (document.getElementById('blog-image-url') as HTMLInputElement).value = post.image_url || '';
+    (document.getElementById('blog-excerpt') as HTMLTextAreaElement).value = post.excerpt || '';
+    (document.getElementById('blog-content') as HTMLTextAreaElement).value = post.content || '';
+    const statusSelect = document.getElementById('blog-status') as HTMLSelectElement;
+    statusSelect.value = post.is_published ? 'published' : 'draft';
+    openModal();
+  }
+
+  async function deletePost(id: number) {
+    if (!confirm('Yakin ingin menghapus artikel ini?')) return;
+    /* auth handled by admin-utils.js */
+
+    try {
+      const res = await adminFetch(`/api/admin/blog/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        loadPosts();
+      } else {
+        showToast('Gagal menghapus artikel', 'error');
+      }
+    } catch (err) {
+      showToast('Gagal menghapus artikel', 'error');
+    }
+  }
 
   document.getElementById('blog-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    alert('Fitur publish artikel akan segera tersedia.');
-    closeModal();
+    /* auth handled by admin-utils.js */
+
+    const title = (document.getElementById('blog-title') as HTMLInputElement).value;
+    const slug = (document.getElementById('blog-slug') as HTMLInputElement).value;
+    const category = (document.getElementById('blog-category') as HTMLSelectElement).value;
+    const tags = (document.getElementById('blog-tags') as HTMLInputElement).value;
+    const excerpt = (document.getElementById('blog-excerpt') as HTMLTextAreaElement).value;
+    const content = (document.getElementById('blog-content') as HTMLTextAreaElement).value;
+    const is_published = (document.getElementById('blog-status') as HTMLSelectElement).value === 'published';
+
+    const image_url = (document.getElementById('blog-image-url') as HTMLInputElement).value;
+    const body = { title, slug, content, excerpt, image_url, category, tags, is_published };
+
+    try {
+      const url = currentEditId ? `/api/admin/blog/${currentEditId}` : '/api/admin/blog';
+      const method = currentEditId ? 'PUT' : 'POST';
+
+      const res = await adminFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        closeModal();
+        loadPosts();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Gagal menyimpan artikel', 'error');
+      }
+    } catch (err) {
+      showToast('Gagal menyimpan artikel', 'error');
+    }
   });
+
+  // Expose to global scope for onclick handlers
+  (window as any).openModal = openModal;
+  (window as any).closeModal = closeModal;
+  (window as any).editPost = editPost;
+  (window as any).deletePost = deletePost;
+
+  async function saveDraft() {
+    const token = getAdminToken();
+    if (!token) { window.location.href = '/admin/login'; return; }
+
+    const title = (document.getElementById('blog-title') as HTMLInputElement).value;
+    const slug = (document.getElementById('blog-slug') as HTMLInputElement).value;
+    const category = (document.getElementById('blog-category') as HTMLSelectElement).value;
+    const tags = (document.getElementById('blog-tags') as HTMLInputElement).value;
+    const excerpt = (document.getElementById('blog-excerpt') as HTMLTextAreaElement).value;
+    const content = (document.getElementById('blog-content') as HTMLTextAreaElement).value;
+    const image_url = (document.getElementById('blog-image-url') as HTMLInputElement).value;
+
+    const body = { title, slug, content, excerpt, image_url, category, tags, is_published: false };
+
+    try {
+      const url = currentEditId ? `/api/admin/blog/${currentEditId}` : '/api/admin/blog';
+      const method = currentEditId ? 'PUT' : 'POST';
+
+      const res = await adminFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        closeModal();
+        loadPosts();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Gagal menyimpan draft', 'error');
+      }
+    } catch (err) {
+      showToast('Gagal menyimpan draft', 'error');
+    }
+  }
+  (window as any).saveDraft = saveDraft;
+
+
+  // Load posts on page load
+  loadPosts();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>

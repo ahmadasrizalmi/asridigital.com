@@ -5,16 +5,11 @@ import Icon from '../../components/ui/Icon.astro';
 
 <BaseLayout title="Kelola Produk - Admin Asri Digital">
   <div class="flex min-h-screen">
-    <aside class="w-64 bg-surface border-r border-border shrink-0 hidden lg:block">
+    <aside id="admin-sidebar" class="w-64 bg-surface border-r border-border shrink-0 fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 lg:static lg:translate-x-0">
       <div class="sticky top-0 h-screen overflow-y-auto p-4">
         <a href="/admin" class="flex items-center gap-2.5 mb-8 px-2">
-          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <Icon name="sparkles" size={18} class="text-white" />
-          </div>
-          <div>
-            <span class="font-bold text-text-primary block">Asri Digital</span>
-            <span class="text-xs text-text-muted">Admin Panel</span>
-          </div>
+          <img src="https://res.cloudinary.com/daj8fzinf/image/upload/w_40/q_auto/f_auto/v1779951905/fav_icon_asri_digital_rktguz.png" alt="Asri Digital" class="h-8 w-auto rounded-lg" />
+          <span class="text-xs text-text-muted font-medium">Admin</span>
         </a>
         
         <nav class="space-y-1">
@@ -26,6 +21,8 @@ import Icon from '../../components/ui/Icon.astro';
             { icon: 'link', label: 'Affiliate', href: '/admin/affiliates' },
             { icon: 'file-text', label: 'Blog', href: '/admin/blog' },
             { icon: 'users', label: 'Subscribers', href: '/admin/subscribers' },
+            { icon: 'image', label: 'Hero Slides', href: '/admin/hero-slides' },
+            { icon: 'folder', label: 'Kategori', href: '/admin/categories' },
             { icon: 'settings', label: 'Pengaturan', href: '/admin/settings' },
           ].map((link) => (
             <a
@@ -47,12 +44,17 @@ import Icon from '../../components/ui/Icon.astro';
             <Icon name="external-link" size={18} />
             Lihat Website
           </a>
+          <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+            <Icon name="log-out" size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden" onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full');this.classList.add('hidden')"></div>
     
     <main class="flex-1 bg-background">
-      <header class="bg-surface border-b border-border px-6 py-4 sticky top-0 z-10">
+      <header class="bg-surface border-b border-border px-4 sm:px-6 py-4 sticky top-0 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg">
@@ -68,7 +70,14 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
       </header>
       
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
+        <div class="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div class="relative flex-1 max-w-md w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="product-search" class="input pl-10 w-full" placeholder="Cari produk..." />
+          </div>
+          <span id="product-count" class="text-sm text-text-muted"></span>
+        </div>
         <div class="card">
           <div class="overflow-x-auto">
             <table class="w-full">
@@ -92,6 +101,7 @@ import Icon from '../../components/ui/Icon.astro';
             </table>
           </div>
         </div>
+        <div id="product-pagination" class="mt-4 flex items-center justify-center gap-3"></div>
       </div>
     </main>
   </div>
@@ -99,7 +109,7 @@ import Icon from '../../components/ui/Icon.astro';
   <!-- Add/Edit Product Modal -->
   <div id="product-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-      <div class="bg-surface rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="bg-surface rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-border">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-text-primary" id="modal-title">Tambah Produk</h2>
@@ -112,7 +122,7 @@ import Icon from '../../components/ui/Icon.astro';
         <form id="product-form" class="p-6 space-y-4">
           <input type="hidden" id="product-id" />
           
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Nama Produk *</label>
               <input type="text" id="product-title" class="input" required />
@@ -125,7 +135,38 @@ import Icon from '../../components/ui/Icon.astro';
           
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Deskripsi</label>
-            <textarea id="product-description" class="input" rows="3"></textarea>
+            
+            {/* Toolbar */}
+            <div class="flex items-center gap-1 p-2 bg-background border border-b-0 border-border rounded-t-lg">
+              <button type="button" onclick="mdAction('bold')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary font-bold text-sm" title="Tebal">B</button>
+              <button type="button" onclick="mdAction('italic')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary italic text-sm" title="Miring">I</button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button type="button" onclick="mdAction('h2')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-xs font-bold" title="Heading">H2</button>
+              <button type="button" onclick="mdAction('h3')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-xs font-bold" title="Sub Heading">H3</button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button type="button" onclick="mdAction('ul')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-sm" title="Daftar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </button>
+              <button type="button" onclick="mdAction('ol')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-sm" title="Daftar Bernomor">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11M10 12h11M10 18h11M3 5v2h3V5H3zm0 6v2h3v-2H3zm0 6v2h3v-2H3z"/></svg>
+              </button>
+              <div class="w-px h-5 bg-border mx-1"></div>
+              <button type="button" onclick="mdAction('check')" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-text-primary text-sm" title="Checklist">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </button>
+              <div class="flex-1"></div>
+              <button type="button" onclick="togglePreview()" id="preview-toggle" class="p-2 hover:bg-surface rounded text-text-secondary hover:text-primary text-xs font-medium px-3">
+                <Icon name="eye" size={16} class="inline" /> Preview
+              </button>
+            </div>
+
+            {/* Textarea */}
+            <textarea id="product-description" class="input font-mono text-sm rounded-t-none border-t-0" rows="8" placeholder="Tulis deskripsi produk di sini..."></textarea>
+            
+            {/* Live Preview */}
+            <div id="description-preview" class="hidden border border-border rounded-b-lg p-4 bg-white prose prose-sm max-w-none">
+              <p class="text-text-muted text-sm italic">Preview akan muncul di sini...</p>
+            </div>
           </div>
           
           <div>
@@ -133,10 +174,16 @@ import Icon from '../../components/ui/Icon.astro';
             <input type="text" id="product-short-desc" class="input" />
           </div>
           
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Harga *</label>
-              <input type="number" id="product-price" class="input" required />
+              <div class="flex items-center gap-3">
+                <input type="number" id="product-price" class="input flex-1" required />
+                <label class="flex items-center gap-2 whitespace-nowrap">
+                  <input type="checkbox" id="product-is-free" class="rounded" onchange="toggleFreeProduct()" />
+                  <span class="text-sm text-text-main">Gratis</span>
+                </label>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Harga Coret</label>
@@ -145,12 +192,7 @@ import Icon from '../../components/ui/Icon.astro';
             <div>
               <label class="block text-sm font-medium text-text-main mb-2">Kategori</label>
               <select id="product-category" class="input">
-                <option value="membership">Membership</option>
-                <option value="kreatif">Kreatif</option>
-                <option value="pendidikan">Pendidikan</option>
-                <option value="marketing">Marketing</option>
-                <option value="coding">Coding</option>
-                <option value="bisnis">Bisnis</option>
+                <option value="">Loading...</option>
               </select>
             </div>
           </div>
@@ -164,7 +206,53 @@ import Icon from '../../components/ui/Icon.astro';
             <label class="block text-sm font-medium text-text-main mb-2">Tags</label>
             <input type="text" id="product-tags" class="input" placeholder="tag1, tag2, tag3" />
           </div>
-          
+
+          {/* ====== MEDIA GALLERY SECTION ====== */}
+          <div class="border-t border-border pt-4 mt-4">
+            <h3 class="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
+              <Icon name="image" size={16} class="text-primary" /> Media Produk
+            </h3>
+
+            {/* Gallery Images */}
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-text-main mb-2">
+                Gambar Produk <span class="text-text-muted font-normal">(klik untuk jadikan cover)</span>
+              </label>
+
+              <div id="gallery-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
+                {/* Image thumbnails will be rendered here */}
+              </div>
+
+              <div class="flex gap-2">
+                <input type="url" id="image-url-input" class="input flex-1" placeholder="https://res.cloudinary.com/xxx/image.jpg" />
+                <button type="button" onclick="addImage()" class="btn-secondary whitespace-nowrap px-3">
+                  + Tambah
+                </button>
+              </div>
+              <p class="text-xs text-text-muted mt-1">Paste URL gambar dari Cloudinary, lalu klik gambar untuk pilih cover</p>
+            </div>
+
+            {/* Video */}
+            <div class="mb-2">
+              <label class="block text-sm font-medium text-text-main mb-2">
+                Video <span class="text-text-muted font-normal">(opsional, YouTube/Vimeo)</span>
+              </label>
+              <div class="flex gap-2">
+                <input type="url" id="video-url-input" class="input flex-1" placeholder="https://youtube.com/watch?v=xxx atau https://vimeo.com/xxx" />
+                <button type="button" onclick="addVideo()" class="btn-secondary whitespace-nowrap px-3">
+                  + Video
+                </button>
+              </div>
+              <div id="video-preview" class="hidden mt-2">
+                <div class="flex items-center gap-2 p-2 bg-background rounded-lg">
+                  <span class="text-sm text-text-main flex-1 truncate" id="video-url-display"></span>
+                  <button type="button" onclick="removeVideo()" class="text-red-500 hover:text-red-700 text-sm"><Icon name="x" size={16} class="inline" /> Hapus</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* ====== END MEDIA SECTION ====== */}
+
           <div class="flex items-center gap-6">
             <label class="flex items-center gap-2">
               <input type="checkbox" id="product-active" class="rounded" checked />
@@ -184,27 +272,286 @@ import Icon from '../../components/ui/Icon.astro';
       </div>
     </div>
   </div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('admin-sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) overlay.classList.toggle('hidden');
+      });
+    }
+  });
+</script>
+
 </BaseLayout>
 
+<script is:inline src="/js/admin-utils.js?v=2"></script>
 <script>
   const API_BASE = '/api';
+  let allProducts: any[] = [];
+  let productSearchQuery = '';
+  let productCurrentPage = 1;
+  const PRODUCTS_PER_PAGE = 20;
 
-  function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
+  // ====== MARKDOWN EDITOR TOOLBAR ======
+  const mdActions: Record<string, { prefix: string; suffix: string; placeholder: string }> = {
+    bold:   { prefix: '**', suffix: '**', placeholder: 'Teks tebal' },
+    italic: { prefix: '_', suffix: '_', placeholder: 'Teks miring' },
+    h2:     { prefix: '\n## ', suffix: '\n', placeholder: 'Judul' },
+    h3:     { prefix: '\n### ', suffix: '\n', placeholder: 'Sub Judul' },
+    ul:     { prefix: '\n- ', suffix: '\n', placeholder: 'Item daftar' },
+    ol:     { prefix: '\n1. ', suffix: '\n', placeholder: 'Item bernomor' },
+    check:  { prefix: '\n- [ ] ', suffix: '\n', placeholder: 'Item checklist' },
+  };
+
+  (window as any).mdAction = function(action: string) {
+    const ta = document.getElementById('product-description') as HTMLTextAreaElement;
+    if (!ta) return;
+    const cfg = mdActions[action];
+    if (!cfg) return;
+
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.substring(start, end);
+    const replacement = selected || cfg.placeholder;
+
+    ta.value = ta.value.substring(0, start) + cfg.prefix + replacement + cfg.suffix + ta.value.substring(end);
+    ta.focus();
+    ta.setSelectionRange(start + cfg.prefix.length, start + cfg.prefix.length + replacement.length);
+    updatePreview();
+  };
+
+  let previewVisible = false;
+  (window as any).togglePreview = function() {
+    const preview = document.getElementById('description-preview')!;
+    const btn = document.getElementById('preview-toggle')!;
+    previewVisible = !previewVisible;
+    if (previewVisible) {
+      preview.classList.remove('hidden');
+      btn.textContent = 'Edit';
+      updatePreview();
+    } else {
+      preview.classList.add('hidden');
+      btn.textContent = 'Preview';
+    }
+  };
+
+  function updatePreview() {
+    if (!previewVisible) return;
+    const ta = document.getElementById('product-description') as HTMLTextAreaElement;
+    const preview = document.getElementById('description-preview')!;
+    const md = ta.value;
+    if (!md.trim()) {
+      preview.innerHTML = '<p class="text-text-muted text-sm italic">Tulis deskripsi untuk melihat preview...</p>';
+      return;
+    }
+    // Simple markdown to HTML (server-side via API for full support)
+    preview.innerHTML = simpleMarkdown(md);
   }
+
+  function simpleMarkdown(text: string): string {
+    let html = text
+      // Escape HTML
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      // Headings
+      .replace(/^### (.+)$/gm, '<h3 style="font-size:1.1em;font-weight:700;margin:12px 0 6px;color:#1e293b;">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 style="font-size:1.25em;font-weight:700;margin:16px 0 8px;color:#1e293b;">$1</h2>')
+      // Bold and italic
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#1e293b;">$1</strong>')
+      .replace(/_(.+?)_/g, '<em>$1</em>')
+      // Checklist
+      .replace(/^- \[ \] (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><input type="checkbox" disabled style="margin-top:3px;"><span>$1</span></div>')
+      .replace(/^- \[x\] (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><input type="checkbox" checked disabled style="margin-top:3px;"><span>$1</span></div>')
+      // Unordered list
+      .replace(/^- (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><span style="color:#10b981;font-weight:bold;">•</span><span>$1</span></div>')
+      // Ordered list (simple)
+      .replace(/^(\d+)\. (.+)$/gm, '<div style="display:flex;gap:8px;align-items:flex-start;margin:4px 0;"><span style="color:#10b981;font-weight:bold;min-width:20px;">$1.</span><span>$2</span></div>')
+      // Paragraphs
+      .replace(/\n\n/g, '</p><p style="margin:8px 0;color:#475569;line-height:1.7;">')
+      .replace(/\n/g, '<br>');
+
+    return '<p style="margin:8px 0;color:#475569;line-height:1.7;">' + html + '</p>';
+  }
+
+  // Update preview on typing
+  document.getElementById('product-description')?.addEventListener('input', () => {
+    setTimeout(updatePreview, 300);
+  });
+
+  // ====== GALLERY MANAGEMENT ======
+  let galleryImages: string[] = [];
+  let coverImage: string = '';
+  let videoUrl: string = '';
+
+  function renderGallery() {
+    const grid = document.getElementById('gallery-grid')!;
+    if (galleryImages.length === 0) {
+      grid.innerHTML = '<p class="text-xs text-text-muted col-span-full py-4 text-center border-2 border-dashed border-border rounded-lg">Belum ada gambar. Paste URL gambar di bawah.</p>';
+      return;
+    }
+    grid.innerHTML = galleryImages.map((url, i) => `
+      <div class="relative group rounded-lg overflow-hidden border-2 ${url === coverImage ? 'border-primary ring-2 ring-primary/30' : 'border-border'} aspect-square cursor-pointer" onclick="setCover(${i})">
+        <img src="${url}" alt="Gambar ${i + 1}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f3f4f6%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%2212%22>Error</text></svg>'" />
+        ${url === coverImage ? '<div class="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">Cover</div>' : ''}
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+          ${i > 0 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, -1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"/></svg></button>` : ''}
+          ${i < galleryImages.length - 1 ? `<button type="button" onclick="event.stopPropagation(); moveImage(${i}, 1)" class="bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-white"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18L15 12L9 6"/></svg></button>` : ''}
+          <button type="button" onclick="event.stopPropagation(); removeImage(${i})" class="bg-red-500/90 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs hover:bg-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addImage() {
+    const input = document.getElementById('image-url-input') as HTMLInputElement;
+    const url = input.value.trim();
+    if (!url) return;
+    if (!url.startsWith('http')) { showToast('URL harus dimulai dengan http:// atau https://', 'error'); return; }
+    if (galleryImages.includes(url)) { showToast('Gambar sudah ditambahkan', 'error'); return; }
+    galleryImages.push(url);
+    if (galleryImages.length === 1) coverImage = url; // First image = cover
+    input.value = '';
+    renderGallery();
+  }
+
+  function removeImage(index: number) {
+    const removed = galleryImages.splice(index, 1)[0];
+    if (removed === coverImage) coverImage = galleryImages[0] || '';
+    renderGallery();
+  }
+
+  function setCover(index: number) {
+    coverImage = galleryImages[index];
+    renderGallery();
+  }
+
+  function moveImage(index: number, direction: number) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= galleryImages.length) return;
+    [galleryImages[index], galleryImages[newIndex]] = [galleryImages[newIndex], galleryImages[index]];
+    renderGallery();
+  }
+
+  function addVideo() {
+    const input = document.getElementById('video-url-input') as HTMLInputElement;
+    const url = input.value.trim();
+    if (!url) return;
+    if (!url.includes('youtube.com') && !url.includes('youtu.be') && !url.includes('vimeo.com')) {
+      showToast('URL harus dari YouTube atau Vimeo', 'error');
+      return;
+    }
+    videoUrl = url;
+    input.value = '';
+    const preview = document.getElementById('video-preview')!;
+    const display = document.getElementById('video-url-display')!;
+    preview.classList.remove('hidden');
+    display.textContent = url;
+  }
+
+  function removeVideo() {
+    videoUrl = '';
+    document.getElementById('video-preview')!.classList.add('hidden');
+  }
+
+  function resetMedia() {
+    galleryImages = [];
+    coverImage = '';
+    videoUrl = '';
+    renderGallery();
+    document.getElementById('video-preview')!.classList.add('hidden');
+    (document.getElementById('image-url-input') as HTMLInputElement).value = '';
+    (document.getElementById('video-url-input') as HTMLInputElement).value = '';
+  }
+
+  function parseJsonField(val: any): any[] {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    try { return JSON.parse(val); } catch { return []; }
+  }
+
+  // Expose gallery functions to global scope
+  (window as any).addImage = addImage;
+  (window as any).removeImage = removeImage;
+  (window as any).setCover = setCover;
+  (window as any).moveImage = moveImage;
+  (window as any).addVideo = addVideo;
+  (window as any).removeVideo = removeVideo;
+
+  // Toggle free product
+  function toggleFreeProduct() {
+    const priceInput = document.getElementById('product-price') as HTMLInputElement;
+    const isFree = (document.getElementById('product-is-free') as HTMLInputElement).checked;
+    if (isFree) {
+      priceInput.value = '0';
+      priceInput.disabled = true;
+    } else {
+      priceInput.disabled = false;
+      priceInput.value = '';
+    }
+  }
+  (window as any).toggleFreeProduct = toggleFreeProduct;
+
+  // Load categories from API
+  async function loadCategories() {
+    try {
+      const res = await adminFetch('/api/admin/categories');
+      if (res.status === 401 || res.status === 403) return;
+      const data = await res.json();
+      const categories = data.categories || [];
+      const select = document.getElementById('product-category') as HTMLSelectElement;
+      select.innerHTML = categories.map((c: any) =>
+        '<option value="' + c.slug + '">' + c.name + '</option>'
+      ).join('');
+    } catch (e) {
+      // Auth handled by admin-utils.js
+    }
+  }
+  loadCategories();
 
   async function loadProducts() {
     try {
-      const response = await fetch(`${API_BASE}/products?limit=50`);
+      const response = await adminFetch(`${API_BASE}/admin/products`);
+      if (response.status === 401 || response.status === 403) return;
       const data = await response.json() as any;
-      
-      const table = document.getElementById('products-table')!;
-      if (data.products && data.products.length > 0) {
-        table.innerHTML = data.products.map((product: any) => `
+      allProducts = data.products || [];
+      productCurrentPage = 1;
+      productSearchQuery = '';
+      const searchInput = document.getElementById('product-search') as HTMLInputElement;
+      if (searchInput) searchInput.value = '';
+      renderFilteredProducts();
+    } catch (error) {
+      if (error.message !== 'Auth expired') {
+        showToast('Gagal memuat produk', 'error');
+      }
+    }
+  }
+
+  function renderFilteredProducts() {
+    const table = document.getElementById('products-table')!;
+    const query = productSearchQuery.toLowerCase();
+    const filtered = query
+      ? allProducts.filter((p: any) => p.title.toLowerCase().includes(query))
+      : allProducts;
+
+    const countEl = document.getElementById('product-count');
+    if (countEl) {
+      const showing = Math.min(filtered.length, PRODUCTS_PER_PAGE);
+      countEl.textContent = `Menampilkan ${showing} dari ${filtered.length} data`;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
+    if (productCurrentPage > totalPages) productCurrentPage = totalPages;
+    const start = (productCurrentPage - 1) * PRODUCTS_PER_PAGE;
+    const pageItems = filtered.slice(start, start + PRODUCTS_PER_PAGE);
+
+    if (filtered.length === 0) {
+      table.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Tidak ada produk ditemukan.</td></tr>';
+    } else {
+      table.innerHTML = pageItems.map((product: any) => `
           <tr class="hover:bg-background/50">
             <td class="px-6 py-4">
               <div>
@@ -219,7 +566,7 @@ import Icon from '../../components/ui/Icon.astro';
             </td>
             <td class="px-6 py-4">
               <div>
-                <p class="font-medium text-text-primary">${formatIDR(product.price)}</p>
+                ${product.price === 0 ? '<span class="badge-success">Gratis</span>' : `<p class="font-medium text-text-primary">${formatIDR(product.price)}</p>`}
                 ${product.compare_at_price ? `<p class="text-xs text-text-muted line-through">${formatIDR(product.compare_at_price)}</p>` : ''}
               </div>
             </td>
@@ -233,20 +580,21 @@ import Icon from '../../components/ui/Icon.astro';
             </td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-2">
-                <button onclick='editProduct(${JSON.stringify(product)})' class="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary">
-                  <Icon name="edit" size={16} />
+                <button onclick='editProduct(${JSON.stringify(product)})' class="p-2.5 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Edit">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button onclick="deleteProduct('${product.id}')" class="p-1.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600">
-                  <Icon name="trash-2" size={16} />
+                <button onclick="toggleProduct('${product.id}', ${product.is_active})" class="p-2.5 hover:bg-green-50 rounded-lg ${product.is_active ? 'text-green-600' : 'text-text-muted'} hover:text-green-700" title="${product.is_active ? 'Nonaktifkan' : 'Aktifkan'}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                </button>
+                <button onclick="deleteProduct('${product.id}')" class="p-2.5 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600" title="Hapus">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                 </button>
               </div>
             </td>
           </tr>
-        `).join('');
-      }
-    } catch (error) {
-      console.error('Error loading products:', error);
+      `).join('');
     }
+    renderProductPagination(totalPages);
   }
 
   function openModal(product?: any) {
@@ -267,11 +615,31 @@ import Icon from '../../components/ui/Icon.astro';
       (document.getElementById('product-tags') as HTMLInputElement).value = product.tags || '';
       (document.getElementById('product-active') as HTMLInputElement).checked = product.is_active;
       (document.getElementById('product-featured') as HTMLInputElement).checked = product.is_featured;
+
+      // Handle free product checkbox
+      const isFree = product.price === 0;
+      (document.getElementById('product-is-free') as HTMLInputElement).checked = isFree;
+      (document.getElementById('product-price') as HTMLInputElement).disabled = isFree;
+
+      // Load media data
+      galleryImages = parseJsonField(product.gallery_images);
+      coverImage = product.image_icon || galleryImages[0] || '';
+      const videos = parseJsonField(product.gallery_videos);
+      videoUrl = product.video_embed_url || videos[0] || '';
+      renderGallery();
+      if (videoUrl) {
+        document.getElementById('video-preview')!.classList.remove('hidden');
+        document.getElementById('video-url-display')!.textContent = videoUrl;
+      } else {
+        document.getElementById('video-preview')!.classList.add('hidden');
+      }
     } else {
       title.textContent = 'Tambah Produk';
       (document.getElementById('product-form') as HTMLFormElement).reset();
       (document.getElementById('product-id') as HTMLInputElement).value = '';
       (document.getElementById('product-active') as HTMLInputElement).checked = true;
+      (document.getElementById('product-price') as HTMLInputElement).disabled = false;
+      resetMedia();
     }
     
     modal.classList.remove('hidden');
@@ -285,25 +653,47 @@ import Icon from '../../components/ui/Icon.astro';
     openModal(product);
   }
 
-  async function deleteProduct(id: string) {
-    if (!confirm('Yakin ingin menghapus produk ini?')) return;
-    
+  async function toggleProduct(id: string, isActive: boolean) {
     try {
-      const response = await fetch(`${API_BASE}/admin/products/${id}`, {
-        method: 'DELETE'
+      const response = await adminFetch(`${API_BASE}/admin/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_active: !isActive }),
       });
-      
+      if (response.status === 401 || response.status === 403) return;
       const result = await response.json() as any;
-      
       if (response.ok) {
-        alert('Produk berhasil dihapus');
+        showToast(isActive ? 'Produk dinonaktifkan' : 'Produk diaktifkan');
         loadProducts();
       } else {
-        alert(result.error || 'Terjadi kesalahan');
+        showToast(result.error || 'Terjadi kesalahan', 'error');
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      if (error.message !== 'Auth expired') {
+        showToast('Terjadi kesalahan', 'error');
+      }
+    }
+  }
+
+  async function deleteProduct(id: string) {
+    const choice = confirm('Pilih OK untuk HAPUS PERMANEN, atau Cancel untuk batal.\n\nProduk yang dihapus tidak bisa dikembalikan!');
+    if (!choice) return;
+    
+    try {
+      const response = await adminFetch(`${API_BASE}/admin/products/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.status === 401 || response.status === 403) return;
+      const result = await response.json() as any;
+      if (response.ok) {
+        showToast('Produk berhasil dihapus');
+        loadProducts();
+      } else {
+        showToast(result.error || 'Gagal menghapus produk', 'error');
+      }
+    } catch (error) {
+      if (error.message !== 'Auth expired') {
+        showToast('Terjadi kesalahan', 'error');
+      }
     }
   }
 
@@ -329,6 +719,11 @@ import Icon from '../../components/ui/Icon.astro';
       tags: (document.getElementById('product-tags') as HTMLInputElement).value,
       is_active: (document.getElementById('product-active') as HTMLInputElement).checked,
       is_featured: (document.getElementById('product-featured') as HTMLInputElement).checked,
+      // Media fields
+      image_icon: coverImage || null,
+      gallery_images: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
+      gallery_videos: videoUrl ? JSON.stringify([videoUrl]) : null,
+      video_embed_url: videoUrl || null,
     };
 
     const submitBtn = e.target.querySelector('button[type="submit"]') as HTMLButtonElement;
@@ -336,24 +731,24 @@ import Icon from '../../components/ui/Icon.astro';
     submitBtn.textContent = 'Menyimpan...';
 
     try {
-      const response = await fetch(url, {
+      const response = await adminFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData),
       });
-      
+      if (response.status === 401 || response.status === 403) return;
       const result = await response.json() as any;
       
       if (response.ok) {
-        alert('Produk berhasil ' + (productId ? 'diupdate' : 'ditambahkan'));
+        showToast('Produk berhasil ' + (productId ? 'diupdate' : 'ditambahkan'));
         closeModal();
         loadProducts();
       } else {
-        alert(result.error || 'Terjadi kesalahan');
+        showToast(result.error || 'Terjadi kesalahan', 'error');
       }
     } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      if (error.message !== 'Auth expired') {
+        showToast('Terjadi kesalahan', 'error');
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Simpan Produk';
@@ -370,6 +765,45 @@ import Icon from '../../components/ui/Icon.astro';
     (document.getElementById('product-slug') as HTMLInputElement).value = slug;
   });
 
+  // Search and pagination
+  function renderProductPagination(totalPages: number) {
+    const container = document.getElementById('product-pagination');
+    if (!container) return;
+    if (totalPages <= 1) { container.innerHTML = ''; return; }
+    container.innerHTML =
+      '<button onclick="productPrevPage()" ' + (productCurrentPage <= 1 ? 'disabled' : '') + ' class="btn-tertiary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Sebelumnya</button>' +
+      '<span class="text-sm text-text-muted">Halaman ' + productCurrentPage + ' dari ' + totalPages + '</span>' +
+      '<button onclick="productNextPage()" ' + (productCurrentPage >= totalPages ? 'disabled' : '') + ' class="btn-tertiary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed">Berikutnya</button>';
+  }
+
+  function productPrevPage() {
+    if (productCurrentPage > 1) { productCurrentPage--; renderFilteredProducts(); }
+  }
+
+  function productNextPage() {
+    productCurrentPage++; renderFilteredProducts();
+  }
+
+  document.getElementById('product-search')?.addEventListener('input', (e) => {
+    productSearchQuery = (e.target as HTMLInputElement).value;
+    productCurrentPage = 1;
+    renderFilteredProducts();
+  });
+
+  // Expose to global scope for onclick handlers
+  (window as any).openModal = openModal;
+  (window as any).closeModal = closeModal;
+  (window as any).editProduct = editProduct;
+  (window as any).toggleProduct = toggleProduct;
+  (window as any).deleteProduct = deleteProduct;
+  (window as any).productPrevPage = productPrevPage;
+  (window as any).productNextPage = productNextPage;
+
   // Load on page load
   loadProducts();
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  }
 </script>
