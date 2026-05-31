@@ -283,7 +283,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
             <div class="border border-slate-200 rounded-2xl overflow-hidden">
               {Object.entries(specs).map(([key, value], i) => (
                 <div class={`flex ${i > 0 ? 'border-t border-slate-100' : ''}`}>
-                  <div class="w-1/3 px-6 py-4 bg-slate-50 font-medium text-slate-900 text-sm">{key}</div>
+                  <div class="w-1/3 min-w-[80px] px-3 sm:px-6 py-4 bg-slate-50 font-medium text-slate-900 text-xs sm:text-sm break-words">{key}</div>
                   <div class="flex-1 px-6 py-4 text-slate-600 text-sm">{value}</div>
                 </div>
               ))}

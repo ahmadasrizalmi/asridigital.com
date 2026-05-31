@@ -22,7 +22,7 @@ import Icon from '../../components/ui/Icon.astro';
             <input type="text" id="coupon-search" class="input hidden md:block w-64" placeholder="Cari kupon..." />
             <button onclick="openModal()" class="btn-primary">
               <Icon name="plus" size={18} />
-              <span class="hidden sm:inline">Tambah Kupon</span>
+              <span class="hidden md:inline">Tambah Kupon</span>
             </button>
           </div>
         </div>
@@ -54,12 +54,12 @@ import Icon from '../../components/ui/Icon.astro';
             </table>
           </div>
         </div>
-        <div id="coupon-pagination" class="flex items-center justify-between px-4 py-3 border-t border-border">
-          <span id="coupon-page-info" class="text-sm text-text-muted"></span>
+        <div id="coupon-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 border-t border-border">
+          <span id="coupon-page-info" class="text-xs sm:text-sm text-text-muted text-center sm:text-left"></span>
           <div class="flex items-center gap-2">
-            <button id="coup-prev" class="btn-tertiary text-sm" onclick="coupPrevPage()">← Prev</button>
-            <span id="coup-page-num" class="text-sm text-text-secondary px-2"></span>
-            <button id="coup-next" class="btn-tertiary text-sm" onclick="coupNextPage()">Next →</button>
+            <button id="coup-prev" class="btn-tertiary text-sm px-3 py-1.5" onclick="coupPrevPage()">← Prev</button>
+            <span id="coup-page-num" class="text-sm text-text-secondary px-2 hidden sm:inline"></span>
+            <button id="coup-next" class="btn-tertiary text-sm px-3 py-1.5" onclick="coupNextPage()">Next →</button>
           </div>
         </div>
       </div>

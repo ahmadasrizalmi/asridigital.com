@@ -28,7 +28,7 @@ import Icon from '../../components/ui/Icon.astro';
             </select>
           <button onclick="exportOrders()" class="btn-tertiary">
             <Icon name="download" size={18} />
-            <span class="hidden sm:inline">Export</span>
+            <span class="hidden md:inline">Export</span>
           </button>
           </div>
         </div>
@@ -73,7 +73,7 @@ import Icon from '../../components/ui/Icon.astro';
             <p class="text-text-secondary">Pesanan akan muncul di sini ketika pelanggan melakukan checkout.</p>
           </div>
         </div>
-        <div id="order-pagination" class="mt-4 flex items-center justify-center gap-3"></div>
+        <div id="order-pagination" class="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3"></div>
       </div>
     </main>
   </div>

@@ -22,7 +22,7 @@ import Icon from '../../components/ui/Icon.astro';
             <input type="text" id="blog-search" class="input hidden md:block w-64" placeholder="Cari artikel..." />
             <button onclick="openModal()" class="btn-primary">
               <Icon name="plus" size={18} />
-              <span class="hidden sm:inline">Tambah Artikel</span>
+              <span class="hidden md:inline">Tambah Artikel</span>
             </button>
           </div>
         </div>
@@ -48,12 +48,12 @@ import Icon from '../../components/ui/Icon.astro';
             </table>
           </div>
         </div>
-        <div id="blog-pagination" class="flex items-center justify-between px-4 py-3 border-t border-border">
-          <span id="blog-page-info" class="text-sm text-text-muted"></span>
+        <div id="blog-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 border-t border-border">
+          <span id="blog-page-info" class="text-xs sm:text-sm text-text-muted text-center sm:text-left"></span>
           <div class="flex items-center gap-2">
-            <button id="blog-prev" class="btn-tertiary text-sm" onclick="blogPrevPage()">← Prev</button>
-            <span id="blog-page-num" class="text-sm text-text-secondary px-2"></span>
-            <button id="blog-next" class="btn-tertiary text-sm" onclick="blogNextPage()">Next →</button>
+            <button id="blog-prev" class="btn-tertiary text-sm px-3 py-1.5" onclick="blogPrevPage()">← Prev</button>
+            <span id="blog-page-num" class="text-sm text-text-secondary px-2 hidden sm:inline"></span>
+            <button id="blog-next" class="btn-tertiary text-sm px-3 py-1.5" onclick="blogNextPage()">Next →</button>
           </div>
         </div>
       </div>
@@ -120,12 +120,12 @@ import Icon from '../../components/ui/Icon.astro';
 
           <div>
             <label class="block text-sm font-medium text-text-main mb-2">Konten *</label>
-            <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
-              <button type="button" onclick="insertMd('**','**','teks tebal')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">B</button>
-              <button type="button" onclick="insertMd('## ','','Heading')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">H</button>
-              <button type="button" onclick="insertMd('[','](url)','link text')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13A5 5 0 0 0 14.54 15.46L17.07 18"/><path d="M14 17A5 5 0 0 0 9.46 8.54L6.93 6"/><path d="M6.93 18L1.46 12.54"/><path d="M17.07 6L22.54 11.46"/></svg></button>
-              <button type="button" onclick="insertMd('![','](url)','alt text')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5A2 2 0 0 0 3 5V19A2 2 0 0 0 5 21H19A2 2 0 0 0 21 19V5A2 2 0 0 0 19 3Z"/><path d="M8.5 10A1.5 1.5 0 1 0 8.5 7A1.5 1.5 0 0 0 8.5 10Z"/><path d="M21 15L16 10L5 21"/></svg></button>
-              <button type="button" onclick="insertMd('- ','','list item')" style="padding:4px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;">• List</button>
+            <div class="flex flex-wrap gap-1 mb-2">
+              <button type="button" onclick="insertMd('**','**','teks tebal')" class="px-2.5 py-1 border border-border rounded text-xs font-semibold cursor-pointer bg-white hover:bg-background">B</button>
+              <button type="button" onclick="insertMd('## ','','Heading')" class="px-2.5 py-1 border border-border rounded text-xs font-semibold cursor-pointer bg-white hover:bg-background">H</button>
+              <button type="button" onclick="insertMd('[','](url)','link text')" class="px-2.5 py-1 border border-border rounded text-xs font-semibold cursor-pointer bg-white hover:bg-background"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13A5 5 0 0 0 14.54 15.46L17.07 18"/><path d="M14 17A5 5 0 0 0 9.46 8.54L6.93 6"/><path d="M6.93 18L1.46 12.54"/><path d="M17.07 6L22.54 11.46"/></svg></button>
+              <button type="button" onclick="insertMd('![','](url)','alt text')" class="px-2.5 py-1 border border-border rounded text-xs font-semibold cursor-pointer bg-white hover:bg-background"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5A2 2 0 0 0 3 5V19A2 2 0 0 0 5 21H19A2 2 0 0 0 21 19V5A2 2 0 0 0 19 3Z"/><path d="M8.5 10A1.5 1.5 0 1 0 8.5 7A1.5 1.5 0 0 0 8.5 10Z"/><path d="M21 15L16 10L5 21"/></svg></button>
+              <button type="button" onclick="insertMd('- ','','list item')" class="px-2.5 py-1 border border-border rounded text-xs font-semibold cursor-pointer bg-white hover:bg-background">• List</button>
             </div>
             <textarea class="input font-mono" id="blog-content" rows="12" required placeholder="Tulis konten artikel dalam format Markdown..."></textarea>
           </div>
