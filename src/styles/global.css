@@ -49,13 +49,12 @@
   }
 
   .btn-primary {
-    @apply btn bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 font-bold shadow-sm;
-    border-radius: 9999px;
+    @apply btn bg-primary text-white font-semibold;
+    border-radius: 0.75rem;
   }
   .btn-primary:hover {
-    @apply from-emerald-400 to-yellow-200;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.2);
+    @apply bg-primary-hover;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
   }
 
   .btn-secondary {
@@ -64,7 +63,6 @@
   }
   .btn-secondary:hover {
     @apply bg-carbon-hover;
-    transform: translateY(-2px);
   }
 
   .btn-tertiary {
@@ -73,7 +71,6 @@
   }
   .btn-tertiary:hover {
     @apply border-slate-300 bg-slate-50;
-    transform: translateY(-1px);
   }
 
   .btn-ghost {
@@ -88,7 +85,6 @@
   }
   .card-hover:hover {
     @apply shadow-float;
-    transform: translateY(-4px);
   }
 
   .badge {
