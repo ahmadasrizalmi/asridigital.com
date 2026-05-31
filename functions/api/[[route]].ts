@@ -1055,10 +1055,39 @@ export async function onRequest(context: any): Promise<Response> {
 
       // ==================== FREE PRODUCT CHECKOUT ====================
       if (finalAmount <= 0) {
+        // Auto-create user account for free checkout (same as paid flow)
+        let userId: string | null = null;
+        let magicToken = '';
+        let newUserPassword = '';
+
+        let existingUser = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(sanitizedEmail).first();
+        if (!existingUser) {
+          userId = generateId();
+          newUserPassword = crypto.randomUUID().slice(0, 12);
+          const passwordHash = await hashPassword(newUserPassword);
+          try {
+            await env.DB.prepare(
+              'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, \'user\', datetime(\'now\'), datetime(\'now\'))'
+            ).bind(userId, sanitizedEmail, sanitizedName, passwordHash).run();
+            existingUser = { id: userId };
+          } catch (e) {
+            existingUser = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(sanitizedEmail).first();
+          }
+        }
+
+        if (existingUser) {
+          userId = existingUser.id;
+          magicToken = await createJWT(
+            { userId: existingUser.id, email: sanitizedEmail, type: 'magic_login' },
+            env.JWT_SECRET,
+            '720h'
+          );
+        }
+
         await env.DB.prepare(
           `INSERT INTO orders (id, user_id, user_email, user_name, user_phone, product_id, product_title, amount, payment_method, coupon_id, status, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'FREE', ?, 'PAID', datetime('now'), datetime('now'))`
-        ).bind(orderId, null, sanitizedEmail, sanitizedName, customerPhone || null, product.id, product.title, 0, couponId).run();
+        ).bind(orderId, userId, sanitizedEmail, sanitizedName, customerPhone || null, product.id, product.title, 0, couponId).run();
 
         try {
           await env.DB.prepare(
@@ -1072,7 +1101,7 @@ export async function onRequest(context: any): Promise<Response> {
         }
 
         try {
-          await sendFreeProductEmail(env, { id: orderId, user_email: sanitizedEmail, user_name: sanitizedName, product_title: product.title, product_slug: product.slug, download_url: product.download_url });
+          await sendOrderConfirmationEmail(env, { id: orderId, user_email: sanitizedEmail, user_name: sanitizedName, product_title: product.title, product_slug: product.slug, product_id: product.id }, magicToken || undefined, newUserPassword || undefined);
         } catch (e: any) { console.log('FREE_EMAIL: Error:', e.message); }
 
         // Telegram notification for new order
@@ -1087,7 +1116,7 @@ export async function onRequest(context: any): Promise<Response> {
           );
         } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
 
-        return jsonResponse({ success: true, orderId, orderCode, paymentUrl: `${env.APP_URL}/success?order=${orderId}&free=true`, amount: 0, discount: discountAmount, isFree: true });
+        return jsonResponse({ success: true, orderId, orderCode, paymentUrl: `${env.APP_URL}/success?order=${orderId}&free=true`, amount: 0, discount: discountAmount, isFree: true, dashboardUrl: magicToken ? `/api/auth/magic-login?token=${magicToken}` : null });
       }
 
       // Get affiliate referral from cookie or request body
