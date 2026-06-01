@@ -47,7 +47,7 @@ import Footer from '../components/layout/Footer.astro';
             <input type="text" id="product-search" placeholder="Cari produk digital..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 shadow-sm transition-shadow" />
             <svg class="absolute left-4 top-3.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <div class="flex space-x-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide" id="filter-tabs">
+          <div class="flex flex-wrap gap-2 pb-2 md:pb-0 w-full md:w-auto" id="filter-tabs">
             {/* Skeleton while loading */}
             <div class="flex space-x-2" id="tabs-skeleton">
               <div class="h-9 w-20 bg-slate-200 rounded-full animate-pulse"></div>
@@ -199,14 +199,14 @@ import Footer from '../components/layout/Footer.astro';
 
       // "Semua" tab
       const semuaBtn = document.createElement('button');
-      semuaBtn.className = 'filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-carbon text-white';
+      semuaBtn.className = 'filter-tab active px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-carbon text-white';
       semuaBtn.dataset.filter = 'all';
       semuaBtn.textContent = 'Semua';
       tabsContainer.appendChild(semuaBtn);
 
       // "Hot" tab
       const hotBtn = document.createElement('button');
-      hotBtn.className = 'filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
+      hotBtn.className = 'filter-tab px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
       hotBtn.dataset.filter = 'hot';
       hotBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block align-text-bottom mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Hot';
       tabsContainer.appendChild(hotBtn);
@@ -214,7 +214,7 @@ import Footer from '../components/layout/Footer.astro';
       // Category tabs — use display name from categories table
       categories.forEach(function(cat) {
         const btn = document.createElement('button');
-        btn.className = 'filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
+        btn.className = 'filter-tab px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
         btn.dataset.filter = cat.key;
         btn.textContent = cat.name;
         tabsContainer.appendChild(btn);
