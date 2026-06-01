@@ -2959,8 +2959,8 @@ function emailLayout(title: string, content: string, footerText?: string) {
   <div style="max-width:600px;margin:40px auto;background:${BRAND.white};border-radius:20px;overflow:hidden;box-shadow:${BRAND.shadow};">
     <!-- Header -->
     <div style="${BRAND.headerBg};padding:40px 32px;text-align:center;border-bottom:1px solid ${BRAND.borderLight};">
-      <h1 style="color:${BRAND.dark};margin:0;font-size:26px;font-weight:700;letter-spacing:-0.03em;">ASRI Digital</h1>
-      <p style="color:${BRAND.textMuted};margin:8px 0 0;font-size:14px;font-weight:500;letter-spacing:0.02em;text-transform:uppercase;">${title}</p>
+      <img src="https://res.cloudinary.com/daj8fzinf/image/upload/q_auto/f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png" alt="ASRI Digital" style="max-width:160px;height:auto;display:inline-block;">
+      <p style="color:${BRAND.textMuted};margin:12px 0 0;font-size:14px;font-weight:500;letter-spacing:0.02em;text-transform:uppercase;">${title}</p>
     </div>
 
     <!-- Body -->
