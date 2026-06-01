@@ -911,7 +911,7 @@ export async function onRequest(context: any): Promise<Response> {
         console.error('RESEND: Email error:', emailError.message);
       }
 
-      return jsonResponse({ success: true, debug: true, userFound: true, email: normalizedEmail, resendKeyExists: !!env.RESEND_KEY, resendKeyPrefix: env.RESEND_KEY ? env.RESEND_KEY.substring(0, 10) : 'none', emailSendResult });
+      return jsonResponse({ success: true, message: 'Jika email terdaftar, link reset sudah dikirim.' });
     }
 
     // ==================== AUTH: RESET PASSWORD ====================
