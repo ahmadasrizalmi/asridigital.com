@@ -1734,6 +1734,45 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ post, relatedPosts: relatedPosts.results });
     }
 
+    // ==================== MIGRATION: Fix GPT products (temp, before admin auth) ====================
+    if (route === '/admin/migrate-gpt-links' && method === 'POST') {
+      const body = await request.json();
+      if (body.secret !== 'migrate-gpt-2026') {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const products = await env.DB.prepare(
+        "SELECT id, title, description, gpt_url FROM products WHERE description LIKE '%chatgpt.com/g/%'"
+      ).all();
+
+      let updated = 0;
+      let errors = [];
+
+      for (const p of products.results) {
+        try {
+          const desc = (p.description as string) || '';
+          const gptMatch = desc.match(/https:\/\/chatgpt\.com\/g\/[^\s\)]+/);
+          const gptLink = gptMatch ? gptMatch[0] : '';
+          if (!gptLink) continue;
+
+          let cleanDesc = desc.replace(/\n*Akses GPT:\s*https:\/\/chatgpt\.com\/g\/[^\s]+/g, '').trim();
+
+          if (cleanDesc.length < 50) {
+            cleanDesc = `Custom GPT AI assistant — ${p.title}.\n\n**Fitur Utama:**\n- AI-powered assistance untuk kebutuhan spesifik Anda\n- Respons yang terstruktur dan mudah dipahami\n- Siap digunakan kapan saja\n\n**Cara Menggunakan:**\n1. Klik "Beli Sekarang" untuk mendapatkan akses\n2. Anda akan menerima link akses GPT setelah pembayaran\n3. Buka link dan mulai menggunakan GPT\n\nGPT ini dirancang khusus untuk memberikan hasil yang optimal sesuai kebutuhan Anda.`;
+          }
+
+          await env.DB.prepare(
+            "UPDATE products SET gpt_url = ?, description = ?, updated_at = datetime('now') WHERE id = ?"
+          ).bind(gptLink, cleanDesc, p.id).run();
+          updated++;
+        } catch (e: any) {
+          errors.push({ id: p.id, title: p.title, error: e.message });
+        }
+      }
+
+      return jsonResponse({ success: true, total: products.results.length, updated, errors });
+    }
+
     // ==================== ADMIN MIDDLEWARE ====================
     // All admin routes require authentication and admin role
     let adminUser: any = null;
@@ -2913,57 +2952,6 @@ export async function onRequest(context: any): Promise<Response> {
         failed: failedCount,
         total: subscribers.results.length,
         message: `Notifikasi terkirim ke ${sentCount} subscriber${sentCount !== 1 ? 's' : ''}`
-      });
-    }
-
-    // ==================== MIGRATION: Fix GPT products ====================
-    if (route === '/admin/migrate-gpt-links' && method === 'POST') {
-      const body = await request.json();
-      if (body.secret !== 'migrate-gpt-2026') {
-        return jsonResponse({ error: 'Unauthorized' }, 401);
-      }
-
-      // Get all products with GPT links in description
-      const products = await env.DB.prepare(
-        "SELECT id, title, description, gpt_url FROM products WHERE description LIKE '%chatgpt.com/g/%'"
-      ).all();
-
-      let updated = 0;
-      let errors = [];
-
-      for (const p of products.results) {
-        try {
-          const desc = (p.description as string) || '';
-          // Extract GPT link
-          const gptMatch = desc.match(/https:\/\/chatgpt\.com\/g\/[^\s\)]+/);
-          const gptLink = gptMatch ? gptMatch[0] : '';
-
-          if (!gptLink) continue;
-
-          // Clean description - remove "Akses GPT: ..." line and trailing whitespace
-          let cleanDesc = desc.replace(/\n*Akses GPT:\s*https:\/\/chatgpt\.com\/g\/[^\s]+/g, '').trim();
-
-          // If description is too short (just the GPT link), write a basic one
-          if (cleanDesc.length < 50) {
-            cleanDesc = `Custom GPT AI assistant — ${p.title}.\n\n**Fitur Utama:**\n- AI-powered assistance untuk kebutuhan spesifik Anda\n- Respons yang terstruktur dan mudah dipahami\n- Siap digunakan kapan saja\n\n**Cara Menggunakan:**\n1. Klik "Beli Sekarang" untuk mendapatkan akses\n2. Anda akan menerima link akses GPT setelah pembayaran\n3. Buka link dan mulai menggunakan GPT\n\nGPT ini dirancang khusus untuk memberikan hasil yang optimal sesuai kebutuhan Anda.`;
-          }
-
-          // Update product: set gpt_url and clean description
-          await env.DB.prepare(
-            "UPDATE products SET gpt_url = ?, description = ?, updated_at = datetime('now') WHERE id = ?"
-          ).bind(gptLink, cleanDesc, p.id).run();
-
-          updated++;
-        } catch (e: any) {
-          errors.push({ id: p.id, title: p.title, error: e.message });
-        }
-      }
-
-      return jsonResponse({
-        success: true,
-        total: products.results.length,
-        updated,
-        errors
       });
     }
 
