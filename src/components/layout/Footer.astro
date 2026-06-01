@@ -7,8 +7,8 @@ const currentYear = new Date().getFullYear();
     
     <!-- MOBILE + SMALL TABLET: simplified layout (< 1024px) -->
     <div class="lg:hidden">
-      <h4 class="font-bold text-slate-900 text-lg mb-3">Asri Digital</h4>
-      <p class="text-slate-500 text-sm mb-5 leading-relaxed">
+      <h4 class="font-bold text-slate-900 text-lg mb-3" id="footer-site-name-mobile">Asri Digital</h4>
+      <p class="text-slate-500 text-sm mb-5 leading-relaxed" id="footer-tagline-mobile">
         Solusi Bisnis Digital & AI untuk Profesional Indonesia.
       </p>
       
@@ -42,8 +42,8 @@ const currentYear = new Date().getFullYear();
         
         <!-- Brand & Newsletter -->
         <div class="col-span-1">
-          <h4 class="font-bold text-slate-900 text-lg mb-4">Asri Digital</h4>
-          <p class="text-slate-500 text-sm mb-6 leading-relaxed pr-4">
+          <h4 class="font-bold text-slate-900 text-lg mb-4" id="footer-site-name-desktop">Asri Digital</h4>
+          <p class="text-slate-500 text-sm mb-6 leading-relaxed pr-4" id="footer-tagline-desktop">
             Dapatkan inspirasi alur kerja, update software, dan tips produktivitas harian.
           </p>
           <div class="relative w-full">
@@ -104,9 +104,33 @@ const currentYear = new Date().getFullYear();
 
 <script is:inline>
 (function() {
-  fetch('/api/site-settings?keys=instagram,tiktok,youtube')
+  fetch('/api/site-settings')
     .then(function(r) { return r.json(); })
     .then(function(s) {
+      // Update site name and tagline in footer
+      if (s.site_name) {
+        ['footer-site-name-mobile', 'footer-site-name-desktop'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = s.site_name;
+        });
+      }
+      if (s.footer_tagline || s.site_description) {
+        var tagline = s.footer_tagline || s.site_description;
+        ['footer-tagline-mobile', 'footer-tagline-desktop'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = tagline;
+        });
+      }
+      // Update copyright text
+      if (s.copyright_text) {
+        document.querySelectorAll('footer p').forEach(function(p) {
+          if (p.textContent.indexOf('©') !== -1 && p.textContent.indexOf('Asri Digital') !== -1) {
+            p.textContent = p.textContent.replace(/Asri Digital.*$/, s.copyright_text);
+          }
+        });
+      }
+
+      // Dynamic social links
       if (!s.instagram && !s.tiktok && !s.youtube) return;
       var containers = ['footer-social-mobile', 'footer-social-desktop'];
       containers.forEach(function(id) {
