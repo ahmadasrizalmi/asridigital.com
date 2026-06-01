@@ -2944,7 +2944,8 @@ const BRAND = {
   font: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   headerBg: "background-color:#f8fafc;background-image:radial-gradient(circle at 80% 0%, rgba(167,243,208,0.4) 0%, transparent 50%), radial-gradient(circle at 10% 100%, rgba(186,230,253,0.4) 0%, transparent 50%)",
   shadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01)',
-  btnShadow: '0 4px 15px rgba(129,226,164,0.25)',
+  btnShadow: '0 6px 20px rgba(129,226,164,0.25), 0 2px 4px rgba(0,0,0,0.05)',
+  cardShadow: '0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05)',
 };
 
 function emailLayout(title: string, content: string, footerText?: string) {
@@ -2985,11 +2986,11 @@ function emailButton(text: string, url: string) {
 }
 
 function emailCard(content: string) {
-  return `<div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:16px;padding:20px 24px;margin:24px 0;">${content}</div>`;
+  return `<div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:16px;padding:20px 24px;margin:24px 0;box-shadow:${BRAND.cardShadow};">${content}</div>`;
 }
 
 function emailCardDashed(content: string) {
-  return `<div style="background:${BRAND.bg};border:1px dashed #cbd5e1;border-radius:16px;padding:24px;margin:28px 0;text-align:center;">${content}</div>`;
+  return `<div style="background:${BRAND.bg};border:1px dashed #cbd5e1;border-radius:16px;padding:24px;margin:28px 0;text-align:center;box-shadow:${BRAND.cardShadow};">${content}</div>`;
 }
 
 function emailOrderRow(label: string, value: string, highlight = false) {
@@ -3081,7 +3082,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     </p>
 
     <!-- Order Details -->
-    <div style="background:${BRAND.white};border:1px solid ${BRAND.border};border-radius:16px;padding:24px;margin:28px 0;box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+    <div style="background:${BRAND.white};border:1px solid ${BRAND.border};border-radius:16px;padding:24px;margin:28px 0;box-shadow:${BRAND.cardShadow};">
       <h3 style="font-size:12px;color:${BRAND.textLight};text-transform:uppercase;letter-spacing:0.08em;margin:0 0 16px;font-weight:700;">Detail Transaksi</h3>
       <table style="width:100%;border-collapse:collapse;">
         ${emailOrderRow('Order ID', String(order.id))}
@@ -3091,7 +3092,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     </div>
 
     ${userPassword ? `
-    <div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:16px;padding:20px 24px;margin:20px 0;">
+    <div style="background:${BRAND.bg};border:1px solid ${BRAND.border};border-radius:16px;padding:20px 24px;margin:20px 0;box-shadow:${BRAND.cardShadow};">
       <p style="color:${BRAND.text};font-size:14px;font-weight:600;margin:0 0 12px;">Info Akses Login</p>
       <p style="color:${BRAND.textMuted};font-size:14px;margin:0;line-height:1.8;">
         <strong>Email:</strong> ${order.user_email}<br/>
@@ -3197,7 +3198,7 @@ async function sendSubscriberNewProductEmail(env: Env, data: {
     <p style="color:${BRAND.text};font-size:15px;line-height:1.7;margin:0 0 28px;">Kami baru saja merilis inovasi terbaru yang dirancang khusus untuk mempermudah alur kerja Anda. Intip selengkapnya di bawah ini:</p>
 
     <!-- Product Card -->
-    <div style="border:1px solid ${BRAND.border};border-radius:16px;overflow:hidden;margin:0 0 32px;box-shadow:0 4px 10px rgba(0,0,0,0.03);">
+    <div style="border:1px solid ${BRAND.border};border-radius:16px;overflow:hidden;margin:0 0 32px;box-shadow:${BRAND.cardShadow};">
       <div style="${BRAND.headerBg};padding:24px;text-align:center;border-bottom:1px solid ${BRAND.border};">
         <span style="display:inline-block;background:${BRAND.white};color:${BRAND.primary};font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;border:1px solid #d1fae5;box-shadow:0 2px 4px rgba(16,185,129,0.05);">${data.product_category}</span>
       </div>
