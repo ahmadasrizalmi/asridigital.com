@@ -238,7 +238,11 @@ import Footer from '../components/layout/Footer.astro';
         const isHot = el.dataset.hot === 'true';
         const matchesSearch = title.includes(searchTerm);
         let matchesCategory;
-        if (activeCategory === 'hot') {
+
+        // Products with no category (e.g. All Access Pass) always show
+        if (!category) {
+          matchesCategory = true;
+        } else if (activeCategory === 'hot') {
           matchesCategory = isHot;
         } else if (activeCategory === 'all') {
           matchesCategory = true;
@@ -307,10 +311,12 @@ import Footer from '../components/layout/Footer.astro';
         }
 
         // Extract unique categories from actual product data, with display names
+        // Skip products with empty/null category (e.g. All Access Pass) — they always show
         var categories = []; // [{key: 'kreatif', name: 'GPT Custom'}, ...]
+        var skipCats = ['membership', '']; // These are not real categories
         products.forEach(function(p) {
           var catKey = (p.category || '').toLowerCase();
-          if (!catKey) return;
+          if (!catKey || skipCats.indexOf(catKey) !== -1) return;
           var exists = categories.find(function(c) { return c.key === catKey; });
           if (!exists) {
             categories.push({
