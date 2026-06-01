@@ -57,7 +57,15 @@
 </section>
 
 <style>
-  .hot-card-snap { flex-shrink: 0; }
+  .hot-card-snap {
+    flex-shrink: 0;
+    width: calc((100% - 60px) / 4); /* 4 cards desktop, 3 gaps × 20px */
+  }
+  @media (max-width: 767px) {
+    .hot-card-snap {
+      width: calc((100% - 20px) / 2); /* 2 cards mobile, 1 gap × 20px */
+    }
+  }
 </style>
 
 <script is:inline>
