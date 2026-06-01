@@ -278,54 +278,107 @@ import Footer from '../components/layout/Footer.astro';
     }
 
     // Category display name map — built from /api/categories
-    // Key = product.category (raw), Value = category display name
     var catDisplayMap = {};
 
-    // Fetch products + categories from API — always fresh from D1
+    // Cache keys
+    var CACHE_PRODUCTS = 'ad_products_cache';
+    var CACHE_CATEGORIES = 'ad_categories_cache';
+    var CACHE_TS = 'ad_cache_ts';
+    var CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+    function getCached(key) {
+      try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) { return null; }
+    }
+    function setCache(key, data) {
+      try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+    }
+
+    function buildCatDisplayMap(cats) {
+      cats.forEach(function(c) {
+        var key = (c.id || '').replace(/^cat-/, '').toLowerCase();
+        if (key) catDisplayMap[key] = c.name || key;
+        if (c.slug) catDisplayMap[c.slug.toLowerCase()] = c.name || c.slug;
+      });
+    }
+
+    function buildCategoriesList(cats) {
+      var categories = [];
+      cats.forEach(function(c) {
+        var key = (c.id || '').replace(/^cat-/, '').toLowerCase();
+        if (!key) return;
+        categories.push({ key: key, name: c.name || key.charAt(0).toUpperCase() + key.slice(1) });
+      });
+      return categories;
+    }
+
+    function renderAll(products, cats) {
+      if (products.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada produk tersedia.</div>';
+        if (productCount) productCount.textContent = 'Menampilkan 0 produk';
+        return;
+      }
+      buildCatDisplayMap(cats);
+      var categories = buildCategoriesList(cats);
+      renderTabs(categories);
+      grid.innerHTML = products.map(renderCard).join('');
+      document.querySelectorAll('.skeleton-card').forEach(function(el) { el.remove(); });
+      if (productCount) productCount.textContent = 'Menampilkan ' + products.length + ' produk';
+      searchInput?.addEventListener('input', filterProducts);
+    }
+
+    async function fetchFresh() {
+      var prodRes = fetch('/api/products?limit=100');
+      var catRes = fetch('/api/categories');
+      var prodData = (await prodRes).json();
+      var catData = (await catRes).json();
+      var products = ((await prodData).products || []).filter(function(p) { return p.is_active !== false; });
+      var cats = (await catData).categories || (await catData) || [];
+      return { products: products, cats: cats };
+    }
+
+    // Main: load from cache first (instant), then refresh in background
     async function loadProducts() {
       try {
-        // Fetch both in parallel
-        var prodRes = fetch('/api/products?limit=100');
-        var catRes = fetch('/api/categories');
+        var cached = getCached(CACHE_PRODUCTS);
+        var cachedCats = getCached(CACHE_CATEGORIES);
+        var cacheTs = parseInt(localStorage.getItem(CACHE_TS) || '0');
+        var cacheAge = Date.now() - cacheTs;
 
-        var prodData = (await prodRes).json();
-        var catData = (await catRes).json();
-
-        var products = ((await prodData).products || []).filter(function(p) { return p.is_active !== false; });
-        var cats = (await catData).categories || (await catData) || [];
-
-        // Build category display map: cat-{original_name} -> display_name
-        // Categories have id like "cat-kreatif", products have category like "kreatif"
-        cats.forEach(function(c) {
-          // Map by id (strip "cat-" prefix) -> display name
-          var key = (c.id || '').replace(/^cat-/, '').toLowerCase();
-          if (key) catDisplayMap[key] = c.name || key;
-          // Also map by slug in case products reference slug
-          if (c.slug) catDisplayMap[c.slug.toLowerCase()] = c.name || c.slug;
-        });
-
-        if (products.length === 0) {
-          grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada produk tersedia.</div>';
-          if (productCount) productCount.textContent = 'Menampilkan 0 produk';
+        // If cache exists and fresh (< 5 min), render immediately
+        if (cached && cachedCats && cacheAge < CACHE_TTL) {
+          renderAll(cached, cachedCats);
+          // Background refresh — update silently if data changed
+          fetchFresh().then(function(fresh) {
+            setCache(CACHE_PRODUCTS, fresh.products);
+            setCache(CACHE_CATEGORIES, fresh.cats);
+            localStorage.setItem(CACHE_TS, Date.now().toString());
+            // Only re-render if data actually changed
+            if (JSON.stringify(fresh.products) !== JSON.stringify(cached)) {
+              renderAll(fresh.products, fresh.cats);
+            }
+          }).catch(function() {});
           return;
         }
 
-        // Use ALL categories from categories API — not just ones with products
-        var categories = []; // [{key: 'kreatif', name: 'GPT Custom'}, ...]
-        cats.forEach(function(c) {
-          var key = (c.id || '').replace(/^cat-/, '').toLowerCase();
-          if (!key) return;
-          categories.push({
-            key: key,
-            name: c.name || key.charAt(0).toUpperCase() + key.slice(1)
-          });
-        });
+        // No cache or expired — fetch fresh (show skeleton meanwhile)
+        var fresh = await fetchFresh();
+        setCache(CACHE_PRODUCTS, fresh.products);
+        setCache(CACHE_CATEGORIES, fresh.cats);
+        localStorage.setItem(CACHE_TS, Date.now().toString());
+        renderAll(fresh.products, fresh.cats);
 
-        // Render filter tabs with display names
-        renderTabs(categories);
-
-        // Render product cards
-        grid.innerHTML = products.map(renderCard).join('');
+      } catch (err) {
+        console.error('Failed to load products:', err);
+        // Try stale cache as fallback
+        var stale = getCached(CACHE_PRODUCTS);
+        var staleCats = getCached(CACHE_CATEGORIES);
+        if (stale && staleCats) {
+          renderAll(stale, staleCats);
+        } else {
+          grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Gagal memuat produk. Coba refresh halaman.</div>';
+        }
+      }
+    }
 
         // Remove skeleton cards
         document.querySelectorAll('.skeleton-card').forEach(function(el) { el.remove(); });

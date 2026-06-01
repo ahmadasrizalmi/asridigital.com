@@ -151,9 +151,65 @@
 
   function nextSlide(): void { goToSlide(currentSlide + 1); }
 
+  function setupSwipe() {
+    let x0 = 0;
+    const header = document.querySelector('header')!;
+    header.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; clearInterval(slideTimer!); }, { passive: true });
+    header.addEventListener('touchend', e => {
+      const dx = x0 - e.changedTouches[0].clientX;
+      if (Math.abs(dx) > 50) { dx > 0 ? nextSlide() : goToSlide(currentSlide - 1); }
+      slideTimer = setInterval(nextSlide, 5000);
+    }, { passive: true });
+  }
+
+  // Cache helpers
+  var SLIDE_CACHE = 'ad_hero_cache';
+  var SLIDE_TS = 'ad_hero_ts';
+  var SLIDE_TTL = 10 * 60 * 1000; // 10 minutes
+
+  function getSlideCache(key) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch(e) { return null; }
+  }
+  function setSlideCache(key, data) {
+    try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+  }
+
   async function init() {
     try {
-      // Fetch hero content + slides in parallel
+      // Check cache first
+      var cached = getSlideCache(SLIDE_CACHE);
+      var cacheTs = parseInt(localStorage.getItem(SLIDE_TS) || '0');
+      var cacheAge = Date.now() - cacheTs;
+
+      if (cached && cacheAge < SLIDE_TTL) {
+        // Use cached data — instant render
+        if (cached.settings) {
+          fallbackTitle = cached.settings.hero_title || '';
+          fallbackSubtitle = cached.settings.hero_subtitle || '';
+          fallbackCta = cached.settings.hero_cta_text || '';
+          fallbackLink = cached.settings.hero_cta_link || '';
+        }
+        if (cached.slides && cached.slides.length > 0) {
+          DATA.push(...cached.slides);
+          if (DATA.length > 0) updateTextForSlide(DATA[0]);
+          renderSlides();
+          renderDots();
+          slideTimer = setInterval(nextSlide, 5000);
+          setupSwipe();
+        }
+        // Background refresh
+        fetch('/api/site-settings?keys=hero_title,hero_subtitle,hero_cta_text,hero_cta_link')
+          .then(function(r) { return r.json(); })
+          .then(function(s) {
+            return fetch('/api/hero-slides').then(function(r) { return r.json(); }).then(function(sl) {
+              setSlideCache(SLIDE_CACHE, { settings: s, slides: sl.slides || [] });
+              localStorage.setItem(SLIDE_TS, Date.now().toString());
+            });
+          }).catch(function() {});
+        return;
+      }
+
+      // No cache — fetch fresh
       const [settingsRes, slidesRes] = await Promise.all([
         fetch('/api/site-settings?keys=hero_title,hero_subtitle,hero_cta_text,hero_cta_link'),
         fetch('/api/hero-slides')
@@ -172,6 +228,10 @@
 
       if (DATA.length === 0) return;
 
+      // Cache the data
+      setSlideCache(SLIDE_CACHE, { settings: settings, slides: DATA.slice() });
+      localStorage.setItem(SLIDE_TS, Date.now().toString());
+
       // Apply first slide's text
       if (DATA.length > 0) updateTextForSlide(DATA[0]);
 
@@ -179,15 +239,7 @@
       renderDots();
       slideTimer = setInterval(nextSlide, 5000);
 
-      // Touch swipe
-      let x0 = 0;
-      const header = document.querySelector('header')!;
-      header.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; clearInterval(slideTimer!); }, { passive: true });
-      header.addEventListener('touchend', e => {
-        const dx = x0 - e.changedTouches[0].clientX;
-        if (Math.abs(dx) > 50) { dx > 0 ? nextSlide() : goToSlide(currentSlide - 1); }
-        slideTimer = setInterval(nextSlide, 5000);
-      }, { passive: true });
+      setupSwipe();
     } catch (err) {
       console.error('Hero slider failed:', err);
     }
