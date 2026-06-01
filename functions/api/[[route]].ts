@@ -872,26 +872,23 @@ export async function onRequest(context: any): Promise<Response> {
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
               to: normalizedEmail,
-              subject: '🔐 Reset Password - Asri Digital',
-              html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                  <div style="background: #5C7A36; padding: 24px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">Reset Password</h1>
-                  </div>
-                  <div style="padding: 24px;">
-                    <p>Halo <strong>${user.name}</strong>,</p>
-                    <p>Kami menerima permintaan untuk reset password akun Anda.</p>
-                    <p>Klik tombol di bawah untuk reset password:</p>
-                    <div style="text-align: center; margin: 32px 0;">
-                      <a href="${resetUrl}" style="background: #5C7A36; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                        Reset Password
-                      </a>
-                    </div>
-                    <p style="color: #737373; font-size: 14px;">Link ini akan kedaluwarsa dalam 1 jam.</p>
-                    <p style="color: #737373; font-size: 14px;">Jika Anda tidak meminta reset password, abaikan email ini.</p>
-                  </div>
-                </div>
-              `
+              subject: 'Reset Password - ASRI Digital',
+              html: emailLayout('Reset Password', `
+                <p style="color:${BRAND.text};font-size:15px;line-height:1.7;margin:0 0 16px;">
+                  Halo <strong>${user.name}</strong>,
+                </p>
+                <p style="color:${BRAND.textSecondary};font-size:15px;line-height:1.7;margin:0 0 16px;">
+                  Kami menerima permintaan untuk reset password akun Anda.
+                </p>
+                <p style="color:${BRAND.textSecondary};font-size:15px;line-height:1.7;margin:0 0 8px;">
+                  Klik tombol di bawah untuk reset password:
+                </p>
+                ${emailButton('Reset Password', resetUrl)}
+                ${emailCard(`
+                  <p style="color:${BRAND.textMuted};font-size:13px;margin:0 0 6px;">Link ini akan kedaluwarsa dalam <strong>1 jam</strong>.</p>
+                  <p style="color:${BRAND.textMuted};font-size:13px;margin:0;">Jika Anda tidak meminta reset password, abaikan email ini.</p>
+                `)}
+              `)
             })
           });
           
@@ -2934,6 +2931,76 @@ export async function onRequest(context: any): Promise<Response> {
   }
 }
 
+// ==================== SHARED EMAIL TEMPLATE ====================
+const BRAND = {
+  primary: '#10b981',
+  primaryDark: '#059669',
+  gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #f59e0b 100%)',
+  gradientBtn: 'linear-gradient(135deg, #10b981, #f59e0b)',
+  dark: '#1c1c1c',
+  text: '#171717',
+  textSecondary: '#525252',
+  textMuted: '#737373',
+  bg: '#f5f5f5',
+  bgCard: '#f0fdf4',
+  border: '#e5e5e5',
+  white: '#ffffff',
+  font: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+};
+
+function emailLayout(title: string, content: string, footerText?: string) {
+  return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;font-family:${BRAND.font};background:${BRAND.bg};-webkit-font-smoothing:antialiased;">
+  <div style="max-width:600px;margin:0 auto;background:${BRAND.white};">
+    <!-- Header -->
+    <div style="background:${BRAND.dark};padding:0;">
+      <div style="background:${BRAND.gradient};padding:28px 32px;text-align:center;">
+        <h1 style="color:${BRAND.white};margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em;">ASRI Digital</h1>
+        <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:13px;font-weight:500;">${title}</p>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:32px;">
+      ${content}
+    </div>
+
+    <!-- Footer -->
+    <div style="background:${BRAND.bg};padding:24px 32px;text-align:center;border-top:1px solid ${BRAND.border};">
+      ${footerText ? `<p style="color:${BRAND.textMuted};font-size:13px;line-height:1.5;margin:0 0 12px;">${footerText}</p>` : ''}
+      <p style="color:#a3a3a3;font-size:12px;margin:0;">© 2026 ASRI Digital. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function emailButton(text: string, url: string) {
+  return `<div style="text-align:center;margin:28px 0;">
+    <a href="${url}" style="display:inline-block;background:${BRAND.gradientBtn};color:${BRAND.white};padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.01em;box-shadow:0 4px 14px rgba(16,185,129,0.35);">${text}</a>
+  </div>`;
+}
+
+function emailCard(content: string) {
+  return `<div style="background:${BRAND.bgCard};border:1px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:20px 0;">${content}</div>`;
+}
+
+function emailOrderRow(label: string, value: string, highlight = false) {
+  const valueStyle = highlight
+    ? `color:${BRAND.primary};font-weight:700;font-size:18px;`
+    : `color:${BRAND.text};font-weight:600;`;
+  return `<tr>
+    <td style="color:${BRAND.textSecondary};padding:6px 0;font-size:14px;">${label}</td>
+    <td style="${valueStyle}text-align:right;padding:6px 0;font-size:14px;">${value}</td>
+  </tr>`;
+}
+
 // Telegram notification helper
 async function notifyTelegram(env: Env, message: string) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
@@ -2993,94 +3060,52 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     ? `${env.APP_URL}/api/auth/magic-login?token=${magicToken}`
     : `${env.APP_URL}/dashboard`;
   const subject = isAllAccess
-    ? '🏆 Selamat! All-Access Pass Anda Aktif'
-    : `🎉 Pembayaran Berhasil - ${order.product_title}`;
+    ? 'Selamat! All-Access Pass Anda Aktif'
+    : `Pembayaran Berhasil - ${order.product_title}`;
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="font-family: 'Inter', -apple-system, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-        <!-- Header -->
-        <div style="background-color: #5C7A36; padding: 32px; text-align: center;">
-          <h1 style="color: #ffffff; font-size: 24px; margin: 0;">✨ Asri Digital</h1>
-          <p style="color: #ffffff; opacity: 0.9; margin-top: 8px;">Custom GPT untuk Profesional Indonesia</p>
-        </div>
-        
-        <!-- Content -->
-        <div style="padding: 32px;">
-          <h2 style="font-size: 20px; color: #171717; margin-bottom: 16px;">
-            ${isAllAccess ? '🏆 Selamat! All-Access Pass Anda Aktif' : '🎉 Pembayaran Berhasil!'}
-          </h2>
-          
-          <p style="color: #525252; line-height: 1.6;">
-            Halo <strong>${order.user_name}</strong>,
-          </p>
-          
-          <p style="color: #525252; line-height: 1.6;">
-            ${isAllAccess
-              ? 'Terima kasih telah membeli All-Access Pass! Anda sekarang memiliki akses ke semua Custom GPT yang tersedia dan yang akan datang.'
-              : `Terima kasih telah membeli <strong>${order.product_title}</strong>! Produk Anda sudah siap digunakan.`
-            }
-          </p>
-          
-          <!-- Order Details -->
-          <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 24px 0;">
-            <h3 style="font-size: 14px; color: #737373; text-transform: uppercase; margin-top: 0;">Detail Pesanan</h3>
-            <table style="width: 100%;">
-              <tr>
-                <td style="color: #525252; padding: 4px 0;">Order ID</td>
-                <td style="color: #171717; font-weight: 600; text-align: right;">${order.id}</td>
-              </tr>
-              <tr>
-                <td style="color: #525252; padding: 4px 0;">Produk</td>
-                <td style="color: #171717; font-weight: 600; text-align: right;">${order.product_title}</td>
-              </tr>
-              <tr>
-                <td style="color: #525252; padding: 4px 0;">Total</td>
-                <td style="color: #5C7A36; font-weight: 700; font-size: 18px; text-align: right;">Rp ${order.amount.toLocaleString()}</td>
-              </tr>
-            </table>
-          </div>
-          
-          <!-- CTA Button -->
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="${dashboardUrl}" style="display: inline-block; background-color: #5C7A36; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-              Buka Dashboard →
-            </a>
-          </div>
-          
-          ${userPassword ? `
-          <!-- Login Credentials -->
-          <div style="background-color: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; padding: 16px; margin: 16px 0;">
-            <p style="color: #92400e; font-size: 14px; font-weight: 600; margin: 0 0 8px;">🔐 Info Login Anda</p>
-            <p style="color: #78350f; font-size: 13px; margin: 0; line-height: 1.6;">
-              <strong>Email:</strong> ${order.user_email}<br/>
-              <strong>Password:</strong> <code style="background: #fef3c7; padding: 2px 6px; border-radius: 4px;">${userPassword}</code>
-            </p>
-            <p style="color: #92400e; font-size: 12px; margin: 8px 0 0;">Simpan info ini atau ganti password Anda di Dashboard.</p>
-          </div>
-          ` : ''}
-          
-          <p style="color: #737373; font-size: 14px; text-align: center;">
-            Jika ada pertanyaan, balas email ini atau hubungi kami via WhatsApp.
-          </p>
-        </div>
-        
-        <!-- Footer -->
-        <div style="background-color: #f5f5f5; padding: 24px; text-align: center; border-top: 1px solid #e5e5e5;">
-          <p style="color: #a3a3a3; font-size: 12px; margin: 0;">
-            © 2026 Asri Digital. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  const html = emailLayout(
+    isAllAccess ? 'All-Access Pass Aktif' : 'Pembayaran Berhasil', `
+    <h2 style="font-size:20px;color:${BRAND.text};margin:0 0 16px;font-weight:700;">
+      ${isAllAccess ? 'Selamat! All-Access Pass Anda Aktif' : 'Pembayaran Berhasil!'}
+    </h2>
+
+    <p style="color:${BRAND.textSecondary};line-height:1.7;font-size:15px;">
+      Halo <strong>${order.user_name}</strong>,
+    </p>
+    <p style="color:${BRAND.textSecondary};line-height:1.7;font-size:15px;">
+      ${isAllAccess
+        ? 'Terima kasih telah membeli All-Access Pass! Anda sekarang memiliki akses ke semua Custom GPT yang tersedia dan yang akan datang.'
+        : `Terima kasih telah membeli <strong>${order.product_title}</strong>! Produk Anda sudah siap digunakan.`
+      }
+    </p>
+
+    <!-- Order Details -->
+    <div style="background:${BRAND.bgCard};border:1px solid #bbf7d0;border-radius:12px;padding:20px 24px;margin:24px 0;">
+      <h3 style="font-size:13px;color:${BRAND.textMuted};text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px;font-weight:600;">Detail Pesanan</h3>
+      <table style="width:100%;border-collapse:collapse;">
+        ${emailOrderRow('Order ID', String(order.id))}
+        ${emailOrderRow('Produk', order.product_title)}
+        ${emailOrderRow('Total', `Rp ${Number(order.amount).toLocaleString('id-ID')}`, true)}
+      </table>
+    </div>
+
+    ${emailButton('Buka Dashboard', dashboardUrl)}
+
+    ${userPassword ? `
+    <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:12px;padding:16px 20px;margin:16px 0;">
+      <p style="color:#92400e;font-size:14px;font-weight:600;margin:0 0 10px;">Info Login Anda</p>
+      <p style="color:#78350f;font-size:13px;margin:0;line-height:1.8;">
+        <strong>Email:</strong> ${order.user_email}<br/>
+        <strong>Password:</strong> <code style="background:#fef3c7;padding:2px 8px;border-radius:4px;font-family:monospace;">${userPassword}</code>
+      </p>
+      <p style="color:#92400e;font-size:12px;margin:10px 0 0;">Simpan info ini atau ganti password Anda di Dashboard.</p>
+    </div>
+    ` : ''}
+
+    <p style="color:${BRAND.textMuted};font-size:14px;text-align:center;margin:24px 0 0;">
+      Jika ada pertanyaan, balas email ini atau hubungi kami via WhatsApp.
+    </p>
+  `);
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -3125,9 +3150,27 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
 // Email helper function for free products
 async function sendFreeProductEmail(env: Env, order: any) {
   if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) return;
-  const subject = `🎁 Produk Gratis Anda - ${order.product_title}`;
+  const subject = `Produk Gratis Anda - ${order.product_title}`;
   const downloadLink = order.download_url || `${env.APP_URL}/dashboard`;
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;font-family:sans-serif;background:#f5f5f5;"><div style="max-width:600px;margin:0 auto;background:#fff;"><div style="background:linear-gradient(135deg,#10b981,#f59e0b);padding:32px;text-align:center;"><h1 style="color:#fff;margin:0;font-size:24px;">🎁 Produk Gratis Anda!</h1></div><div style="padding:32px;"><p style="color:#171717;font-size:16px;">Halo <strong>${order.user_name}</strong>,</p><p style="color:#525252;">Terima kasih telah mengunduh produk gratis kami!</p><div style="background:#f0fdf4;border-left:4px solid #10b981;border-radius:8px;padding:20px;margin:24px 0;"><h3 style="color:#10b981;margin:0 0 8px;">${order.product_title}</h3><p style="color:#525252;margin:0;font-size:14px;">Order ID: ${order.id}</p></div><div style="text-align:center;margin:32px 0;"><a href="${downloadLink}" style="display:inline-block;background:linear-gradient(135deg,#10b981,#f59e0b);color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:600;">Download Sekarang →</a></div><p style="color:#737373;font-size:14px;text-align:center;">Anda akan mendapat notifikasi saat produk baru dirilis. 📬</p></div><div style="background:#f5f5f5;padding:24px;text-align:center;border-top:1px solid #e5e5e5;"><p style="color:#a3a3a3;font-size:12px;margin:0;">© 2026 Asri Digital</p></div></div></body></html>`;
+  const html = emailLayout('Produk Gratis', `
+    <p style="color:${BRAND.text};font-size:15px;line-height:1.7;margin:0 0 16px;">
+      Halo <strong>${order.user_name}</strong>,
+    </p>
+    <p style="color:${BRAND.textSecondary};font-size:15px;line-height:1.7;margin:0 0 20px;">
+      Terima kasih telah mengunduh produk gratis kami!
+    </p>
+
+    ${emailCard(`
+      <h3 style="color:${BRAND.primary};margin:0 0 8px;font-size:16px;font-weight:700;">${order.product_title}</h3>
+      <p style="color:${BRAND.textSecondary};margin:0;font-size:13px;">Order ID: ${order.id}</p>
+    `)}
+
+    ${emailButton('Download Sekarang', downloadLink)}
+
+    <p style="color:${BRAND.textMuted};font-size:14px;text-align:center;margin:24px 0 0;">
+      Anda akan mendapat notifikasi saat produk baru dirilis.
+    </p>
+  `);
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
     body: JSON.stringify({ from: 'Asri Digital <noreply@asridigital.com>', to: order.user_email, subject, html })
@@ -3151,59 +3194,34 @@ async function sendSubscriberNewProductEmail(env: Env, data: {
   if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) return;
 
   const priceDisplay = data.product_price === 0 ? 'GRATIS' : `Rp ${Number(data.product_price).toLocaleString('id-ID')}`;
-  const subject = `🆕 Produk Baru: ${data.product_title}`;
+  const subject = `Produk Baru: ${data.product_title}`;
 
-  const html = `<!DOCTYPE html>
-<html lang="id">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f4f5;">
-  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
-    <!-- Header -->
-    <div style="background:#5C7A36;padding:28px 32px;text-align:center;">
-      <h1 style="color:#ffffff;margin:0;font-size:20px;font-weight:600;letter-spacing:-0.01em;">Asri Digital</h1>
-      <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">Produk Baru Untuk Anda</p>
-    </div>
+  const html = emailLayout('Produk Baru Untuk Anda', `
+    <p style="color:${BRAND.text};font-size:15px;line-height:1.7;margin:0 0 20px;">
+      Halo <strong>${data.to_name}</strong>,
+    </p>
+    <p style="color:${BRAND.textSecondary};font-size:15px;line-height:1.7;margin:0 0 24px;">
+      Kami baru saja merilis produk baru yang mungkin Anda minati:
+    </p>
 
-    <!-- Body -->
-    <div style="padding:32px;">
-      <p style="color:#18181b;font-size:15px;line-height:1.6;margin:0 0 20px;">
-        Halo <strong>${data.to_name}</strong>,
-      </p>
-      <p style="color:#3f3f46;font-size:15px;line-height:1.6;margin:0 0 24px;">
-        Kami baru saja merilis produk baru yang mungkin Anda minati:
-      </p>
-
-      <!-- Product Card -->
-      <div style="border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;margin:0 0 24px;">
-        <div style="background:#fafafa;padding:20px;text-align:center;">
-          <span style="display:inline-block;background:#5C7A36;color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.03em;">${data.product_category}</span>
-        </div>
-        <div style="padding:20px 24px;">
-          <h2 style="color:#18181b;font-size:17px;font-weight:600;margin:0 0 8px;line-height:1.3;">${data.product_title}</h2>
-          <p style="color:#525252;font-size:14px;line-height:1.5;margin:0 0 16px;">${data.product_description.substring(0, 150)}${data.product_description.length > 150 ? '...' : ''}</p>
-          <p style="color:#5C7A36;font-size:18px;font-weight:700;margin:0;">${priceDisplay}</p>
-        </div>
+    <!-- Product Card -->
+    <div style="border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;margin:0 0 24px;">
+      <div style="background:#fafafa;padding:20px;text-align:center;">
+        <span style="display:inline-block;background:${BRAND.primary};color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.04em;">${data.product_category}</span>
       </div>
-
-      <!-- CTA -->
-      <div style="text-align:center;margin:0 0 28px;">
-        <a href="${data.product_url}" style="display:inline-block;background:#5C7A36;color:#ffffff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
-          Lihat Produk →
-        </a>
+      <div style="padding:20px 24px;">
+        <h2 style="color:${BRAND.text};font-size:17px;font-weight:700;margin:0 0 8px;line-height:1.3;">${data.product_title}</h2>
+        <p style="color:${BRAND.textSecondary};font-size:14px;line-height:1.5;margin:0 0 16px;">${data.product_description.substring(0, 150)}${data.product_description.length > 150 ? '...' : ''}</p>
+        <p style="color:${BRAND.primary};font-size:18px;font-weight:700;margin:0;">${priceDisplay}</p>
       </div>
-
-      <p style="color:#a1a1aa;font-size:13px;line-height:1.5;margin:0;text-align:center;">
-        Anda menerima email ini karena terdaftar sebagai subscriber Asri Digital.
-      </p>
     </div>
 
-    <!-- Footer -->
-    <div style="background:#f4f4f5;padding:20px 32px;text-align:center;border-top:1px solid #e4e4e7;">
-      <p style="color:#a1a1aa;font-size:12px;margin:0;">© 2026 Asri Digital. All rights reserved.</p>
-    </div>
-  </div>
-</body>
-</html>`;
+    ${emailButton('Lihat Produk', data.product_url)}
+
+    <p style="color:#a1a1aa;font-size:13px;line-height:1.5;margin:0;text-align:center;">
+      Anda menerima email ini karena terdaftar sebagai subscriber ASRI Digital.
+    </p>
+  `, 'Anda menerima email ini karena terdaftar sebagai subscriber ASRI Digital.');
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
