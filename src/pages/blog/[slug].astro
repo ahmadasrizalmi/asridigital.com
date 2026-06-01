@@ -46,8 +46,8 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
     <div id="article-content" class="hidden">
 
       <!-- Hero Header -->
-      <div id="hero-section" class="relative" style="min-height:200px;background-color:#f8fafc;background-image:radial-gradient(circle at 80% 0%, rgba(167,243,208,0.4) 0%, transparent 50%), radial-gradient(circle at 10% 100%, rgba(186,230,253,0.4) 0%, transparent 50%);">
-        <div id="hero-bg-image" style="position:absolute;inset:0;opacity:0.15;"></div>
+      <div id="hero-section" class="relative" style="min-height:220px;background-color:#f8fafc;background-image:url('https://res.cloudinary.com/daj8fzinf/image/upload/w_1200,h_400,c_fill,q_auto,f_auto/v1779954360/ChatGPT_Image_May_26_2026_03_00_18_PM_lanscape_k1zocx.png');background-size:cover;background-position:center;">
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(248,250,252,0.6) 0%, rgba(248,250,252,0.85) 100%);"></div>
         <div style="position:relative;max-width:800px;margin:0 auto;padding:80px 16px 32px;">
           <!-- Breadcrumb -->
           <nav style="display:flex;align-items:center;gap:6px;font-size:13px;color:#94a3b8;margin-bottom:16px;flex-wrap:wrap;">
@@ -361,11 +361,6 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
       document.getElementById('author-box-name').textContent = post.author_name || 'Admin Asri Digital';
 
       if (post.image_url) {
-        // Set hero background image
-        const heroBg = document.getElementById('hero-bg-image');
-        if (heroBg) {
-          heroBg.style.background = `url('${optimizeImg(post.image_url, 1200, 400)}') center/cover`;
-        }
         const container = document.getElementById('post-image-container');
         const img = document.getElementById('post-image');
         img.src = optimizeImg(post.image_url, 1200, 630);
