@@ -1,13 +1,13 @@
 ---
-// HotReleaseSlider.astro — Shows hot/new release products in a horizontal slider
-// Only renders when there are products with is_hot = 1
-// Fetches from /api/products at runtime (client-side)
+// HotReleaseSlider.astro — Carousel slider for hot products
+// Desktop: 4 cards visible, Mobile: 2 cards visible
+// Auto-slide every 4s + manual swipe + arrow nav
 ---
 
-<section id="hot-release-section" class="hidden py-12 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 border-b border-orange-100">
+<section id="hot-release-section" class="hidden py-10 md:py-12 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 border-b border-orange-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {/* Header */}
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-6 md:mb-8">
       <div class="flex items-center gap-3">
         <span class="inline-flex items-center justify-center w-10 h-10 bg-red-500 rounded-xl">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
@@ -23,24 +23,31 @@
       </a>
     </div>
 
-    {/* Slider Container */}
-    <div class="relative">
-      {/* Scroll container */}
-      <div id="hot-release-slider" class="flex gap-5 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory" style="-webkit-overflow-scrolling:touch;">
-        {/* Cards rendered by JS */}
+    {/* Slider */}
+    <div class="relative group">
+      {/* Viewport */}
+      <div id="hot-slider-viewport" class="overflow-hidden rounded-xl">
+        <div id="hot-slider-track" class="flex transition-transform duration-500 ease-out">
+          {/* Cards rendered by JS */}
+        </div>
       </div>
 
-      {/* Navigation arrows — desktop only */}
-      <button id="hot-prev" class="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all z-10" aria-label="Sebelumnya">
+      {/* Arrow: Prev */}
+      <button id="hot-prev" class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all z-10 opacity-0 group-hover:opacity-100" aria-label="Sebelumnya">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
       </button>
-      <button id="hot-next" class="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all z-10" aria-label="Selanjutnya">
+
+      {/* Arrow: Next */}
+      <button id="hot-next" class="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all z-10 opacity-0 group-hover:opacity-100" aria-label="Selanjutnya">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
       </button>
     </div>
 
+    {/* Dots */}
+    <div id="hot-dots" class="flex justify-center gap-2 mt-5"></div>
+
     {/* Mobile "Lihat Semua" */}
-    <div class="md:hidden text-center mt-6">
+    <div class="md:hidden text-center mt-5">
       <a href="/products" class="inline-flex items-center gap-1 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
         Lihat Semua Hot Release
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -50,37 +57,31 @@
 </section>
 
 <style>
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-  .hot-card { scroll-snap-align: start; flex-shrink: 0; }
+  .hot-card-snap { flex-shrink: 0; }
 </style>
 
 <script is:inline>
 (function() {
+  var SLIDES_PER_VIEW_DESKTOP = 4;
+  var SLIDES_PER_VIEW_MOBILE = 2;
+  var AUTO_PLAY_MS = 4000;
+  var GAP = 20; // px — matches gap-5
+
+  var currentSlide = 0;
+  var totalSlides = 0;
+  var slidesPerView = SLIDES_PER_VIEW_DESKTOP;
+  var autoTimer = null;
+  var allCards = [];
+
   function formatIDR(n) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
   }
 
-  function optimizeImg(url) {
-    if (!url || !url.includes('cloudinary')) return url || '/images/placeholder.jpg';
-    // URL already has transforms from D1 — just return as-is
-    return url;
-  }
-
   function escapeAttr(str) {
-    return String(str || '')
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
-
   function escapeHTML(str) {
-    return String(str || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function createHotCard(p) {
@@ -90,7 +91,7 @@
       var hasDiscount = compareAt && Number(compareAt) > price;
       var isFree = price === 0;
       var discount = hasDiscount ? Math.round((1 - price / Number(compareAt)) * 100) : 0;
-      var imgSrc = optimizeImg(p.image_icon || p.imageIcon || '/images/placeholder.jpg');
+      var imgSrc = p.image_icon || p.imageIcon || '/images/placeholder.jpg';
       var title = escapeHTML(p.title || '');
       var desc = escapeHTML(p.short_description || p.shortDescription || p.description || '');
       var slug = escapeAttr(p.slug || '');
@@ -109,7 +110,7 @@
 
       var card = document.createElement('a');
       card.href = '/product/' + slug;
-      card.className = 'hot-card w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card transition-shadow group snap-start';
+      card.className = 'hot-card-snap bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group';
       card.innerHTML =
         '<div class="relative overflow-hidden aspect-[4/3] bg-slate-50">' +
           '<img src="' + escapeAttr(imgSrc) + '" alt="' + escapeAttr(title) + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />' +
@@ -126,57 +127,191 @@
         '</div>';
       return card;
     } catch (e) {
-      console.error('Error creating hot card:', e, p);
+      console.error('Error creating hot card:', e);
       return null;
     }
   }
 
+  function getSlidesPerView() {
+    return window.innerWidth < 768 ? SLIDES_PER_VIEW_MOBILE : SLIDES_PER_VIEW_DESKTOP;
+  }
+
+  function getMaxSlide() {
+    return Math.max(0, allCards.length - slidesPerView);
+  }
+
+  function updateSlider(animate) {
+    var track = document.getElementById('hot-slider-track');
+    if (!track || allCards.length === 0) return;
+
+    var viewport = document.getElementById('hot-slider-viewport');
+    var vpWidth = viewport.offsetWidth;
+    var cardWidth = (vpWidth - GAP * (slidesPerView - 1)) / slidesPerView;
+
+    // Set card widths
+    allCards.forEach(function(card) {
+      card.style.width = cardWidth + 'px';
+    });
+
+    // Set gap
+    track.style.gap = GAP + 'px';
+
+    // Translate
+    var offset = currentSlide * (cardWidth + GAP);
+    if (animate !== false) {
+      track.style.transition = 'transform 500ms ease-out';
+    } else {
+      track.style.transition = 'none';
+    }
+    track.style.transform = 'translateX(-' + offset + 'px)';
+
+    // Update dots
+    renderDots();
+  }
+
+  function renderDots() {
+    var dotsContainer = document.getElementById('hot-dots');
+    if (!dotsContainer) return;
+    var maxSlide = getMaxSlide();
+    if (maxSlide <= 0) { dotsContainer.innerHTML = ''; return; }
+
+    var html = '';
+    for (var i = 0; i <= maxSlide; i++) {
+      var active = i === currentSlide;
+      html += '<button data-slide="' + i + '" class="w-2.5 h-2.5 rounded-full transition-all duration-300 ' +
+        (active ? 'bg-red-500 w-6' : 'bg-slate-300 hover:bg-slate-400') +
+        '" aria-label="Slide ' + (i + 1) + '"></button>';
+    }
+    dotsContainer.innerHTML = html;
+
+    // Dot click
+    dotsContainer.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        currentSlide = parseInt(btn.getAttribute('data-slide'));
+        updateSlider();
+        resetAutoPlay();
+      });
+    });
+  }
+
+  function goNext() {
+    var max = getMaxSlide();
+    currentSlide = currentSlide >= max ? 0 : currentSlide + 1;
+    updateSlider();
+  }
+
+  function goPrev() {
+    var max = getMaxSlide();
+    currentSlide = currentSlide <= 0 ? max : currentSlide - 1;
+    updateSlider();
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    autoTimer = setInterval(goNext, AUTO_PLAY_MS);
+  }
+
+  function stopAutoPlay() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  function resetAutoPlay() {
+    startAutoPlay();
+  }
+
+  // Touch / swipe support
+  function setupTouch() {
+    var viewport = document.getElementById('hot-slider-viewport');
+    if (!viewport) return;
+
+    var startX = 0;
+    var startY = 0;
+    var isDragging = false;
+
+    viewport.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isDragging = false;
+      stopAutoPlay();
+    }, { passive: true });
+
+    viewport.addEventListener('touchmove', function(e) {
+      var dx = e.touches[0].clientX - startX;
+      var dy = e.touches[0].clientY - startY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+        isDragging = true;
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', function(e) {
+      if (!isDragging) { startAutoPlay(); return; }
+      var endX = e.changedTouches[0].clientX;
+      var dx = endX - startX;
+      if (Math.abs(dx) > 40) {
+        if (dx < 0) goNext();
+        else goPrev();
+      }
+      startAutoPlay();
+    }, { passive: true });
+
+    // Mouse hover pause
+    viewport.addEventListener('mouseenter', stopAutoPlay);
+    viewport.addEventListener('mouseleave', startAutoPlay);
+  }
+
   async function loadHotReleases() {
     var section = document.getElementById('hot-release-section');
-    var slider = document.getElementById('hot-release-slider');
-    if (!section || !slider) return;
+    var track = document.getElementById('hot-slider-track');
+    if (!section || !track) return;
 
     try {
       var res = await fetch('/api/products?limit=100');
-      if (!res.ok) throw new Error('API returned ' + res.status);
+      if (!res.ok) throw new Error('API ' + res.status);
       var data = await res.json();
       var hotProducts = (data.products || []).filter(function(p) { return p.is_hot || p.isHot; });
 
-      if (hotProducts.length === 0) {
-        return;
-      }
+      if (hotProducts.length === 0) return;
 
-      // Show section
       section.classList.remove('hidden');
 
-      // Render cards using DOM (not innerHTML string)
-      slider.innerHTML = '';
+      // Render cards
+      track.innerHTML = '';
+      allCards = [];
       hotProducts.forEach(function(p) {
         var card = createHotCard(p);
-        if (card) slider.appendChild(card);
+        if (card) { track.appendChild(card); allCards.push(card); }
       });
 
-      // Navigation arrows
+      slidesPerView = getSlidesPerView();
+      totalSlides = allCards.length;
+
+      // Arrows
       var prevBtn = document.getElementById('hot-prev');
       var nextBtn = document.getElementById('hot-next');
-      var scrollAmount = 340;
+      if (prevBtn) prevBtn.addEventListener('click', function() { goPrev(); resetAutoPlay(); });
+      if (nextBtn) nextBtn.addEventListener('click', function() { goNext(); resetAutoPlay(); });
 
-      if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
-          slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        });
+      // Initial render
+      updateSlider(false);
+      setupTouch();
+
+      // Auto-play only if more cards than visible
+      if (allCards.length > slidesPerView) {
+        startAutoPlay();
       }
-      if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
-          slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        });
-      }
+
+      // Responsive recalculation
+      window.addEventListener('resize', function() {
+        slidesPerView = getSlidesPerView();
+        if (currentSlide > getMaxSlide()) currentSlide = getMaxSlide();
+        updateSlider(false);
+      });
+
     } catch (err) {
       console.error('Failed to load hot releases:', err);
     }
   }
 
-  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadHotReleases);
   } else {
