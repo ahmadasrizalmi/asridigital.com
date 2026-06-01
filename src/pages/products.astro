@@ -380,21 +380,6 @@ import Footer from '../components/layout/Footer.astro';
       }
     }
 
-        // Remove skeleton cards
-        document.querySelectorAll('.skeleton-card').forEach(function(el) { el.remove(); });
-
-        // Update count
-        if (productCount) productCount.textContent = 'Menampilkan ' + products.length + ' produk';
-
-        // Bind search
-        searchInput?.addEventListener('input', filterProducts);
-
-      } catch (err) {
-        console.error('Failed to load products:', err);
-        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Gagal memuat produk. Coba refresh halaman.</div>';
-      }
-    }
-
     loadProducts();
   })();
 </script>
