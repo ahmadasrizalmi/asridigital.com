@@ -8,7 +8,7 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-white text-slate-800 antialiased;
+    @apply bg-background text-text-main antialiased;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
   }
@@ -27,11 +27,19 @@
 
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 ::selection {
-  @apply bg-slate-200 text-slate-900;
+  @apply bg-emerald-100 text-slate-900;
+}
+
+/* Ethereal background — radial gradient overlay */
+.bg-ethereal {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(circle at 80% 0%, rgba(167,243,208,0.4) 0%, transparent 50%),
+    radial-gradient(circle at 10% 100%, rgba(186,230,253,0.4) 0%, transparent 50%);
 }
 
 .glass {
@@ -54,8 +62,7 @@
 }
 
 .filter-tab.active {
-  background-color: #1c1c1c;
-  color: white;
+  @apply bg-slate-900 text-white;
 }
 
 @layer components {
@@ -65,13 +72,19 @@
   }
 
   .btn-primary {
-    @apply btn bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 font-bold shadow-sm;
+    @apply btn font-bold;
+    background: linear-gradient(90deg, #81E2A4 0%, #F8F5C4 100%);
+    color: #1e293b;
     border-radius: 9999px;
+    box-shadow: 0 6px 20px rgba(129, 226, 164, 0.25), 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   .btn-primary:hover {
-    @apply from-emerald-400 to-yellow-200;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 10px 25px rgba(129, 226, 164, 0.3), 0 4px 8px rgba(0, 0, 0, 0.06);
+    filter: brightness(1.02);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
   }
 
   .btn-secondary {
@@ -84,8 +97,9 @@
   }
 
   .btn-tertiary {
-    @apply btn bg-surface border border-border text-text-main shadow-card;
+    @apply btn bg-surface border border-border text-text-main;
     border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   }
   .btn-tertiary:hover {
     @apply border-slate-300 bg-slate-50;
@@ -97,20 +111,22 @@
   }
 
   .card {
-    @apply bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-soft;
+    @apply bg-white border border-slate-200 overflow-hidden;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   }
   .card-hover {
     @apply card transition-all duration-300;
   }
   .card-hover:hover {
-    @apply shadow-float;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
     transform: translateY(-4px);
   }
 
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
   }
-  .badge-primary { @apply badge bg-primary/10 text-primary; }
+  .badge-primary { @apply badge bg-emerald-50 text-emerald-700; }
   .badge-muted { @apply badge bg-slate-100 text-text-secondary; }
   .badge-success { @apply badge bg-green-50 text-green-700; }
   .badge-warning { @apply badge bg-amber-50 text-amber-700; }
@@ -121,7 +137,8 @@
   }
 
   .navbar {
-    @apply bg-surface/95 border-b border-border shadow-nav;
+    @apply bg-surface/95 border-b border-border;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -151,9 +168,9 @@
   top: 100%;
   min-width: 140px;
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   z-index: 1000;
   overflow: hidden;
   margin-top: 4px;
@@ -171,7 +188,7 @@
   text-align: left;
   font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: #475569;
   cursor: pointer;
   border: none;
   background: none;
@@ -180,7 +197,7 @@
   text-decoration: none;
 }
 .action-dropdown-item:hover {
-  background: #f3f4f6;
+  background: #f1f5f9;
 }
 .action-dropdown-item.text-red-600 {
   color: #dc2626;
