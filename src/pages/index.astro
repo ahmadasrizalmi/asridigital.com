@@ -2,71 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
-import ProductCard from '../components/marketing/ProductCard.astro';
 import HeroSlider from '../components/marketing/HeroSlider.astro';
 import PromoCard from '../components/marketing/PromoCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
-import { formatIDR } from '../lib/utils';
-import type { Product } from '../types/index';
 
-const allAccessProduct: Product = {
-  id: 'ALL-ACCESS',
-  title: 'Lifetime All-Access Pass',
-  slug: 'lifetime-all-access-pass',
-  description: 'Akses seluruh Custom GPT yang ada saat ini dan semua update di masa depan.',
-  shortDescription: 'Akses unlimited ke semua Custom GPT. Sekali bayar, seumur hidup.',
-  price: 299000,
-  compareAtPrice: 599000,
-  gptUrl: null,
-  imageIcon: '/images/all-access-banner.jpg',
-  category: 'membership',
-  tags: ['all-access', 'premium', 'best-value'],
-  isActive: true,
-  isFeatured: true,
-  sortOrder: 0,
-};
-
-let products: Product[] = [
-  { id: 'gpt-animasi-muslim', title: 'Animasi Muslim Kids Studio', slug: 'animasi-muslim-kids-studio', description: 'GPT khusus untuk membuat konten animasi Islami untuk anak-anak.', shortDescription: 'Buat konten animasi Islami untuk anak-anak dengan AI', price: 99000, compareAtPrice: 149000, gptUrl: null, imageIcon: '/images/animasi-muslim.jpg', category: 'kreatif', tags: ['animasi', 'islami', 'anak'], isActive: true, isFeatured: true, sortOrder: 1 },
-  { id: 'gpt-sahabat-guru', title: 'Sahabat Guru PAUD Islami', slug: 'sahabat-guru-paud-islami', description: 'GPT asisten untuk guru PAUD Islami.', shortDescription: 'Asisten AI untuk guru PAUD Islami', price: 79000, compareAtPrice: null, gptUrl: null, imageIcon: '/images/sahabat-guru.jpg', category: 'pendidikan', tags: ['guru', 'paud', 'islami', 'pendidikan'], isActive: true, isFeatured: false, sortOrder: 2 },
-  { id: 'gpt-content-creator', title: 'Content Creator Pro', slug: 'content-creator-pro', description: 'GPT untuk membuat konten marketing yang engaging.', shortDescription: 'Buat konten marketing viral dengan AI', price: 89000, compareAtPrice: 129000, gptUrl: null, imageIcon: '/images/content-creator.jpg', category: 'marketing', tags: ['content', 'marketing', 'social-media'], isActive: true, isFeatured: false, sortOrder: 3 },
-];
-
-function normalizeProduct(raw: any): Product {
-  return {
-    id: raw.id, title: raw.title, slug: raw.slug,
-    description: raw.description || '',
-    shortDescription: raw.shortDescription ?? raw.short_description ?? null,
-    price: Number(raw.price || 0),
-    compareAtPrice: raw.compareAtPrice ?? raw.compare_at_price ?? null,
-    gptUrl: null,
-    imageIcon: raw.imageIcon ?? raw.image_icon ?? null,
-    galleryImages: raw.galleryImages ?? raw.gallery_images ?? null,
-    galleryVideos: raw.galleryVideos ?? raw.gallery_videos ?? null,
-    videoEmbedUrl: raw.videoEmbedUrl ?? raw.video_embed_url ?? null,
-    features: raw.features ?? null, specs: raw.specs ?? null, faq: raw.faq ?? null,
-    category: raw.category || 'produk',
-    tags: Array.isArray(raw.tags) ? raw.tags : (() => { try { return JSON.parse(raw.tags || '[]'); } catch { return []; } })(),
-    isActive: Boolean(raw.isActive ?? raw.is_active ?? true),
-    isFeatured: Boolean(raw.isFeatured ?? raw.is_featured ?? false),
-    sortOrder: Number(raw.sortOrder ?? raw.sort_order ?? 0),
-  };
-}
-
-try {
-  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-  const response = await fetch(`${apiBase}/api/products?limit=100`);
-  if (response.ok) {
-    const data = await response.json() as any;
-    const dbProducts = (data.products || [])
-      .filter((p: any) => p.slug !== allAccessProduct.slug)
-      .map(normalizeProduct);
-    if (dbProducts.length > 0) products = dbProducts;
-  }
-} catch (error) {
-  console.warn('Using fallback products because API products failed:', error);
-}
+// All-Access product excluded from homepage grid
+const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
 ---
+
 
 <BaseLayout structuredData={{
   "@context": "https://schema.org",
@@ -277,6 +220,7 @@ try {
       const categories = catData.categories || [];
       if (categories.length > 0) {
         tabsContainer.innerHTML = `<button class="filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap" data-filter="all">Semua</button>` +
+            `<button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 whitespace-nowrap" data-filter="hot">🔥 Hot</button>` +
           categories.map((cat: any) =>
             `<button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 whitespace-nowrap" data-filter="${cat.slug}">${cat.name}</button>`
           ).join('');
@@ -410,6 +354,7 @@ try {
     const isFree = price === 0;
     const discount = hasDiscount ? Math.round((1 - price / Number(compareAt)) * 100) : 0;
     const isFeatured = Boolean(product.is_featured || product.isFeatured);
+    const isHot = Boolean(product.is_hot || product.isHot);
 
     const safeTitle = title.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c] as string));
     const safeDesc = shortDesc.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c] as string));
@@ -420,11 +365,13 @@ try {
     a.setAttribute('data-category', filterCat);
     a.setAttribute('data-title', title.toLowerCase());
     a.setAttribute('data-slug', slug);
+    if (isHot) a.setAttribute('data-hot', 'true');
 
     let badgeHtml = '';
     if (hasDiscount && !isFree) badgeHtml = '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">-' + discount + '%</span></div>';
     else if (isFree) badgeHtml = '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">GRATIS</span></div>';
     const featuredBadge = isFeatured ? '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm">Best Seller</span></div>' : '';
+    const hotBadge = isHot ? '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">🔥 Hot</span></div>' : '';
 
     let priceHtml = '';
     if (isFree) {
@@ -436,7 +383,7 @@ try {
 
     a.innerHTML = '<div class="relative overflow-hidden aspect-square bg-slate-50">' +
       '<img src="' + imgSrc + '" alt="' + safeTitle + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />' +
-      badgeHtml + featuredBadge +
+      badgeHtml + (isHot ? hotBadge : featuredBadge) +
       '</div>' +
       '<div class="p-6 flex flex-col flex-grow">' +
       '<h3 class="text-lg font-bold text-slate-900 mb-2 transition-colors">' + safeTitle + '</h3>' +
@@ -491,12 +438,13 @@ try {
 
   // Product filtering & search
   const filterTabs = document.querySelectorAll('.filter-tab');
-  const productCards = document.querySelectorAll('.product-card');
   const searchInput = document.getElementById('product-search') as HTMLInputElement;
   const noResults = document.getElementById('no-results');
 
   function filterProducts() {
-    const searchTerm = searchInput.value.toLowerCase();
+    // Re-query DOM each time — products are loaded dynamically via API
+    const productCards = document.querySelectorAll('.product-card');
+    const searchTerm = (searchInput?.value || '').toLowerCase();
     const activeTab = document.querySelector('.filter-tab.active') as HTMLElement;
     const activeCategory = activeTab?.dataset.filter || 'all';
     let visibleCount = 0;
@@ -505,8 +453,16 @@ try {
       const el = card as HTMLElement;
       const title = el.dataset.title || '';
       const category = el.dataset.category || '';
+      const isHot = el.dataset.hot === 'true';
       const matchesSearch = title.includes(searchTerm);
-      const matchesCategory = (activeCategory === 'all' || category === activeCategory);
+      let matchesCategory: boolean;
+      if (activeCategory === 'hot') {
+        matchesCategory = isHot;
+      } else if (activeCategory === 'all') {
+        matchesCategory = true;
+      } else {
+        matchesCategory = category === activeCategory;
+      }
 
       if (matchesSearch && matchesCategory) {
         el.style.display = 'flex';

@@ -1957,7 +1957,7 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== ADMIN: CREATE PRODUCT ====================
     if (route === '/admin/products' && method === 'POST') {
       const body = await request.json();
-      const { id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured, image_icon, gallery_images, gallery_videos, video_embed_url } = body;
+      const { id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, tags, is_active, is_featured, is_hot, image_icon, gallery_images, gallery_videos, video_embed_url } = body;
 
       if (!title || !slug || price === undefined || price === null) {
         return jsonResponse({ error: 'Title, slug, dan price wajib diisi' }, 400);
@@ -1966,8 +1966,8 @@ export async function onRequest(context: any): Promise<Response> {
       const productId = id || generateId();
       
       await env.DB.prepare(
-        `INSERT INTO products (id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, image_icon, gallery_images, gallery_videos, video_embed_url, tags, is_active, is_featured, sort_order, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+        `INSERT INTO products (id, title, slug, description, short_description, price, compare_at_price, category, gpt_url, image_icon, gallery_images, gallery_videos, video_embed_url, tags, is_active, is_featured, is_hot, sort_order, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
       )
         .bind(
           productId,
@@ -1986,6 +1986,7 @@ export async function onRequest(context: any): Promise<Response> {
           typeof tags === 'string' ? tags : JSON.stringify(tags || []),
           is_active !== false ? 1 : 0,
           is_featured ? 1 : 0,
+          is_hot ? 1 : 0,
           body.sort_order || 0
         )
         .run();
@@ -2014,6 +2015,7 @@ export async function onRequest(context: any): Promise<Response> {
       if (body.tags !== undefined) { updates.push('tags = ?'); values.push(typeof body.tags === 'string' ? body.tags : JSON.stringify(body.tags)); }
       if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active ? 1 : 0); }
       if (body.is_featured !== undefined) { updates.push('is_featured = ?'); values.push(body.is_featured ? 1 : 0); }
+      if (body.is_hot !== undefined) { updates.push('is_hot = ?'); values.push(body.is_hot ? 1 : 0); }
       if (body.image_icon !== undefined) { updates.push('image_icon = ?'); values.push(body.image_icon); }
       if (body.gallery_images !== undefined) { updates.push('gallery_images = ?'); values.push(body.gallery_images); }
       if (body.gallery_videos !== undefined) { updates.push('gallery_videos = ?'); values.push(body.gallery_videos); }

@@ -18,6 +18,7 @@ export interface Product {
   tags: string[];
   isActive: boolean;
   isFeatured: boolean;
+  isHot?: boolean;
   sortOrder: number;
   createdAt?: string;
   updatedAt?: string;

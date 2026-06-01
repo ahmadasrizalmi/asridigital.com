@@ -217,6 +217,10 @@ import Icon from '../../components/ui/Icon.astro';
               <input type="checkbox" id="product-featured" class="rounded" />
               <span class="text-sm text-text-main">Featured</span>
             </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="product-hot" class="rounded" />
+              <span class="text-sm text-text-main">🔥 Hot Product</span>
+            </label>
           </div>
           
           <div class="flex justify-end gap-3 pt-4 border-t border-border">
@@ -519,6 +523,7 @@ import Icon from '../../components/ui/Icon.astro';
             </td>
             <td class="px-6 py-4 hidden md:table-cell">
               ${product.is_featured ? '<span class="badge-warning">Featured</span>' : '<span class="text-text-muted">-</span>'}
+              ${product.is_hot ? '<span class="badge-danger ml-1">Hot</span>' : ''}
             </td>
             <td class="px-6 py-4">
               <div class="hidden md:flex items-center gap-2">
@@ -565,6 +570,7 @@ import Icon from '../../components/ui/Icon.astro';
       (document.getElementById('product-tags') as HTMLInputElement).value = product.tags || '';
       (document.getElementById('product-active') as HTMLInputElement).checked = product.is_active;
       (document.getElementById('product-featured') as HTMLInputElement).checked = product.is_featured;
+      (document.getElementById('product-hot') as HTMLInputElement).checked = product.is_hot;
 
       // Handle free product checkbox
       const isFree = product.price === 0;
@@ -588,6 +594,8 @@ import Icon from '../../components/ui/Icon.astro';
       (document.getElementById('product-form') as HTMLFormElement).reset();
       (document.getElementById('product-id') as HTMLInputElement).value = '';
       (document.getElementById('product-active') as HTMLInputElement).checked = true;
+      (document.getElementById('product-featured') as HTMLInputElement).checked = false;
+      (document.getElementById('product-hot') as HTMLInputElement).checked = false;
       (document.getElementById('product-price') as HTMLInputElement).disabled = false;
       resetMedia();
     }
@@ -669,6 +677,7 @@ import Icon from '../../components/ui/Icon.astro';
       tags: (document.getElementById('product-tags') as HTMLInputElement).value,
       is_active: (document.getElementById('product-active') as HTMLInputElement).checked,
       is_featured: (document.getElementById('product-featured') as HTMLInputElement).checked,
+      is_hot: (document.getElementById('product-hot') as HTMLInputElement).checked,
       // Media fields
       image_icon: coverImage || null,
       gallery_images: galleryImages.length > 0 ? JSON.stringify(galleryImages) : null,
