@@ -1734,20 +1734,6 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ post, relatedPosts: relatedPosts.results });
     }
 
-    // ==================== MIGRATION: Update CF token (temp) ====================
-    if (route === '/admin/migrate-cf-token' && method === 'POST') {
-      const body = await request.json();
-      if (body.secret !== 'migrate-cf-2026') return jsonResponse({ error: 'Unauthorized' }, 401);
-      try {
-        await env.DB.prepare(
-          "UPDATE site_settings SET value = ?, updated_at = datetime('now') WHERE key = 'cf_api_token'"
-        ).bind(body.token).run();
-        return jsonResponse({ success: true, message: 'CF token updated' });
-      } catch (e: any) {
-        return jsonResponse({ error: e.message }, 500);
-      }
-    }
-
     // ==================== ADMIN MIDDLEWARE ====================
     // All admin routes require authentication and admin role
     let adminUser: any = null;
