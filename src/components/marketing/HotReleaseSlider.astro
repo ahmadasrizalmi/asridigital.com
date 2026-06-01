@@ -43,9 +43,6 @@
       </button>
     </div>
 
-    {/* Dots */}
-    <div id="hot-dots" class="flex justify-center gap-2 mt-5"></div>
-
     {/* Mobile "Lihat Semua" */}
     <div class="md:hidden text-center mt-5">
       <a href="/products" class="inline-flex items-center gap-1 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
@@ -171,33 +168,6 @@
     }
     track.style.transform = 'translateX(-' + offset + 'px)';
 
-    // Update dots
-    renderDots();
-  }
-
-  function renderDots() {
-    var dotsContainer = document.getElementById('hot-dots');
-    if (!dotsContainer) return;
-    var maxSlide = getMaxSlide();
-    if (maxSlide <= 0) { dotsContainer.innerHTML = ''; return; }
-
-    var html = '';
-    for (var i = 0; i <= maxSlide; i++) {
-      var active = i === currentSlide;
-      html += '<button data-slide="' + i + '" class="w-2.5 h-2.5 rounded-full transition-all duration-300 ' +
-        (active ? 'bg-red-500 w-6' : 'bg-slate-300 hover:bg-slate-400') +
-        '" aria-label="Slide ' + (i + 1) + '"></button>';
-    }
-    dotsContainer.innerHTML = html;
-
-    // Dot click
-    dotsContainer.querySelectorAll('button').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        currentSlide = parseInt(btn.getAttribute('data-slide'));
-        updateSlider();
-        resetAutoPlay();
-      });
-    });
   }
 
   function goNext() {
