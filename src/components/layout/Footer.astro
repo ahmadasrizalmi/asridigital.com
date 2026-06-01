@@ -2,36 +2,38 @@
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="bg-white pt-12 pb-8">
+<footer class="bg-white pt-12 pb-8 border-t border-slate-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     
     <!-- MOBILE + SMALL TABLET: simplified layout (< 1024px) -->
     <div class="lg:hidden">
-      <h4 class="font-bold text-slate-900 text-lg mb-3" id="footer-site-name-mobile">Asri Digital</h4>
-      <p class="text-slate-500 text-sm mb-5 leading-relaxed" id="footer-tagline-mobile">
+      <!-- Logo + Tagline -->
+      <div class="flex items-center gap-3 mb-4">
+        <img id="footer-logo-mobile" class="h-8 w-auto" src="https://res.cloudinary.com/daj8fzinf/image/upload/w_200/q_auto/f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png" alt="Asri Digital Logo" />
+      </div>
+      <p class="text-slate-500 text-sm mb-6 leading-relaxed" id="footer-tagline-mobile">
         Solusi Bisnis Digital & AI untuk Profesional Indonesia.
       </p>
       
-      <!-- Quick links -->
-      <div class="flex flex-wrap gap-x-5 gap-y-2 mb-6 text-sm">
-        <a href="/products" class="text-slate-500 hover:text-slate-900">Produk</a>
-        <a href="/guide" class="text-slate-500 hover:text-slate-900">Panduan</a>
-        <a href="/faq" class="text-slate-500 hover:text-slate-900">FAQ</a>
-        <a href="/contact" class="text-slate-500 hover:text-slate-900">Kontak</a>
-        <a href="/about" class="text-slate-500 hover:text-slate-900">About</a>
-        <a href="/terms" class="text-slate-500 hover:text-slate-900">Terms</a>
-        <a href="/privacy" class="text-slate-500 hover:text-slate-900">Privacy</a>
+      <!-- Links: 2-column grid -->
+      <div class="grid grid-cols-2 gap-x-6 gap-y-3 mb-8 text-sm">
+        <a href="/products" class="text-slate-600 hover:text-slate-900 transition-colors">Produk</a>
+        <a href="/contact" class="text-slate-600 hover:text-slate-900 transition-colors">Kontak</a>
+        <a href="/guide" class="text-slate-600 hover:text-slate-900 transition-colors">Panduan</a>
+        <a href="/about" class="text-slate-600 hover:text-slate-900 transition-colors">About</a>
+        <a href="/faq" class="text-slate-600 hover:text-slate-900 transition-colors">FAQ</a>
+        <a href="/terms" class="text-slate-600 hover:text-slate-900 transition-colors">Terms</a>
       </div>
 
       <!-- Social + Copyright -->
-      <div class="flex items-center justify-between pt-5 border-t border-slate-100">
+      <div class="flex items-center justify-between pt-6 border-t border-slate-100">
         <p class="text-xs text-slate-400">&copy; {currentYear} Asri Digital</p>
-        <div class="flex space-x-2" id="footer-social-mobile">
+        <div class="flex gap-2" id="footer-social-mobile">
           <a href="https://www.linkedin.com/company/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="LinkedIn">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
           </a>
           <a href="https://x.com/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="X (Twitter)">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
           </a>
         </div>
       </div>
@@ -41,9 +43,11 @@ const currentYear = new Date().getFullYear();
     <div class="hidden lg:block">
       <div class="grid grid-cols-4 gap-12 mb-16">
         
-        <!-- Brand & Newsletter -->
+        <!-- Brand -->
         <div class="col-span-1">
-          <h4 class="font-bold text-slate-900 text-lg mb-4" id="footer-site-name-desktop">Asri Digital</h4>
+          <div class="flex items-center gap-3 mb-4">
+            <img id="footer-logo-desktop" class="h-8 w-auto" src="https://res.cloudinary.com/daj8fzinf/image/upload/w_200/q_auto/f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png" alt="Asri Digital Logo" />
+          </div>
           <p class="text-slate-500 text-sm mb-6 leading-relaxed pr-4" id="footer-tagline-desktop">
             Dapatkan inspirasi alur kerja, update software, dan tips produktivitas harian.
           </p>
@@ -91,10 +95,10 @@ const currentYear = new Date().getFullYear();
         </p>
         <div class="flex space-x-3" id="footer-social-desktop">
           <a href="https://www.linkedin.com/company/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="LinkedIn">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
           </a>
           <a href="https://x.com/asridigital" target="_blank" rel="noopener noreferrer" class="w-8 h-8 bg-carbon rounded-md flex items-center justify-center text-white hover:bg-carbon-hover transition" aria-label="X (Twitter)">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
           </a>
         </div>
       </div>
@@ -107,13 +111,21 @@ const currentYear = new Date().getFullYear();
   fetch('/api/site-settings')
     .then(function(r) { return r.json(); })
     .then(function(s) {
-      // Update site name and tagline in footer
-      if (s.site_name) {
-        ['footer-site-name-mobile', 'footer-site-name-desktop'].forEach(function(id) {
+      // Update logo in footer (both mobile + desktop)
+      if (s.logo_url) {
+        ['footer-logo-mobile', 'footer-logo-desktop'].forEach(function(id) {
           var el = document.getElementById(id);
-          if (el) el.textContent = s.site_name;
+          if (el) el.setAttribute('src', s.logo_url);
         });
       }
+      // Update site name alt text
+      if (s.site_name) {
+        ['footer-logo-mobile', 'footer-logo-desktop'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.setAttribute('alt', s.site_name + ' Logo');
+        });
+      }
+      // Update tagline
       if (s.footer_tagline || s.site_description) {
         var tagline = s.footer_tagline || s.site_description;
         ['footer-tagline-mobile', 'footer-tagline-desktop'].forEach(function(id) {
@@ -124,7 +136,7 @@ const currentYear = new Date().getFullYear();
       // Update copyright text
       if (s.copyright_text) {
         document.querySelectorAll('footer p').forEach(function(p) {
-          if (p.textContent.indexOf('©') !== -1 && p.textContent.indexOf('Asri Digital') !== -1) {
+          if (p.textContent.indexOf('\u00A9') !== -1 && p.textContent.indexOf('Asri Digital') !== -1) {
             p.textContent = p.textContent.replace(/Asri Digital.*$/, s.copyright_text);
           }
         });
