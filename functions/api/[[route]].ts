@@ -841,9 +841,9 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(normalizedEmail)
         .first();
 
-      // DEBUG: return user existence info (REMOVE IN PRODUCTION)
+      // If user not found, still return success (prevent email enumeration)
       if (!user) {
-        return jsonResponse({ success: false, debug: true, message: 'Email tidak ditemukan di tabel users', email: normalizedEmail });
+        return jsonResponse({ success: true, message: 'Jika email terdaftar, link reset sudah dikirim.' });
       }
 
       // Generate reset token
