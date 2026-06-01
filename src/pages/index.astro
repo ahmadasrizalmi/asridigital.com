@@ -470,7 +470,7 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
       } else if (activeCategory === 'all') {
         matchesCategory = true;
       } else {
-        matchesCategory = category === activeCategory;
+        matchesCategory = category === activeCategory.toLowerCase();
       }
 
       if (matchesSearch && matchesCategory) {
