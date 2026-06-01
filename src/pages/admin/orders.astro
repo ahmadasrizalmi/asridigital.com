@@ -212,7 +212,7 @@ import Icon from '../../components/ui/Icon.astro';
           new Date(order.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) +
         '</td>' +
         '<td class="px-6 py-4">' +
-          '<div class="flex items-center gap-1">' +
+          '<div class="hidden md:flex items-center gap-1">' +
             '<button onclick="window.viewOrder(\'' + order.id + '\')" class="p-2 hover:bg-background rounded-lg text-text-secondary hover:text-primary" title="Lihat Detail">' +
               '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
             '</button>' +
@@ -222,6 +222,14 @@ import Icon from '../../components/ui/Icon.astro';
             '<button onclick="window.deleteOrder(\'' + order.id + '\')" class="p-2 hover:bg-red-50 rounded-lg text-text-secondary hover:text-red-600" title="Hapus">' +
               '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
             '</button>' +
+          '</div>' +
+          '<div class="action-menu md:hidden">' +
+            '<button class="action-menu-btn p-2 hover:bg-background rounded-lg text-text-secondary" onclick="toggleActionMenu(event)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>' +
+            '<div class="action-dropdown">' +
+              '<a href="#" class="action-dropdown-item" onclick="window.viewOrder(\'' + order.id + '\'); return false;">Detail</a>' +
+              '<a href="#" class="action-dropdown-item" onclick="window.editOrder(\'' + order.id + '\'); return false;">Edit</a>' +
+              '<button class="action-dropdown-item text-red-600" onclick="window.deleteOrder(\'' + order.id + '\')">Hapus</button>' +
+            '</div>' +
           '</div>' +
         '</td>' +
       '</tr>';

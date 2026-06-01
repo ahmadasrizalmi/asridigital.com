@@ -209,10 +209,18 @@ import Icon from '../../components/ui/Icon.astro';
           </td>
           <td class="px-4 py-3 text-sm text-text-muted hidden md:table-cell">${formatDate(s.created_at)}</td>
           <td class="px-4 py-3">
-            <button onclick="toggleStatus('${s.id}', ${s.is_active ? 0 : 1})" 
-              class="text-xs px-2 py-1 rounded ${s.is_active ? 'text-red-500 hover:bg-red-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}">
-              ${s.is_active ? 'Unsubscribe' : 'Reactivate'}
-            </button>
+            <div class="hidden md:block">
+              <button onclick="toggleStatus('${s.id}', ${s.is_active ? 0 : 1})" 
+                class="text-xs px-2 py-1 rounded ${s.is_active ? 'text-red-500 hover:bg-red-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}">
+                ${s.is_active ? 'Unsubscribe' : 'Reactivate'}
+              </button>
+            </div>
+            <div class="action-menu md:hidden">
+              <button class="action-menu-btn p-2 hover:bg-background rounded-lg text-text-secondary" onclick="toggleActionMenu(event)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              <div class="action-dropdown">
+                <button class="action-dropdown-item ${s.is_active ? 'text-red-600' : ''}" onclick="toggleStatus('${s.id}', ${s.is_active ? 0 : 1})">${s.is_active ? 'Unsubscribe' : 'Reactivate'}</button>
+              </div>
+            </div>
           </td>
         </tr>
       `).join('');

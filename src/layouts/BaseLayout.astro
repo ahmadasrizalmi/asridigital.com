@@ -79,6 +79,61 @@ const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
   {structuredData && (
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   )}
+
+  <!-- Dynamic SEO: fetch site_settings and update OG/meta tags at runtime -->
+  <script is:inline>
+    (function() {
+      fetch('/api/site-settings')
+        .then(function(r) { return r.json(); })
+        .then(function(s) {
+          // Update document title
+          if (s.og_title || s.site_name) {
+            document.title = s.og_title || s.site_name;
+          }
+
+          // Helper to set or update a meta tag
+          function setMeta(attr, attrVal, content) {
+            if (!content) return;
+            var el = document.querySelector('meta[' + attr + '="' + attrVal + '"]');
+            if (el) { el.setAttribute('content', content); }
+          }
+
+          // Description
+          if (s.og_description || s.site_description) {
+            var desc = s.og_description || s.site_description;
+            setMeta('name', 'description', desc);
+            setMeta('property', 'og:description', desc);
+            setMeta('name', 'twitter:description', desc);
+          }
+
+          // Title
+          if (s.og_title || s.site_name) {
+            var t = s.og_title || s.site_name;
+            setMeta('property', 'og:title', t);
+            setMeta('name', 'twitter:title', t);
+            setMeta('property', 'og:site_name', s.site_name || t);
+          }
+
+          // OG Image
+          if (s.og_image) {
+            setMeta('property', 'og:image', s.og_image);
+            setMeta('name', 'twitter:image', s.og_image);
+          }
+
+          // Keywords
+          if (s.site_keywords) {
+            var kw = document.querySelector('meta[name="keywords"]');
+            if (!kw) {
+              kw = document.createElement('meta');
+              kw.setAttribute('name', 'keywords');
+              document.head.appendChild(kw);
+            }
+            kw.setAttribute('content', s.site_keywords);
+          }
+        })
+        .catch(function() {});
+    })();
+  </script>
   
   <style is:global>
     @import '../styles/global.css';

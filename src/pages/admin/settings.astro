@@ -56,6 +56,42 @@ import Icon from '../../components/ui/Icon.astro';
           </div>
         </div>
         
+        <!-- SEO & Open Graph -->
+        <div class="card p-6 mb-6">
+          <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <Icon name="search" size={20} class="text-primary" />
+            SEO & Open Graph
+          </h2>
+          <p class="text-sm text-text-muted mb-4">Pengaturan ini digunakan saat konten dibagikan di media sosial (Facebook, Twitter, WhatsApp, dll). Kosongkan untuk menggunakan default.</p>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">OG Title</label>
+              <input type="text" id="setting-og-title" class="input" placeholder="Asri Digital - Custom GPT untuk Profesional Indonesia" />
+              <p class="text-xs text-text-muted mt-1">Judul default untuk social sharing. Kosongkan untuk fallback ke Nama Situs.</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">OG Description</label>
+              <textarea id="setting-og-description" class="input" rows="2" placeholder="Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi."></textarea>
+              <p class="text-xs text-text-muted mt-1">Deskripsi default untuk social sharing.</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">OG Image URL</label>
+              <input type="text" id="setting-og-image" class="input" placeholder="https://res.cloudinary.com/.../image.png" oninput="document.getElementById('og-preview').src=this.value || '';" />
+              <p class="text-xs text-text-muted mt-1">URL gambar untuk social sharing (rekomendasi 1200x630px). Kosongkan untuk fallback default.</p>
+              <img id="og-preview" src="" alt="OG Preview" class="mt-2 max-w-xs rounded-lg border border-border hidden" style="max-height:160px;" onload="this.classList.remove('hidden')" onerror="this.classList.add('hidden')" />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Site Keywords</label>
+              <input type="text" id="setting-site-keywords" class="input" placeholder="custom gpt, ai, indonesia, profesional, marketing" />
+              <p class="text-xs text-text-muted mt-1">Kata kunci meta untuk SEO, pisahkan dengan koma.</p>
+            </div>
+          </div>
+        </div>
+        
         <!-- Contact Settings -->
         <div class="card p-6 mb-6">
           <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
@@ -274,6 +310,16 @@ import Icon from '../../components/ui/Icon.astro';
         setVal('setting-meta-pixel-id', s.meta_pixel_id);
         setVal('setting-google-ads-id', s.google_ads_id);
         setVal('setting-google-ads-label', s.google_ads_label);
+        setVal('setting-og-title', s.og_title);
+        setVal('setting-og-description', s.og_description);
+        setVal('setting-og-image', s.og_image);
+        setVal('setting-site-keywords', s.site_keywords);
+        
+        // OG image preview
+        if (s.og_image) {
+          const preview = document.getElementById('og-preview') as HTMLImageElement;
+          if (preview) { preview.src = s.og_image; }
+        }
       }
     } catch (error) {
       if (error.message !== 'Auth expired') {
@@ -308,6 +354,10 @@ import Icon from '../../components/ui/Icon.astro';
       meta_pixel_id: document.getElementById('setting-meta-pixel-id').value,
       google_ads_id: document.getElementById('setting-google-ads-id').value,
       google_ads_label: document.getElementById('setting-google-ads-label').value,
+      og_title: document.getElementById('setting-og-title').value,
+      og_description: document.getElementById('setting-og-description').value,
+      og_image: document.getElementById('setting-og-image').value,
+      site_keywords: document.getElementById('setting-site-keywords').value,
     };
     
     try {

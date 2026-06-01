@@ -226,7 +226,7 @@ import Icon from '../../components/ui/Icon.astro';
             </div>
             
             <!-- Actions -->
-            <div class="flex items-center gap-2 mt-4 pt-3 border-t border-border">
+            <div class="hidden md:flex items-center gap-2 mt-4 pt-3 border-t border-border">
               <button onclick='editSlide(${JSON.stringify(slide).replace(/'/g, "&#39;")})' class="btn-tertiary text-xs px-3 py-1.5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit
@@ -240,6 +240,16 @@ import Icon from '../../components/ui/Icon.astro';
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 Hapus
               </button>
+            </div>
+            <div class="action-menu md:hidden mt-4 pt-3 border-t border-border">
+              <button class="action-menu-btn p-2 hover:bg-background rounded-lg text-text-secondary" onclick="toggleActionMenu(event)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              <div class="action-dropdown">
+                <a href="#" class="action-dropdown-item" onclick='editSlide(${JSON.stringify(slide).replace(/'/g, "&#39;")}); return false;'>Edit</a>
+                <button class="action-dropdown-item" onclick="toggleSlide('${slide.id}', ${slide.is_active})">${slide.is_active ? 'Nonaktifkan' : 'Aktifkan'}</button>
+                ${i > 0 ? `<button class="action-dropdown-item" onclick="moveSlide('${slide.id}', -1)">▲ Pindah ke Atas</button>` : ''}
+                ${i < slides.length - 1 ? `<button class="action-dropdown-item" onclick="moveSlide('${slide.id}', 1)">▼ Pindah ke Bawah</button>` : ''}
+                <button class="action-dropdown-item text-red-600" onclick="deleteSlide('${slide.id}')">Hapus</button>
+              </div>
             </div>
           </div>
         </div>
