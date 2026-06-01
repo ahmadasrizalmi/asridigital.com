@@ -2001,7 +2001,7 @@ export async function onRequest(context: any): Promise<Response> {
     }
 
     // ==================== ADMIN: UPDATE PRODUCT ====================
-    if (route.startsWith('/admin/products/') && method === 'PUT') {
+    if (route.startsWith('/admin/products/') && route.split('/')[3] !== 'batch' && method === 'PUT') {
       const productId = route.split('/')[3];
       const body = await request.json();
 
@@ -2044,7 +2044,7 @@ export async function onRequest(context: any): Promise<Response> {
     }
 
     // ==================== ADMIN: DELETE PRODUCT ====================
-    if (route.startsWith('/admin/products/') && method === 'DELETE') {
+    if (route.startsWith('/admin/products/') && route.split('/')[3] !== 'batch' && method === 'DELETE') {
       const productId = route.split('/')[3];
 
       // Hard delete - remove product from database
@@ -2074,7 +2074,7 @@ export async function onRequest(context: any): Promise<Response> {
       const setClauses: string[] = [];
       const setValues: any[] = [];
 
-      const allowedFields = ['category', 'is_active', 'is_featured', 'is_hot', 'price', 'compare_at_price'];
+      const allowedFields = ['category', 'is_active', 'is_featured', 'is_hot', 'price', 'compare_at_price', 'title', 'slug', 'description', 'short_description', 'gpt_url', 'tags', 'image_icon', 'gallery_images', 'gallery_videos', 'video_embed_url'];
       for (const [key, val] of Object.entries(batchUpdates)) {
         if (allowedFields.includes(key)) {
           setClauses.push(`${key} = ?`);
@@ -2104,6 +2104,51 @@ export async function onRequest(context: any): Promise<Response> {
 
       triggerDeploy(env);
       return jsonResponse({ success: true, updated, errors, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: BATCH UPDATE INDIVIDUAL PRODUCTS ====================
+    // Each product gets its own set of updates: { products: [{id, ...fields}, ...] }
+    if (route === '/admin/products/batch-individual' && method === 'PATCH') {
+      const body = await request.json();
+      const { products: productUpdates } = body;
+
+      if (!productUpdates || !Array.isArray(productUpdates) || productUpdates.length === 0) {
+        return jsonResponse({ error: 'products harus berupa array dan tidak boleh kosong' }, 400);
+      }
+
+      const allowedFields = ['title', 'slug', 'description', 'short_description', 'price', 'compare_at_price', 'category', 'gpt_url', 'tags', 'is_active', 'is_featured', 'is_hot', 'image_icon', 'gallery_images', 'gallery_videos', 'video_embed_url'];
+      let updated = 0;
+      let errors: any[] = [];
+
+      for (const item of productUpdates) {
+        if (!item.id) { errors.push({ error: 'missing id' }); continue; }
+
+        const setClauses: string[] = [];
+        const setValues: any[] = [];
+
+        for (const [key, val] of Object.entries(item)) {
+          if (key === 'id') continue;
+          if (allowedFields.includes(key)) {
+            setClauses.push(`${key} = ?`);
+            setValues.push(val);
+          }
+        }
+
+        if (setClauses.length === 0) { errors.push({ id: item.id, error: 'no valid fields' }); continue; }
+
+        setClauses.push("updated_at = datetime('now')");
+
+        try {
+          const sql = `UPDATE products SET ${setClauses.join(', ')} WHERE id = ?`;
+          await env.DB.prepare(sql).bind(...setValues, item.id).run();
+          updated++;
+        } catch (e: any) {
+          errors.push({ id: item.id, error: e.message });
+        }
+      }
+
+      triggerDeploy(env);
+      return jsonResponse({ success: true, updated, errors: errors.length, errorDetails: errors });
     }
 
     // ==================== ADMIN: BATCH DELETE PRODUCTS ====================
