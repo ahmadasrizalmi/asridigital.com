@@ -38,6 +38,9 @@ import Icon from '../../components/ui/Icon.astro';
             <table class="w-full">
               <thead>
                 <tr class="border-b border-border bg-background">
+                  <th class="px-3 py-3 w-10">
+                    <input type="checkbox" id="select-all" class="w-4 h-4 rounded border-border text-primary focus:ring-primary" onchange="toggleSelectAll(this.checked)" />
+                  </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Produk</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase hidden md:table-cell">Kategori</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">Harga</th>
@@ -228,6 +231,55 @@ import Icon from '../../components/ui/Icon.astro';
             <button type="submit" class="btn-primary">Simpan Produk</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Action Bar (floating bottom) -->
+  <div id="batch-bar" class="fixed bottom-0 left-0 right-0 bg-surface border-t border-border shadow-float z-40 transform translate-y-full transition-transform duration-200">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium text-text-primary"><span id="batch-count">0</span> produk dipilih</span>
+        <button onclick="clearSelection()" class="text-xs text-text-muted hover:text-text-secondary underline">Batal Pilih</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="openBatchModal('category')" class="px-3 py-1.5 text-xs font-medium bg-background border border-border rounded-lg hover:bg-surface transition-colors">
+          Kategori
+        </button>
+        <button onclick="openBatchModal('price')" class="px-3 py-1.5 text-xs font-medium bg-background border border-border rounded-lg hover:bg-surface transition-colors">
+          Harga
+        </button>
+        <button onclick="batchToggle('is_active')" class="px-3 py-1.5 text-xs font-medium bg-background border border-border rounded-lg hover:bg-surface transition-colors">
+          Aktif/Nonaktif
+        </button>
+        <button onclick="batchToggle('is_featured')" class="px-3 py-1.5 text-xs font-medium bg-background border border-border rounded-lg hover:bg-surface transition-colors">
+          Featured
+        </button>
+        <button onclick="batchToggle('is_hot')" class="px-3 py-1.5 text-xs font-medium bg-background border border-border rounded-lg hover:bg-surface transition-colors">
+          Hot
+        </button>
+        <button onclick="batchDelete()" class="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Edit Modal -->
+  <div id="batch-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-surface rounded-xl max-w-md w-full">
+        <div class="p-6 border-b border-border">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-text-primary" id="batch-modal-title">Batch Edit</h2>
+            <button onclick="closeBatchModal()" class="p-2 hover:bg-background rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="batch-modal-body" class="p-6">
+          <!-- Dynamic content -->
+        </div>
       </div>
     </div>
   </div>
@@ -495,10 +547,13 @@ import Icon from '../../components/ui/Icon.astro';
     const pageItems = filtered.slice(start, start + PRODUCTS_PER_PAGE);
 
     if (filtered.length === 0) {
-      table.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-text-muted">Tidak ada produk ditemukan.</td></tr>';
+      table.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-text-muted">Tidak ada produk ditemukan.</td></tr>';
     } else {
       table.innerHTML = pageItems.map((product: any) => `
-          <tr class="hover:bg-background/50">
+          <tr class="hover:bg-background/50" data-product-id="${product.id}">
+            <td class="px-3 py-4">
+              <input type="checkbox" class="product-checkbox w-4 h-4 rounded border-border text-primary focus:ring-primary" value="${product.id}" onchange="updateSelection()" />
+            </td>
             <td class="px-6 py-4">
               <div>
                 <p class="font-medium text-text-primary">${product.title}</p>
@@ -780,4 +835,204 @@ import Icon from '../../components/ui/Icon.astro';
 
   // Load on page load
   loadProducts();
+
+  // ====== BATCH EDIT FUNCTIONS ======
+  let selectedProductIds: Set<string> = new Set();
+
+  function getSelectedIds(): string[] {
+    const checkboxes = document.querySelectorAll('.product-checkbox:checked') as NodeListOf<HTMLInputElement>;
+    return Array.from(checkboxes).map(cb => cb.value);
+  }
+
+  function updateSelection() {
+    selectedProductIds = new Set(getSelectedIds());
+    const count = selectedProductIds.size;
+    const bar = document.getElementById('batch-bar')!;
+    const countEl = document.getElementById('batch-count')!;
+    countEl.textContent = count.toString();
+
+    if (count > 0) {
+      bar.classList.remove('translate-y-full');
+      bar.classList.add('translate-y-0');
+    } else {
+      bar.classList.remove('translate-y-0');
+      bar.classList.add('translate-y-full');
+    }
+
+    // Update select-all checkbox state
+    const selectAll = document.getElementById('select-all') as HTMLInputElement;
+    const allCheckboxes = document.querySelectorAll('.product-checkbox') as NodeListOf<HTMLInputElement>;
+    if (allCheckboxes.length === 0) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    } else if (selectedProductIds.size === allCheckboxes.length) {
+      selectAll.checked = true;
+      selectAll.indeterminate = false;
+    } else if (selectedProductIds.size > 0) {
+      selectAll.checked = false;
+      selectAll.indeterminate = true;
+    } else {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    }
+  }
+
+  function toggleSelectAll(checked: boolean) {
+    const checkboxes = document.querySelectorAll('.product-checkbox') as NodeListOf<HTMLInputElement>;
+    checkboxes.forEach(cb => { cb.checked = checked; });
+    updateSelection();
+  }
+
+  function clearSelection() {
+    const checkboxes = document.querySelectorAll('.product-checkbox') as NodeListOf<HTMLInputElement>;
+    checkboxes.forEach(cb => { cb.checked = false; });
+    updateSelection();
+  }
+
+  function openBatchModal(type: string) {
+    const modal = document.getElementById('batch-modal')!;
+    const title = document.getElementById('batch-modal-title')!;
+    const body = document.getElementById('batch-modal-body')!;
+    const count = selectedProductIds.size;
+
+    if (type === 'category') {
+      title.textContent = `Ubah Kategori (${count} produk)`;
+      // Load categories
+      adminFetch('/api/admin/categories').then(r => r.json()).then(data => {
+        const cats = data.categories || [];
+        body.innerHTML = `
+          <div class="space-y-4">
+            <p class="text-sm text-text-secondary">Pilih kategori baru untuk ${count} produk yang dipilih:</p>
+            <select id="batch-category-value" class="input w-full">
+              ${cats.map((c: any) => `<option value="${c.slug}">${c.name}</option>`).join('')}
+            </select>
+            <div class="flex justify-end gap-3 pt-2">
+              <button onclick="closeBatchModal()" class="btn-tertiary">Batal</button>
+              <button onclick="applyBatchCategory()" class="btn-primary">Terapkan</button>
+            </div>
+          </div>
+        `;
+      });
+    } else if (type === 'price') {
+      title.textContent = `Ubah Harga (${count} produk)`;
+      body.innerHTML = `
+        <div class="space-y-4">
+          <p class="text-sm text-text-secondary">Atur harga baru untuk ${count} produk yang dipilih:</p>
+          <div>
+            <label class="flex items-center gap-2 mb-2">
+              <input type="checkbox" id="batch-price-free" class="w-4 h-4 rounded border-border text-primary" onchange="document.getElementById('batch-price-value').disabled = this.checked; if(this.checked) document.getElementById('batch-price-value').value='0'">
+              <span class="text-sm">Gratis</span>
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">Rp</span>
+              <input type="number" id="batch-price-value" class="input pl-10 w-full" placeholder="25000" min="0" step="1000">
+            </div>
+          </div>
+          <div>
+            <label class="text-sm text-text-secondary mb-1 block">Harga coret (opsional)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">Rp</span>
+              <input type="number" id="batch-compare-value" class="input pl-10 w-full" placeholder="50000" min="0" step="1000">
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-2">
+            <button onclick="closeBatchModal()" class="btn-tertiary">Batal</button>
+            <button onclick="applyBatchPrice()" class="btn-primary">Terapkan</button>
+          </div>
+        </div>
+      `;
+    }
+    modal.classList.remove('hidden');
+  }
+
+  function closeBatchModal() {
+    document.getElementById('batch-modal')!.classList.add('hidden');
+  }
+
+  async function applyBatchCategory() {
+    const category = (document.getElementById('batch-category-value') as HTMLSelectElement).value;
+    const ids = Array.from(selectedProductIds);
+    await batchUpdate({ category }, ids);
+    closeBatchModal();
+  }
+
+  async function applyBatchPrice() {
+    const isFree = (document.getElementById('batch-price-free') as HTMLInputElement).checked;
+    const price = isFree ? 0 : parseInt((document.getElementById('batch-price-value') as HTMLInputElement).value);
+    const compareVal = (document.getElementById('batch-compare-value') as HTMLInputElement).value;
+    const updates: any = { price };
+    if (compareVal) updates.compare_at_price = parseInt(compareVal);
+    const ids = Array.from(selectedProductIds);
+    await batchUpdate(updates, ids);
+    closeBatchModal();
+  }
+
+  async function batchToggle(field: string) {
+    // Toggle logic: if ANY selected product has the field true, set all to false; otherwise set all to true
+    const ids = Array.from(selectedProductIds);
+    const selectedProducts = allProducts.filter(p => ids.includes(p.id));
+    const anyTrue = selectedProducts.some(p => p[field]);
+    await batchUpdate({ [field]: !anyTrue }, ids);
+  }
+
+  async function batchUpdate(updates: any, ids: string[]) {
+    if (ids.length === 0) return;
+    try {
+      const response = await adminFetch(`${API_BASE}/admin/products/batch`, {
+        method: 'PUT',
+        body: JSON.stringify({ ids, updates }),
+      });
+      if (response.status === 401 || response.status === 403) return;
+      const result = await response.json() as any;
+      if (response.ok) {
+        showToast(`${ids.length} produk berhasil diupdate`);
+        clearSelection();
+        loadProducts();
+      } else {
+        showToast(result.error || 'Gagal batch update', 'error');
+      }
+    } catch (error) {
+      if (error.message !== 'Auth expired') {
+        showToast('Terjadi kesalahan', 'error');
+      }
+    }
+  }
+
+  async function batchDelete() {
+    const ids = Array.from(selectedProductIds);
+    if (ids.length === 0) return;
+    const choice = confirm(`HAPUS PERMANEN ${ids.length} produk?\n\nProduk yang dihapus tidak bisa dikembalikan!`);
+    if (!choice) return;
+
+    try {
+      const response = await adminFetch(`${API_BASE}/admin/products/batch`, {
+        method: 'DELETE',
+        body: JSON.stringify({ ids }),
+      });
+      if (response.status === 401 || response.status === 403) return;
+      const result = await response.json() as any;
+      if (response.ok) {
+        showToast(`${ids.length} produk berhasil dihapus`);
+        clearSelection();
+        loadProducts();
+      } else {
+        showToast(result.error || 'Gagal batch delete', 'error');
+      }
+    } catch (error) {
+      if (error.message !== 'Auth expired') {
+        showToast('Terjadi kesalahan', 'error');
+      }
+    }
+  }
+
+  // Expose batch functions
+  (window as any).toggleSelectAll = toggleSelectAll;
+  (window as any).updateSelection = updateSelection;
+  (window as any).clearSelection = clearSelection;
+  (window as any).openBatchModal = openBatchModal;
+  (window as any).closeBatchModal = closeBatchModal;
+  (window as any).applyBatchCategory = applyBatchCategory;
+  (window as any).applyBatchPrice = applyBatchPrice;
+  (window as any).batchToggle = batchToggle;
+  (window as any).batchDelete = batchDelete;
 </script>

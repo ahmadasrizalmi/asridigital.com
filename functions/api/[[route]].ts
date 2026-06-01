@@ -2058,6 +2058,76 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true, message: 'Produk berhasil dihapus', deploy_triggered: true });
     }
 
+    // ==================== ADMIN: BATCH UPDATE PRODUCTS ====================
+    if (route === '/admin/products/batch' && method === 'PUT') {
+      const body = await request.json();
+      const { ids, updates: batchUpdates } = body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return jsonResponse({ error: 'ids harus berupa array dan tidak boleh kosong' }, 400);
+      }
+      if (!batchUpdates || typeof batchUpdates !== 'object') {
+        return jsonResponse({ error: 'updates harus berupa object' }, 400);
+      }
+
+      // Build dynamic SET clause
+      const setClauses: string[] = [];
+      const setValues: any[] = [];
+
+      const allowedFields = ['category', 'is_active', 'is_featured', 'is_hot', 'price', 'compare_at_price'];
+      for (const [key, val] of Object.entries(batchUpdates)) {
+        if (allowedFields.includes(key)) {
+          setClauses.push(`${key} = ?`);
+          setValues.push(val);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        return jsonResponse({ error: 'Tidak ada field yang valid untuk diupdate' }, 400);
+      }
+
+      setClauses.push("updated_at = datetime('now')");
+
+      // Update each product
+      let updated = 0;
+      let errors = 0;
+      const placeholders = ids.map(() => '?').join(',');
+
+      try {
+        const sql = `UPDATE products SET ${setClauses.join(', ')} WHERE id IN (${placeholders})`;
+        const result = await env.DB.prepare(sql).bind(...setValues, ...ids).run();
+        updated = ids.length;
+      } catch (e: any) {
+        errors = ids.length;
+        return jsonResponse({ error: 'Gagal batch update: ' + e.message }, 500);
+      }
+
+      triggerDeploy(env);
+      return jsonResponse({ success: true, updated, errors, deploy_triggered: true });
+    }
+
+    // ==================== ADMIN: BATCH DELETE PRODUCTS ====================
+    if (route === '/admin/products/batch' && method === 'DELETE') {
+      const body = await request.json();
+      const { ids } = body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return jsonResponse({ error: 'ids harus berupa array dan tidak boleh kosong' }, 400);
+      }
+
+      let deleted = 0;
+      try {
+        const placeholders = ids.map(() => '?').join(',');
+        await env.DB.prepare(`DELETE FROM products WHERE id IN (${placeholders})`).bind(...ids).run();
+        deleted = ids.length;
+      } catch (e: any) {
+        return jsonResponse({ error: 'Gagal batch delete: ' + e.message }, 500);
+      }
+
+      triggerDeploy(env);
+      return jsonResponse({ success: true, deleted, deploy_triggered: true });
+    }
+
     // ==================== ADMIN: BLOG POSTS LIST ====================
     if (route === '/admin/blog' && method === 'GET') {
       const posts = await env.DB.prepare(
