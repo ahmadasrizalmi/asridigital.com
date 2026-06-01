@@ -1734,32 +1734,6 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ post, relatedPosts: relatedPosts.results });
     }
 
-    // ==================== MIGRATION: Update product descriptions (temp) ====================
-    if (route === '/admin/migrate-descriptions' && method === 'POST') {
-      const body = await request.json();
-      if (body.secret !== 'migrate-desc-2026') {
-        return jsonResponse({ error: 'Unauthorized' }, 401);
-      }
-
-      const items = body.products || [];
-      let updated = 0;
-      let errors = [];
-
-      for (const item of items) {
-        try {
-          if (!item.id || !item.description) continue;
-          await env.DB.prepare(
-            "UPDATE products SET description = ?, short_description = ?, updated_at = datetime('now') WHERE id = ?"
-          ).bind(item.description, item.short_description || null, item.id).run();
-          updated++;
-        } catch (e: any) {
-          errors.push({ id: item.id, error: e.message });
-        }
-      }
-
-      return jsonResponse({ success: true, total: items.length, updated, errors: errors.length });
-    }
-
     // ==================== ADMIN MIDDLEWARE ====================
     // All admin routes require authentication and admin role
     let adminUser: any = null;
