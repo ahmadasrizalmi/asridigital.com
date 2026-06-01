@@ -2947,6 +2947,31 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     return;
   }
 
+  // Check if auto_email is enabled in settings
+  try {
+    const autoEmailSetting = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'auto_email'"
+    ).first();
+    if (autoEmailSetting && autoEmailSetting.value === 'false') {
+      console.log('Auto email disabled in settings, skipping email');
+      return;
+    }
+  } catch (e) {
+    // If settings check fails, continue sending (fail-open)
+  }
+
+  // Read from_email and from_name from settings
+  let fromName = 'Asri Digital';
+  let fromEmail = 'noreply@asridigital.com';
+  try {
+    const fromNameSetting = await env.DB.prepare("SELECT value FROM site_settings WHERE key = 'from_name'").first();
+    const fromEmailSetting = await env.DB.prepare("SELECT value FROM site_settings WHERE key = 'from_email'").first();
+    if (fromNameSetting?.value) fromName = fromNameSetting.value;
+    if (fromEmailSetting?.value) fromEmail = fromEmailSetting.value;
+  } catch (e) {}
+
+  const fromAddress = `${fromName} <${fromEmail}>`;
+
   const isAllAccess = order.product_id === 'ALL-ACCESS';
   const dashboardUrl = magicToken
     ? `${env.APP_URL}/api/auth/magic-login?token=${magicToken}`
@@ -3048,7 +3073,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
       'Authorization': `Bearer ${env.RESEND_KEY}`
     },
     body: JSON.stringify({
-      from: 'Asri Digital <noreply@asridigital.com>',
+      from: fromAddress,
       to: order.user_email,
       subject,
       html

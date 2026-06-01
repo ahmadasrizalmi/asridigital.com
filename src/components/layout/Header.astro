@@ -14,7 +14,7 @@ const navLinks = [
       <!-- Logo -->
       <div class="flex-shrink-0 flex items-center">
         <a href="/">
-          <img class="h-8 w-auto" src="https://res.cloudinary.com/daj8fzinf/image/upload/w_200/q_auto/f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png" alt="Asri Digital Logo" />
+          <img id="header-logo" class="h-8 w-auto" src="https://res.cloudinary.com/daj8fzinf/image/upload/w_200/q_auto/f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png" alt="Asri Digital Logo" />
         </a>
       </div>
 
@@ -160,4 +160,19 @@ const navLinks = [
     window.dispatchEvent(new Event('auth-changed'));
     window.location.href = '/';
   });
+
+  // Dynamic logo from D1 settings
+  fetch('/api/site-settings')
+    .then(function(r) { return r.json(); })
+    .then(function(s) {
+      if (s.logo_url) {
+        var logo = document.getElementById('header-logo');
+        if (logo) logo.setAttribute('src', s.logo_url);
+      }
+      if (s.site_name) {
+        var logo = document.getElementById('header-logo');
+        if (logo) logo.setAttribute('alt', s.site_name + ' Logo');
+      }
+    })
+    .catch(function() {});
 </script>

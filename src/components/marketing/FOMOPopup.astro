@@ -72,6 +72,18 @@ import Icon from '../ui/Icon.astro';
   async function startSequence() {
     if (!container) return;
 
+    // Check if FOMO is enabled in admin settings
+    try {
+      const settingsRes = await fetch('/api/site-settings');
+      const settings = await settingsRes.json();
+      if (settings.fomo_enabled === 'false' || settings.fomo_enabled === false) {
+        container.style.display = 'none';
+        return;
+      }
+    } catch {
+      // If settings fetch fails, default to showing FOMO
+    }
+
     // Fetch real sales data
     const sales = await fetchRecentSales();
     
