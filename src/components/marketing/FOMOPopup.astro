@@ -17,7 +17,7 @@ import Icon from '../ui/Icon.astro';
 
   function createToast(sale: RecentSale): HTMLElement {
     const toast = document.createElement('div');
-    toast.className = 'bg-white border border-gray-200 rounded-xl shadow-lg p-4 flex items-start gap-3 transform transition-all duration-500 translate-x-[-100%] opacity-0';
+    toast.className = 'bg-white border border-gray-200 rounded-xl shadow-float p-4 flex items-start gap-3 transform transition-all duration-500 translate-x-[-100%] opacity-0';
     toast.innerHTML = `
       <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 shrink-0">
         ${sale.firstName.charAt(0)}

@@ -202,7 +202,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
               ))}
             </div>
 
-            <a id="buy-button" href={`/checkout?product=${product.slug}`} class="w-full bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 py-4 rounded-xl font-bold text-lg transition-all shadow-sm hover:shadow-md hover:from-emerald-400 hover:to-yellow-200 transform hover:-translate-y-0.5 flex items-center justify-center">
+            <a id="buy-button" href={`/checkout?product=${product.slug}`} class="w-full bg-btn-gradient text-slate-900 py-4 rounded-xl font-bold text-lg transition-all shadow-btn-primary  transform hover:-translate-y-0.5 flex items-center justify-center">
               <svg class="w-5 h-5 mr-2 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
               {isFree ? 'Download Gratis' : 'Beli & Download Instan'}
             </a>
@@ -333,7 +333,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
                     ) : (
                       <span class="text-lg font-bold text-slate-900">{formatIDR(rp.price)}</span>
                     )}
-                    <span class="bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all">Detail</span>
+                    <span class="bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-btn-gradient group-hover:text-slate-900 transition-all">Detail</span>
                   </div>
                 </div>
               </a>
@@ -436,7 +436,7 @@ const badgeText = categoryBadge[product.category?.toLowerCase()] || (product.cat
       if (owned) {
         const btn = document.getElementById('buy-button');
         if (btn) {
-          btn.classList.remove('from-emerald-300', 'to-yellow-100');
+          btn.classList.remove('bg-btn-gradient', 'shadow-btn-primary');
           btn.classList.add('bg-white', 'border-2', 'border-slate-200', 'hover:border-slate-400');
           btn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H15"/><path d="M10 17L15 12L10 7"/><path d="M15 12H3"/></svg> Akses Produk';
           btn.setAttribute('href', '/dashboard');
