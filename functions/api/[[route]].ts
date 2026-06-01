@@ -1940,7 +1940,7 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== ADMIN: DELETE CATEGORY ====================
     if (route.startsWith('/admin/categories/') && method === 'DELETE') {
       const catId = route.split('/')[3];
-      await env.DB.prepare('UPDATE categories SET is_active = 0 WHERE id = ?').bind(catId).run();
+      await env.DB.prepare('DELETE FROM categories WHERE id = ?').bind(catId).run();
       triggerDeploy(env);
       return jsonResponse({ success: true, deploy_triggered: true });
     }
