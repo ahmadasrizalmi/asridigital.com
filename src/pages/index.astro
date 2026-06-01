@@ -345,9 +345,6 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
   }
 
   // ===== PRODUCTS — loaded client-side from API =====
-  const PRODUCT_CAT_MAP: Record<string, string> = {
-    marketing: 'ai', coding: 'ai', kreatif: 'tools', pendidikan: 'data', membership: 'ai'
-  };
 
   function formatIDRClient(amount: number): string {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
@@ -355,7 +352,7 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
 
   function createProductCard(product: any): HTMLElement {
     const catKey = (product.category || 'tools').toLowerCase();
-    const filterCat = PRODUCT_CAT_MAP[catKey] || 'tools';
+    const filterCat = catKey;
     const title = product.title || '';
     const slug = product.slug || '';
     const imgSrc = optimizeImg(product.image_icon || product.imageIcon || '/images/placeholder.jpg', 400, 400);

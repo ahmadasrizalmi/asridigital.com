@@ -2,47 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
-import ProductCard from '../components/marketing/ProductCard.astro';
-import { formatIDR } from '../lib/utils';
-import type { Product } from '../types/index';
-
-// Products fetched from D1 at build time — NO hardcoded fallback
-let products: Product[] = [];
-
-function normalizeProduct(raw: any): Product {
-  return {
-    id: raw.id, title: raw.title, slug: raw.slug,
-    description: raw.description || '',
-    shortDescription: raw.shortDescription ?? raw.short_description ?? null,
-    price: Number(raw.price || 0),
-    compareAtPrice: raw.compareAtPrice ?? raw.compare_at_price ?? null,
-    gptUrl: null,
-    imageIcon: raw.imageIcon ?? raw.image_icon ?? null,
-    galleryImages: raw.galleryImages ?? raw.gallery_images ?? null,
-    galleryVideos: raw.galleryVideos ?? raw.gallery_videos ?? null,
-    videoEmbedUrl: raw.videoEmbedUrl ?? raw.video_embed_url ?? null,
-    features: raw.features ?? null, specs: raw.specs ?? null, faq: raw.faq ?? null,
-    category: raw.category || 'produk',
-    tags: Array.isArray(raw.tags) ? raw.tags : (() => { try { return JSON.parse(raw.tags || '[]'); } catch { return []; } })(),
-    isActive: Boolean(raw.isActive ?? raw.is_active ?? true),
-    isFeatured: Boolean(raw.isFeatured ?? raw.is_featured ?? false),
-    isHot: Boolean(raw.isHot ?? raw.is_hot ?? false),
-    sortOrder: Number(raw.sortOrder ?? raw.sort_order ?? 0),
-  };
-}
-
-try {
-  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-  const response = await fetch(`${apiBase}/api/products?limit=100`);
-  if (response.ok) {
-    const data = await response.json() as any;
-    products = (data.products || []).map(normalizeProduct);
-  }
-} catch (error) {
-  console.warn('Failed to fetch products:', error);
-}
-
-const categories = [...new Set(products.map(p => p.category))];
 ---
 
 <BaseLayout
@@ -82,29 +41,64 @@ const categories = [...new Set(products.map(p => p.category))];
     <section class="py-16 md:py-24 bg-slate-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Search + Filter */}
+        {/* Search + Filter — tabs generated client-side */}
         <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <div class="relative w-full md:w-96">
             <input type="text" id="product-search" placeholder="Cari produk digital..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 shadow-sm transition-shadow" />
             <svg class="absolute left-4 top-3.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
           <div class="flex space-x-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide" id="filter-tabs">
-            <button class="filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-carbon text-white" data-filter="all">Semua</button>
-            <button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100" data-filter="hot"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline -mt-0.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Hot</button>
-            {categories.map(cat => (
-              <button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100" data-filter={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</button>
-            ))}
+            {/* Skeleton while loading */}
+            <div class="flex space-x-2" id="tabs-skeleton">
+              <div class="h-9 w-20 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-9 w-16 bg-slate-200 rounded-full animate-pulse"></div>
+              <div class="h-9 w-24 bg-slate-200 rounded-full animate-pulse"></div>
+            </div>
           </div>
         </div>
 
         {/* Product Count */}
-        <p class="text-sm text-slate-500 mb-6" id="product-count">Menampilkan {products.length} produk</p>
+        <p class="text-sm text-slate-500 mb-6" id="product-count"></p>
 
-        {/* Product Grid */}
+        {/* Product Grid — populated client-side */}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
-          {products.map((product) => (
-            <ProductCard product={product} />
-          ))}
+          {/* Skeleton cards while loading */}
+          <div class="skeleton-card bg-white rounded-2xl overflow-hidden border border-slate-200">
+            <div class="aspect-square bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 bg-slate-200 rounded animate-pulse w-3/4"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-full"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-2/3"></div>
+              <div class="flex justify-between pt-4">
+                <div class="h-6 bg-slate-200 rounded animate-pulse w-24"></div>
+                <div class="h-9 bg-slate-200 rounded-lg animate-pulse w-28"></div>
+              </div>
+            </div>
+          </div>
+          <div class="skeleton-card bg-white rounded-2xl overflow-hidden border border-slate-200 hidden md:block">
+            <div class="aspect-square bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 bg-slate-200 rounded animate-pulse w-3/4"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-full"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-2/3"></div>
+              <div class="flex justify-between pt-4">
+                <div class="h-6 bg-slate-200 rounded animate-pulse w-24"></div>
+                <div class="h-9 bg-slate-200 rounded-lg animate-pulse w-28"></div>
+              </div>
+            </div>
+          </div>
+          <div class="skeleton-card bg-white rounded-2xl overflow-hidden border border-slate-200 hidden lg:block">
+            <div class="aspect-square bg-slate-200 animate-pulse"></div>
+            <div class="p-6 space-y-3">
+              <div class="h-5 bg-slate-200 rounded animate-pulse w-3/4"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-full"></div>
+              <div class="h-4 bg-slate-200 rounded animate-pulse w-2/3"></div>
+              <div class="flex justify-between pt-4">
+                <div class="h-6 bg-slate-200 rounded animate-pulse w-24"></div>
+                <div class="h-9 bg-slate-200 rounded-lg animate-pulse w-28"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Empty State */}
@@ -120,58 +114,206 @@ const categories = [...new Set(products.map(p => p.category))];
   <Footer />
 </BaseLayout>
 
-<script>
-  // Filter & search — re-query DOM each time
-  const filterTabs = document.querySelectorAll('.filter-tab');
-  const searchInput = document.getElementById('product-search') as HTMLInputElement;
-  const noResults = document.getElementById('no-results');
-  const productCount = document.getElementById('product-count');
+<script is:inline>
+  // ==========================================================
+  // Products page — fully client-side, always fresh from D1
+  // ==========================================================
+  (function() {
+    const grid = document.getElementById('product-grid');
+    const tabsContainer = document.getElementById('filter-tabs');
+    const searchInput = document.getElementById('product-search');
+    const noResults = document.getElementById('no-results');
+    const productCount = document.getElementById('product-count');
 
-  function filterProducts() {
-    const productCards = document.querySelectorAll('.product-card');
-    const searchTerm = (searchInput?.value || '').toLowerCase();
-    const activeTab = document.querySelector('.filter-tab.active') as HTMLElement;
-    const activeCategory = activeTab?.dataset.filter || 'all';
-    let visibleCount = 0;
+    // Lucide flame SVG (inline, for hot badges)
+    const flameSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
 
-    productCards.forEach(card => {
-      const el = card as HTMLElement;
-      const title = (el.dataset.title || '').toLowerCase();
-      const category = el.dataset.category || '';
-      const isHot = el.dataset.hot === 'true';
-      const matchesSearch = title.includes(searchTerm);
-      let matchesCategory: boolean;
-      if (activeCategory === 'hot') {
-        matchesCategory = isHot;
-      } else if (activeCategory === 'all') {
-        matchesCategory = true;
-      } else {
-        matchesCategory = category === activeCategory;
+    function formatIDR(n) {
+      return 'Rp' + n.toLocaleString('id-ID');
+    }
+
+    function optimizeImg(url, w, h) {
+      if (!url) return '/images/placeholder.jpg';
+      if (url.includes('res.cloudinary.com')) {
+        return url.replace('/upload/', '/upload/w_' + w + ',h_' + h + ',c_fill,f_auto,q_auto/');
+      }
+      return url;
+    }
+
+    function renderCard(p) {
+      const hasDiscount = p.compare_at_price && p.compare_at_price > p.price;
+      const isFree = p.price === 0;
+      const discount = hasDiscount ? Math.round((1 - p.price / p.compare_at_price) * 100) : 0;
+      const imgSrc = optimizeImg(p.image_icon, 400, 400);
+
+      // Badges
+      let badges = '';
+      if (hasDiscount && !isFree) {
+        badges += '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">-' + discount + '%</span></div>';
+      }
+      if (isFree) {
+        badges += '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">GRATIS</span></div>';
+      }
+      if (p.is_hot) {
+        badges += '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">' + flameSvg + ' Hot</span></div>';
+      } else if (p.is_featured) {
+        badges += '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm">Best Seller</span></div>';
       }
 
-      if (matchesSearch && matchesCategory) {
-        el.style.display = 'flex';
-        visibleCount++;
+      // Price
+      let priceHtml = '';
+      if (isFree) {
+        priceHtml = '<span class="text-xl font-bold text-slate-900">Gratis</span>';
       } else {
-        el.style.display = 'none';
+        let discountLine = '';
+        if (hasDiscount) {
+          discountLine = '<span class="text-xs text-slate-400 line-through block mb-0.5">' + formatIDR(p.compare_at_price) + '</span>';
+        }
+        priceHtml = '<div>' + discountLine + '<span class="text-xl font-bold text-slate-900">' + formatIDR(p.price) + '</span></div>';
       }
-    });
 
-    if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-    if (productCount) productCount.textContent = `Menampilkan ${visibleCount} produk`;
-  }
+      const desc = p.short_description || p.description || '';
 
-  filterTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      filterTabs.forEach(t => {
-        t.classList.remove('active', 'bg-carbon', 'text-white');
-        t.classList.add('bg-white', 'text-slate-600');
+      return '<a href="/product/' + p.slug + '" class="product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full" data-category="' + (p.category || '').toLowerCase() + '" data-title="' + (p.title || '').toLowerCase() + '" data-slug="' + p.slug + '" data-hot="' + (p.is_hot ? 'true' : 'false') + '">' +
+        '<div class="relative overflow-hidden aspect-square bg-slate-50">' +
+          '<img src="' + imgSrc + '" alt="' + (p.title || '') + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />' +
+          badges +
+        '</div>' +
+        '<div class="p-6 flex flex-col flex-grow">' +
+          '<h3 class="text-lg font-bold text-slate-900 mb-2 transition-colors">' + (p.title || '') + '</h3>' +
+          '<p class="text-slate-500 text-sm mb-6 flex-grow leading-relaxed line-clamp-2">' + desc + '</p>' +
+          '<div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-300">' +
+            priceHtml +
+            '<button class="buy-btn bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-gradient-to-r group-hover:from-emerald-300 group-hover:to-yellow-100 group-hover:text-slate-800 transition-all duration-300">Lihat Detail</button>' +
+          '</div>' +
+        '</div>' +
+      '</a>';
+    }
+
+    function renderTabs(categories) {
+      const tabsSkeleton = document.getElementById('tabs-skeleton');
+      if (tabsSkeleton) tabsSkeleton.remove();
+
+      // Clear existing tabs
+      tabsContainer.innerHTML = '';
+
+      // "Semua" tab
+      const semuaBtn = document.createElement('button');
+      semuaBtn.className = 'filter-tab active px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-carbon text-white';
+      semuaBtn.dataset.filter = 'all';
+      semuaBtn.textContent = 'Semua';
+      tabsContainer.appendChild(semuaBtn);
+
+      // "Hot" tab
+      const hotBtn = document.createElement('button');
+      hotBtn.className = 'filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
+      hotBtn.dataset.filter = 'hot';
+      hotBtn.innerHTML = flameSvg + ' Hot';
+      tabsContainer.appendChild(hotBtn);
+
+      // Category tabs
+      categories.forEach(function(cat) {
+        const btn = document.createElement('button');
+        btn.className = 'filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
+        btn.dataset.filter = cat;
+        btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        tabsContainer.appendChild(btn);
       });
-      tab.classList.add('active', 'bg-carbon', 'text-white');
-      tab.classList.remove('bg-white', 'text-slate-600');
-      filterProducts();
-    });
-  });
 
-  searchInput?.addEventListener('input', filterProducts);
+      // Bind click events
+      bindTabEvents();
+    }
+
+    function filterProducts() {
+      const productCards = document.querySelectorAll('.product-card');
+      const searchTerm = (searchInput?.value || '').toLowerCase();
+      const activeTab = document.querySelector('.filter-tab.active');
+      const activeCategory = activeTab?.dataset?.filter || 'all';
+      let visibleCount = 0;
+
+      productCards.forEach(function(card) {
+        const el = card;
+        const title = (el.dataset.title || '').toLowerCase();
+        const category = el.dataset.category || '';
+        const isHot = el.dataset.hot === 'true';
+        const matchesSearch = title.includes(searchTerm);
+        let matchesCategory;
+        if (activeCategory === 'hot') {
+          matchesCategory = isHot;
+        } else if (activeCategory === 'all') {
+          matchesCategory = true;
+        } else {
+          matchesCategory = category === activeCategory;
+        }
+
+        if (matchesSearch && matchesCategory) {
+          el.style.display = 'flex';
+          visibleCount++;
+        } else {
+          el.style.display = 'none';
+        }
+      });
+
+      if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      if (productCount) productCount.textContent = 'Menampilkan ' + visibleCount + ' produk';
+    }
+
+    function bindTabEvents() {
+      var tabs = document.querySelectorAll('.filter-tab');
+      tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          tabs.forEach(function(t) {
+            t.classList.remove('active', 'bg-carbon', 'text-white');
+            t.classList.add('bg-white', 'text-slate-600');
+          });
+          tab.classList.add('active', 'bg-carbon', 'text-white');
+          tab.classList.remove('bg-white', 'text-slate-600');
+          filterProducts();
+        });
+      });
+    }
+
+    // Fetch products from API — always fresh from D1
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products?limit=100');
+        const data = await res.json();
+        const products = (data.products || []).filter(function(p) { return p.is_active !== false; });
+
+        if (products.length === 0) {
+          grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada produk tersedia.</div>';
+          if (productCount) productCount.textContent = 'Menampilkan 0 produk';
+          return;
+        }
+
+        // Extract unique categories from actual data
+        var categories = [];
+        products.forEach(function(p) {
+          var cat = (p.category || '').toLowerCase();
+          if (cat && categories.indexOf(cat) === -1) categories.push(cat);
+        });
+
+        // Render filter tabs
+        renderTabs(categories);
+
+        // Render product cards
+        grid.innerHTML = products.map(renderCard).join('');
+
+        // Remove skeleton cards
+        document.querySelectorAll('.skeleton-card').forEach(function(el) { el.remove(); });
+
+        // Update count
+        if (productCount) productCount.textContent = 'Menampilkan ' + products.length + ' produk';
+
+        // Bind search
+        searchInput?.addEventListener('input', filterProducts);
+
+      } catch (err) {
+        console.error('Failed to load products:', err);
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Gagal memuat produk. Coba refresh halaman.</div>';
+      }
+    }
+
+    loadProducts();
+  })();
 </script>
