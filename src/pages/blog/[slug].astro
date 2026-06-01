@@ -46,29 +46,28 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
     <div id="article-content" class="hidden">
 
       <!-- Hero Header -->
-      <div id="hero-section" class="relative" style="min-height:240px;background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#10b981 100%);">
+      <div id="hero-section" class="relative" style="min-height:200px;background-color:#f8fafc;background-image:radial-gradient(circle at 80% 0%, rgba(167,243,208,0.4) 0%, transparent 50%), radial-gradient(circle at 10% 100%, rgba(186,230,253,0.4) 0%, transparent 50%);">
         <div id="hero-bg-image" style="position:absolute;inset:0;opacity:0.15;"></div>
-        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
         <div style="position:relative;max-width:800px;margin:0 auto;padding:80px 16px 32px;">
           <!-- Breadcrumb -->
-          <nav style="display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:16px;flex-wrap:wrap;">
-            <a href="/" style="color:rgba(255,255,255,0.7);text-decoration:none;">Beranda</a>
+          <nav style="display:flex;align-items:center;gap:6px;font-size:13px;color:#94a3b8;margin-bottom:16px;flex-wrap:wrap;">
+            <a href="/" style="color:#94a3b8;text-decoration:none;">Beranda</a>
             <span>›</span>
-            <a href="/blog" style="color:rgba(255,255,255,0.7);text-decoration:none;">Blog</a>
+            <a href="/blog" style="color:#94a3b8;text-decoration:none;">Blog</a>
             <span>›</span>
-            <span id="breadcrumb-title" style="color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
+            <span id="breadcrumb-title" style="color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></span>
           </nav>
           <!-- Category + Date + Reading Time removed per request -->
           <!-- Title -->
-          <h1 id="post-title" style="font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;color:#fff;line-height:1.25;margin-bottom:16px;"></h1>
+          <h1 id="post-title" style="font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;color:#0f172a;line-height:1.25;margin-bottom:16px;"></h1>
           <!-- Author -->
           <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;">
+            <div style="width:36px;height:36px;border-radius:999px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#475569;">
               <Icon name="user" size={16} />
             </div>
             <div>
-              <p id="post-author" style="font-weight:600;color:#fff;font-size:14px;"></p>
-              <p style="font-size:12px;color:rgba(255,255,255,0.7);">Author</p>
+              <p id="post-author" style="font-weight:600;color:#0f172a;font-size:14px;"></p>
+              <p style="font-size:12px;color:#94a3b8;">Author</p>
             </div>
           </div>
         </div>
@@ -116,16 +115,16 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
             <span style="font-size:13px;font-weight:600;color:#475569;margin-bottom:4px;">Bagikan:</span>
             <div class="blog-share-buttons">
               <a id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-wa">
-                <Icon name="message-circle" size={16} class="inline" /> WhatsApp
+                <Icon name="whatsapp" size={14} class="inline" /> WhatsApp
               </a>
               <a id="share-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-tw">
-                <Icon name="twitter" size={16} class="inline" /> Twitter
+                <Icon name="twitter" size={14} class="inline" /> Twitter
               </a>
               <a id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-share-btn blog-share-fb">
-                f Facebook
+                <Icon name="globe" size={14} class="inline" /> Facebook
               </a>
               <button id="share-copy" class="blog-share-btn blog-share-copy">
-                <Icon name="copy" size={16} class="inline" /> Salin Link
+                <Icon name="copy" size={14} class="inline" /> Salin Link
               </button>
             </div>
           </div>
@@ -152,10 +151,10 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
 
       <!-- Floating Share - Desktop Only -->
       <div id="floating-share" class="blog-floating-share">
-        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#25D366;" title="Share WhatsApp"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5A8.38 8.38 0 0 1 12.5 21A8.38 8.38 0 0 1 3.5 12.5A8.38 8.38 0 0 1 12 3.5A8.38 8.38 0 0 1 21 11.5Z"/><path d="M22 2L22 2"/></svg></a>
-        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1DA1F2;" title="Share Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></a>
-        <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn" style="background:#1877F2;" title="Share Facebook">f</a>
-        <button id="float-copy" class="blog-float-btn" style="background:#f5f5f5;color:#475569;" title="Salin Link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9H11C9.89543 9 9 9.89543 9 11V20C9 21.1046 9.89543 22 11 22H20C21.1046 22 22 21.1046 22 20V11C22 9.89543 21.1046 9 20 9Z"/><path d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5"/></svg></button>
+        <a id="float-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn blog-share-wa" title="Share WhatsApp"><Icon name="whatsapp" size={16} /></a>
+        <a id="float-twitter" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn blog-share-tw" title="Share Twitter"><Icon name="twitter" size={16} /></a>
+        <a id="float-facebook" href="#" target="_blank" rel="noopener noreferrer" class="blog-float-btn blog-share-fb" title="Share Facebook"><Icon name="globe" size={16} /></a>
+        <button id="float-copy" class="blog-float-btn blog-share-copy" title="Salin Link"><Icon name="copy" size={16} /></button>
       </div>
     </div>
 
@@ -521,10 +520,8 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
     white-space: nowrap;
   }
 
-  .blog-share-wa { background: #25D366; color: #fff; }
-  .blog-share-tw { background: #1DA1F2; color: #fff; }
-  .blog-share-fb { background: #1877F2; color: #fff; }
-  .blog-share-copy { background: #f5f5f5; color: #475569; }
+  .blog-share-wa, .blog-share-tw, .blog-share-fb, .blog-share-copy { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+  .blog-share-wa:hover, .blog-share-tw:hover, .blog-share-fb:hover, .blog-share-copy:hover { background: #e2e8f0; }
 
   /* ===== Author Box ===== */
   .blog-author-box {
@@ -543,12 +540,12 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
     width: 56px;
     height: 56px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(90deg, #81E2A4, #F8F5C4);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #fff;
+    color: #1e293b;
   }
 
   .blog-author-name {
@@ -586,14 +583,13 @@ const blogOgImage = postImage ? (postImage.startsWith('http') ? postImage : `htt
     width: 40px;
     height: 40px;
     border-radius: 999px;
-    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    border: none;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
     cursor: pointer;
   }
 
