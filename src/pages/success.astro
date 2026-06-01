@@ -20,7 +20,8 @@ const isFree = url.searchParams.get('free') === 'true';
       </div>
       
       <!-- Success Message -->
-      <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4 animate-slide-up">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4 animate-slide-up flex items-center justify-center gap-3">
+        <Icon name={isFree ? 'gift' : 'check-circle'} size={36} class={isFree ? 'text-emerald-500' : 'text-emerald-500'} />
         {isFree ? 'Download Berhasil!' : 'Pembayaran Berhasil!'}
       </h1>
       
