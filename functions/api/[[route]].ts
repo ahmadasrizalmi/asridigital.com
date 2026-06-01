@@ -2602,19 +2602,6 @@ export async function onRequest(context: any): Promise<Response> {
       });
     }
 
-    // ==================== ADMIN: MIGRATE DB ====================
-    if (route === '/admin/migrate' && method === 'POST') {
-      try {
-        await env.DB.prepare("ALTER TABLE products ADD COLUMN is_hot INTEGER DEFAULT 0").run();
-        return jsonResponse({ success: true, message: 'is_hot column added' });
-      } catch (e: any) {
-        if (e.message?.includes('duplicate column')) {
-          return jsonResponse({ success: true, message: 'is_hot column already exists' });
-        }
-        return jsonResponse({ error: e.message }, 500);
-      }
-    }
-
     // ==================== ADMIN: UPDATE ADMIN CREDENTIALS ====================
     if (route === '/admin/update-credentials' && method === 'POST') {
       // Check for special authorization (one-time use)
