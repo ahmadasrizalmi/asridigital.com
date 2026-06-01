@@ -5,6 +5,7 @@ import Footer from '../components/layout/Footer.astro';
 import HeroSlider from '../components/marketing/HeroSlider.astro';
 import PromoCard from '../components/marketing/PromoCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
+import HotReleaseSlider from '../components/marketing/HotReleaseSlider.astro';
 
 // All-Access product excluded from homepage grid
 const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
@@ -38,6 +39,9 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
         </div>
       </div>
     </section>
+
+    {/* HOT RELEASE — only shows when is_hot products exist */}
+    <HotReleaseSlider />
 
     {/* PRODUCT SECTION */}
     <section id="produk" class="py-24 bg-slate-50">
@@ -93,6 +97,14 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
         {/* Empty State */}
         <div id="no-results" class="hidden text-center py-12">
           <p class="text-slate-500 text-lg">Maaf, produk tidak ditemukan. Coba kata kunci lain.</p>
+        </div>
+
+        {/* Lihat Semua link */}
+        <div class="text-center mt-10">
+          <a href="/products" class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-semibold text-base transition-colors">
+            Lihat Semua Produk
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </a>
         </div>
       </div>
     </section>
@@ -400,7 +412,7 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
     const grid = document.getElementById('product-grid');
     if (!grid) return;
     try {
-      const res = await fetch('/api/products?limit=100');
+      const res = await fetch('/api/products?limit=6');
       const data = await res.json();
       const allAccessSlug = 'lifetime-all-access-pass';
       const apiProducts = (data.products || []).filter((p: any) => p.slug !== allAccessSlug);

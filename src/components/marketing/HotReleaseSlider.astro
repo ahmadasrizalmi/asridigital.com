@@ -1,0 +1,158 @@
+---
+// HotReleaseSlider.astro — Shows hot/new release products in a horizontal slider
+// Only renders when there are products with is_hot = 1
+// Fetches from /api/products?hot=1 at runtime (client-side)
+---
+
+<section id="hot-release-section" class="hidden py-12 bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 border-b border-orange-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Header */}
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center justify-center w-10 h-10 bg-red-500 rounded-xl">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+        </span>
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Hot Release 🔥</h2>
+          <p class="text-sm text-slate-500">Produk terbaru yang lagi trending</p>
+        </div>
+      </div>
+      <a href="/products" class="hidden md:inline-flex items-center gap-1 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
+        Lihat Semua
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </a>
+    </div>
+
+    {/* Slider Container */}
+    <div class="relative">
+      {/* Scroll container */}
+      <div id="hot-release-slider" class="flex gap-5 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory" style="-webkit-overflow-scrolling:touch;">
+        {/* Cards rendered by JS */}
+      </div>
+
+      {/* Navigation arrows — desktop only */}
+      <button id="hot-prev" class="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all z-10" aria-label="Sebelumnya">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      </button>
+      <button id="hot-next" class="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all z-10" aria-label="Selanjutnya">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+
+    {/* Mobile "Lihat Semua" */}
+    <div class="md:hidden text-center mt-6">
+      <a href="/products" class="inline-flex items-center gap-1 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
+        Lihat Semua Hot Release
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .hot-card { scroll-snap-align: start; flex-shrink: 0; }
+</style>
+
+<script is:inline>
+(function() {
+  function formatIDR(n) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  }
+
+  function optimizeImg(url, w, h) {
+    if (!url || !url.includes('cloudinary')) return url || '/images/placeholder.jpg';
+    var parts = url.split('/upload/');
+    if (parts.length !== 2) return url;
+    return parts[0] + '/upload/w_' + w + ',h_' + h + ',c_fill/q_auto/f_auto/' + parts[1];
+  }
+
+  function createHotCard(p) {
+    var price = Number(p.price || 0);
+    var compareAt = p.compare_at_price || p.compareAtPrice || null;
+    var hasDiscount = compareAt && Number(compareAt) > price;
+    var isFree = price === 0;
+    var discount = hasDiscount ? Math.round((1 - price / Number(compareAt)) * 100) : 0;
+    var imgSrc = optimizeImg(p.image_icon || p.imageIcon || '/images/placeholder.jpg', 400, 400);
+    var title = (p.title || '').replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; });
+    var desc = (p.short_description || p.shortDescription || p.description || '').replace(/[<>"'&]/g, function(c) { return {'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]; });
+
+    var priceHtml = '';
+    if (isFree) {
+      priceHtml = '<span class="text-lg font-bold text-slate-900">Gratis</span>';
+    } else {
+      var discountLine = hasDiscount ? '<span class="text-xs text-slate-400 line-through">' + formatIDR(Number(compareAt)) + '</span>' : '';
+      priceHtml = '<div class="flex items-center gap-2">' + discountLine + '<span class="text-lg font-bold text-slate-900">' + formatIDR(price) + '</span></div>';
+    }
+
+    var badgeHtml = '';
+    if (hasDiscount && !isFree) badgeHtml = '<span class="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-md bg-red-500 text-white text-xs font-bold">-' + discount + '%</span>';
+    else if (isFree) badgeHtml = '<span class="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-md bg-green-500 text-white text-xs font-bold">GRATIS</span>';
+
+    return '<a href="/product/' + (p.slug || '') + '" class="hot-card w-[280px] md:w-[320px] bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-shadow group snap-start">' +
+      '<div class="relative overflow-hidden aspect-[4/3] bg-slate-50">' +
+        '<img src="' + imgSrc + '" alt="' + title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />' +
+        badgeHtml +
+        '<span class="absolute top-3 right-3 inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">🔥 Hot</span>' +
+      '</div>' +
+      '<div class="p-4">' +
+        '<h3 class="text-sm font-bold text-slate-900 mb-1 line-clamp-1">' + title + '</h3>' +
+        '<p class="text-xs text-slate-500 mb-3 line-clamp-2">' + desc + '</p>' +
+        '<div class="flex items-center justify-between">' +
+          priceHtml +
+          '<span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-md">Baru!</span>' +
+        '</div>' +
+      '</div>' +
+    '</a>';
+  }
+
+  async function loadHotReleases() {
+    var section = document.getElementById('hot-release-section');
+    var slider = document.getElementById('hot-release-slider');
+    if (!section || !slider) return;
+
+    try {
+      var res = await fetch('/api/products?limit=100');
+      var data = await res.json();
+      var hotProducts = (data.products || []).filter(function(p) { return p.is_hot || p.isHot; });
+
+      if (hotProducts.length === 0) {
+        // No hot products — keep section hidden
+        return;
+      }
+
+      // Show section
+      section.classList.remove('hidden');
+
+      // Render cards
+      slider.innerHTML = hotProducts.map(createHotCard).join('');
+
+      // Navigation arrows
+      var prevBtn = document.getElementById('hot-prev');
+      var nextBtn = document.getElementById('hot-next');
+      var scrollAmount = 340;
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+          slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+          slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load hot releases:', err);
+    }
+  }
+
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadHotReleases);
+  } else {
+    loadHotReleases();
+  }
+})();
+</script>
