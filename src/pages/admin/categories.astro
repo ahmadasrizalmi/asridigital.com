@@ -53,12 +53,12 @@ import Icon from '../../components/ui/Icon.astro';
             </table>
           </div>
         </div>
-        <div id="category-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 border-t border-border">
-          <span id="category-page-info" class="text-xs sm:text-sm text-text-muted text-center sm:text-left"></span>
+        <div id="category-pagination" class="flex items-center justify-between px-4 py-3 border-t border-border">
+          <span id="category-page-info" class="text-sm text-text-muted"></span>
           <div class="flex items-center gap-2">
-            <button id="cat-prev" class="btn-tertiary text-sm px-3 py-1.5" onclick="catPrevPage()">← Prev</button>
-            <span id="cat-page-num" class="text-sm text-text-secondary px-2 hidden sm:inline"></span>
-            <button id="cat-next" class="btn-tertiary text-sm px-3 py-1.5" onclick="catNextPage()">Next →</button>
+            <button id="cat-prev" class="btn-tertiary text-sm" onclick="catPrevPage()">← Prev</button>
+            <span id="cat-page-num" class="text-sm text-text-secondary px-2"></span>
+            <button id="cat-next" class="btn-tertiary text-sm" onclick="catNextPage()">Next →</button>
           </div>
         </div>
       </div>
