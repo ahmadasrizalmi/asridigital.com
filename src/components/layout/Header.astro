@@ -2,8 +2,9 @@
 import Icon from '../ui/Icon.astro';
 
 const navLinks = [
-  { label: 'Semua Produk', href: '/#produk' },
+  { label: 'Produk', href: '/products' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Panduan', href: '/guide' },
   { label: 'Harga', href: '/#harga' },
 ];
 ---
@@ -31,7 +32,7 @@ const navLinks = [
       <div class="hidden md:flex items-center space-x-4">
         <div id="auth-guest-desktop" class="flex items-center space-x-4">
           <a href="/dashboard" class="text-slate-500 hover:text-slate-900 text-sm font-medium px-3 py-2 rounded-lg transition">Masuk</a>
-          <a href="/#produk" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-sm font-bold px-6 py-2.5 rounded-full shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
+          <a href="/products" class="bg-gradient-to-r from-emerald-300 to-yellow-100 text-slate-800 text-sm font-bold px-6 py-2.5 rounded-full shadow-sm hover:shadow hover:from-emerald-400 hover:to-yellow-200 transition-all transform hover:-translate-y-0.5">
             Mulai Eksplorasi
           </a>
         </div>
@@ -73,7 +74,7 @@ const navLinks = [
 
       <div id="auth-guest-mobile" class="flex flex-col gap-2">
         <a href="/dashboard" class="btn-tertiary justify-center">Masuk</a>
-        <a href="/#produk" class="btn-primary justify-center">Mulai Eksplorasi</a>
+        <a href="/products" class="btn-primary justify-center">Mulai Eksplorasi</a>
       </div>
       <div id="auth-user-mobile" class="hidden flex-col gap-2">
         <a href="/dashboard" class="btn-tertiary justify-center">
