@@ -211,12 +211,12 @@ import Footer from '../components/layout/Footer.astro';
       hotBtn.innerHTML = flameSvg + ' Hot';
       tabsContainer.appendChild(hotBtn);
 
-      // Category tabs
+      // Category tabs — use display name from categories table
       categories.forEach(function(cat) {
         const btn = document.createElement('button');
         btn.className = 'filter-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap bg-white text-slate-600 border border-slate-200 hover:bg-slate-100';
-        btn.dataset.filter = cat;
-        btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        btn.dataset.filter = cat.key;
+        btn.textContent = cat.name;
         tabsContainer.appendChild(btn);
       });
 
@@ -273,12 +273,32 @@ import Footer from '../components/layout/Footer.astro';
       });
     }
 
-    // Fetch products from API — always fresh from D1
+    // Category display name map — built from /api/categories
+    // Key = product.category (raw), Value = category display name
+    var catDisplayMap = {};
+
+    // Fetch products + categories from API — always fresh from D1
     async function loadProducts() {
       try {
-        const res = await fetch('/api/products?limit=100');
-        const data = await res.json();
-        const products = (data.products || []).filter(function(p) { return p.is_active !== false; });
+        // Fetch both in parallel
+        var prodRes = fetch('/api/products?limit=100');
+        var catRes = fetch('/api/categories');
+
+        var prodData = (await prodRes).json();
+        var catData = (await catRes).json();
+
+        var products = ((await prodData).products || []).filter(function(p) { return p.is_active !== false; });
+        var cats = (await catData).categories || (await catData) || [];
+
+        // Build category display map: cat-{original_name} -> display_name
+        // Categories have id like "cat-kreatif", products have category like "kreatif"
+        cats.forEach(function(c) {
+          // Map by id (strip "cat-" prefix) -> display name
+          var key = (c.id || '').replace(/^cat-/, '').toLowerCase();
+          if (key) catDisplayMap[key] = c.name || key;
+          // Also map by slug in case products reference slug
+          if (c.slug) catDisplayMap[c.slug.toLowerCase()] = c.name || c.slug;
+        });
 
         if (products.length === 0) {
           grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada produk tersedia.</div>';
@@ -286,14 +306,21 @@ import Footer from '../components/layout/Footer.astro';
           return;
         }
 
-        // Extract unique categories from actual data
-        var categories = [];
+        // Extract unique categories from actual product data, with display names
+        var categories = []; // [{key: 'kreatif', name: 'GPT Custom'}, ...]
         products.forEach(function(p) {
-          var cat = (p.category || '').toLowerCase();
-          if (cat && categories.indexOf(cat) === -1) categories.push(cat);
+          var catKey = (p.category || '').toLowerCase();
+          if (!catKey) return;
+          var exists = categories.find(function(c) { return c.key === catKey; });
+          if (!exists) {
+            categories.push({
+              key: catKey,
+              name: catDisplayMap[catKey] || catKey.charAt(0).toUpperCase() + catKey.slice(1)
+            });
+          }
         });
 
-        // Render filter tabs
+        // Render filter tabs with display names
         renderTabs(categories);
 
         // Render product cards
