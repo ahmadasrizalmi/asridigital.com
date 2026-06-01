@@ -862,7 +862,7 @@ export async function onRequest(context: any): Promise<Response> {
         if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
           const resetUrl = `${env.APP_URL}/reset-password?token=${resetToken}`;
           
-          await fetch('https://api.resend.com/emails', {
+          const emailResponse = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -870,7 +870,7 @@ export async function onRequest(context: any): Promise<Response> {
             },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
-              to: email,
+              to: normalizedEmail,
               subject: '🔐 Reset Password - Asri Digital',
               html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -893,9 +893,18 @@ export async function onRequest(context: any): Promise<Response> {
               `
             })
           });
+          
+          if (!emailResponse.ok) {
+            const errBody = await emailResponse.text();
+            console.error(`RESEND ERROR (forgot-password): ${emailResponse.status} - ${errBody}`);
+          } else {
+            console.log('RESEND: Reset email sent to', normalizedEmail);
+          }
+        } else {
+          console.log('RESEND: Key not configured, skipping. RESEND_KEY exists:', !!env.RESEND_KEY);
         }
-      } catch (emailError) {
-        console.error('Email error:', emailError);
+      } catch (emailError: any) {
+        console.error('RESEND: Email error:', emailError.message);
       }
 
       return jsonResponse({ success: true, message: 'Jika email terdaftar, Anda akan menerima link reset password.' });
@@ -1101,7 +1110,7 @@ export async function onRequest(context: any): Promise<Response> {
         }
 
         try {
-          await sendOrderConfirmationEmail(env, { id: orderId, user_email: sanitizedEmail, user_name: sanitizedName, product_title: product.title, product_slug: product.slug, product_id: product.id }, magicToken || undefined, newUserPassword || undefined);
+          await sendOrderConfirmationEmail(env, { id: orderId, user_email: sanitizedEmail, user_name: sanitizedName, product_title: product.title, product_slug: product.slug, product_id: product.id, amount: 0 }, magicToken || undefined, newUserPassword || undefined);
         } catch (e: any) { console.log('FREE_EMAIL: Error:', e.message); }
 
         // Telegram notification for new order
@@ -2945,9 +2954,10 @@ async function notifyTelegram(env: Env, message: string) {
 // Email helper function
 async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: string, userPassword?: string) {
   if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) {
-    console.log('Resend API key not configured, skipping email');
+    console.log('RESEND: Key not configured. RESEND_KEY exists:', !!env.RESEND_KEY, 'value:', env.RESEND_KEY ? env.RESEND_KEY.substring(0, 10) + '...' : 'undefined');
     return;
   }
+  console.log('RESEND: Sending email to', order.user_email, 'subject:', subject ? subject.substring(0, 50) : 'none');
 
   // Check if auto_email is enabled in settings
   try {
@@ -3100,7 +3110,9 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
   }
 
   if (!response.ok) {
-    console.error(`Email send failed: ${response.status} - ${JSON.stringify(result)}`);
+    console.error(`RESEND: Email FAILED to ${order.user_email}: ${response.status} - ${JSON.stringify(result)}`);
+  } else {
+    console.log(`RESEND: Email SENT to ${order.user_email}, id: ${result?.id || 'unknown'}`);
   }
 
   return result;
