@@ -409,7 +409,7 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
     const grid = document.getElementById('product-grid');
     if (!grid) return;
     try {
-      const res = await fetch('/api/products?limit=6');
+      const res = await fetch('/api/products?limit=7');
       const data = await res.json();
       const allAccessSlug = 'lifetime-all-access-pass';
       const apiProducts = (data.products || []).filter((p: any) => p.slug !== allAccessSlug);
