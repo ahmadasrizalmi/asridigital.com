@@ -841,9 +841,9 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(normalizedEmail)
         .first();
 
-      // Always return success to prevent email enumeration
+      // DEBUG: return user existence info (REMOVE IN PRODUCTION)
       if (!user) {
-        return jsonResponse({ success: true, message: 'Jika email terdaftar, Anda akan menerima link reset password.' });
+        return jsonResponse({ success: false, debug: true, message: 'Email tidak ditemukan di tabel users', email: normalizedEmail });
       }
 
       // Generate reset token
@@ -858,6 +858,7 @@ export async function onRequest(context: any): Promise<Response> {
         .run();
 
       // Send reset email
+      let emailSendResult = 'skipped';
       try {
         if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
           const resetUrl = `${env.APP_URL}/reset-password?token=${resetToken}`;
@@ -894,20 +895,23 @@ export async function onRequest(context: any): Promise<Response> {
             })
           });
           
+          const resData = await emailResponse.json().catch(() => ({}));
           if (!emailResponse.ok) {
-            const errBody = await emailResponse.text();
-            console.error(`RESEND ERROR (forgot-password): ${emailResponse.status} - ${errBody}`);
+            console.error(`RESEND ERROR (forgot-password): ${emailResponse.status} - ${JSON.stringify(resData)}`);
+            emailSendResult = `failed: ${emailResponse.status} - ${resData?.message || resData?.error || 'unknown'}`;
           } else {
-            console.log('RESEND: Reset email sent to', normalizedEmail);
+            console.log('RESEND: Reset email sent to', normalizedEmail, 'id:', resData?.id);
+            emailSendResult = `sent: ${resData?.id || 'unknown'}`;
           }
         } else {
-          console.log('RESEND: Key not configured, skipping. RESEND_KEY exists:', !!env.RESEND_KEY);
+          console.log('RESEND: Key not configured. exists:', !!env.RESEND_KEY);
+          emailSendResult = 'no_key';
         }
       } catch (emailError: any) {
         console.error('RESEND: Email error:', emailError.message);
       }
 
-      return jsonResponse({ success: true, message: 'Jika email terdaftar, Anda akan menerima link reset password.' });
+      return jsonResponse({ success: true, debug: true, userFound: true, email: normalizedEmail, resendKeyExists: !!env.RESEND_KEY, resendKeyPrefix: env.RESEND_KEY ? env.RESEND_KEY.substring(0, 10) : 'none', emailSendResult });
     }
 
     // ==================== AUTH: RESET PASSWORD ====================
