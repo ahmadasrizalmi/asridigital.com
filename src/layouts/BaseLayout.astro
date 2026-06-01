@@ -8,15 +8,37 @@ interface Props {
 }
 
 const {
-  title = 'Asri Digital - Custom GPT untuk Profesional Indonesia',
-  description = 'Akses berbagai Custom GPT siap pakai untuk marketing, coding, bisnis, dan banyak lagi. Bayar sekali, akses seumur hidup.',
+  title: titleProp,
+  description: descriptionProp,
   ogImage,
   canonicalUrl,
   structuredData,
 } = Astro.props;
 
 const siteUrl = 'https://asridigital.com';
-const defaultOgImage = 'https://res.cloudinary.com/daj8fzinf/image/upload/w_1200,h_630,c_fill,q_auto,f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png';
+
+// Fetch site settings from live API at build time (SSG)
+let siteSettings: Record<string, string> = {};
+try {
+  const settingsRes = await fetch(`${siteUrl}/api/site-settings`);
+  if (settingsRes.ok) {
+    siteSettings = await settingsRes.json();
+  }
+} catch {}
+
+const siteName = siteSettings.site_name || 'Asri Digital';
+const siteDesc = siteSettings.site_description || 'Solusi Bisnis Digital & AI untuk Profesional Indonesia';
+const ogTitle = siteSettings.og_title || '';
+const ogDesc = siteSettings.og_description || '';
+const ogImageSetting = siteSettings.og_image || '';
+
+const defaultTitle = `${siteName} - Custom GPT untuk Profesional Indonesia`;
+const defaultDescription = siteDesc;
+
+const title = titleProp || (ogTitle ? `${ogTitle}` : defaultTitle);
+const description = descriptionProp || ogDesc || defaultDescription;
+
+const defaultOgImage = ogImageSetting || 'https://res.cloudinary.com/daj8fzinf/image/upload/w_1200,h_630,c_fill,q_auto,f_auto/v1779951905/logo_asri_digital_resize_mgkdqj.png';
 const currentPath = Astro.url.pathname;
 const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
 ---
@@ -40,7 +62,7 @@ const fullCanonicalUrl = canonicalUrl || `${siteUrl}${currentPath}`;
   <meta property="og:image" content={ogImage || defaultOgImage} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:site_name" content="Asri Digital" />
+  <meta property="og:site_name" content={siteName} />
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
