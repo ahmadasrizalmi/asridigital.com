@@ -6,12 +6,20 @@ import { formatIDR, optimizeImage } from '../../lib/utils';
 import { markdownToHtml } from '../../lib/markdown';
 
 export async function getStaticPaths() {
-  const apiBase = (import.meta.env.PUBLIC_APP_URL || 'https://asridigital.com').replace(/\/$/, '');
-  try {
-    const res = await fetch(`${apiBase}/api/products`);
-    const data = await res.json() as any;
-    return (data.products || []).map((p: any) => ({ params: { slug: p.slug } }));
-  } catch { return []; }
+  const apiBase = (import.meta.env.PUBLIC_APP_URL || import.meta.env.APP_URL || 'https://asridigital.com').replace(/\/$/, '');
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(`${apiBase}/api/products`);
+      const data = await res.json() as any;
+      const paths = (data.products || []).map((p: any) => ({ params: { slug: p.slug } }));
+      if (paths.length > 0) return paths;
+    } catch (e) {
+      console.error(`[getStaticPaths] attempt ${attempt + 1} failed:`, e);
+    }
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  console.error('[getStaticPaths] all attempts failed, returning empty paths');
+  return [];
 }
 
 const productSlug = Astro.params.slug || '';
