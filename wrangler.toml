@@ -9,9 +9,14 @@ binding = "DB"
 database_name = "asri-digital-db"
 database_id = "20495966-0e22-435e-b01b-bc3db9457312"
 
-# Non-secret environment variables only
-# Secrets (API keys, tokens) are set in CF Pages Dashboard
+# Environment variables declarations
+# Actual secret values are set in CF Pages Dashboard (encrypted)
+# Dashboard values override these defaults at deploy time
 [vars]
 APP_URL = "https://asridigital.com"
 DOMPETX_API_URL = "https://api.dompetx.com/v1"
+DOMPETX_API_KEY = ""
+JWT_SECRET = ""
+RESEND_API_KEY = ""
+TELEGRAM_BOT_TOKEN = ""
 TELEGRAM_CHAT_ID = "964290305"
