@@ -3145,7 +3145,6 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     console.log('RESEND: Key not configured. RESEND_KEY exists:', !!env.RESEND_KEY, 'value:', env.RESEND_KEY ? env.RESEND_KEY.substring(0, 10) + '...' : 'undefined');
     return;
   }
-  console.log('RESEND: Sending email to', order.user_email, 'subject:', subject ? subject.substring(0, 50) : 'none');
 
   // Check if auto_email is enabled in settings
   try {
@@ -3179,6 +3178,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
   const subject = isAllAccess
     ? 'Selamat! All-Access Pass Anda Aktif'
     : `Pembayaran Berhasil - ${order.product_title}`;
+  console.log('RESEND: Sending email to', order.user_email, 'subject:', subject.substring(0, 50));
 
   const html = emailLayout(
     isAllAccess ? 'All-Access Pass Aktif' : 'Konfirmasi Pesanan', `
