@@ -352,8 +352,19 @@ import Icon from '../../components/ui/Icon.astro';
   }
 
   function simpleMarkdown(text: string): string {
-    let html = text
-      // Escape HTML
+    // Step 1: Extract and protect fenced code blocks
+    const codeBlocks: string[] = [];
+    let processed = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang: string, code: string) => {
+      const idx = codeBlocks.length;
+      codeBlocks.push(`<pre style="background:#1e293b;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;margin:12px 0;font-size:0.85em;line-height:1.6;font-family:monospace;"><code>${code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').trim()}</code></pre>`);
+      return `%%CODEBLOCK_${idx}%%`;
+    });
+
+    // Step 2: Process inline code
+    processed = processed.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;color:#e11d48;padding:2px 6px;border-radius:4px;font-size:0.9em;font-family:monospace;">$1</code>');
+
+    let html = processed
+      // Escape HTML (except our placeholders)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       // Headings
       .replace(/^### (.+)$/gm, '<h3 style="font-size:1.1em;font-weight:700;margin:12px 0 6px;color:#1e293b;">$1</h3>')
@@ -372,7 +383,14 @@ import Icon from '../../components/ui/Icon.astro';
       .replace(/\n\n/g, '</p><p style="margin:8px 0;color:#475569;line-height:1.7;">')
       .replace(/\n/g, '<br>');
 
-    return '<p style="margin:8px 0;color:#475569;line-height:1.7;">' + html + '</p>';
+    html = '<p style="margin:8px 0;color:#475569;line-height:1.7;">' + html + '</p>';
+
+    // Step 3: Restore code blocks
+    codeBlocks.forEach((block, i) => {
+      html = html.replace(`%%CODEBLOCK_${i}%%`, block);
+    });
+
+    return html;
   }
 
   // Update preview on typing
