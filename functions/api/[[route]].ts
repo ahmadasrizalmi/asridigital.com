@@ -1836,7 +1836,7 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, coupon: { id: couponId, code: code.toUpperCase() }, deploy_triggered: true });
     }
 
@@ -1865,7 +1865,7 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -1879,7 +1879,7 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(couponId)
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -1914,7 +1914,7 @@ export async function onRequest(context: any): Promise<Response> {
          VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
       ).bind(catId, name, slug, description || null, icon || null, sort_order || 0, is_active !== false ? 1 : 0).run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, category: { id: catId, name, slug }, deploy_triggered: true });
     }
 
@@ -1938,7 +1938,7 @@ export async function onRequest(context: any): Promise<Response> {
       values.push(catId);
 
       await env.DB.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -1946,7 +1946,7 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.startsWith('/admin/categories/') && method === 'DELETE') {
       const catId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM categories WHERE id = ?').bind(catId).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -1996,7 +1996,7 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, product: { id: productId, title, slug }, deploy_triggered: true });
     }
 
@@ -2039,7 +2039,7 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(...values)
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2054,7 +2054,7 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(productId)
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, message: 'Produk berhasil dihapus', deploy_triggered: true });
     }
 
@@ -2102,7 +2102,7 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Gagal batch update: ' + e.message }, 500);
       }
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, updated, errors, deploy_triggered: true });
     }
 
@@ -2147,7 +2147,7 @@ export async function onRequest(context: any): Promise<Response> {
         }
       }
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, updated, errors: errors.length, errorDetails: errors });
     }
 
@@ -2169,7 +2169,7 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Gagal batch delete: ' + e.message }, 500);
       }
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deleted, deploy_triggered: true });
     }
 
@@ -2211,7 +2211,7 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, post: { id: postId, title, slug }, deploy_triggered: true });
     }
 
@@ -2241,7 +2241,7 @@ export async function onRequest(context: any): Promise<Response> {
         )
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2255,7 +2255,7 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(postId)
         .run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2300,7 +2300,7 @@ export async function onRequest(context: any): Promise<Response> {
         badge_text || null, badge_color || 'primary', sort_order || 0, is_active !== false ? 1 : 0
       ).run();
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, slide: { id: slideId }, deploy_triggered: true });
     }
 
@@ -2330,7 +2330,7 @@ export async function onRequest(context: any): Promise<Response> {
       values.push(slideId);
 
       await env.DB.prepare(`UPDATE hero_slides SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2338,7 +2338,7 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.startsWith('/admin/hero-slides/') && method === 'DELETE') {
       const slideId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM hero_slides WHERE id = ?').bind(slideId).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2357,7 +2357,7 @@ export async function onRequest(context: any): Promise<Response> {
         ).bind(item.sort_order, item.id).run();
       }
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2443,7 +2443,7 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2478,7 +2478,7 @@ export async function onRequest(context: any): Promise<Response> {
         }
       }
 
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2505,7 +2505,7 @@ export async function onRequest(context: any): Promise<Response> {
       values.push(orderId);
 
       await env.DB.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2513,7 +2513,7 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.match(/^\/admin\/orders\/[^/]+$/) && method === 'DELETE') {
       const orderId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM orders WHERE id = ?').bind(orderId).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
@@ -2857,14 +2857,14 @@ export async function onRequest(context: any): Promise<Response> {
     if (route.startsWith('/admin/contacts/') && method === 'PUT') {
       const msgId = route.split('/')[3];
       await env.DB.prepare('UPDATE contact_messages SET is_read = 1 WHERE id = ?').bind(msgId).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
     if (route.startsWith('/admin/contacts/') && method === 'DELETE') {
       const msgId = route.split('/')[3];
       await env.DB.prepare('DELETE FROM contact_messages WHERE id = ?').bind(msgId).run();
-      triggerDeploy(env);
+      _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
 
