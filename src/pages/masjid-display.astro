@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import Icon from '../components/ui/Icon.astro';
 
 const title = "Masjid Display Asri Digital | TV Informasi 100% Offline";
 const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat dan pengumuman dengan Masjid Display. 100% Offline tanpa biaya bulanan.";
@@ -29,9 +30,9 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
           </a>
         </div>
         <div class="flex flex-wrap justify-center gap-4 text-emerald-200 text-sm md:text-base font-medium">
-          <span class="flex items-center gap-2">✓ 100% Offline</span>
-          <span class="flex items-center gap-2">✓ Beli Sekali Aktif Selamanya</span>
-          <span class="flex items-center gap-2">✓ Kompatibel Semua Android TV & STB</span>
+          <span class="flex items-center gap-2"><Icon name="check-circle" size={16} class="text-emerald-400" /> 100% Offline</span>
+          <span class="flex items-center gap-2"><Icon name="check-circle" size={16} class="text-emerald-400" /> Beli Sekali Aktif Selamanya</span>
+          <span class="flex items-center gap-2"><Icon name="check-circle" size={16} class="text-emerald-400" /> Kompatibel Semua Android TV & STB</span>
         </div>
       </div>
     </section>
@@ -91,17 +92,17 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
         <h2 class="text-3xl font-bold text-emerald-900 mb-12">Pilar Keunggulan 100% Offline</h2>
         <div class="grid md:grid-cols-3 gap-8">
           <div class="bg-white p-8 rounded-2xl shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
-            <div class="text-4xl mb-4">🚫🌐</div>
+            <div class="text-4xl mb-4 flex justify-center"><Icon name="wifi-off" size={48} class="text-emerald-600" /></div>
             <h3 class="text-xl font-bold text-emerald-800 mb-3">Bebas Gangguan Internet</h3>
             <p class="text-slate-600">Server mati atau Wi-Fi luar down tidak berpengaruh. Jadwal tetap berputar presisi secara lokal di dalam TV Anda.</p>
           </div>
           <div class="bg-white p-8 rounded-2xl shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
-            <div class="text-4xl mb-4">🔒</div>
+            <div class="text-4xl mb-4 flex justify-center"><Icon name="lock" size={48} class="text-emerald-600" /></div>
             <h3 class="text-xl font-bold text-emerald-800 mb-3">Privasi Data Kas & DKM</h3>
             <p class="text-slate-600">Foto pengumuman dan laporan keuangan hanya disimpan di internal TV. Tidak ada data yang bocor ke cloud.</p>
           </div>
           <div class="bg-white p-8 rounded-2xl shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
-            <div class="text-4xl mb-4">💰</div>
+            <div class="text-4xl mb-4 flex justify-center"><Icon name="dollar-sign" size={48} class="text-emerald-600" /></div>
             <h3 class="text-xl font-bold text-emerald-800 mb-3">Investasi Murah Sekali Bayar</h3>
             <p class="text-slate-600">Tidak ada recurring payment Rp 50rb–100rb per bulan. Hemat operasional masjid selamanya.</p>
           </div>
@@ -175,11 +176,11 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
             <h3 class="text-2xl font-bold mb-4 text-amber-400">1. Unduh Aplikasi</h3>
             <p class="mb-6 text-emerald-200">Download dan install APK langsung di Android TV Anda dan aplikasi kontrol di HP Pengurus.</p>
             <div class="space-y-4">
-              <a href="/download/masjid-display" class="block w-full text-center bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                ⬇️ Download TV App APK
+              <a href="/download/masjid-display" class="flex items-center justify-center gap-2 w-full bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                <Icon name="download" size={20} /> Download TV App APK
               </a>
-              <a href="/download/masjid-display" class="block w-full text-center bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                📱 Download Admin App APK
+              <a href="/download/masjid-display" class="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                <Icon name="phone" size={20} /> Download Admin App APK
               </a>
             </div>
           </div>
@@ -192,8 +193,8 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
               Rp 249.000 <span class="text-base font-normal text-slate-500">/ sekali bayar</span>
             </div>
             <!-- In a real app, this links to the e-commerce checkout flow for the masjid-display product -->
-            <a href="/checkout/masjid-display" class="block w-full text-center bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 text-lg">
-              🛒 Beli Sekarang
+            <a href="/checkout/masjid-display" class="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 text-lg">
+              <Icon name="shopping-cart" size={24} /> Beli Sekarang
             </a>
           </div>
 

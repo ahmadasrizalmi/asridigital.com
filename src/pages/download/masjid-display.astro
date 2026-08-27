@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/layout/Header.astro';
 import Footer from '../../components/layout/Footer.astro';
+import Icon from '../../components/ui/Icon.astro';
 ---
 
 <BaseLayout title="Download Masjid Display - Asri Digital">
@@ -16,7 +17,7 @@ import Footer from '../../components/layout/Footer.astro';
       <div class="grid md:grid-cols-2 gap-6 mb-16">
         <!-- TV APK -->
         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-          <div class="text-5xl mb-4">📺</div>
+          <div class="text-5xl mb-4 flex justify-center"><Icon name="tv" size={64} class="text-emerald-600" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal & slideshow.</p>
           <a href="/downloads/masjid-display-tv.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
@@ -26,7 +27,7 @@ import Footer from '../../components/layout/Footer.astro';
         
         <!-- Admin APK -->
         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-          <div class="text-5xl mb-4">📱</div>
+          <div class="text-5xl mb-4 flex justify-center"><Icon name="phone" size={64} class="text-slate-800" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di HP Android DKM/Pengurus untuk pengaturan dan verifikasi lisensi.</p>
           <a href="/downloads/masjid-display-admin.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors">
