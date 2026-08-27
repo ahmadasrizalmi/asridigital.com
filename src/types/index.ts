@@ -23,3 +23,32 @@ export interface Product {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface ProductLicense {
+  id: string;
+  order_id: string | null;
+  customer_email: string;
+  customer_name: string;
+  mosque_name: string;
+  product_code: string;
+  serial_id: string;
+  license_key: string;
+  status: 'active' | 'revoked' | 'refunded';
+  issued_by: 'system' | 'admin_manual' | 'promo';
+  note: string | null;
+  created_at: number;
+}
+
+export interface LicenseGenerationRequest {
+  mosque_name: string;
+  customer_name: string;
+  customer_email: string;
+  note?: string;
+  send_email?: boolean;
+}
+
+export interface LicenseGenerationResponse {
+  success: boolean;
+  license?: ProductLicense;
+  error?: string;
+}

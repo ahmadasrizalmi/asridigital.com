@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/layout/Header.astro';
+import Footer from '../../components/layout/Footer.astro';
+---
+
+<BaseLayout title="Download Masjid Display - Asri Digital">
+  <Header />
+  <main class="flex-grow pt-24 pb-16 bg-slate-50">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4">Pusat Unduhan Masjid Display</h1>
+        <p class="text-lg text-slate-600">Download APK untuk TV dan HP Admin, serta pelajari cara instalasinya.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-16">
+        <!-- TV APK -->
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <div class="text-5xl mb-4">📺</div>
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV</h2>
+          <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal & slideshow.</p>
+          <a href="/downloads/masjid-display-tv.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+            Download TV APK (v1.0.0)
+          </a>
+        </div>
+        
+        <!-- Admin APK -->
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <div class="text-5xl mb-4">📱</div>
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin</h2>
+          <p class="text-slate-500 mb-6 text-sm">Diinstal di HP Android DKM/Pengurus untuk pengaturan dan verifikasi lisensi.</p>
+          <a href="/downloads/masjid-display-admin.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+            Download Admin APK (v1.0.0)
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Panduan Instalasi (Pilih Salah Satu)</h2>
+        
+        <div class="space-y-8">
+          <div>
+            <h3 class="text-lg font-bold text-emerald-800 mb-2">Metode 1: Menggunakan Flashdisk USB (Offline 100%)</h3>
+            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
+              <li>Download <strong>TV APK</strong> melalui laptop atau HP Anda.</li>
+              <li>Pindahkan file APK tersebut ke dalam Flashdisk USB kosong.</li>
+              <li>Colokkan Flashdisk ke port USB di Android TV / Smart TV Box masjid.</li>
+              <li>Buka aplikasi <strong>File Manager</strong> di TV, cari file APK, lalu tekan Install.</li>
+              <li>(Jika diminta, izinkan <em>Install unknown apps</em> di pengaturan TV).</li>
+            </ol>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-bold text-emerald-800 mb-2">Metode 2: Menggunakan Aplikasi Downloader TV (Online)</h3>
+            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
+              <li>Pastikan TV terkoneksi internet. Buka Play Store di TV dan install aplikasi bernama <strong>Downloader</strong> (ikon oranye).</li>
+              <li>Buka Downloader, di kolom URL ketik persis: <span class="font-mono bg-slate-100 px-1 rounded text-slate-800">asridigital.com/tv</span> (atau URL download APK).</li>
+              <li>Aplikasi akan otomatis mengunduh, lalu tekan Install.</li>
+            </ol>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-bold text-emerald-800 mb-2">Aktivasi Lisensi dari HP Pengurus</h3>
+            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
+              <li>Install <strong>Admin APK</strong> di HP Android pengurus.</li>
+              <li>Buka aplikasi TV dan masuk ke Menu Pengaturan -> akan muncul QR Code atau IP Address TV.</li>
+              <li>Buka aplikasi Admin di HP, pastikan tersambung ke <strong>Wi-Fi yang sama</strong> dengan TV.</li>
+              <li>Lakukan pairing dan masukkan <strong>Serial ID & License Key</strong> yang Anda dapatkan setelah pembelian.</li>
+              <li>Selesai! Jadwal dan pengumuman bisa diatur langsung dari HP tanpa internet.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -1,3 +1,4 @@
+import { generateMasjidLicense } from '../lib/license-crypto';
 // Cloudflare Pages Functions - API Handler
 // This handles all /api/* routes
 
@@ -12,6 +13,7 @@ interface Env {
   APP_URL: string;
   TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_CHAT_ID: string;
+  ED25519_PRIVATE_KEY_BASE64: string;
 }
 
 // Rate limiting store (in-memory for simplicity, use KV in production)
@@ -1576,6 +1578,55 @@ export async function onRequest(context: any): Promise<Response> {
           }
         }
 
+        // ==================== MASJID DISPLAY FULFILLMENT ====================
+        if (order.product_id === 'masjid-display' || order.product_code === 'MASJID') {
+          try {
+            // Check idempotency
+            const existingLicense = await env.DB.prepare('SELECT id FROM product_licenses WHERE order_id = ?').bind(order.id).first();
+            if (!existingLicense && env.ED25519_PRIVATE_KEY_BASE64) {
+              const license = await generateMasjidLicense(env.ED25519_PRIVATE_KEY_BASE64);
+              const licenseId = crypto.randomUUID();
+              const userEmail = order.user_email || order.customer_email || '';
+              const userName = order.user_name || order.customer_name || userEmail.split('@')[0] || 'Pelanggan';
+              const mosqueName = order.mosque_name || userName; // fallback if no mosque name
+              
+              await env.DB.prepare(`
+                INSERT INTO product_licenses (
+                  id, order_id, customer_email, customer_name, mosque_name,
+                  product_code, serial_id, license_key, status, issued_by, created_at
+                ) VALUES (?, ?, ?, ?, ?, 'MASJID', ?, ?, 'active', 'system', unixepoch())
+              `).bind(
+                licenseId, order.id, userEmail, userName, mosqueName,
+                license.serialId, license.serialKey
+              ).run();
+
+              if (env.RESEND_KEY || env.RESEND_API_KEY) {
+                const html = `
+                  <h2>Halo ${userName},</h2>
+                  <p>Pembayaran Anda untuk <b>Masjid Display</b> telah berhasil.</p>
+                  <div style="background:#f4f4f5; padding:15px; border-radius:8px; margin:20px 0;">
+                    <p><b>Serial ID:</b> ${license.serialId}</p>
+                    <p style="word-break: break-all;"><b>License Key:</b> ${license.serialKey}</p>
+                  </div>
+                  <p>Unduh APK TV dan APK Admin di <a href="https://asridigital.com/download/masjid-display">https://asridigital.com/download/masjid-display</a></p>
+                `;
+                await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY || env.RESEND_API_KEY}` },
+                  body: JSON.stringify({
+                    from: 'Asri Digital <noreply@asridigital.com>',
+                    to: userEmail,
+                    subject: 'Lisensi Masjid Display Anda',
+                    html
+                  })
+                });
+              }
+            }
+          } catch (licenseErr) {
+            console.error('Masjid Display Fulfillment Error:', licenseErr);
+          }
+        }
+
         // Send confirmation email with magic link
         try {
           await sendOrderConfirmationEmail(env, order, magicToken, newUserPassword || undefined);
@@ -1640,6 +1691,20 @@ export async function onRequest(context: any): Promise<Response> {
     }
 
     // ==================== USER PRODUCTS ====================
+    // ==================== USER MASJID DISPLAY LICENSES ====================
+    if (route === '/user/licenses' && method === 'GET') {
+      const user = await getUser(request, env);
+      if (!user) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+
+      const licenses = await env.DB.prepare(
+        "SELECT * FROM product_licenses WHERE customer_email = ? AND status = 'active' ORDER BY created_at DESC"
+      ).bind(user.email).all();
+
+      return jsonResponse({ licenses: licenses.results });
+    }
+
     if (route === '/user/products' && method === 'GET') {
       const user = await getUser(request, env);
       if (!user) {
@@ -1759,6 +1824,124 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Forbidden - Admin access required' }, 403);
       }
       adminUser = { ...payload, name: user.name || payload.name };
+    }
+
+    // ==================== ADMIN: MASJID DISPLAY LICENSES ====================
+    if (route === '/admin/licenses' && method === 'GET') {
+      const url = new URL(request.url);
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const search = url.searchParams.get('search') || '';
+      const status = url.searchParams.get('status') || 'all';
+      const offset = (page - 1) * limit;
+
+      let query = "SELECT * FROM product_licenses WHERE 1=1";
+      const params: any[] = [];
+      
+      if (search) {
+        query += " AND (mosque_name LIKE ? OR customer_email LIKE ? OR serial_id LIKE ?)";
+        const term = `%${search}%`;
+        params.push(term, term, term);
+      }
+      
+      if (status !== 'all') {
+        query += " AND status = ?";
+        params.push(status);
+      }
+      
+      query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+      params.push(limit, offset);
+      
+      const stmt = env.DB.prepare(query);
+      const results = await stmt.bind(...params).all();
+      return jsonResponse({ success: true, data: results.results });
+    }
+
+    if (route === '/admin/licenses/generate' && method === 'POST') {
+      const rawBody = await request.text();
+      const { mosque_name, customer_name, customer_email, note, send_email } = JSON.parse(rawBody);
+      if (!mosque_name || !customer_name || !customer_email) {
+        return jsonResponse({ success: false, error: "Missing required fields" }, 400);
+      }
+      if (!env.ED25519_PRIVATE_KEY_BASE64) {
+        return jsonResponse({ success: false, error: "ED25519_PRIVATE_KEY_BASE64 not configured" }, 500);
+      }
+
+      const license = await generateMasjidLicense(env.ED25519_PRIVATE_KEY_BASE64);
+      const id = crypto.randomUUID();
+      
+      const insertQuery = `
+        INSERT INTO product_licenses (
+          id, customer_email, customer_name, mosque_name,
+          product_code, serial_id, license_key, status, issued_by, note, created_at
+        ) VALUES (?, ?, ?, ?, 'MASJID', ?, ?, 'active', 'admin_manual', ?, unixepoch())
+      `;
+      
+      await env.DB.prepare(insertQuery).bind(
+        id, customer_email, customer_name, mosque_name,
+        license.serialId, license.serialKey, note || null
+      ).run();
+
+      if (send_email && (env.RESEND_KEY || env.RESEND_API_KEY)) {
+        const html = `
+          <h2>Halo ${customer_name},</h2>
+          <p>Terima kasih telah mempercayakan Masjid Display Asri Digital untuk <b>${mosque_name}</b>.</p>
+          <p>Berikut adalah Lisensi Lifetime Anda:</p>
+          <div style="background:#f4f4f5; padding:15px; border-radius:8px; margin:20px 0;">
+            <p><b>Serial ID:</b> ${license.serialId}</p>
+            <p style="word-break: break-all;"><b>License Key:</b> ${license.serialKey}</p>
+          </div>
+          <p>Unduh aplikasi di <a href="https://asridigital.com/download/masjid-display">https://asridigital.com/download/masjid-display</a> dan masukkan License Key melalui Aplikasi Admin (HP Pengurus).</p>
+        `;
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY || env.RESEND_API_KEY}` },
+          body: JSON.stringify({
+            from: 'Asri Digital <noreply@asridigital.com>',
+            to: customer_email,
+            subject: 'Lisensi Masjid Display Anda',
+            html
+          })
+        });
+      }
+      return jsonResponse({ success: true, license: { ...license, id } });
+    }
+
+    if (route.match(/^\/admin\/licenses\/[a-zA-Z0-9-]+\/revoke$/) && method === 'POST') {
+      const id = route.split('/')[3];
+      await env.DB.prepare("UPDATE product_licenses SET status = 'revoked' WHERE id = ?").bind(id).run();
+      return jsonResponse({ success: true });
+    }
+
+    if (route.match(/^\/admin\/licenses\/[a-zA-Z0-9-]+\/resend$/) && method === 'POST') {
+      const id = route.split('/')[3];
+      const resendKey = env.RESEND_KEY || env.RESEND_API_KEY;
+      if (!resendKey) return jsonResponse({ success: false, error: "Resend API Key not configured" }, 500);
+
+      const license = await env.DB.prepare("SELECT * FROM product_licenses WHERE id = ?").bind(id).first();
+      if (!license) return jsonResponse({ success: false, error: "License not found" }, 404);
+
+      const html = `
+        <h2>Halo ${license.customer_name},</h2>
+        <p>Berikut adalah salinan Lisensi Lifetime Masjid Display Anda untuk <b>${license.mosque_name}</b>.</p>
+        <div style="background:#f4f4f5; padding:15px; border-radius:8px; margin:20px 0;">
+          <p><b>Serial ID:</b> ${license.serial_id}</p>
+          <p style="word-break: break-all;"><b>License Key:</b> ${license.license_key}</p>
+        </div>
+        <p>Unduh aplikasi di <a href="https://asridigital.com/download/masjid-display">https://asridigital.com/download/masjid-display</a> dan masukkan License Key melalui Aplikasi Admin (HP Pengurus).</p>
+      `;
+
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
+        body: JSON.stringify({
+          from: 'Asri Digital <noreply@asridigital.com>',
+          to: license.customer_email as string,
+          subject: '[Resend] Lisensi Masjid Display Anda',
+          html
+        })
+      });
+      return jsonResponse({ success: true });
     }
 
     // ==================== ADMIN STATS ====================

@@ -1,0 +1,267 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+let totalLicenses = '-';
+let activeLicenses = '-';
+let monthlyLicenses = '-';
+---
+
+<AdminLayout title="Masjid Display Licenses" activePage="licenses">
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Masjid Display Licenses</h1>
+      <p class="text-slate-500 mt-1">Kelola penerbitan lisensi aplikasi offline TV Masjid.</p>
+    </div>
+    <button onclick="document.getElementById('generateModal').classList.remove('hidden')" class="bg-carbon text-white px-4 py-2 rounded-lg hover:bg-carbon-hover transition-colors flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Generate Lisensi
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div class="text-sm font-medium text-slate-500 mb-1">Total Lisensi Diterbitkan</div>
+      <div class="text-3xl font-bold text-slate-900">{totalLicenses}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div class="text-sm font-medium text-slate-500 mb-1">Lisensi Aktif</div>
+      <div class="text-3xl font-bold text-emerald-600">{activeLicenses} <span class="text-sm text-slate-400 font-normal">/ {totalLicenses}</span></div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <div class="text-sm font-medium text-slate-500 mb-1">Penerbitan Bulan Ini</div>
+      <div class="text-3xl font-bold text-slate-900">{monthlyLicenses}</div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 justify-between">
+      <input type="text" id="searchInput" placeholder="Cari Nama Masjid, Email, atau Serial..." class="w-full md:w-96 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500" />
+      <select id="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500 bg-white">
+        <option value="all">Semua Status</option>
+        <option value="active">Aktif</option>
+        <option value="revoked">Dicabut</option>
+      </select>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
+            <th class="px-6 py-4 font-medium">Tanggal</th>
+            <th class="px-6 py-4 font-medium">Masjid & Kontak</th>
+            <th class="px-6 py-4 font-medium">Serial ID</th>
+            <th class="px-6 py-4 font-medium">License Key</th>
+            <th class="px-6 py-4 font-medium">Status</th>
+            <th class="px-6 py-4 font-medium">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="licensesTableBody" class="divide-y divide-slate-200 text-sm">
+          <tr>
+            <td colspan="6" class="px-6 py-8 text-center text-slate-500">Memuat data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center text-sm text-slate-600">
+      <div id="pageInfo">Halaman 1</div>
+      <div class="flex gap-2">
+        <button id="prevBtn" class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50">Prev</button>
+        <button id="nextBtn" class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate Modal -->
+  <div id="generateModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+      <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+        <h3 class="text-xl font-bold text-slate-900">Generate Lisensi Baru</h3>
+        <button onclick="document.getElementById('generateModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="generateForm" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Masjid</label>
+          <input type="text" name="mosque_name" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:border-emerald-500 focus:outline-none" placeholder="Masjid Jami' As-Salam" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nama Pengurus</label>
+            <input type="text" name="customer_name" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:border-emerald-500 focus:outline-none" placeholder="Budi Santoso" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Email Pengurus</label>
+            <input type="email" name="customer_email" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:border-emerald-500 focus:outline-none" placeholder="budi@example.com" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Catatan</label>
+          <input type="text" name="note" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:border-emerald-500 focus:outline-none" placeholder="Offline Transfer / Sponsorship Hamba Allah" />
+        </div>
+        <label class="flex items-center gap-2 mt-2">
+          <input type="checkbox" name="send_email" checked class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500" />
+          <span class="text-sm text-slate-700">Kirim Email Otomatis beserta panduan APK</span>
+        </label>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" onclick="document.getElementById('generateModal').classList.add('hidden')" class="px-4 py-2 text-slate-600 font-medium hover:bg-slate-50 rounded-lg">Batal</button>
+          <button type="submit" class="bg-carbon text-white px-6 py-2 rounded-lg font-medium hover:bg-carbon-hover flex items-center gap-2">
+            <span id="generateBtnText">Generate</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</AdminLayout>
+
+<script is:inline>
+  let currentPage = 1;
+  const limit = 20;
+
+  async function fetchLicenses() {
+    const search = document.getElementById('searchInput').value;
+    const status = document.getElementById('statusFilter').value;
+    
+    try {
+      const res = await fetch(`/api/admin/licenses?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(search)}&status=${status}`);
+      const data = await res.json();
+      
+      const tbody = document.getElementById('licensesTableBody');
+      if (data.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Tidak ada data lisensi</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.data.map(item => `
+        <tr class="hover:bg-slate-50 group">
+          <td class="px-6 py-4">
+            <div class="text-slate-900">${new Date(item.created_at * 1000).toLocaleDateString('id-ID')}</div>
+            <div class="text-xs text-slate-400">${item.issued_by}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="font-medium text-slate-900">${item.mosque_name}</div>
+            <div class="text-slate-500">${item.customer_name} &middot; ${item.customer_email}</div>
+          </td>
+          <td class="px-6 py-4 font-mono text-emerald-700 font-medium">${item.serial_id}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+              <div class="font-mono text-slate-500 truncate w-24" title="${item.license_key}">${item.license_key.substring(0, 10)}...</div>
+              <button onclick="copyToClipboard('${item.license_key}')" class="text-slate-400 hover:text-emerald-600 transition" title="Salin License Key">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+              </button>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+              ${item.status === 'active' ? 'Aktif' : 'Dicabut'}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="relative inline-block text-left">
+              <button onclick="resendEmail('${item.id}')" class="text-amber-600 hover:text-amber-800 text-sm font-medium mr-3">Resend Email</button>
+              ${item.status === 'active' ? `<button onclick="revokeLicense('${item.id}')" class="text-red-600 hover:text-red-800 text-sm font-medium">Revoke</button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('pageInfo').textContent = `Halaman ${currentPage}`;
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = data.data.length < limit;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  window.copyToClipboard = function(text) {
+    navigator.clipboard.writeText(text);
+    alert('License Key disalin ke clipboard!');
+  };
+
+  window.resendEmail = async function(id) {
+    if (!confirm('Kirim ulang email lisensi ke pelanggan?')) return;
+    try {
+      const res = await fetch(`/api/admin/licenses/${id}/resend`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        alert('Email berhasil dikirim ulang');
+      } else {
+        alert('Gagal: ' + data.error);
+      }
+    } catch (e) {
+      alert('Error jaringan');
+    }
+  };
+
+  window.revokeLicense = async function(id) {
+    if (!confirm('PERINGATAN: Revoke akan mematikan lisensi ini. Anda yakin?')) return;
+    try {
+      const res = await fetch(`/api/admin/licenses/${id}/revoke`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        fetchLicenses();
+      } else {
+        alert('Gagal: ' + data.error);
+      }
+    } catch (e) {
+      alert('Error jaringan');
+    }
+  };
+
+  document.getElementById('searchInput').addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      currentPage = 1;
+      fetchLicenses();
+    }
+  });
+  document.getElementById('statusFilter').addEventListener('change', () => {
+    currentPage = 1;
+    fetchLicenses();
+  });
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; fetchLicenses(); }
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    currentPage++; fetchLicenses();
+  });
+
+  document.getElementById('generateForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnText = document.getElementById('generateBtnText');
+    btnText.textContent = 'Memproses...';
+    
+    const formData = new FormData(e.target);
+    const payload = {
+      mosque_name: formData.get('mosque_name'),
+      customer_name: formData.get('customer_name'),
+      customer_email: formData.get('customer_email'),
+      note: formData.get('note'),
+      send_email: formData.get('send_email') === 'on'
+    };
+
+    try {
+      const res = await fetch('/api/admin/licenses/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('generateModal').classList.add('hidden');
+        e.target.reset();
+        fetchLicenses();
+        // optionally update the metrics UI by refreshing page
+        window.location.reload();
+      } else {
+        alert('Gagal: ' + data.error);
+      }
+    } catch (err) {
+      alert('Error jaringan');
+    } finally {
+      btnText.textContent = 'Generate';
+    }
+  });
+
+  // Initial load
+  document.addEventListener('DOMContentLoaded', fetchLicenses);
+</script>

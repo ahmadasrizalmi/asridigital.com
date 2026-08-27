@@ -1,0 +1,235 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+
+const title = "Masjid Display Asri Digital | TV Informasi 100% Offline";
+const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat dan pengumuman dengan Masjid Display. 100% Offline tanpa biaya bulanan.";
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+
+  <main class="flex-grow pt-24 pb-16">
+    <!-- Hero Section -->
+    <section class="bg-emerald-800 text-white py-20 px-6">
+      <div class="max-w-6xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-emerald-50">
+          Transformasi TV Masjid Menjadi Pusat Informasi Digital yang Elegan & 100% Mandiri
+        </h1>
+        <p class="text-lg md:text-xl text-emerald-100 mb-8 max-w-3xl mx-auto">
+          Tanpa internet, tanpa biaya langganan bulanan. Jadwal sholat akurat astronomis, slideshow foto pengumuman DKM, dan kontrol penuh dari HP via Wi-Fi lokal.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+          <a href="#purchase" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+            Beli Lisensi Lifetime — Rp 249.000
+          </a>
+          <a href="#download" class="bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+            Download APK Uji Coba Gratis
+          </a>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 text-emerald-200 text-sm md:text-base font-medium">
+          <span class="flex items-center gap-2">✓ 100% Offline</span>
+          <span class="flex items-center gap-2">✓ Beli Sekali Aktif Selamanya</span>
+          <span class="flex items-center gap-2">✓ Kompatibel Semua Android TV & STB</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Mockup Section -->
+    <section class="py-16 bg-slate-900 px-6 overflow-hidden">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-10">
+          <h2 class="text-3xl font-bold text-white mb-4">Live Preview Tampilan TV</h2>
+          <p class="text-slate-400">Mockup interaktif 16:9 dari aplikasi Masjid Display Android TV.</p>
+        </div>
+        
+        <div class="aspect-video bg-black rounded-2xl border-4 border-slate-700 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+          <!-- TV Content Mockup -->
+          <div class="p-6 md:p-12 flex justify-between items-start h-full relative z-10 text-white">
+            <div class="flex flex-col">
+              <span class="text-3xl md:text-5xl font-bold text-emerald-400" id="live-clock">12:30:45</span>
+              <span class="text-lg md:text-2xl text-slate-300 mt-2">Selasa, 14 Muharram 1445 H</span>
+            </div>
+            <div class="bg-slate-800/80 p-4 rounded-xl text-right backdrop-blur-sm border border-slate-700">
+              <h3 class="text-xl font-bold text-amber-400">Masjid Jami' As-Salam</h3>
+              <p class="text-sm text-slate-300">Menuju Ashar: -02:45:10</p>
+            </div>
+          </div>
+          
+          <!-- Jadwal Sholat Cards -->
+          <div class="absolute bottom-16 left-0 right-0 px-6 flex justify-between gap-2 md:gap-4 z-10">
+            {['Subuh', 'Terbit', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'].map((waktu, index) => (
+              <div class="bg-emerald-900/80 border border-emerald-700 rounded-lg p-2 md:p-4 flex-1 text-center backdrop-blur-md">
+                <div class="text-emerald-300 text-xs md:text-sm font-semibold">{waktu}</div>
+                <div class="text-white font-bold text-sm md:text-xl mt-1">04:30</div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Running Text -->
+          <div class="bg-amber-500/90 text-black py-2 px-6 absolute bottom-0 w-full z-20 whitespace-nowrap overflow-hidden text-sm md:text-base font-bold">
+            <div class="inline-block animate-marquee">
+              PENGUMUMAN: Rapat rutin DKM Ba'da Isya' hari ini. Saldo kas masjid per Jumat lalu: Rp 15.450.000,-
+            </div>
+          </div>
+          
+          <!-- Background Image Mockup -->
+          <div class="absolute inset-0 z-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center"></div>
+        </div>
+
+        <div class="flex justify-center gap-4 mt-8">
+          <button class="px-4 py-2 bg-emerald-600 text-white rounded font-medium hover:bg-emerald-500">Normal Display</button>
+          <button class="px-4 py-2 bg-amber-600 text-white rounded font-medium hover:bg-amber-500">Mode Khutbah Jumat</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Offline Pillars -->
+    <section class="py-20 bg-emerald-50 px-6">
+      <div class="max-w-6xl mx-auto text-center">
+        <h2 class="text-3xl font-bold text-emerald-900 mb-12">Pilar Keunggulan 100% Offline</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">🚫🌐</div>
+            <h3 class="text-xl font-bold text-emerald-800 mb-3">Bebas Gangguan Internet</h3>
+            <p class="text-slate-600">Server mati atau Wi-Fi luar down tidak berpengaruh. Jadwal tetap berputar presisi secara lokal di dalam TV Anda.</p>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">🔒</div>
+            <h3 class="text-xl font-bold text-emerald-800 mb-3">Privasi Data Kas & DKM</h3>
+            <p class="text-slate-600">Foto pengumuman dan laporan keuangan hanya disimpan di internal TV. Tidak ada data yang bocor ke cloud.</p>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-emerald-100 hover:shadow-md transition-shadow">
+            <div class="text-4xl mb-4">💰</div>
+            <h3 class="text-xl font-bold text-emerald-800 mb-3">Investasi Murah Sekali Bayar</h3>
+            <p class="text-slate-600">Tidak ada recurring payment Rp 50rb–100rb per bulan. Hemat operasional masjid selamanya.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="py-20 bg-white px-6">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold text-center text-slate-900 mb-12">Perbandingan Biaya</h2>
+        <div class="overflow-x-auto rounded-xl shadow-lg border border-slate-200">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-800">
+                <th class="p-4 font-bold border-b border-slate-200">Fitur / Tipe</th>
+                <th class="p-4 font-bold border-b border-slate-200">Box LED Konvensional</th>
+                <th class="p-4 font-bold border-b border-slate-200 bg-emerald-50 text-emerald-800">Masjid Display Asri Digital</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="p-4 text-slate-600 font-medium">Biaya Awal</td>
+                <td class="p-4 text-slate-500">Rp 3.500.000 - Rp 7.000.000</td>
+                <td class="p-4 font-bold text-emerald-700 bg-emerald-50/50">Rp 249.000 (Software)</td>
+              </tr>
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="p-4 text-slate-600 font-medium">Hardware</td>
+                <td class="p-4 text-slate-500">Modul LED Custom (Sulit diservis)</td>
+                <td class="p-4 font-bold text-emerald-700 bg-emerald-50/50">Smart TV Bebas Merk (Mudah dicari)</td>
+              </tr>
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="p-4 text-slate-600 font-medium">Pengaturan</td>
+                <td class="p-4 text-slate-500">Remote Fisik / Aplikasi Ribet</td>
+                <td class="p-4 font-bold text-emerald-700 bg-emerald-50/50">Aplikasi Android Admin Khusus</td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="p-4 text-slate-600 font-medium">Biaya Langganan</td>
+                <td class="p-4 text-slate-500">Seringkali Rp 50rb/bulan (Cloud)</td>
+                <td class="p-4 font-bold text-emerald-700 bg-emerald-50/50">Gratis Selamanya (100% Offline)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hardware Compatibility -->
+    <section class="py-16 bg-slate-50 px-6">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold text-center text-slate-900 mb-8">Hardware Compatibility Guide</h2>
+        <div class="bg-white rounded-xl shadow p-8 border border-slate-200">
+          <ul class="list-disc list-inside space-y-4 text-slate-600 text-lg">
+            <li><strong>Android TV:</strong> Mendukung merk seperti Sony, TCL, Xiaomi, Coocaa, Polytron, Akari, dll.</li>
+            <li><strong>Android TV Box / STB:</strong> Mendukung ZTE B860H, Fiberhome HG680P, Mi Box, TX3 Mini, dll.</li>
+            <li><strong>Spesifikasi Minimum:</strong> OS Android 7.0 (Nougat) hingga Android 14+, RAM minimal 1GB.</li>
+            <li><strong>Koneksi Layar:</strong> Bisa disambungkan ke TV atau Monitor dengan port HDMI.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download & Purchase -->
+    <section id="download" class="py-20 bg-emerald-900 text-emerald-50 px-6">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold text-center mb-12">Mulai Gunakan Masjid Display Sekarang</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          
+          <!-- Download Card -->
+          <div class="bg-emerald-800 rounded-2xl p-8 border border-emerald-700 shadow-xl">
+            <h3 class="text-2xl font-bold mb-4 text-amber-400">1. Unduh Aplikasi</h3>
+            <p class="mb-6 text-emerald-200">Download dan install APK langsung di Android TV Anda dan aplikasi kontrol di HP Pengurus.</p>
+            <div class="space-y-4">
+              <a href="/download/masjid-display" class="block w-full text-center bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                ⬇️ Download TV App APK
+              </a>
+              <a href="/download/masjid-display" class="block w-full text-center bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                📱 Download Admin App APK
+              </a>
+            </div>
+          </div>
+
+          <!-- Purchase Card -->
+          <div id="purchase" class="bg-white text-slate-900 rounded-2xl p-8 shadow-xl">
+            <h3 class="text-2xl font-bold mb-4 text-emerald-800">2. Beli Lisensi Permanen</h3>
+            <p class="mb-6 text-slate-600">Aktifkan aplikasi di TV Anda tanpa batas waktu (Lifetime). Lisensi akan otomatis dikirim ke email Anda.</p>
+            <div class="text-4xl font-black text-slate-900 mb-6">
+              Rp 249.000 <span class="text-base font-normal text-slate-500">/ sekali bayar</span>
+            </div>
+            <!-- In a real app, this links to the e-commerce checkout flow for the masjid-display product -->
+            <a href="/checkout/masjid-display" class="block w-full text-center bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 text-lg">
+              🛒 Beli Sekarang
+            </a>
+          </div>
+
+        </div>
+
+        <!-- FAQ -->
+        <div class="mt-20 max-w-3xl mx-auto">
+          <h3 class="text-2xl font-bold mb-8 text-center">Tanya Jawab Singkat (FAQ)</h3>
+          <div class="space-y-4">
+            <details class="bg-emerald-800/50 p-4 rounded-lg border border-emerald-700/50">
+              <summary class="font-bold cursor-pointer outline-none">Apakah perlu internet untuk sinkronisasi waktu?</summary>
+              <p class="mt-2 text-emerald-200 text-sm">Tidak perlu internet. Aplikasi akan otomatis mengkalkulasi jadwal sholat menggunakan koordinat lokasi masjid (Algoritma Kemenag / MWL) dan sinkronisasi jam dilakukan via jaringan Wi-Fi lokal dari HP Admin.</p>
+            </details>
+            <details class="bg-emerald-800/50 p-4 rounded-lg border border-emerald-700/50">
+              <summary class="font-bold cursor-pointer outline-none">Bagaimana jika TV rusak atau ganti merk?</summary>
+              <p class="mt-2 text-emerald-200 text-sm">Lisensi melekat pada masjid Anda. Anda cukup menginstal ulang aplikasi di TV baru dan memasukkan serial key yang sama melalui HP Admin.</p>
+            </details>
+            <details class="bg-emerald-800/50 p-4 rounded-lg border border-emerald-700/50">
+              <summary class="font-bold cursor-pointer outline-none">Cara install aplikasinya bagaimana?</summary>
+              <p class="mt-2 text-emerald-200 text-sm">Bisa melalui flashdisk USB (copy file APK ke flashdisk, colok ke TV, buka dengan File Manager TV) atau menggunakan aplikasi "Downloader" di Play Store TV.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <Footer />
+</BaseLayout>
+
+<style>
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+</style>
