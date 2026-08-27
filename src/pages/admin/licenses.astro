@@ -152,11 +152,12 @@ let monthlyLicenses = '-';
     const status = statusFilter.value;
     
     try {
-      const res = await fetch(`/api/admin/licenses?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(search)}&status=${status}`);
+      const res = await adminFetch(`/api/admin/licenses?page=${currentPage}&limit=${limit}&search=${encodeURIComponent(search)}&status=${status}`);
+      if (res.status === 401 || res.status === 403) return; // handled by adminFetch redirect usually
       const data = await res.json();
       
       const tbody = document.getElementById('licensesTableBody');
-      if (data.data.length === 0) {
+      if (!data.data || data.data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">Tidak ada data lisensi</td></tr>';
         return;
       }
@@ -210,10 +211,26 @@ let monthlyLicenses = '-';
   window.resendEmail = async function(id) {
     if (!confirm('Kirim ulang email lisensi ke pelanggan?')) return;
     try {
-      const res = await fetch(`/api/admin/licenses/${id}/resend`, { method: 'POST' });
+      const res = await adminFetch(`/api/admin/licenses/${id}/resend`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         alert('Email berhasil dikirim ulang');
+      } else {
+        alert('Gagal: ' + data.error);
+      }
+    } catch (e) {
+      alert('Error jaringan');
+    }
+  };
+
+  window.revokeLicense = async function(id) {
+    if (!confirm('PERINGATAN: Revoke akan mematikan lisensi ini. Anda yakin?')) return;
+    try {
+      const res = await adminFetch(`/api/admin/licenses/${id}/revoke`, { method: 'POST' });
+      if (res.status === 401 || res.status === 403) return;
+      const data = await res.json();
+      if (data.success) {
+        fetchLicenses();
       } else {
         alert('Gagal: ' + data.error);
       }
@@ -273,7 +290,7 @@ let monthlyLicenses = '-';
         };
 
         try {
-          const res = await fetch('/api/admin/licenses/generate', {
+          const res = await adminFetch('/api/admin/licenses/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
