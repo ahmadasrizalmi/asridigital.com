@@ -193,75 +193,80 @@ let monthlyLicenses = '-';
     }
   };
 
-  window.revokeLicense = async function(id) {
-    if (!confirm('PERINGATAN: Revoke akan mematikan lisensi ini. Anda yakin?')) return;
-    try {
-      const res = await fetch(`/api/admin/licenses/${id}/revoke`, { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const generateForm = document.getElementById('generateForm');
+    
+    if (searchInput) {
+      searchInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          currentPage = 1;
+          fetchLicenses();
+        }
+      });
+    }
+    
+    if (statusFilter) {
+      statusFilter.addEventListener('change', () => {
+        currentPage = 1;
         fetchLicenses();
-      } else {
-        alert('Gagal: ' + data.error);
-      }
-    } catch (e) {
-      alert('Error jaringan');
+      });
     }
-  };
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) { currentPage--; fetchLicenses(); }
+      });
+    }
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        currentPage++; fetchLicenses();
+      });
+    }
 
-  document.getElementById('searchInput').addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') {
-      currentPage = 1;
-      fetchLicenses();
+    if (generateForm) {
+      generateForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnText = document.getElementById('generateBtnText');
+        if (btnText) btnText.textContent = 'Memproses...';
+        
+        const formData = new FormData(e.target);
+        const payload = {
+          mosque_name: formData.get('mosque_name'),
+          customer_name: formData.get('customer_name'),
+          customer_email: formData.get('customer_email'),
+          note: formData.get('note'),
+          send_email: formData.get('send_email') === 'on'
+        };
+
+        try {
+          const res = await fetch('/api/admin/licenses/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.success) {
+            document.getElementById('generateModal')?.classList.add('hidden');
+            e.target.reset();
+            fetchLicenses();
+            window.location.reload();
+          } else {
+            alert('Gagal: ' + data.error);
+          }
+        } catch (err) {
+          alert('Error jaringan');
+        } finally {
+          if (btnText) btnText.textContent = 'Generate';
+        }
+      });
     }
-  });
-  document.getElementById('statusFilter').addEventListener('change', () => {
-    currentPage = 1;
+
+    // Initial load
     fetchLicenses();
   });
-  document.getElementById('prevBtn').addEventListener('click', () => {
-    if (currentPage > 1) { currentPage--; fetchLicenses(); }
-  });
-  document.getElementById('nextBtn').addEventListener('click', () => {
-    currentPage++; fetchLicenses();
-  });
-
-  document.getElementById('generateForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btnText = document.getElementById('generateBtnText');
-    btnText.textContent = 'Memproses...';
-    
-    const formData = new FormData(e.target);
-    const payload = {
-      mosque_name: formData.get('mosque_name'),
-      customer_name: formData.get('customer_name'),
-      customer_email: formData.get('customer_email'),
-      note: formData.get('note'),
-      send_email: formData.get('send_email') === 'on'
-    };
-
-    try {
-      const res = await fetch('/api/admin/licenses/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById('generateModal').classList.add('hidden');
-        e.target.reset();
-        fetchLicenses();
-        // optionally update the metrics UI by refreshing page
-        window.location.reload();
-      } else {
-        alert('Gagal: ' + data.error);
-      }
-    } catch (err) {
-      alert('Error jaringan');
-    } finally {
-      btnText.textContent = 'Generate';
-    }
-  });
-
-  // Initial load
-  document.addEventListener('DOMContentLoaded', fetchLicenses);
 </script>
