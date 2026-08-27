@@ -1802,32 +1802,8 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== ADMIN MIDDLEWARE ====================
     // All admin routes require authentication and admin role
     let adminUser: any = null;
-    if (route.startsWith('/admin')) {
-      const authHeader = request.headers.get('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return jsonResponse({ error: 'Unauthorized - Login required' }, 401);
-      }
-      
-      const token = authHeader.replace('Bearer ', '');
-      const payload = await verifyJWT(token, env.JWT_SECRET);
-      
-      if (!payload) {
-        return jsonResponse({ error: 'Invalid token' }, 401);
-      }
-      
-      // Check if user is admin
-      const user = await env.DB.prepare(
-        'SELECT role, name FROM users WHERE id = ?'
-      ).bind(payload.userId).first();
-      
-      if (!user || user.role !== 'admin') {
-        return jsonResponse({ error: 'Forbidden - Admin access required' }, 403);
-      }
-      adminUser = { ...payload, name: user.name || payload.name };
-    }
-
     // ==================== EMERGENCY MIGRATION ====================
-    if (route === '/admin/migrate' && method === 'POST') {
+    if (route === '/migrate' && method === 'GET') {
       try {
         await env.DB.prepare(`
           CREATE TABLE IF NOT EXISTS product_licenses (
@@ -1855,6 +1831,31 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ success: false, error: err.message }, 500);
       }
     }
+
+    if (route.startsWith('/admin')) {
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return jsonResponse({ error: 'Unauthorized - Login required' }, 401);
+      }
+      
+      const token = authHeader.replace('Bearer ', '');
+      const payload = await verifyJWT(token, env.JWT_SECRET);
+      
+      if (!payload) {
+        return jsonResponse({ error: 'Invalid token' }, 401);
+      }
+      
+      // Check if user is admin
+      const user = await env.DB.prepare(
+        'SELECT role, name FROM users WHERE id = ?'
+      ).bind(payload.userId).first();
+      
+      if (!user || user.role !== 'admin') {
+        return jsonResponse({ error: 'Forbidden - Admin access required' }, 403);
+      }
+      adminUser = { ...payload, name: user.name || payload.name };
+    }
+
 
     // ==================== ADMIN: MASJID DISPLAY LICENSES ====================
     if (route === '/admin/licenses' && method === 'GET') {
