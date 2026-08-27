@@ -6,7 +6,7 @@
 
 export const PRODUCT_CODE = "MASJID";
 export const LICENSE_VERSION = 1;
-export const ANDROID_PUBLIC_KEY_BASE64 = "MCowBQYDK2VwAyEAb3vu+98LX2EWhWm028uH2hj/u+hj9cCajmQFoLZ/Nzg=";
+export const ANDROID_PUBLIC_KEY_BASE64 = "MCowBQYDK2VwAyEAu0PypEg0msBLzO8ZbSalK5HcVLYo+YFHbHaApmxBET0=";
 
 export interface GeneratedLicense {
   serialId: string;
