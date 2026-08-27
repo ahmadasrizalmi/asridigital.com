@@ -1826,6 +1826,36 @@ export async function onRequest(context: any): Promise<Response> {
       adminUser = { ...payload, name: user.name || payload.name };
     }
 
+    // ==================== EMERGENCY MIGRATION ====================
+    if (route === '/admin/migrate' && method === 'POST') {
+      try {
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS product_licenses (
+              id TEXT PRIMARY KEY,
+              order_id TEXT,
+              customer_email TEXT NOT NULL,
+              customer_name TEXT NOT NULL,
+              mosque_name TEXT NOT NULL,
+              product_code TEXT NOT NULL DEFAULT 'MASJID',
+              serial_id TEXT NOT NULL UNIQUE,
+              license_key TEXT NOT NULL,
+              status TEXT NOT NULL DEFAULT 'active',
+              issued_by TEXT NOT NULL DEFAULT 'system',
+              note TEXT,
+              created_at INTEGER NOT NULL DEFAULT (unixepoch())
+          );
+        `).run();
+        await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_product_licenses_serial_id ON product_licenses(serial_id);`).run();
+        await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_product_licenses_customer_email ON product_licenses(customer_email);`).run();
+        await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_product_licenses_order_id ON product_licenses(order_id);`).run();
+        await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_product_licenses_created_at ON product_licenses(created_at DESC);`).run();
+        
+        return jsonResponse({ success: true, message: "Migration executed successfully" });
+      } catch (err: any) {
+        return jsonResponse({ success: false, error: err.message }, 500);
+      }
+    }
+
     // ==================== ADMIN: MASJID DISPLAY LICENSES ====================
     if (route === '/admin/licenses' && method === 'GET') {
       const url = new URL(request.url);
