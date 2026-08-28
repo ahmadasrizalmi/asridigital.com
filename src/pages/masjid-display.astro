@@ -37,51 +37,155 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
       </div>
     </section>
 
-    <!-- Interactive Mockup Section -->
-    <section class="py-16 bg-slate-900 px-6 overflow-hidden">
-      <div class="max-w-5xl mx-auto">
-        <div class="text-center mb-10">
-          <h2 class="text-3xl font-bold text-white mb-4">Live Preview Tampilan TV</h2>
-          <p class="text-slate-400">Mockup interaktif 16:9 dari aplikasi Masjid Display Android TV.</p>
-        </div>
-        
-        <div class="aspect-video bg-black rounded-2xl border-4 border-slate-700 shadow-2xl relative overflow-hidden flex flex-col justify-between">
-          <!-- TV Content Mockup -->
-          <div class="p-6 md:p-12 flex justify-between items-start h-full relative z-10 text-white">
-            <div class="flex flex-col">
-              <span class="text-3xl md:text-5xl font-bold text-emerald-400" id="live-clock">12:30:45</span>
-              <span class="text-lg md:text-2xl text-slate-300 mt-2">Selasa, 14 Muharram 1445 H</span>
-            </div>
-            <div class="bg-slate-800/80 p-4 rounded-xl text-right backdrop-blur-sm border border-slate-700">
-              <h3 class="text-xl font-bold text-amber-400">Masjid Jami' As-Salam</h3>
-              <p class="text-sm text-slate-300">Menuju Ashar: -02:45:10</p>
-            </div>
-          </div>
-          
-          <!-- Jadwal Sholat Cards -->
-          <div class="absolute bottom-16 left-0 right-0 px-6 flex justify-between gap-2 md:gap-4 z-10">
-            {['Subuh', 'Terbit', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'].map((waktu, index) => (
-              <div class="bg-emerald-900/80 border border-emerald-700 rounded-lg p-2 md:p-4 flex-1 text-center backdrop-blur-md">
-                <div class="text-emerald-300 text-xs md:text-sm font-semibold">{waktu}</div>
-                <div class="text-white font-bold text-sm md:text-xl mt-1">04:30</div>
-              </div>
-            ))}
-          </div>
-
-          <!-- Running Text -->
-          <div class="bg-amber-500/90 text-black py-2 px-6 absolute bottom-0 w-full z-20 whitespace-nowrap overflow-hidden text-sm md:text-base font-bold">
-            <div class="inline-block animate-marquee">
-              PENGUMUMAN: Rapat rutin DKM Ba'da Isya' hari ini. Saldo kas masjid per Jumat lalu: Rp 15.450.000,-
-            </div>
-          </div>
-          
-          <!-- Background Image Mockup -->
-          <div class="absolute inset-0 z-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center"></div>
+    <!-- 9 Themes Showcase Section -->
+    <section class="py-20 bg-slate-950 text-white px-6 overflow-hidden">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-12">
+          <span class="bg-emerald-900/80 text-emerald-300 text-xs md:text-sm font-bold uppercase tracking-wider px-4 py-1.5 rounded-full border border-emerald-700/60 inline-block mb-4">
+            Pilihan Visual Eksklusif
+          </span>
+          <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4">
+            9 Layout & Tema Desain Modern Siap Pakai
+          </h2>
+          <p class="text-slate-400 max-w-2xl mx-auto text-base md:text-lg">
+            Setiap masjid memiliki karakter arsitektur unik. Pilih tata letak dan tema warna favorit Anda hanya dengan 1 kali klik dari HP Admin.
+          </p>
         </div>
 
-        <div class="flex justify-center gap-4 mt-8">
-          <button class="px-4 py-2 bg-emerald-600 text-white rounded font-medium hover:bg-emerald-500">Normal Display</button>
-          <button class="px-4 py-2 bg-amber-600 text-white rounded font-medium hover:bg-amber-500">Mode Khutbah Jumat</button>
+        <!-- Theme Grid Showcase -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+          <!-- Theme 1: Prism Horizon -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all shadow-lg hover:shadow-emerald-900/20">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold bg-indigo-900/80 text-indigo-300 px-3 py-1 rounded-full border border-indigo-700">Docking Horizontal</span>
+              <span class="text-xs text-slate-400">Tema #1</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Prism Horizon</h3>
+            <p class="text-slate-400 text-sm mb-4">Header kaca transparan minimalis di atas dengan dock 6 kartu sholat warna-warni pastel di bawah.</p>
+            <div class="flex gap-1.5">
+              <span class="w-4 h-4 rounded-full bg-indigo-200" title="Subuh"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-200" title="Syuruq"></span>
+              <span class="w-4 h-4 rounded-full bg-orange-400" title="Dzuhur"></span>
+              <span class="w-4 h-4 rounded-full bg-teal-200" title="Ashar"></span>
+              <span class="w-4 h-4 rounded-full bg-rose-200" title="Maghrib"></span>
+              <span class="w-4 h-4 rounded-full bg-purple-200" title="Isya"></span>
+            </div>
+          </div>
+
+          <!-- Theme 2: Royal Obsidian -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-amber-500/50 transition-all shadow-lg hover:shadow-amber-900/20">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold bg-amber-950/80 text-amber-300 px-3 py-1 rounded-full border border-amber-700">Dark Luxury</span>
+              <span class="text-xs text-slate-400">Tema #2</span>
+            </div>
+            <h3 class="text-xl font-bold text-amber-400 mb-2">Royal Obsidian</h3>
+            <p class="text-slate-400 text-sm mb-4">Nuansa gelap ultra-premium dengan efek glassmorphism obsidian dan aksen emas murni champagne gold.</p>
+            <div class="flex gap-1.5">
+              <span class="w-4 h-4 rounded-full bg-slate-950 border border-amber-500"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-400"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-600"></span>
+            </div>
+          </div>
+
+          <!-- Theme 3: Ottoman Sage -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold bg-emerald-950/80 text-emerald-300 px-3 py-1 rounded-full border border-emerald-700">Arsitektur Utsmani</span>
+              <span class="text-xs text-slate-400">Tema #3</span>
+            </div>
+            <h3 class="text-xl font-bold text-emerald-400 mb-2">Ottoman Sage</h3>
+            <p class="text-slate-400 text-sm mb-4">Kombinasi warna alabaster pearl putih gading dengan hijau zamrud khas masjid-masjid bersejarah Turki.</p>
+            <div class="flex gap-1.5">
+              <span class="w-4 h-4 rounded-full bg-amber-50 border border-emerald-600"></span>
+              <span class="w-4 h-4 rounded-full bg-emerald-700"></span>
+              <span class="w-4 h-4 rounded-full bg-emerald-900"></span>
+            </div>
+          </div>
+
+          <!-- Theme 4: Andalusian Terracotta -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-orange-500/50 transition-all shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold bg-orange-950/80 text-orange-300 px-3 py-1 rounded-full border border-orange-700">Warm Ivory</span>
+              <span class="text-xs text-slate-400">Tema #4</span>
+            </div>
+            <h3 class="text-xl font-bold text-orange-400 mb-2">Andalusian Terracotta</h3>
+            <p class="text-slate-400 text-sm mb-4">Terinspirasi istana Alhambra Spanyol dengan perpaduan warna terracotta hangat dan sandstone gold.</p>
+            <div class="flex gap-1.5">
+              <span class="w-4 h-4 rounded-full bg-orange-600"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-100"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-600"></span>
+            </div>
+          </div>
+
+          <!-- Theme 5: Emerald Pavilion -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold bg-teal-950/80 text-teal-300 px-3 py-1 rounded-full border border-teal-700">Right Pillar Sidebar</span>
+              <span class="text-xs text-slate-400">Tema #5</span>
+            </div>
+            <h3 class="text-xl font-bold text-teal-400 mb-2">Emerald Pavilion</h3>
+            <p class="text-slate-400 text-sm mb-4">Pilar jadwal sholat di sisi kanan (Right Sidebar) dengan header masjid di kiri atas dan tema hijau zamrud cerah.</p>
+            <div class="flex gap-1.5">
+              <span class="w-4 h-4 rounded-full bg-emerald-600"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-400"></span>
+              <span class="w-4 h-4 rounded-full bg-teal-800"></span>
+            </div>
+          </div>
+
+          <!-- Theme 6: Sidebar Media Modern -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-500/50 transition-all shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700">Left Pillar Sidebar</span>
+              <span class="text-xs text-slate-400">Tema #6</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-200 mb-2">Modern Slate Sidebar</h3>
+            <p class="text-slate-400 text-sm mb-4">Sidebar kiri ~26% canvas dengan header melayang di kanan atas, aksen emas, dan pop-up event countdown.</p>
+            <div class="flex gap-1.5">
+              <span class="w-4 h-4 rounded-full bg-slate-800"></span>
+              <span class="w-4 h-4 rounded-full bg-amber-500"></span>
+              <span class="w-4 h-4 rounded-full bg-slate-300"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 New Features Highlight -->
+        <div class="bg-gradient-to-r from-emerald-900/60 to-slate-900 border border-emerald-500/30 rounded-3xl p-8 md:p-12">
+          <div class="text-center mb-8">
+            <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-300 mb-3">Fitur Koneksi & Pengaturan Baru (v0.1.0)</h3>
+            <p class="text-slate-300">Solusi nirkabel cerdas tanpa ribet yang dirancang khusus untuk kenyamanan DKM Masjid.</p>
+          </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+              <div class="text-2xl mb-2">⚡</div>
+              <h4 class="font-bold text-white mb-1">Smart QR Pairing (&lt; 1 Detik)</h4>
+              <p class="text-xs text-slate-400">QR Code menyematkan IP TV langsung. Scan kamera langsung terhubung di Wi-Fi/Hotspot tanpa gagal discovery.</p>
+            </div>
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+              <div class="text-2xl mb-2">⌨️</div>
+              <h4 class="font-bold text-white mb-1">Koneksi Manual IP & PIN</h4>
+              <p class="text-xs text-slate-400">Cukup ketik IP TV dan PIN jika kamera HP bermasalah. Fleksibel di segala kondisi jaringan.</p>
+            </div>
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+              <div class="text-2xl mb-2">👥</div>
+              <h4 class="font-bold text-white mb-1">On-Demand Remote Pairing</h4>
+              <p class="text-xs text-slate-400">Tekan tombol OK pada remote TV untuk memunculkan QR pairing kapan saja untuk takmir ke-2, ke-3, dst.</p>
+            </div>
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+              <div class="text-2xl mb-2">🔄</div>
+              <h4 class="font-bold text-white mb-1">Auto-Pull Multi-Takmir</h4>
+              <p class="text-xs text-slate-400">Buka HP Admin, data aktif dari TV langsung tersinkron otomatis. Form tidak pernah kosong kembali.</p>
+            </div>
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+              <div class="text-2xl mb-2">📍</div>
+              <h4 class="font-bold text-white mb-1">Auto-Detect Lokasi GPS</h4>
+              <p class="text-xs text-slate-400">1-Klik tombol GPS langsung mengisi koordinat lintang & bujur masjid secara otomatis dan akurat.</p>
+            </div>
+            <div class="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+              <div class="text-2xl mb-2">🕌</div>
+              <h4 class="font-bold text-white mb-1">500+ Preset Kota Indonesia</h4>
+              <p class="text-xs text-slate-400">Pilih nama kota/kabupaten langsung dari dropdown tanpa perlu mencari koordinat peta manual.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
