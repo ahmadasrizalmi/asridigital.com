@@ -37,7 +37,7 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
       </div>
     </section>
 
-    <!-- 9 Themes Showcase Section -->
+    <!-- 9 Themes Showcase Section with Real Screenshots -->
     <section class="py-20 bg-slate-950 text-white px-6 overflow-hidden">
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-12">
@@ -52,102 +52,109 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
           </p>
         </div>
 
-        <!-- Theme Grid Showcase -->
-        <div class="grid md:grid-cols-3 gap-6 mb-12">
-          <!-- Theme 1: Prism Horizon -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all shadow-lg hover:shadow-emerald-900/20">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold bg-indigo-900/80 text-indigo-300 px-3 py-1 rounded-full border border-indigo-700">Docking Horizontal</span>
-              <span class="text-xs text-slate-400">Tema #1</span>
+        <!-- Featured Interactive Live Screen Viewer -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 mb-16 shadow-2xl">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+            <div>
+              <h3 class="text-xl md:text-2xl font-bold text-white" id="featured-title">1. Prism Horizon</h3>
+              <p class="text-slate-400 text-sm" id="featured-desc">Dock 6 kartu sholat warna-warni pastel di bawah dengan header kaca transparan.</p>
             </div>
-            <h3 class="text-xl font-bold text-white mb-2">Prism Horizon</h3>
-            <p class="text-slate-400 text-sm mb-4">Header kaca transparan minimalis di atas dengan dock 6 kartu sholat warna-warni pastel di bawah.</p>
-            <div class="flex gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-indigo-200" title="Subuh"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-200" title="Syuruq"></span>
-              <span class="w-4 h-4 rounded-full bg-orange-400" title="Dzuhur"></span>
-              <span class="w-4 h-4 rounded-full bg-teal-200" title="Ashar"></span>
-              <span class="w-4 h-4 rounded-full bg-rose-200" title="Maghrib"></span>
-              <span class="w-4 h-4 rounded-full bg-purple-200" title="Isya"></span>
-            </div>
-          </div>
-
-          <!-- Theme 2: Royal Obsidian -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-amber-500/50 transition-all shadow-lg hover:shadow-amber-900/20">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold bg-amber-950/80 text-amber-300 px-3 py-1 rounded-full border border-amber-700">Dark Luxury</span>
-              <span class="text-xs text-slate-400">Tema #2</span>
-            </div>
-            <h3 class="text-xl font-bold text-amber-400 mb-2">Royal Obsidian</h3>
-            <p class="text-slate-400 text-sm mb-4">Nuansa gelap ultra-premium dengan efek glassmorphism obsidian dan aksen emas murni champagne gold.</p>
-            <div class="flex gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-slate-950 border border-amber-500"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-400"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-600"></span>
+            <div class="flex flex-wrap gap-2" id="theme-buttons">
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition-all" data-img="/images/masjid-display/theme-prism-horizon.jpg" data-title="1. Prism Horizon" data-desc="Dock 6 kartu sholat warna-warni pastel di bawah dengan header kaca transparan.">Prism Horizon</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-royal-obsidian.jpg" data-title="2. Royal Obsidian" data-desc="Nuansa gelap ultra-premium dengan glassmorphism obsidian dan aksen emas murni champagne gold.">Royal Obsidian</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-ottoman-sage.jpg" data-title="3. Ottoman Sage" data-desc="Kombinasi warna alabaster pearl putih gading dengan hijau zamrud khas arsitektur masjid Utsmani.">Ottoman Sage</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-andalusian-terracotta.jpg" data-title="4. Andalusian Terracotta" data-desc="Terinspirasi istana Alhambra Spanyol dengan perpaduan terracotta hangat dan sandstone gold.">Andalusian</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-emerald-pavilion.jpg" data-title="5. Emerald Pavilion" data-desc="Pilar jadwal sholat di sisi kanan (Right Sidebar) dengan header masjid di kiri atas dan tema zamrud cerah.">Emerald Pavilion</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-sidebar-media.jpg" data-title="6. Modern Slate Sidebar" data-desc="Sidebar kiri ~26% canvas dengan header melayang di kanan atas, aksen emas, dan pop-up countdown.">Slate Sidebar</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-prism-sidebar.jpg" data-title="7. Prism Sidebar" data-desc="Sidebar kiri pilar dengan kartu sholat multi-warna pastel vertikal.">Prism Sidebar</button>
+              <button class="theme-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all" data-img="/images/masjid-display/theme-modern-banner.jpg" data-title="8. Modern Banner" data-desc="Tata letak horizontal klasik dengan banner kaca melayang dan prayer bar bawah modern.">Modern Banner</button>
             </div>
           </div>
-
-          <!-- Theme 3: Ottoman Sage -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all shadow-lg">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold bg-emerald-950/80 text-emerald-300 px-3 py-1 rounded-full border border-emerald-700">Arsitektur Utsmani</span>
-              <span class="text-xs text-slate-400">Tema #3</span>
-            </div>
-            <h3 class="text-xl font-bold text-emerald-400 mb-2">Ottoman Sage</h3>
-            <p class="text-slate-400 text-sm mb-4">Kombinasi warna alabaster pearl putih gading dengan hijau zamrud khas masjid-masjid bersejarah Turki.</p>
-            <div class="flex gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-amber-50 border border-emerald-600"></span>
-              <span class="w-4 h-4 rounded-full bg-emerald-700"></span>
-              <span class="w-4 h-4 rounded-full bg-emerald-900"></span>
-            </div>
-          </div>
-
-          <!-- Theme 4: Andalusian Terracotta -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-orange-500/50 transition-all shadow-lg">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold bg-orange-950/80 text-orange-300 px-3 py-1 rounded-full border border-orange-700">Warm Ivory</span>
-              <span class="text-xs text-slate-400">Tema #4</span>
-            </div>
-            <h3 class="text-xl font-bold text-orange-400 mb-2">Andalusian Terracotta</h3>
-            <p class="text-slate-400 text-sm mb-4">Terinspirasi istana Alhambra Spanyol dengan perpaduan warna terracotta hangat dan sandstone gold.</p>
-            <div class="flex gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-orange-600"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-100"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-600"></span>
-            </div>
-          </div>
-
-          <!-- Theme 5: Emerald Pavilion -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 transition-all shadow-lg">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold bg-teal-950/80 text-teal-300 px-3 py-1 rounded-full border border-teal-700">Right Pillar Sidebar</span>
-              <span class="text-xs text-slate-400">Tema #5</span>
-            </div>
-            <h3 class="text-xl font-bold text-teal-400 mb-2">Emerald Pavilion</h3>
-            <p class="text-slate-400 text-sm mb-4">Pilar jadwal sholat di sisi kanan (Right Sidebar) dengan header masjid di kiri atas dan tema hijau zamrud cerah.</p>
-            <div class="flex gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-emerald-600"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-400"></span>
-              <span class="w-4 h-4 rounded-full bg-teal-800"></span>
-            </div>
-          </div>
-
-          <!-- Theme 6: Sidebar Media Modern -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-500/50 transition-all shadow-lg">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-bold bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700">Left Pillar Sidebar</span>
-              <span class="text-xs text-slate-400">Tema #6</span>
-            </div>
-            <h3 class="text-xl font-bold text-slate-200 mb-2">Modern Slate Sidebar</h3>
-            <p class="text-slate-400 text-sm mb-4">Sidebar kiri ~26% canvas dengan header melayang di kanan atas, aksen emas, dan pop-up event countdown.</p>
-            <div class="flex gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-slate-800"></span>
-              <span class="w-4 h-4 rounded-full bg-amber-500"></span>
-              <span class="w-4 h-4 rounded-full bg-slate-300"></span>
-            </div>
+          <div class="aspect-video w-full rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-black relative">
+            <img id="featured-image" src="/images/masjid-display/theme-prism-horizon.jpg" alt="Preview Tampilan TV Masjid Display" class="w-full h-full object-cover transition-opacity duration-300" />
           </div>
         </div>
 
+        <!-- Theme Grid Showcase with Real Thumbnails -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+          <!-- Theme 1: Prism Horizon -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all shadow-lg group">
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-slate-800 bg-black">
+              <img src="/images/masjid-display/theme-prism-horizon.jpg" alt="Prism Horizon" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold bg-indigo-900/80 text-indigo-300 px-3 py-1 rounded-full border border-indigo-700">Docking Horizontal</span>
+              <span class="text-xs text-slate-400">Tema #1</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Prism Horizon</h3>
+            <p class="text-slate-400 text-xs mb-3">Header kaca transparan minimalis di atas dengan dock 6 kartu sholat warna-warni pastel di bawah.</p>
+          </div>
+
+          <!-- Theme 2: Royal Obsidian -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-amber-500/50 transition-all shadow-lg group">
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-slate-800 bg-black">
+              <img src="/images/masjid-display/theme-royal-obsidian.jpg" alt="Royal Obsidian" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold bg-amber-950/80 text-amber-300 px-3 py-1 rounded-full border border-amber-700">Dark Luxury</span>
+              <span class="text-xs text-slate-400">Tema #2</span>
+            </div>
+            <h3 class="text-lg font-bold text-amber-400 mb-1">Royal Obsidian</h3>
+            <p class="text-slate-400 text-xs mb-3">Nuansa gelap ultra-premium dengan efek glassmorphism obsidian dan aksen emas murni champagne gold.</p>
+          </div>
+
+          <!-- Theme 3: Ottoman Sage -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all shadow-lg group">
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-slate-800 bg-black">
+              <img src="/images/masjid-display/theme-ottoman-sage.jpg" alt="Ottoman Sage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold bg-emerald-950/80 text-emerald-300 px-3 py-1 rounded-full border border-emerald-700">Arsitektur Utsmani</span>
+              <span class="text-xs text-slate-400">Tema #3</span>
+            </div>
+            <h3 class="text-lg font-bold text-emerald-400 mb-1">Ottoman Sage</h3>
+            <p class="text-slate-400 text-xs mb-3">Kombinasi warna alabaster pearl putih gading dengan hijau zamrud khas masjid-masjid bersejarah Turki.</p>
+          </div>
+
+          <!-- Theme 4: Andalusian Terracotta -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-orange-500/50 transition-all shadow-lg group">
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-slate-800 bg-black">
+              <img src="/images/masjid-display/theme-andalusian-terracotta.jpg" alt="Andalusian Terracotta" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold bg-orange-950/80 text-orange-300 px-3 py-1 rounded-full border border-orange-700">Warm Ivory</span>
+              <span class="text-xs text-slate-400">Tema #4</span>
+            </div>
+            <h3 class="text-lg font-bold text-orange-400 mb-1">Andalusian Terracotta</h3>
+            <p class="text-slate-400 text-xs mb-3">Terinspirasi istana Alhambra Spanyol dengan perpaduan warna terracotta hangat dan sandstone gold.</p>
+          </div>
+
+          <!-- Theme 5: Emerald Pavilion -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all shadow-lg group">
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-slate-800 bg-black">
+              <img src="/images/masjid-display/theme-emerald-pavilion.jpg" alt="Emerald Pavilion" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold bg-teal-950/80 text-teal-300 px-3 py-1 rounded-full border border-teal-700">Right Pillar Sidebar</span>
+              <span class="text-xs text-slate-400">Tema #5</span>
+            </div>
+            <h3 class="text-lg font-bold text-teal-400 mb-1">Emerald Pavilion</h3>
+            <p class="text-slate-400 text-xs mb-3">Pilar jadwal sholat di sisi kanan (Right Sidebar) dengan header masjid di kiri atas dan tema hijau zamrud cerah.</p>
+          </div>
+
+          <!-- Theme 6: Sidebar Media Modern -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-500/50 transition-all shadow-lg group">
+            <div class="aspect-video rounded-xl overflow-hidden mb-4 border border-slate-800 bg-black">
+              <img src="/images/masjid-display/theme-sidebar-media.jpg" alt="Modern Slate Sidebar" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700">Left Pillar Sidebar</span>
+              <span class="text-xs text-slate-400">Tema #6</span>
+            </div>
+            <h3 class="text-lg font-bold text-slate-200 mb-1">Modern Slate Sidebar</h3>
+            <p class="text-slate-400 text-xs mb-3">Sidebar kiri ~26% canvas dengan header melayang di kanan atas, aksen emas, dan pop-up event countdown.</p>
+          </div>
+        </div>
         <!-- 5 New Features Highlight -->
         <div class="bg-gradient-to-r from-emerald-900/60 to-slate-900 border border-emerald-500/30 rounded-3xl p-8 md:p-12">
           <div class="text-center mb-8">
@@ -328,6 +335,40 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
   
   <Footer />
 </BaseLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.theme-btn');
+    const image = document.getElementById('featured-image') as HTMLImageElement;
+    const title = document.getElementById('featured-title');
+    const desc = document.getElementById('featured-desc');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetImg = btn.getAttribute('data-img');
+        const targetTitle = btn.getAttribute('data-title');
+        const targetDesc = btn.getAttribute('data-desc');
+
+        if (image && targetImg) {
+          image.style.opacity = '0';
+          setTimeout(() => {
+            image.src = targetImg;
+            image.style.opacity = '1';
+          }, 150);
+        }
+        if (title && targetTitle) title.textContent = targetTitle;
+        if (desc && targetDesc) desc.textContent = targetDesc;
+
+        buttons.forEach((b) => {
+          b.classList.remove('bg-emerald-600', 'text-white');
+          b.classList.add('bg-slate-800', 'text-slate-300');
+        });
+        btn.classList.remove('bg-slate-800', 'text-slate-300');
+        btn.classList.add('bg-emerald-600', 'text-white');
+      });
+    });
+  });
+</script>
 
 <style>
   .animate-marquee {
