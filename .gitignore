@@ -25,3 +25,4 @@ pnpm-debug.log*
 
 # Cloudflare secrets - local only
 wrangler.toml
+.dev.vars
