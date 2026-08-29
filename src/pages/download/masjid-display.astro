@@ -20,8 +20,8 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="text-5xl mb-4 flex justify-center"><Icon name="tv" size={64} class="text-emerald-600" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal & slideshow.</p>
-          <a href="/downloads/MasjidDisplay-TV-v0.1.9.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download TV APK (v0.1.9)
+          <a href="/downloads/MasjidDisplay-TV-v0.4.0.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ⬇ Download TV APK (v0.4.0)
           </a>
         </div>
         
@@ -30,8 +30,8 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="text-5xl mb-4 flex justify-center"><Icon name="phone" size={64} class="text-slate-800" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di HP Android DKM/Pengurus untuk pengaturan dan verifikasi lisensi.</p>
-          <a href="/downloads/MasjidDisplay-Admin-v0.1.9.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download Admin APK (v0.1.9)
+          <a href="/downloads/MasjidDisplay-Admin-v0.4.0.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ⬇ Download Admin APK (v0.4.0)
           </a>
         </div>
       </div>
@@ -39,27 +39,26 @@ import Icon from '../../components/ui/Icon.astro';
       <!-- Changelog Section -->
       <div class="bg-emerald-900 text-white p-8 rounded-2xl shadow-lg border border-emerald-700 mb-16">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-amber-400 text-slate-900 font-extrabold text-xs px-3 py-1 rounded-full uppercase">Update v0.1.9</span>
-          <h2 class="text-xl font-bold text-emerald-100">Catatan Rilis — UX Pairing Super Cepat & Stabil</h2>
+          <span class="bg-amber-400 text-slate-900 font-extrabold text-xs px-3 py-1 rounded-full uppercase">Update v0.4.0</span>
+          <h2 class="text-xl font-bold text-emerald-100">Catatan Rilis — Perbaikan Pairing, Concurrency & Stabilitas</h2>
         </div>
         <div class="grid sm:grid-cols-2 gap-4 text-sm text-emerald-100">
           <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
-            <strong class="text-amber-300 block mb-1">⚡ 1-Step QR Scanner</strong>
-            Tampilan scanner QR ditulis ulang sepenuhnya. Lebih mulus, cepat, tanpa loading yang lama, dan terintegrasi langsung dengan satu klik manual fallback (tanpa dua form IP terpisah).
+            <strong class="text-amber-300 block mb-1">🛡️ Crash & Deadlock Fix (P0)</strong>
+            Guard isInitialized di lifecycle, multi-thread executor untuk Admin (3 thread) dan TV Server (4 thread) agar multi-takmir benar-benar paralel.
           </div>
           <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
-            <strong class="text-amber-300 block mb-1">✅ Pesan Error yang Jelas</strong>
-            Tidak ada lagi "Pairing Ditolak: SECRET_MISMATCH". Sekarang aplikasi akan memberi tahu penyebab pasti: PIN kedaluwarsa, TV belum siap, atau QR salah.
+            <strong class="text-amber-300 block mb-1">📡 Smart QR Code</strong>
+            QR tidak lagi menampilkan 127.0.0.1. Otomatis refresh saat IP berubah dan auto-refresh challenge sebelum expired (4 menit).
           </div>
           <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
-            <strong class="text-amber-300 block mb-1">📡 Stabil Saat Koneksi Putus</strong>
-            Mencegah error 'Silent Drop' ketika koneksi terputus di tengah jalan atau background-state TV tidak sinkron. Pairing otomatis me-restart pencarian TV saat layar dimatikan & dinyalakan kembali.
+            <strong class="text-amber-300 block mb-1">🔐 Credential Management</strong>
+            Batas maksimal 10 device paired. JSON serializer robust via org.json. URL-encode pada QR parameter.
           </div>
           <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
-            <strong class="text-amber-300 block mb-1">🌐 Reactive TV Network Listener</strong>
-            Semua fitur v0.1.1 tetap ada: Prism Horizon, Royal Obsidian, Ottoman Sage, Andalusian, Emerald Pavilion, Auto-Detect GPS, On-Demand Pairing, Auto-Pull Multi-Takmir.
+            <strong class="text-amber-300 block mb-1">⚡ UX & Stability</strong>
+            Manual IP input langsung dari layar pairing, NSD cleanup otomatis, bounded memory untuk session IDs, dan phantom NSD entry expiry.
           </div>
-        </div>
       </div>
 
       <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
