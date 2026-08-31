@@ -20,8 +20,8 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="text-5xl mb-4 flex justify-center"><Icon name="tv" size={64} class="text-emerald-600" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal & slideshow.</p>
-          <a href="/downloads/MasjidDisplay-TV-v0.4.0.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download TV APK (v0.4.0)
+          <a href="/downloads/MasjidDisplay-TV-v0.5.0.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ⬇ Download TV APK (v0.5.0)
           </a>
         </div>
         
@@ -30,13 +30,39 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="text-5xl mb-4 flex justify-center"><Icon name="phone" size={64} class="text-slate-800" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di HP Android DKM/Pengurus untuk pengaturan dan verifikasi lisensi.</p>
-          <a href="/downloads/MasjidDisplay-Admin-v0.4.0.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download Admin APK (v0.4.0)
+          <a href="/downloads/MasjidDisplay-Admin-v0.5.0.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ⬇ Download Admin APK (v0.5.0)
           </a>
         </div>
       </div>
 
-      <!-- Changelog Section -->
+      <!-- Changelog Section v0.5.0 -->
+      <div class="bg-emerald-900 text-white p-8 rounded-2xl shadow-lg border border-emerald-700 mb-16">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="bg-amber-400 text-slate-900 font-extrabold text-xs px-3 py-1 rounded-full uppercase">Update v0.5.0</span>
+          <h2 class="text-xl font-bold text-emerald-100">Catatan Rilis — Pairing Andal di Semua Android + Log Error Detail</h2>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4 text-sm text-emerald-100">
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">🔧 Fix Utama: Gagal Pairing "unexpected end of stream"</strong>
+            Server TV kini selalu menutup koneksi setelah 1 request (Connection: close) sehingga koneksi basi tidak dipakai ulang oleh HP Admin. Semua client Admin juga memaksa Connection: close.
+          </div>
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">📱 Mendukung Android 5.0 – 15</strong>
+            minSdk diturunkan ke Android 5.0 (API 21) dengan core library desugaring; perbaikan kompatibilitas API (URLEncoder/Decoder, java.nio.file, getSystemService, NSD) untuk semua seri Android.
+          </div>
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">📋 Log Error Detail + Bisa Disalin</strong>
+            Aplikasi Admin kini menampilkan log teknis lengkap (jenis error, HTTP code, host:port, stacktrace, saran perbaikan) yang bisa disalin & dikirim ke developer.
+          </div>
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">🛡️ Stabilitas di Berbagai Versi Android</strong>
+            Boot otomatis lewat notifikasi (Android 10+), izin NEARBY_WIFI_DEVICES & POST_NOTIFICATIONS (Android 13+), NSD re-announce saat IP berubah, dukungan IPv6, dan proteksi race-condition saat pairing.
+          </div>
+        </div>
+      </div>
+
+      <!-- Changelog Section v0.4.0 -->
       <div class="bg-emerald-900 text-white p-8 rounded-2xl shadow-lg border border-emerald-700 mb-16">
         <div class="flex items-center gap-3 mb-4">
           <span class="bg-amber-400 text-slate-900 font-extrabold text-xs px-3 py-1 rounded-full uppercase">Update v0.4.0</span>
