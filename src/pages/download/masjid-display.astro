@@ -20,8 +20,8 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="text-5xl mb-4 flex justify-center"><Icon name="tv" size={64} class="text-emerald-600" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal & slideshow.</p>
-          <a href="/downloads/MasjidDisplay-TV-v0.5.0.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download TV APK (v0.5.0)
+          <a href="/downloads/MasjidDisplay-TV-v0.6.0.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ⬇ Download TV APK (v0.6.0)
           </a>
         </div>
         
@@ -30,9 +30,35 @@ import Icon from '../../components/ui/Icon.astro';
           <div class="text-5xl mb-4 flex justify-center"><Icon name="phone" size={64} class="text-slate-800" /></div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin</h2>
           <p class="text-slate-500 mb-6 text-sm">Diinstal di HP Android DKM/Pengurus untuk pengaturan dan verifikasi lisensi.</p>
-          <a href="/downloads/MasjidDisplay-Admin-v0.5.0.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download Admin APK (v0.5.0)
+          <a href="/downloads/MasjidDisplay-Admin-v0.6.0.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ⬇ Download Admin APK (v0.6.0)
           </a>
+        </div>
+      </div>
+
+      <!-- Changelog Section v0.6.0 -->
+      <div class="bg-emerald-900 text-white p-8 rounded-2xl shadow-lg border border-emerald-700 mb-16">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="bg-amber-400 text-slate-900 font-extrabold text-xs px-3 py-1 rounded-full uppercase">Update v0.6.0</span>
+          <h2 class="text-xl font-bold text-emerald-100">Catatan Rilis — 10-Foot UI, Kalender Hijriah Offline, Suara Iqamah & Stabilitas</h2>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4 text-sm text-emerald-100">
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">📺 10-Foot UI (Tampilan untuk jarak jauh)</strong>
+            Semua tema & layar fokus diskalakan terhadap baseline 1080dp (proporsional di semua resolusi TV). Font nama sholat, jam, header, popup event, dan layar adzan/iqamah diperbesar drastis agar terbaca dari 3–5 meter. Kaligrafi Arab diperbesar khusus (68px) agar harakat terlihat.
+          </div>
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">🗓 Kalender Hijriah & Kegiatan Islam OFFLINE</strong>
+            Tanggal hijriah dihitung lokal (Umm al-Qura tabular), lengkap dengan badge puasa sunnah (Senin-Kamis, Ayyamul Bidh, Arafah, Asyura) dan countdown hari besar (Ramadan, Idul Fitri, Idul Adha, Maulid, dll) — format baru "Hari Ini / Besok / H-N / N Hari Menuju". Tersedia koreksi isbat: global ±3 hari dan khusus Awal Ramadan/Syawal ±1 hari.
+          </div>
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">🔔 Suara Iqamah + Background Countdown Custom</strong>
+            Beep otomatis (3×) saat countdown iqamah selesai, bisa dimatikan dari Admin. Latar layar countdown bisa Warna ATAU Gambar (dari foto di TV) dengan pengaturan opacity.
+          </div>
+          <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700/50">
+            <strong class="text-amber-300 block mb-1">🛡 Stabilitas & Admin</strong>
+            Fix pairing "unexpected end of stream" (koneksi selalu ditutup), tidak minta PIN lagi setelah proses app di-restart, deteksi lokasi GPS dari Pengaturan, daftar media tampil di tab Media + cache lokal, log error detail yang bisa disalin, dan dukungan Android 5.0–15.
+          </div>
         </div>
       </div>
 
