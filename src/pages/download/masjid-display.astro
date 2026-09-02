@@ -11,28 +11,32 @@ import Icon from '../../components/ui/Icon.astro';
     <div class="max-w-4xl mx-auto px-6">
       <div class="text-center mb-12">
         <h1 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4">Pusat Unduhan Masjid Display</h1>
-        <p class="text-lg text-slate-600">Download APK untuk TV dan HP Admin, serta pelajari cara instalasinya.</p>
+        <p class="text-lg text-slate-600">Install dari <strong>Google Play</strong> (paling mudah & update otomatis) atau lewat APK untuk Android TV/STB tanpa Play Store.</p>
       </div>
 
       <div class="grid md:grid-cols-2 gap-6 mb-16">
         <!-- TV APK -->
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+        <div id="tv" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
           <div class="text-5xl mb-4 flex justify-center"><Icon name="tv" size={64} class="text-emerald-600" /></div>
-          <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV</h2>
-          <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal & slideshow.</p>
-          <a href="/downloads/MasjidDisplay-TV-v0.7.4.apk" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download TV APK (v0.7.4)
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi Android TV — <span class="text-emerald-600">Gratis</span></h2>
+          <p class="text-slate-500 mb-6 text-sm">Diinstal di Smart TV atau Android Box. Menampilkan jadwal sholat & slideshow informasi masjid.</p>
+          <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener" class="inline-block w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow mb-3">
+            ▶️ Install dari Google Play (Gratis)
+          </a>
+          <a href="/downloads/MasjidDisplay-TV-v0.7.4.apk" class="inline-block w-full border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold py-3 px-4 rounded-lg transition-colors">
+            ⬇ APK TV v0.7.4 — untuk STB tanpa Play Store
           </a>
         </div>
         
-        <!-- Admin APK -->
+        <!-- Admin -->
         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
           <div class="text-5xl mb-4 flex justify-center"><Icon name="phone" size={64} class="text-slate-800" /></div>
-          <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin</h2>
-          <p class="text-slate-500 mb-6 text-sm">Diinstal di HP Android DKM/Pengurus untuk pengaturan dan verifikasi lisensi.</p>
-          <a href="/downloads/MasjidDisplay-Admin-v0.7.4.apk" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
-            ⬇ Download Admin APK (v0.7.4)
+          <h2 class="text-xl font-bold text-slate-900 mb-2">Aplikasi HP Admin — Sekali Bayar</h2>
+          <p class="text-slate-500 mb-6 text-sm">Remote & pengaturan dari HP DKM/Pengurus via Wi-Fi lokal. Aktivasi otomatis lewat Google Play, tanpa serial.</p>
+          <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener" class="inline-block w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow">
+            ▶️ Beli di Google Play — Rp 249.000 (sekali bayar)
           </a>
+          <p class="text-xs text-slate-400 mt-3">Versi Google Play langsung aktif setelah pembelian & update otomatis.</p>
         </div>
       </div>
 
@@ -221,14 +225,17 @@ import Icon from '../../components/ui/Icon.astro';
           </div>
 
           <div>
-            <h3 class="text-lg font-bold text-emerald-800 mb-2">Aktivasi Lisensi dari HP Pengurus</h3>
+            <h3 class="text-lg font-bold text-emerald-800 mb-2">Menghubungkan HP Admin ke TV (Pairing — Tanpa Serial)</h3>
             <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
-              <li>Install <strong>Admin APK</strong> di HP Android pengurus.</li>
-              <li>Buka aplikasi TV dan masuk ke Menu Pengaturan -> akan muncul QR Code atau IP Address TV.</li>
-              <li>Buka aplikasi Admin di HP, pastikan tersambung ke <strong>Wi-Fi yang sama</strong> dengan TV.</li>
-              <li>Lakukan pairing dan masukkan <strong>Serial ID & License Key</strong> yang Anda dapatkan setelah pembelian.</li>
-              <li>Selesai! Jadwal dan pengumuman bisa diatur langsung dari HP tanpa internet.</li>
+              <li>Pastikan HP dan TV tersambung ke <strong>Wi-Fi / hotspot yang sama</strong>.</li>
+              <li>Di TV, buka aplikasi Masjid Display — akan tampil <strong>QR Code pairing</strong> (tekan tombol OK pada remote jika QR tidak muncul).</li>
+              <li>Buka aplikasi <strong>Masjid Display Admin</strong> di HP, lalu scan QR tersebut.</li>
+              <li>Selesai! Jadwal, pengumuman, dan foto bisa diatur langsung dari HP dan tersimpan di TV.</li>
             </ol>
+            <p class="mt-4 text-xs bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg">
+              💡 <strong>Catatan:</strong> versi Google Play sudah aktif otomatis setelah pembelian — <strong>tidak perlu serial number</strong>.
+              TV tetap berjalan 100% offline setelah terpasang; internet hanya dibutuhkan saat install/update dari Play Store.
+            </p>
           </div>
         </div>
       </div>

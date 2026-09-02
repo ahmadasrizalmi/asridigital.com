@@ -22,11 +22,11 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
           Tanpa internet, tanpa biaya langganan bulanan. Jadwal sholat akurat astronomis, slideshow foto pengumuman DKM, dan kontrol penuh dari HP via Wi-Fi lokal.
         </p>
         <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-          <a href="#purchase" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
-            Beli Lisensi Lifetime — Rp 249.000
+          <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+            Beli Admin di Google Play — Rp 249.000
           </a>
-          <a href="#download" class="bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
-            Download APK Uji Coba Gratis
+          <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener" class="bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+            Download TV App — Gratis
           </a>
         </div>
         <div class="flex flex-wrap justify-center gap-4 text-emerald-200 text-sm md:text-base font-medium">
@@ -284,29 +284,30 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
           
           <!-- Download Card -->
           <div class="bg-emerald-800 rounded-2xl p-8 border border-emerald-700 shadow-xl">
-            <h3 class="text-2xl font-bold mb-4 text-amber-400">1. Unduh Aplikasi</h3>
-            <p class="mb-6 text-emerald-200">Download dan install APK langsung di Android TV Anda dan aplikasi kontrol di HP Pengurus.</p>
+            <h3 class="text-2xl font-bold mb-4 text-amber-400">1. Install Aplikasi</h3>
+            <p class="mb-6 text-emerald-200">Install dari Google Play di Android TV dan HP pengurus — gratis untuk TV, update otomatis.</p>
             <div class="space-y-4">
-              <a href="/download/masjid-display" class="flex items-center justify-center gap-2 w-full bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                <Icon name="download" size={20} /> Download TV App APK
+              <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                <Icon name="download" size={20} /> TV App di Google Play (Gratis)
               </a>
-              <a href="/download/masjid-display" class="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                <Icon name="phone" size={20} /> Download Admin App APK
+              <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                <Icon name="phone" size={20} /> Admin App di Google Play (Sekali Bayar)
               </a>
+              <p class="text-center text-xs text-emerald-300">Android TV/STB tanpa Play Store? <a href="/download/masjid-display#tv" class="underline text-amber-300">Download APK TV di sini</a>.</p>
             </div>
           </div>
 
           <!-- Purchase Card -->
           <div id="purchase" class="bg-white text-slate-900 rounded-2xl p-8 shadow-xl">
-            <h3 class="text-2xl font-bold mb-4 text-emerald-800">2. Beli Lisensi Permanen</h3>
-            <p class="mb-6 text-slate-600">Aktifkan aplikasi di TV Anda tanpa batas waktu (Lifetime). Lisensi akan otomatis dikirim ke email Anda.</p>
+            <h3 class="text-2xl font-bold mb-4 text-emerald-800">2. Beli Admin — Sekali Bayar via Google Play</h3>
+            <p class="mb-6 text-slate-600">Pembayaran aman langsung di Google Play. Aplikasi Admin langsung aktif — tanpa serial number, tanpa server lisensi.</p>
             <div class="text-4xl font-black text-slate-900 mb-6">
-              Rp 249.000 <span class="text-base font-normal text-slate-500">/ sekali bayar</span>
+              Rp 249.000 <span class="text-base font-normal text-slate-500">/ sekali bayar (lifetime)</span>
             </div>
-            <!-- In a real app, this links to the e-commerce checkout flow for the masjid-display product -->
-            <a href="/checkout/masjid-display" class="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 text-lg">
-              <Icon name="shopping-cart" size={24} /> Beli Sekarang
+            <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 text-lg">
+              <Icon name="shopping-cart" size={24} /> Beli di Google Play
             </a>
+            <p class="mt-4 text-xs text-slate-500 text-center">Aplikasi TV <strong>gratis</strong> — yang dibeli cukup aplikasi Admin (remote pengaturan).</p>
           </div>
 
         </div>
@@ -321,11 +322,11 @@ const description = "Ubah TV Masjid Anda menjadi pusat informasi jadwal sholat d
             </details>
             <details class="bg-emerald-800/50 p-4 rounded-lg border border-emerald-700/50">
               <summary class="font-bold cursor-pointer outline-none">Bagaimana jika TV rusak atau ganti merk?</summary>
-              <p class="mt-2 text-emerald-200 text-sm">Lisensi melekat pada masjid Anda. Anda cukup menginstal ulang aplikasi di TV baru dan memasukkan serial key yang sama melalui HP Admin.</p>
+              <p class="mt-2 text-emerald-200 text-sm">Aplikasi TV gratis — cukup install ulang di TV baru. Aplikasi Admin terkait akun Google Play Anda: install ulang dengan akun yang sama, lalu pairing ulang ke TV baru.</p>
             </details>
             <details class="bg-emerald-800/50 p-4 rounded-lg border border-emerald-700/50">
               <summary class="font-bold cursor-pointer outline-none">Cara install aplikasinya bagaimana?</summary>
-              <p class="mt-2 text-emerald-200 text-sm">Bisa melalui flashdisk USB (copy file APK ke flashdisk, colok ke TV, buka dengan File Manager TV) atau menggunakan aplikasi "Downloader" di Play Store TV.</p>
+              <p class="mt-2 text-emerald-200 text-sm">Paling mudah: install langsung dari Google Play Store di TV &amp; HP (update otomatis). Untuk Android TV/STB tanpa Play Store, download APK di halaman <a href="/download/masjid-display" class="underline text-amber-300">Download</a> lalu install via flashdisk USB atau aplikasi "Downloader".</p>
             </details>
           </div>
         </div>
