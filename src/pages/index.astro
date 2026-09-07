@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
-import PromoCard from '../components/marketing/PromoCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
 import HotReleaseSlider from '../components/marketing/HotReleaseSlider.astro';
 import PlayStoreAppsSlider from '../components/marketing/PlayStoreAppsSlider.astro';
@@ -73,10 +72,28 @@ const structuredData = {
           </a>
         </div>
 
-        <!-- Social Proof Stats (from site_settings D1) -->
-        <div class="mt-16 pt-10 border-t border-slate-800/80 max-w-4xl mx-auto">
-          <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center" id="stats-container">
-            <div class="text-slate-400 text-xs sm:text-sm">Memuat bukti performa...</div>
+        <!-- Technical Trust Bar (Replacing pre-launch social proof) -->
+        <div class="mt-14 pt-8 border-t border-slate-800/80 max-w-4xl mx-auto">
+          <div class="flex flex-wrap justify-center items-center gap-5 sm:gap-10 text-center text-xs font-semibold text-slate-300">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <span>100% Offline Architecture</span>
+            </div>
+            <div class="hidden sm:block w-px h-4 bg-slate-800"></div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Standar Google Play Store</span>
+            </div>
+            <div class="hidden sm:block w-px h-4 bg-slate-800"></div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>High-Performance Native</span>
+            </div>
+            <div class="hidden sm:block w-px h-4 bg-slate-800"></div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+              <span>Zero Cloud Dependency</span>
+            </div>
           </div>
         </div>
       </div>
@@ -335,8 +352,6 @@ const structuredData = {
       </div>
     </section>
 
-    <!-- ALL-ACCESS PASS -->
-    <PromoCard />
 
     <!-- ==================== 6. FINAL CALL TO ACTION (DUAL CONVERSION) ==================== -->
     <!-- High-Contrast Slate-950 Banner Container -->
@@ -380,7 +395,12 @@ const structuredData = {
                 rel="noopener noreferrer"
                 class="inline-flex items-center justify-center gap-3 h-16 px-6 rounded-full border border-slate-700 bg-slate-800/80 text-white font-extrabold text-xs shadow-lg hover:bg-slate-800 transition w-full"
               >
-                <img src="/images/google-play.svg" alt="Google Play" class="h-5 w-auto" />
+                <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                  <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                  <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                  <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+                </svg>
                 <div class="text-left">
                   <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none">Unduh Aplikasi di</div>
                   <div class="text-xs font-black leading-tight text-white">Google Play Store</div>
@@ -402,12 +422,12 @@ const structuredData = {
   // ===== DYNAMIC DATA FROM D1 VIA API =====
 
   function optimizeImg(url: string, w?: number, h?: number) {
-    if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
-    const t = [];
-    if (w) t.push('w_' + w);
-    if (h) t.push('h_' + h);
-    if (t.length) t.push('c_fill');
-    return url.replace('/upload/', '/upload/' + t.join(',') + '/');
+    if (!url) return '/images/placeholder.jpg';
+    if (!url.startsWith('http')) return url;
+    if (url.includes('res.cloudinary.com') && !url.includes('/upload/w_')) {
+      return url.replace('/upload/', `/upload/w_${w || 400},h_${h || 225},c_fill,f_auto,q_auto/`);
+    }
+    return url;
   }
 
   async function loadDynamicContent() {
@@ -509,7 +529,7 @@ const structuredData = {
         <div class="product-card bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-soft hover:shadow-card-hover transition-all flex flex-col justify-between">
           <div>
             <div class="relative aspect-video bg-slate-100 overflow-hidden">
-              <img src="${optimizeImg(p.image_url, 400, 225) || '/images/placeholder.jpg'}" alt="${p.title}" class="w-full h-full object-cover" loading="lazy" />
+              <img src="${optimizeImg(p.image_icon || p.image_url, 400, 225)}" alt="${p.title}" class="w-full h-full object-cover" loading="lazy" />
               ${discount > 0 ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Hemat ${discount}%</span>` : ''}
               ${p.is_hot ? `<span class="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Hot</span>` : ''}
             </div>
