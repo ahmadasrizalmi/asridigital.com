@@ -11,33 +11,38 @@ const description = 'Portofolio aplikasi Android dan Android TV resmi karya Asri
   <Header />
 
   <main class="flex-grow bg-slate-50">
-    <!-- Header Hero -->
-    <section class="relative py-16 bg-white border-b border-slate-100 overflow-hidden">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-200">
+    <!-- ==================== HEADER HERO ==================== -->
+    <!-- Added pt-28 to cleanly clear the 80px fixed navbar on all viewports -->
+    <section class="relative pt-28 pb-16 md:pt-32 md:pb-20 bg-white border-b border-slate-100 overflow-hidden">
+      <!-- Atmospheric Backdrop Blur & Subtle Pattern -->
+      <div aria-hidden class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_-10%,rgba(16,185,129,0.12),transparent_70%)]"></div>
+
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-200 shadow-sm">
           Native Android Portfolio
         </span>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
           Aplikasi Resmi Karya Asri Digital
         </h1>
-        <p class="mt-4 max-w-2xl mx-auto text-base text-slate-500">
+        <p class="mt-4 max-w-2xl mx-auto text-sm sm:text-base text-slate-500 leading-relaxed font-normal">
           Kami membangun dan memelihara produk aplikasi mandiri yang digunakan oleh ribuan pengguna aktif dengan arsitektur 100% offline dan performa native teruji.
         </p>
       </div>
     </section>
 
-    <!-- Apps Grid -->
-    <section class="py-16">
+    <!-- ==================== APPS GRID ==================== -->
+    <section class="py-16 md:py-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-stretch">
 
-          <!-- Card 1: Japanese PDF to Word -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+          <!-- ==================== CARD 1: JAPANESE PDF TO WORD ==================== -->
+          <div class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
             <div>
-              <div class="flex items-start justify-between gap-4 mb-6">
+              <!-- Header Identity -->
+              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                 <div class="flex items-center gap-4">
-                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-md font-bold text-xl">
-                    <svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex-shrink-0 flex items-center justify-center text-white shadow-md border border-blue-500/20">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
                       <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -45,32 +50,52 @@ const description = 'Portofolio aplikasi Android dan Android TV resmi karya Asri
                     </svg>
                   </div>
                   <div>
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Utility &bull; Education</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                      Utility &bull; Education
+                    </span>
                     <h2 class="text-xl font-extrabold text-slate-900 mt-1">Japanese PDF to Word</h2>
-                    <p class="text-xs text-slate-500">Furigana Ruby Edition &bull; 100% Offline</p>
+                    <p class="text-xs text-slate-500 font-medium">Furigana Ruby Edition &bull; Asri Digital Studio</p>
                   </div>
                 </div>
-                <div class="text-right">
-                  <span class="inline-block text-xs font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+
+                <div class="flex sm:flex-col items-start sm:items-end gap-1">
+                  <span class="inline-block text-xs font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200/60">
                     Versi 1.0.0
                   </span>
-                  <p class="text-[10px] text-slate-400 mt-1">Android 14 Ready</p>
+                  <span class="text-[11px] text-slate-400 font-medium">Android 14 Ready</span>
                 </div>
               </div>
 
+              <!-- Description -->
               <p class="text-slate-600 text-sm leading-relaxed mb-6">
                 Solusi cerdas bagi pelajar dan pengajar bahasa Jepang untuk mengonversi PDF materi JLPT ke dokumen Word (.docx) tanpa merusak bacaan furigana di atas kanji dan susunan tabel kosakata.
               </p>
 
               <!-- App Preview Images -->
               <div class="grid grid-cols-3 gap-3 mb-6 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                <img src="/images/apps/japanese-pdf-to-word/01-home.png" alt="Pilih Dokumen PDF" class="rounded-xl aspect-[9/16] object-cover shadow-sm w-full" loading="lazy" />
-                <img src="/images/apps/japanese-pdf-to-word/02-options.png" alt="Opsi Pengaturan Furigana" class="rounded-xl aspect-[9/16] object-cover shadow-sm w-full" loading="lazy" />
-                <img src="/images/apps/japanese-pdf-to-word/05-docx.png" alt="Hasil Dokumen Word Rapi" class="rounded-xl aspect-[9/16] object-cover shadow-sm w-full" loading="lazy" />
+                <div class="text-center">
+                  <img src="/images/apps/japanese-pdf-to-word/01-home.png" alt="Pilih Dokumen PDF" class="rounded-xl aspect-[9/16] object-cover shadow-sm w-full border border-slate-200/60" loading="lazy" />
+                  <p class="text-[10px] font-semibold text-slate-600 mt-1.5">Pilih PDF</p>
+                </div>
+                <div class="text-center">
+                  <img src="/images/apps/japanese-pdf-to-word/02-options.png" alt="Opsi Pengaturan Furigana" class="rounded-xl aspect-[9/16] object-cover shadow-sm w-full border border-slate-200/60" loading="lazy" />
+                  <p class="text-[10px] font-semibold text-slate-600 mt-1.5">Furigana</p>
+                </div>
+                <div class="text-center">
+                  <img src="/images/apps/japanese-pdf-to-word/05-docx.png" alt="Hasil Dokumen Word Rapi" class="rounded-xl aspect-[9/16] object-cover shadow-sm w-full border border-slate-200/60" loading="lazy" />
+                  <p class="text-[10px] font-semibold text-slate-600 mt-1.5">Hasil Word</p>
+                </div>
               </div>
             </div>
 
-              <a href="https://play.google.com/store/apps/details?id=com.kandaapps.japanesepdftoword" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition">
+            <!-- Action Buttons Row -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-slate-100">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.kandaapps.japanesepdftoword"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs shadow-md hover:bg-slate-800 transition w-full sm:w-auto"
+              >
                 <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
                   <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
                   <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
@@ -79,51 +104,66 @@ const description = 'Portofolio aplikasi Android dan Android TV resmi karya Asri
                 </svg>
                 <span>Google Play</span>
               </a>
-              <a href="/apps/japanese-pdf-to-word" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
+
+              <a
+                href="/apps/japanese-pdf-to-word"
+                class="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl border border-slate-300 font-bold text-xs text-slate-800 hover:bg-slate-50 hover:border-slate-400 transition w-full sm:w-auto"
+              >
                 <span>Pelajari Detail Aplikasi</span>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
               </a>
             </div>
           </div>
 
-          <!-- Card 2: Masjid Display -->
-          <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+          <!-- ==================== CARD 2: MASJID DISPLAY ==================== -->
+          <div class="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
             <div>
-              <div class="flex items-start justify-between gap-4 mb-6">
+              <!-- Header Identity -->
+              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                 <div class="flex items-center gap-4">
-                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center text-white shadow-md font-bold text-xl">
-                    <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 flex-shrink-0 flex items-center justify-center text-white shadow-md border border-emerald-500/20">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <rect x="2" y="3" width="20" height="14" rx="2"></rect>
                       <line x1="8" y1="21" x2="16" y2="21"></line>
                       <line x1="12" y1="17" x2="12" y2="21"></line>
                     </svg>
                   </div>
                   <div>
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">Android TV &bull; Community</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                      Android TV &bull; Community
+                    </span>
                     <h2 class="text-xl font-extrabold text-slate-900 mt-1">Masjid Display</h2>
-                    <p class="text-xs text-slate-500">Sistem Display TV &bull; Remote Wi-Fi Offline</p>
+                    <p class="text-xs text-slate-500 font-medium">Display Informasi TV &bull; Asri Digital Studio</p>
                   </div>
                 </div>
-                <div class="text-right">
-                  <span class="inline-block text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+
+                <div class="flex sm:flex-col items-start sm:items-end gap-1">
+                  <span class="inline-block text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60">
                     Versi 0.7.4
                   </span>
-                  <p class="text-[10px] text-slate-400 mt-1">TV &amp; Smartphone</p>
+                  <span class="text-[11px] text-slate-400 font-medium">TV &amp; Smartphone</span>
                 </div>
               </div>
 
+              <!-- Description -->
               <p class="text-slate-600 text-sm leading-relaxed mb-6">
                 Sistem informasi masjid dan jadwal sholat presisi untuk Android TV. Dapat dikontrol penuh melalui smartphone pengurus lewat jaringan Wi-Fi lokal tanpa internet dan tanpa biaya bulanan.
               </p>
 
               <!-- App Preview Images -->
               <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-                <img src="/images/masjid-display/lp-tv-classic-horizontal.jpg" alt="Tampilan Layar Masjid Display" class="rounded-xl aspect-video object-cover shadow-sm w-full" loading="lazy" />
+                <img src="/images/masjid-display/lp-tv-classic-horizontal.jpg" alt="Tampilan Layar Masjid Display" class="rounded-xl aspect-video object-cover shadow-sm w-full border border-slate-200/60" loading="lazy" />
               </div>
             </div>
 
-            <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
-              <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition">
+            <!-- Action Buttons Row -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-slate-100">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs shadow-md hover:bg-slate-800 transition w-full sm:w-auto"
+              >
                 <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
                   <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
                   <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
@@ -132,13 +172,35 @@ const description = 'Portofolio aplikasi Android dan Android TV resmi karya Asri
                 </svg>
                 <span>Google Play</span>
               </a>
-              <a href="/masjid-display" class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
+
+              <a
+                href="/masjid-display"
+                class="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl border border-slate-300 font-bold text-xs text-slate-800 hover:bg-slate-50 hover:border-slate-400 transition w-full sm:w-auto"
+              >
                 <span>Pelajari Detail Aplikasi</span>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
               </a>
             </div>
           </div>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== BOTTOM CONSULTATION CTA ==================== -->
+    <section class="py-16 bg-white border-t border-slate-100">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Butuh Aplikasi Kustom untuk Bisnis atau Komunitas Anda?</h2>
+        <p class="mt-3 text-sm text-slate-500 max-w-xl mx-auto">Kami menerima jasa pengembangan aplikasi Android smartphone &amp; TV dengan arsitektur offline-first dan standar resmi Google Play.</p>
+        <div class="mt-8 flex justify-center">
+          <a
+            href="https://wa.me/62812999551?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20pembuatan%20aplikasi%20Android"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center h-14 px-8 rounded-full bg-btn-gradient text-slate-900 font-extrabold text-sm shadow-btn-primary hover:-translate-y-0.5 transition-all"
+          >
+            <span>Konsultasi Proyek via WhatsApp</span>
+          </a>
         </div>
       </div>
     </section>
