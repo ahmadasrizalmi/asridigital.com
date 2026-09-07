@@ -2,56 +2,282 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
-import HeroSlider from '../components/marketing/HeroSlider.astro';
 import PromoCard from '../components/marketing/PromoCard.astro';
 import FOMOPopup from '../components/marketing/FOMOPopup.astro';
 import HotReleaseSlider from '../components/marketing/HotReleaseSlider.astro';
+import PlayStoreAppsSlider from '../components/marketing/PlayStoreAppsSlider.astro';
 
-// All-Access product excluded from homepage grid
-const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
----
-
-
-<BaseLayout structuredData={{
+// Structured data for Software House & Tech Agency
+const structuredData = {
   "@context": "https://schema.org",
-  "@type": "WebSite",
+  "@type": "SoftwareApplication",
   "name": "Asri Digital",
   "url": "https://asridigital.com",
-  "description": "Solusi Bisnis Digital & AI untuk Profesional Indonesia",
+  "description": "Software House & Digital Studio: Pengembangan Aplikasi Android, Sistem Web & Solusi AI.",
   "potentialAction": {
     "@type": "SearchAction",
     "target": "https://asridigital.com/blog?search={search_term_string}",
     "query-input": "required name=search_term_string"
   }
-}}>
+};
+---
+
+<BaseLayout structuredData={structuredData}>
   <Header />
 
-  <main class="flex-1">
-    {/* HERO SLIDER */}
-    <HeroSlider />
+  <main class="flex-1 overflow-hidden">
 
-    {/* SOCIAL PROOF BAR */}
-    {/* SOCIAL PROOF — from site_settings */}
-    <section id="social-proof" class="border-b border-slate-100 bg-white py-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center" id="stats-container">
-          <div class="text-slate-400 text-sm">Loading...</div>
+    <!-- ==================== 1. HERO SECTION (SOFTWARE HOUSE & APP STUDIO) ==================== -->
+    <!-- Background: Ethereal Subtle Gradient with Atmospheric Grid Pattern -->
+    <section class="relative min-h-[90vh] flex items-center justify-center pt-24 pb-20 bg-slate-900 text-white overflow-hidden">
+      <!-- Atmospheric Backdrop Blur & Grid -->
+      <div aria-hidden class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.3),transparent_70%)]"></div>
+      <div aria-hidden class="pointer-events-none absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 py-12">
+        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/60 px-4 py-1.5 text-xs font-semibold text-emerald-300 mb-6 backdrop-blur">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Software House &amp; Digital Engineering Studio
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl lg:text-6xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.12]">
+          Membangun Solusi Digital, <span class="bg-gradient-to-r from-emerald-400 via-teal-200 to-amber-200 bg-clip-text text-transparent">Aplikasi Android Native</span> &amp; Otomasi Cerdas
+        </h1>
+
+        <p class="mt-6 max-w-2xl mx-auto text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
+          Dari aplikasi Android berstandar Google Play hingga sistem platform web kustom. Kami mentransformasikan visi bisnis Anda menjadi produk perangkat lunak berkinerja tinggi, aman, dan siap pakai.
+        </p>
+
+        <!-- CTA Buttons (Inspired by wireframe food-app-onboarding + SSOT btn-gradient) -->
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-5">
+          <!-- Primary CTA Button with nested circular icon -->
+          <a
+            href="https://wa.me/62812999551?text=Halo%20Asri%20Digital,%20saya%20tertarik%20untuk%20konsultasi%20pembuatan%20software"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group relative inline-flex items-center justify-center h-15 sm:h-16 pl-2.5 pr-8 bg-btn-gradient rounded-full shadow-btn-primary transition-all transform hover:-translate-y-0.5 overflow-hidden w-full sm:w-auto"
+          >
+            <div class="w-11 h-11 sm:w-12 sm:h-12 bg-white rounded-full shadow-sm flex items-center justify-center mr-4 text-slate-800 flex-shrink-0 group-hover:scale-105 transition">
+              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </div>
+            <span class="text-slate-900 font-extrabold text-sm sm:text-base tracking-wide whitespace-nowrap">Konsultasi Proyek Sekarang</span>
+          </a>
+
+          <!-- Secondary CTA Button: Link to Apps Showcase -->
+          <a
+            href="#apps"
+            class="inline-flex items-center justify-center h-15 sm:h-16 px-8 rounded-full border border-slate-700 bg-slate-800/60 text-slate-200 font-bold text-sm sm:text-base hover:bg-slate-800 hover:text-white backdrop-blur transition w-full sm:w-auto"
+          >
+            <span>Jelajahi Aplikasi Resmi</span>
+            <svg class="w-4 h-4 ml-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </a>
+        </div>
+
+        <!-- Social Proof Stats (from site_settings D1) -->
+        <div class="mt-16 pt-10 border-t border-slate-800/80 max-w-4xl mx-auto">
+          <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-center" id="stats-container">
+            <div class="text-slate-400 text-xs sm:text-sm">Memuat bukti performa...</div>
+          </div>
         </div>
       </div>
     </section>
 
-    {/* HOT RELEASE — only shows when is_hot products exist */}
-    <HotReleaseSlider />
+    <!-- ==================== 2. ABOUT & KEUNGGULAN SECTION ==================== -->
+    <!-- Background: Pure White with Corner Geometric Ornaments -->
+    <section id="about" class="relative py-24 bg-white border-b border-slate-100 overflow-hidden">
+      <!-- Corner Geometric Accents (SVG Vector Ornaments) -->
+      <div aria-hidden class="pointer-events-none absolute top-0 left-0 w-32 h-32 opacity-10">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" class="w-full h-full text-slate-900"><path d="M0 0 L100 0 L0 100 Z" fill="currentColor"/><circle cx="30" cy="30" r="10" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div aria-hidden class="pointer-events-none absolute bottom-0 right-0 w-40 h-40 opacity-10">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" class="w-full h-full text-emerald-600"><circle cx="70" cy="70" r="25" stroke="currentColor" stroke-width="3"/><path d="M100 50 L100 100 L50 100" stroke="currentColor" stroke-width="4"/></svg>
+      </div>
 
-    {/* PRODUCT SECTION */}
-    <section id="produk" class="py-24 bg-slate-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <h2 id="catalog-title" class="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">Eksplorasi Katalog Digital</h2>
-          <p id="catalog-desc" class="text-slate-500">Temukan tools dan aset digital yang dirancang khusus untuk mempercepat alur kerja dan riset pasar Anda.</p>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Keunggulan Rekayasa</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">
+            Mengapa Memilih Asri Digital?
+          </h2>
+          <p class="text-slate-500 text-base mt-4 leading-relaxed">
+            Kami menggabungkan ketelitian rekayasa perangkat lunak dengan pemahaman bisnis praktis untuk menghadirkan software yang andal, efisien, dan berkelanjutan.
+          </p>
         </div>
 
-        {/* Search + Filter Tabs — categories from D1 */}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- Pillar 1 -->
+          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <h3 class="font-extrabold text-slate-900 text-lg mb-2">100% Offline Architecture</h3>
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Mampu membangun sistem mandiri tanpa dependensi server pihak ketiga yang memangkas biaya operasional bulanan Anda secara permanen.
+            </p>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Native High-Performance</h3>
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Kompilasi kode native ringan dan teroptimasi, menjamin waktu muat instan dan konsumsi daya baterai yang sangat hemat di smartphone maupun Android TV.
+            </p>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            </div>
+            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Mobile-First Touch UX</h3>
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Antarmuka bersih, responsif, dan ramah sentuhan. Dirancang dengan hierarki visual teratur tanpa elemen membingungkan atau elemen visual mengganggu.
+            </p>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            </div>
+            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Data Privacy &amp; Security</h3>
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Kepatuhan penuh terhadap standar privasi Google Play dan perlindungan data pengguna dengan enkripsi serta protokol keamanan terpercaya.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. APPS SHOWCASE SECTION (PLAY STORE SLIDER) ==================== -->
+    <!-- Background: Soft Slate Gradient -->
+    <section id="apps" class="py-24 bg-gradient-to-b from-slate-50 via-slate-100/60 to-slate-50 border-b border-slate-200/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-14">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Portofolio Produk Nyata</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">
+            Aplikasi Resmi di Google Play Store
+          </h2>
+          <p class="text-slate-500 text-base mt-4 leading-relaxed">
+            Bukti nyata kapabilitas rekayasa kami. Kami memproduksi, merilis, dan memelihara aplikasi mandiri yang digunakan oleh ratusan institusi dan pelajar.
+          </p>
+        </div>
+
+        <!-- The Interactive Play Store Style Card Slider Component -->
+        <PlayStoreAppsSlider />
+
+        <!-- Bottom Link to All Apps -->
+        <div class="text-center mt-12">
+          <a href="/apps" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 transition underline underline-offset-4">
+            <span>Lihat Semua Katalog Aplikasi Android Asri Digital</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. LAYANAN JASA SOFTWARE HOUSE ==================== -->
+    <!-- Background: Pure White with Subtle Corner Accents -->
+    <section id="services" class="relative py-24 bg-white border-b border-slate-100 overflow-hidden">
+      <!-- Corner Accents -->
+      <div aria-hidden class="pointer-events-none absolute top-0 right-0 w-32 h-32 opacity-5">
+        <svg viewBox="0 0 100 100" fill="currentColor" class="w-full h-full text-slate-900"><polygon points="100,0 0,0 100,100"/></svg>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Layanan Profesional</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">
+            Jasa Pembuatan Software &amp; Sistem Kustom
+          </h2>
+          <p class="text-slate-500 text-base mt-4 leading-relaxed">
+            Solusi pengembangan dari tahap konseptualisasi arsitektur, desain UI/UX, pemrograman native/web, hingga publikasi ke server dan toko aplikasi.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Service 1: Mobile App -->
+          <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center mb-6">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"></rect><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"></line></svg>
+              </div>
+              <h3 class="text-xl font-extrabold text-slate-900 mb-3">Aplikasi Android &amp; TV Kustom</h3>
+              <p class="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6">
+                Pembuatan aplikasi Android smartphone, tablet, maupun Android TV Box. Disesuaikan dengan kebutuhan bisnis Anda seperti display digital, sistem takmir, alat bantu kerja, hingga edukasi.
+              </p>
+              <ul class="space-y-2.5 text-xs text-slate-600 font-medium mb-8">
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Arsitektur Offline &amp; Sinkronisasi Wi-Fi</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Bantuan Rilis ke Google Play Store</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Integrasi Monetisasi (AdMob / IAP)</li>
+              </ul>
+            </div>
+            <a href="https://wa.me/62812999551?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20jasa%20pembuatan%20aplikasi%20Android" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl border border-slate-300 text-slate-800 font-bold text-xs text-center hover:bg-slate-50 transition">
+              Konsultasikan Proyek Ini
+            </a>
+          </div>
+
+          <!-- Service 2: Web App & Dashboard -->
+          <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"></rect><line x1="8" y1="21" x2="16" y2="21" stroke-width="2"></line><line x1="12" y1="17" x2="12" y2="21" stroke-width="2"></line></svg>
+              </div>
+              <h3 class="text-xl font-extrabold text-slate-900 mb-3">Aplikasi Web &amp; Dashboard</h3>
+              <p class="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6">
+                Pengembangan aplikasi berbasis web modern (Astro, React, Tailwind, Next.js). Sangat cocok untuk sistem manajemen operasional, platform e-learning, portal klien, dan dashboard internal perusahaan.
+              </p>
+              <ul class="space-y-2.5 text-xs text-slate-600 font-medium mb-8">
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Performa Cepat &amp; Desain Modern</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Integrasi Payment Gateway Nasional</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Arsitektur Cloud Serverless Terukur</li>
+              </ul>
+            </div>
+            <a href="https://wa.me/62812999551?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20jasa%20pembuatan%20aplikasi%20Web" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl border border-slate-300 text-slate-800 font-bold text-xs text-center hover:bg-slate-50 transition">
+              Konsultasikan Proyek Ini
+            </a>
+          </div>
+
+          <!-- Service 3: AI & Automation -->
+          <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center mb-6">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              </div>
+              <h3 class="text-xl font-extrabold text-slate-900 mb-3">Otomasi Alur Kerja &amp; Solusi AI</h3>
+              <p class="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6">
+                Solusi pemrosesan data, ekstraksi dokumen cerdas, asisten CS AI WhatsApp otomatis, dan script otomasi kerja yang memotong jam kerja manual tim Anda hingga 80%.
+              </p>
+              <ul class="space-y-2.5 text-xs text-slate-600 font-medium mb-8">
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Bot Otomasi Chat &amp; Notifikasi</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Pemrosesan Dokumen &amp; Data Pipeline</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Integrasi LLM / AI API Tertarget</li>
+              </ul>
+            </div>
+            <a href="https://wa.me/62812999551?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20jasa%20otomasi%20dan%20AI" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl border border-slate-300 text-slate-800 font-bold text-xs text-center hover:bg-slate-50 transition">
+              Konsultasikan Proyek Ini
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 5. HOT RELEASE & PRODUK DIGITAL TERLARIS ==================== -->
+    <!-- Background: Soft Slate Gradient -->
+    <HotReleaseSlider />
+
+    <section id="produk" class="py-24 bg-slate-50 border-b border-slate-200/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Digital Store &amp; Marketplace</span>
+          <h2 id="catalog-title" class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2 mb-4">Eksplorasi Katalog Digital</h2>
+          <p id="catalog-desc" class="text-slate-500">Temukan tools, source code, dan aset digital siap pakai yang dirancang khusus untuk mempercepat alur kerja Anda.</p>
+        </div>
+
+        <!-- Search + Filter Tabs — categories from D1 -->
         <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <div class="relative w-full md:w-96">
             <input type="text" id="product-search" placeholder="Cari aplikasi, data, atau asisten AI..." class="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 shadow-soft transition-shadow" />
@@ -62,9 +288,9 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
           </div>
         </div>
 
-        {/* Product Grid */}
+        <!-- Product Grid (D1 dynamic loading) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="product-grid">
-          {/* Loading skeletons — replaced by JS after fetch */}
+          <!-- Loading skeletons — replaced by JS after fetch -->
           <div class="product-skeleton bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <div class="w-full aspect-square bg-slate-200 animate-pulse"></div>
             <div class="p-6 space-y-3">
@@ -94,85 +320,78 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
           </div>
         </div>
 
-        {/* Empty State */}
+        <!-- Empty State -->
         <div id="no-results" class="hidden text-center py-12">
           <p class="text-slate-500 text-lg">Maaf, produk tidak ditemukan. Coba kata kunci lain.</p>
         </div>
 
-        {/* Lihat Semua link */}
+        <!-- Lihat Semua link -->
         <div class="text-center mt-10">
           <a href="/products" class="btn-primary">
-            Lihat Semua Produk
+            Lihat Semua Produk di Marketplace
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
           </a>
         </div>
       </div>
     </section>
 
-    {/* ALL-ACCESS PASS */}
+    <!-- ALL-ACCESS PASS -->
     <PromoCard />
 
-    {/* FEATURES — from site_settings */}
-    <section class="py-16 bg-white border-b border-slate-100">
+    <!-- ==================== 6. FINAL CALL TO ACTION (DUAL CONVERSION) ==================== -->
+    <!-- High-Contrast Slate-950 Banner Container -->
+    <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" id="features-container">
-          <div class="col-span-full text-slate-400 text-sm">Loading...</div>
+        <div class="relative rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-8 sm:p-14 text-white overflow-hidden shadow-2xl border border-slate-800">
+          <!-- Ambient Glow -->
+          <div aria-hidden class="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full bg-emerald-500/20 blur-3xl"></div>
+
+          <div class="relative z-10 grid lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-7">
+              <span class="inline-block px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4">
+                Mulai Kolaborasi
+              </span>
+              <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                Punya Kebutuhan Pembuatan Aplikasi atau Sistem Digital?
+              </h2>
+              <p class="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl">
+                Konsultasikan kebutuhan perangkat lunak Anda langsung bersama tim teknis Asri Digital. Dari konsep sederhana hingga aplikasi skala rilis.
+              </p>
+            </div>
+
+            <div class="lg:col-span-5 flex flex-col sm:flex-row lg:flex-col gap-4 justify-center">
+              <!-- WhatsApp Consultation CTA (food-app-onboarding style) -->
+              <a
+                href="https://wa.me/62812999551?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20pembuatan%20software"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group relative inline-flex items-center justify-center h-16 pl-2.5 pr-8 bg-btn-gradient rounded-full shadow-btn-primary transition-all transform hover:-translate-y-0.5 overflow-hidden w-full"
+              >
+                <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mr-4 text-slate-800 flex-shrink-0 group-hover:scale-105 transition">
+                  <svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.97.585 1.961.947 3.024.947 3.178 0 5.766-2.587 5.767-5.766.001-3.187-2.575-5.77-5.759-5.771zm5.216 11.121l-.158.077c-.43.208-1.579.776-1.821.863-.243.088-.42.132-.598-.132s-.687-.864-.842-1.04c-.155-.177-.31-.199-.553-.11-.243.088-1.026.378-1.954-.449-.724-.645-1.213-1.442-1.355-1.685-.143-.243-.015-.374.095-.494.099-.108.221-.277.332-.416.11-.138.147-.235.221-.391.074-.155.037-.291-.018-.407-.056-.116-.508-1.226-.696-1.68-.183-.443-.369-.382-.508-.389-.131-.007-.282-.008-.432-.008s-.398.056-.607.284c-.208.228-.797.778-.797 1.897 0 1.119.814 2.2 1.036 2.496.222.296 1.603 2.449 3.886 3.435.543.235.967.375 1.297.48.545.174 1.042.149 1.434.091.437-.065 1.344-.549 1.533-1.08.19-.531.19-.986.134-1.08-.056-.095-.208-.152-.43-.263z"></path></svg>
+                </div>
+                <span class="text-slate-900 font-extrabold text-sm sm:text-base tracking-wide whitespace-nowrap">Hubungi via WhatsApp</span>
+              </a>
+
+              <!-- Play Store Developer Badge -->
+              <a
+                href="https://play.google.com/store/apps/details?id=com.kandaapps.japanesepdftoword"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-3 h-16 px-6 rounded-full border border-slate-700 bg-slate-800/80 text-white font-extrabold text-xs shadow-lg hover:bg-slate-800 transition w-full"
+              >
+                <img src="/images/google-play.svg" alt="Google Play" class="h-5 w-auto" />
+                <div class="text-left">
+                  <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold leading-none">Unduh Aplikasi di</div>
+                  <div class="text-xs font-black leading-tight text-white">Google Play Store</div>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    {/* ARTIKEL TERBARU — Latest Blog Posts */}
-    <section id="artikel-terbaru" class="py-24 bg-slate-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">Artikel Terbaru</h2>
-          <p class="text-slate-500">Tips, tutorial, dan insight tentang AI & digital tools</p>
-        </div>
-
-        {/* Blog Posts Grid */}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="blog-posts-grid">
-          {/* Loading skeletons */}
-          <div class="blog-skeleton bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
-            <div class="p-5 space-y-3">
-              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
-              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
-            </div>
-          </div>
-          <div class="blog-skeleton hidden md:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
-            <div class="p-5 space-y-3">
-              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
-              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
-            </div>
-          </div>
-          <div class="blog-skeleton hidden lg:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div class="w-full aspect-video bg-slate-200 animate-pulse"></div>
-            <div class="p-5 space-y-3">
-              <div class="h-5 w-20 bg-slate-200 rounded-full animate-pulse"></div>
-              <div class="h-5 w-3/4 bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-full bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-2/3 bg-slate-200 rounded animate-pulse"></div>
-              <div class="h-4 w-1/3 bg-slate-200 rounded animate-pulse pt-2"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* View All Button */}
-        <div class="text-center mt-12" id="blog-view-all" style="display:none;">
-          <a href="/blog" class="btn-primary">
-            Lihat Semua Artikel
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-          </a>
-        </div>
-      </div>
-    </section>
   </main>
 
   <Footer />
@@ -182,7 +401,7 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
 <script>
   // ===== DYNAMIC DATA FROM D1 VIA API =====
 
-  function optimizeImg(url, w, h) {
+  function optimizeImg(url: string, w?: number, h?: number) {
     if (!url || !url.includes('res.cloudinary.com') || url.includes('/upload/w_')) return url;
     const t = [];
     if (w) t.push('w_' + w);
@@ -191,17 +410,10 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
     return url.replace('/upload/', '/upload/' + t.join(',') + '/');
   }
 
-  const ICON_MAP: Record<string, string> = {
-    'zap': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
-    'lock': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>',
-    'message-square': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>',
-    'refresh-cw': '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>',
-  };
-
   async function loadDynamicContent() {
     try {
       const [settingsRes, categoriesRes] = await Promise.all([
-        fetch('/api/site-settings?keys=catalog_section_title,catalog_section_description,stat_active_users,stat_active_users_label,stat_products_sold,stat_products_sold_label,stat_rating,stat_rating_label,feature_1_title,feature_1_description,feature_1_icon,feature_2_title,feature_2_description,feature_2_icon,feature_3_title,feature_3_description,feature_3_icon,feature_4_title,feature_4_description,feature_4_icon'),
+        fetch('/api/site-settings?keys=catalog_section_title,catalog_section_description,stat_active_users,stat_active_users_label,stat_products_sold,stat_products_sold_label,stat_rating,stat_rating_label'),
         fetch('/api/categories')
       ]);
 
@@ -209,308 +421,143 @@ const ALL_ACCESS_SLUG = 'lifetime-all-access-pass';
       const catData = await categoriesRes.json();
 
       // Catalog section title
-      if (settings.catalog_section_title) document.getElementById('catalog-title')!.textContent = settings.catalog_section_title;
-      if (settings.catalog_section_description) document.getElementById('catalog-desc')!.textContent = settings.catalog_section_description;
+      if (settings.catalog_section_title && document.getElementById('catalog-title')) {
+        document.getElementById('catalog-title')!.textContent = settings.catalog_section_title;
+      }
+      if (settings.catalog_section_description && document.getElementById('catalog-desc')) {
+        document.getElementById('catalog-desc')!.textContent = settings.catalog_section_description;
+      }
 
       // Stats
-      const statsContainer = document.getElementById('stats-container')!;
-      const statsHtml = [
-        { value: settings.stat_active_users || '500+', label: settings.stat_active_users_label || 'Pengguna Aktif' },
-        { value: settings.stat_products_sold || '1,000+', label: settings.stat_products_sold_label || 'Produk Terjual' },
-        { value: settings.stat_rating || '4.9/5', label: settings.stat_rating_label || 'Rating Kepuasan', hasStar: true },
-      ].map((s, i) => `
-        ${i > 0 ? '<div class="hidden sm:block w-px h-8 bg-slate-200"></div>' : ''}
-        <div>
-          <p class="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center">${s.value}${s.hasStar ? ' <svg class="w-5 h-5 text-yellow-400 ml-1 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' : ''}</p>
-          <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mt-1">${s.label}</p>
-        </div>
-      `).join('');
-      statsContainer.innerHTML = statsHtml;
+      const statsContainer = document.getElementById('stats-container');
+      if (statsContainer) {
+        const statsHtml = [
+          { value: settings.stat_active_users || '500+', label: settings.stat_active_users_label || 'Pengguna Aktif' },
+          { value: settings.stat_products_sold || '1,000+', label: settings.stat_products_sold_label || 'Produk Terjual' },
+          { value: settings.stat_rating || '4.9/5', label: settings.stat_rating_label || 'Rating Kepuasan', hasStar: true },
+        ].map((s, i) => `
+          ${i > 0 ? '<div class="hidden sm:block w-px h-8 bg-slate-700"></div>' : ''}
+          <div>
+            <p class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center justify-center">${s.value}${s.hasStar ? ' <svg class="w-5 h-5 text-yellow-400 ml-1 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>' : ''}</p>
+            <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">${s.label}</p>
+          </div>
+        `).join('');
+        statsContainer.innerHTML = statsHtml;
+      }
 
       // Filter tabs from categories
-      const tabsContainer = document.getElementById('filter-tabs')!;
-      const categories = catData.categories || [];
-      if (categories.length > 0) {
-        tabsContainer.innerHTML = `<button class="filter-tab active px-4 py-2 rounded-full text-sm font-semibold transition-colors" data-filter="all">Semua</button>` +
-            `<button class="filter-tab px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100" data-filter="hot"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline -mt-0.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Hot</button>` +
-          categories.map((cat: any) =>
-            `<button class="filter-tab px-4 py-2 rounded-full text-sm font-semibold transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-100" data-filter="${cat.slug}">${cat.name}</button>`
+      const tabsContainer = document.getElementById('filter-tabs');
+      if (tabsContainer) {
+        const categories = catData.categories || [];
+        if (categories.length > 0) {
+          const catTabsHtml = categories.map((c: any) =>
+            `<button class="filter-tab px-5 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 transition-colors whitespace-nowrap" data-filter="${c.slug}">${c.name}</button>`
           ).join('');
-        // Re-bind filter click events
-        bindFilterTabs();
+          tabsContainer.innerHTML = `<button class="filter-tab active px-5 py-2 rounded-full text-sm font-semibold text-white bg-slate-900 transition-colors whitespace-nowrap" data-filter="all">Semua</button>` + catTabsHtml;
+          initFilterTabs();
+        }
       }
 
-      // Features
-      const featuresContainer = document.getElementById('features-container')!;
-      const featureKeys = ['feature_1', 'feature_2', 'feature_3', 'feature_4'];
-      const featuresHtml = featureKeys.map(key => {
-        const title = settings[`${key}_title`];
-        const desc = settings[`${key}_description`];
-        const icon = settings[`${key}_icon`] || 'zap';
-        if (!title) return '';
-        return `
-          <div>
-            <div class="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center mb-4 text-emerald-600">${ICON_MAP[icon] || ICON_MAP['zap']}</div>
-            <h4 class="font-bold text-slate-900 mb-2">${title}</h4>
-            <p class="text-sm text-slate-500">${desc || ''}</p>
-          </div>`;
-      }).filter(Boolean).join('');
-      if (featuresHtml) featuresContainer.innerHTML = featuresHtml;
-
-    } catch (err) {
-      console.error('Dynamic content load failed:', err);
+      // Load products
+      await loadProducts();
+    } catch (e) {
+      console.error('Error loading dynamic content:', e);
     }
   }
 
-  // ===== LATEST BLOG POSTS =====
-  const CATEGORY_META: Record<string, { label: string; color: string; bgColor: string }> = {
-    'tips': { label: 'Tips & Trik', color: 'bg-emerald-500 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
-    'tutorial': { label: 'Tutorial', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
-    'studi-kasus': { label: 'Studi Kasus', color: 'bg-amber-500 text-white', bgColor: 'from-amber-100 to-amber-50' },
-    'berita': { label: 'Berita', color: 'bg-purple-500 text-white', bgColor: 'from-purple-100 to-purple-50' },
-    'ai': { label: 'AI', color: 'bg-emerald-600 text-white', bgColor: 'from-emerald-100 to-emerald-50' },
-    'productivity': { label: 'Productivity', color: 'bg-blue-500 text-white', bgColor: 'from-blue-100 to-blue-50' },
-    'general': { label: 'Umum', color: 'bg-gray-500 text-white', bgColor: 'from-gray-100 to-gray-50' },
-  };
-
-  function getBlogCategoryMeta(category: string) {
-    const key = category?.toLowerCase() || 'general';
-    return CATEGORY_META[key] || CATEGORY_META['general'];
-  }
-
-  function formatBlogDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString('id-ID', {
-      day: 'numeric', month: 'long', year: 'numeric'
-    });
-  }
-
-  async function loadLatestBlogPosts() {
-    const grid = document.getElementById('blog-posts-grid');
-    const viewAll = document.getElementById('blog-view-all');
-    if (!grid) return;
-
-    try {
-      const res = await fetch('/api/blog/posts?limit=3');
-      const data = await res.json();
-      const posts = (data.posts || []).slice(0, 3);
-
-      if (posts.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada artikel tersedia.</div>';
-        return;
-      }
-
-      grid.innerHTML = posts.map((post: any) => {
-        const catKey = post.category?.toLowerCase() || 'general';
-        const meta = getBlogCategoryMeta(catKey);
-        const pubDate = formatBlogDate(post.published_at);
-        const imgSrc = post.image_url ? optimizeImg(post.image_url, 400, 210) : '';
-
-        return `
-          <article class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-card transition-shadow group">
-            <a href="/blog/${post.slug}/" class="block">
-              <div class="relative overflow-hidden">
-                ${imgSrc
-                  ? `<img src="${imgSrc}" alt="${post.title}" class="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />`
-                  : `<div class="w-full aspect-video bg-gradient-to-br ${meta.bgColor} flex items-center justify-center">
-                       <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                     </div>`
-                }
-                <div class="absolute top-3 left-3">
-                  <span class="px-3 py-1 ${meta.color} text-xs font-medium rounded-full">${meta.label}</span>
-                </div>
-              </div>
-            </a>
-            <div class="p-5">
-              <a href="/blog/${post.slug}/" class="block">
-                <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">${post.title}</h3>
-              </a>
-              <p class="text-sm text-slate-500 mb-4 line-clamp-2">${post.excerpt || ''}</p>
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-400">${pubDate}</span>
-                <a href="/blog/${post.slug}/" class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm flex items-center gap-1 transition-colors">
-                  Baca Artikel
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </a>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join('');
-
-      if (viewAll) viewAll.style.display = 'block';
-    } catch (err) {
-      console.error('Failed to load blog posts:', err);
-      grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Gagal memuat artikel.</div>';
-    }
-  }
-
-  // ===== PRODUCTS — loaded client-side from API =====
-
-  function formatIDRClient(amount: number): string {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
-  }
-
-  function createProductCard(product: any): HTMLElement {
-    const catKey = (product.category || 'tools').toLowerCase();
-    const filterCat = catKey;
-    const title = product.title || '';
-    const slug = product.slug || '';
-    const imgSrc = optimizeImg(product.image_icon || product.imageIcon || '/images/placeholder.jpg', 400, 400);
-    const shortDesc = product.short_description || product.shortDescription || product.description || '';
-    const price = Number(product.price || 0);
-    const compareAt = product.compare_at_price || product.compareAtPrice || null;
-    const hasDiscount = compareAt && Number(compareAt) > price;
-    const isFree = price === 0;
-    const discount = hasDiscount ? Math.round((1 - price / Number(compareAt)) * 100) : 0;
-    const isFeatured = Boolean(product.is_featured || product.isFeatured);
-    const isHot = Boolean(product.is_hot || product.isHot);
-
-    const safeTitle = title.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c] as string));
-    const safeDesc = shortDesc.replace(/[<>"'&]/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c] as string));
-
-    const a = document.createElement('a');
-    a.href = '/product/' + slug;
-    a.className = 'product-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-card hover:shadow-float hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full';
-    a.setAttribute('data-category', filterCat);
-    a.setAttribute('data-title', title.toLowerCase());
-    a.setAttribute('data-slug', slug);
-    if (isHot) a.setAttribute('data-hot', 'true');
-
-    let badgeHtml = '';
-    if (hasDiscount && !isFree) badgeHtml = '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm">-' + discount + '%</span></div>';
-    else if (isFree) badgeHtml = '<div class="absolute top-3 left-3"><span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-500 text-white text-xs font-bold shadow-sm">GRATIS</span></div>';
-    const featuredBadge = isFeatured ? '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-amber-400 text-amber-900 text-xs font-bold shadow-sm">Best Seller</span></div>' : '';
-    const hotBadge = isHot ? '<div class="absolute top-3 right-3"><span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-red-500 text-white text-xs font-bold shadow-sm"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/></svg> Hot</span></div>' : '';
-
-    let priceHtml = '';
-    if (isFree) {
-      priceHtml = '<span class="text-xl font-bold text-slate-900">Gratis</span>';
-    } else {
-      const discountLine = hasDiscount ? '<span class="text-xs text-slate-400 line-through block mb-0.5">' + formatIDRClient(Number(compareAt)) + '</span>' : '';
-      priceHtml = '<div>' + discountLine + '<span class="text-xl font-bold text-slate-900">' + formatIDRClient(price) + '</span></div>';
-    }
-
-    a.innerHTML = '<div class="relative overflow-hidden aspect-square bg-slate-50">' +
-      '<img src="' + imgSrc + '" alt="' + safeTitle + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />' +
-      badgeHtml + (isHot ? hotBadge : featuredBadge) +
-      '</div>' +
-      '<div class="p-6 flex flex-col flex-grow">' +
-      '<h3 class="text-lg font-bold text-slate-900 mb-2 transition-colors">' + safeTitle + '</h3>' +
-      '<p class="text-slate-500 text-sm mb-6 flex-grow leading-relaxed line-clamp-2">' + safeDesc + '</p>' +
-      '<div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-300">' +
-      priceHtml +
-      '<button class="buy-btn bg-slate-100 text-slate-900 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-btn-gradient group-hover:text-slate-900 transition-all duration-300">Lihat Detail</button>' +
-      '</div></div>';
-
-    return a;
-  }
+  let allProducts: any[] = [];
+  let currentFilter = 'all';
 
   async function loadProducts() {
-    const grid = document.getElementById('product-grid');
-    if (!grid) return;
     try {
-      const res = await fetch('/api/products?limit=7');
+      const res = await fetch('/api/products?is_active=true');
       const data = await res.json();
-      const allAccessSlug = 'lifetime-all-access-pass';
-      const apiProducts = (data.products || []).filter((p: any) => p.slug !== allAccessSlug);
-
-      if (apiProducts.length > 0) {
-        grid.innerHTML = '';
-        apiProducts.forEach((product: any) => {
-          grid.appendChild(createProductCard(product));
-        });
-        // Re-bind filter after products are rendered
-        filterProducts();
-      } else {
-        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400">Belum ada produk tersedia.</div>';
-      }
-    } catch (err) {
-      console.error('Failed to load products:', err);
-      // Keep skeletons visible as fallback
+      allProducts = (data.products || []).filter((p: any) => p.slug !== 'lifetime-all-access-pass');
+      renderProducts();
+    } catch (e) {
+      console.error('Error loading products:', e);
     }
   }
 
-  loadDynamicContent();
-  loadLatestBlogPosts();
-  loadProducts();
-  bindFilterTabs(); // Bind initial "Semua" tab
+  function renderProducts() {
+    const grid = document.getElementById('product-grid');
+    const noResults = document.getElementById('no-results');
+    if (!grid) return;
 
-  // Navbar scroll effect
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 20) {
-      navbar?.classList.add('shadow-soft');
-    } else {
-      navbar?.classList.remove('shadow-soft');
-    }
-  });
+    const searchTerm = ((document.getElementById('product-search') as HTMLInputElement)?.value || '').toLowerCase();
 
-  // Product filtering & search
-  const filterTabs = document.querySelectorAll('.filter-tab');
-  const searchInput = document.getElementById('product-search') as HTMLInputElement;
-  const noResults = document.getElementById('no-results');
-
-  function filterProducts() {
-    // Re-query DOM each time — products are loaded dynamically via API
-    const productCards = document.querySelectorAll('.product-card');
-    const searchTerm = (searchInput?.value || '').toLowerCase();
-    const activeTab = document.querySelector('.filter-tab.active') as HTMLElement;
-    const activeCategory = activeTab?.dataset.filter || 'all';
-    let visibleCount = 0;
-
-    productCards.forEach(card => {
-      const el = card as HTMLElement;
-      const title = el.dataset.title || '';
-      const category = el.dataset.category || '';
-      const isHot = el.dataset.hot === 'true';
-      const matchesSearch = title.includes(searchTerm);
-      let matchesCategory: boolean;
-      if (activeCategory === 'hot') {
-        matchesCategory = isHot;
-      } else if (activeCategory === 'all') {
-        matchesCategory = true;
-      } else {
-        matchesCategory = category === activeCategory.toLowerCase();
-      }
-
-      if (matchesSearch && matchesCategory) {
-        el.style.display = 'flex';
-        visibleCount++;
-      } else {
-        el.style.display = 'none';
-      }
+    const filtered = allProducts.filter((p: any) => {
+      const matchesFilter = currentFilter === 'all' || p.category_slug === currentFilter || p.category === currentFilter;
+      const matchesSearch = !searchTerm || p.title.toLowerCase().includes(searchTerm) || (p.description && p.description.toLowerCase().includes(searchTerm));
+      return matchesFilter && matchesSearch;
     });
 
-    if (noResults) noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    if (filtered.length === 0) {
+      grid.innerHTML = '';
+      if (noResults) noResults.classList.remove('hidden');
+      return;
+    }
+
+    if (noResults) noResults.classList.add('hidden');
+
+    grid.innerHTML = filtered.slice(0, 6).map((p: any) => {
+      const discount = p.original_price && p.original_price > p.price
+        ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
+        : 0;
+
+      return `
+        <div class="product-card bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-soft hover:shadow-card-hover transition-all flex flex-col justify-between">
+          <div>
+            <div class="relative aspect-video bg-slate-100 overflow-hidden">
+              <img src="${optimizeImg(p.image_url, 400, 225) || '/images/placeholder.jpg'}" alt="${p.title}" class="w-full h-full object-cover" loading="lazy" />
+              ${discount > 0 ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Hemat ${discount}%</span>` : ''}
+              ${p.is_hot ? `<span class="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Hot</span>` : ''}
+            </div>
+            <div class="p-6">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 mb-1 block">${p.category_name || p.category || 'Digital Tool'}</span>
+              <h3 class="font-extrabold text-slate-900 text-base mb-2 line-clamp-2 leading-snug">${p.title}</h3>
+              <p class="text-xs text-slate-500 line-clamp-2 mb-4 leading-relaxed">${p.description || ''}</p>
+            </div>
+          </div>
+          <div class="px-6 pb-6 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <div>
+              <span class="text-base font-extrabold text-slate-900">Rp ${Number(p.price).toLocaleString('id-ID')}</span>
+              ${p.original_price ? `<span class="text-xs text-slate-400 line-through ml-1.5">Rp ${Number(p.original_price).toLocaleString('id-ID')}</span>` : ''}
+            </div>
+            <a href="/product/${p.slug}" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition">
+              Lihat Detail
+            </a>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
-  function bindFilterTabs() {
+  function initFilterTabs() {
     const tabs = document.querySelectorAll('.filter-tab');
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
+      tab.addEventListener('click', (e) => {
         tabs.forEach(t => {
-          t.classList.remove('active', 'bg-carbon', 'text-white');
+          t.classList.remove('bg-slate-900', 'text-white');
           t.classList.add('bg-white', 'text-slate-600');
         });
-        tab.classList.add('active', 'bg-carbon', 'text-white');
-        tab.classList.remove('bg-white', 'text-slate-600');
-        filterProducts();
+        const target = e.currentTarget as HTMLElement;
+        target.classList.remove('bg-white', 'text-slate-600');
+        target.classList.add('bg-slate-900', 'text-white');
+        currentFilter = target.dataset.filter || 'all';
+        renderProducts();
       });
     });
   }
 
-  searchInput?.addEventListener('input', filterProducts);
+  document.getElementById('product-search')?.addEventListener('input', () => {
+    renderProducts();
+  });
 
-  // Affiliate tracking
-  const urlParams = new URLSearchParams(window.location.search);
-  const ref = urlParams.get('ref');
-  if (ref) {
-    document.cookie = `asri_ref=${ref};max-age=${30*24*60*60};path=/;SameSite=Lax`;
-    fetch('/api/affiliate/click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ referralCode: ref, page: window.location.pathname })
-    }).catch(() => {});
-    window.history.replaceState({}, document.title, window.location.pathname);
+  // Load when DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadDynamicContent);
+  } else {
+    loadDynamicContent();
   }
 </script>

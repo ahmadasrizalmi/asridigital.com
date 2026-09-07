@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Header from '../../../components/layout/Header.astro';
+import Footer from '../../../components/layout/Footer.astro';
+
+const title = 'Kebijakan Privasi - Japanese PDF to Word | Asri Digital';
+const description = 'Kebijakan Privasi resmi aplikasi Android Japanese PDF to Word Converter oleh Asri Digital. Pemrosesan 100% offline lokal tanpa cloud.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+
+  <main class="flex-1 bg-slate-50 py-12 md:py-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="Breadcrumb" class="mb-6 flex items-center gap-2 text-xs text-slate-500 font-medium">
+        <a href="/" class="hover:text-slate-900 transition">Asri Digital</a>
+        <span>/</span>
+        <a href="/apps" class="hover:text-slate-900 transition">Apps</a>
+        <span>/</span>
+        <a href="/apps/japanese-pdf-to-word" class="hover:text-slate-900 transition">Japanese PDF to Word</a>
+        <span>/</span>
+        <span class="text-slate-900 font-semibold">Privacy Policy</span>
+      </nav>
+
+      <div class="bg-white rounded-3xl border border-slate-200/80 p-8 sm:p-12 shadow-card">
+        <div class="border-b border-slate-100 pb-6 mb-8">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-200">
+            Official Play Store Legal Document
+          </span>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Kebijakan Privasi &bull; Privacy Policy
+          </h1>
+          <p class="text-sm text-slate-500 mt-2">
+            Aplikasi Android: <strong>Japanese PDF to Word (Furigana Ruby Edition)</strong><br />
+            ID Paket: <code class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-mono">com.kandaapps.japanesepdftoword</code><br />
+            Terakhir diperbarui: 7 September 2026
+          </p>
+        </div>
+
+        <div class="prose prose-slate max-w-none text-slate-600 text-sm sm:text-base leading-relaxed space-y-6">
+
+          <div class="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl text-emerald-900 text-sm">
+            <strong>Ringkasan Jaminan Privasi (Zero-Cloud):</strong> Seluruh proses pembacaan PDF, ekstraksi kanji, pencocokan bacaan furigana, dan pembuatan dokumen Word (.docx) berjalan <strong>100% langsung di dalam perangkat smartphone Anda</strong>. Kami tidak mengoperasikan server pemrosesan konversi dan file dokumen Anda tidak pernah diunggah atau disimpan ke server mana pun.
+          </div>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">1. Pemrosesan Dokumen 100% Offline (Offline Processing)</h2>
+            <p>
+              <strong>Bahasa Indonesia:</strong> Aplikasi <em>Japanese PDF to Word</em> dirancang dengan arsitektur privasi-utamakan (privacy-first). File dokumen PDF yang Anda pilih untuk dikonversi diproses seluruhnya secara in-memory di perangkat Android Anda. Tidak ada data teks, konten buku, gambar, ataupun metadata dokumen yang dikirimkan melalui internet.
+            </p>
+            <p>
+              <strong>English:</strong> <em>Japanese PDF to Word</em> is built with a strict privacy-first architecture. All PDF files selected for conversion are processed entirely in-memory on your local Android device. No text, book content, images, or document metadata are transmitted across the internet.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">2. Izin Perangkat (Device Permissions)</h2>
+            <p>Aplikasi ini hanya meminta izin yang mutlak diperlukan untuk fungsionalitas inti aplikasi:</p>
+            <ul class="list-disc pl-5 space-y-2">
+              <li>
+                <strong>Akses Penyimpanan / File:</strong> Digunakan semata-mata untuk membaca file PDF bahasa Jepang yang secara sadar Anda pilih melalui pemilih file sistem (system file picker) dan menyimpan dokumen Word (.docx) hasil konversi ke folder <em>Downloads</em> perangkat Anda.
+              </li>
+              <li>
+                <strong>Akses Internet:</strong> Diperlukan hanya untuk memuat penayangan iklan video berhadiah (Google AdMob) dan verifikasi transaksi Google Play Billing. Proses konversi dokumen itu sendiri bekerja sepenuhnya offline tanpa membutuhkan internet.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">3. Layanan Pihak Ketiga (Third-Party Services)</h2>
+            <p>Aplikasi ini mengintegrasikan SDK pihak ketiga berikut yang terpercaya:</p>
+            <div class="space-y-3">
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h3 class="text-base font-semibold text-slate-900">Google AdMob (Iklan Berhadiah)</h3>
+                <p class="text-sm text-slate-600 mt-1">
+                  Digunakan untuk menayangkan iklan video sukarela (Rewarded Ads) bagi pengguna gratis yang ingin membuka kuota halaman tambahan. Google AdMob dapat mengumpulkan pengenal iklan perangkat (Google Advertising ID / AAID) untuk penayangan iklan sesuai <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-emerald-600 font-semibold underline">Kebijakan Privasi Google</a>.
+                </p>
+              </div>
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h3 class="text-base font-semibold text-slate-900">Google Play In-App Billing</h3>
+                <p class="text-sm text-slate-600 mt-1">
+                  Digunakan untuk memproses pembelian lisensi PRO seumur hidup (Beli Putus). Seluruh data transaksi keuangan, kartu kredit, dan penagihan diproses langsung oleh Google Play Services. Pengembang tidak pernah memiliki akses ke informasi keuangan Anda.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">4. Keamanan & Kerahasiaan Data (Data Security)</h2>
+            <p>
+              Karena kami tidak mengumpulkan maupun menyimpan dokumen Anda di server kami, tidak ada risiko kebocoran data dokumen dari basis data terpusat. Keamanan dokumen Anda berada sepenuhnya dalam kendali Anda dan sistem keamanan perangkat fisik Anda.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">5. Hak Pengguna & Penghapusan Data (User Rights)</h2>
+            <p>
+              Anda memiliki kendali penuh atas file Anda. Setiap file hasil konversi disimpan di folder penyimpanan lokal yang dapat Anda hapus, pindahkan, atau bagikan kapan saja menggunakan aplikasi pengelola file bawaan smartphone Anda.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">6. Kontak Pengembang Resmi (Developer Contact)</h2>
+            <p>
+              Jika Anda memiliki pertanyaan mengenai kebijakan privasi atau perlakuan data pada aplikasi ini, silakan hubungi kami:
+            </p>
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+              <p class="font-bold text-slate-900">Asri Digital / Kanda Apps</p>
+              <p class="text-slate-600">Email Pengembang: <a href="mailto:support@asridigital.com" class="text-emerald-600 underline font-medium">support@asridigital.com</a> / <a href="mailto:ahmadasrizalmi@gmail.com" class="text-emerald-600 underline font-medium">ahmadasrizalmi@gmail.com</a></p>
+              <p class="text-slate-600">Situs Resmi: <a href="https://asridigital.com" class="text-emerald-600 underline font-medium">https://asridigital.com</a></p>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between">
+          <a href="/apps/japanese-pdf-to-word" class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Kembali ke Halaman Japanese PDF to Word
+          </a>
+          <a href="/apps" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition">
+            Lihat Semua Aplikasi
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

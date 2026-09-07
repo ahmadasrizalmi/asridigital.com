@@ -1,0 +1,318 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Header from '../../../components/layout/Header.astro';
+import Footer from '../../../components/layout/Footer.astro';
+
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.kandaapps.japanesepdftoword';
+const PRIVACY_URL = '/apps/japanese-pdf-to-word/privacy';
+
+const title = 'Japanese PDF to Word Furigana | Asri Digital Apps';
+const description = 'Aplikasi Android offline untuk mengonversi dokumen PDF bahasa Jepang ke Microsoft Word (.docx) dengan bacaan Furigana asli tepat di atas kanji.';
+
+const screenshots = [
+  { file: '01-home.png', title: 'Pilih Dokumen PDF', sub: 'Pilih file PDF bahasa Jepang langsung dari memori HP.' },
+  { file: '02-options.png', title: 'Format Furigana & Kolom', sub: 'Opsi sematkan furigana dan tata letak multi-kolom otomatis.' },
+  { file: '03-processing.png', title: 'Proses Cepat & Offline', sub: 'Indikator progres persentase, counter halaman, dan furigana.' },
+  { file: '04-success.png', title: 'Hasil Siap Diunduh', sub: 'Konversi tuntas dan file .docx tersimpan ke folder Download.' },
+  { file: '05-docx.png', title: 'Pratinjau Furigana Rapi', sub: 'Teks bahasa Jepang dengan bacaan furigana rapi di atas kanji.' },
+];
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+
+  <main class="flex-grow">
+    <!-- ============ HERO SECTION ============ -->
+    <section class="relative overflow-hidden bg-slate-900 text-white pt-10 pb-16 lg:pt-16 lg:pb-24 border-b border-slate-800">
+      <!-- Background Mesh Glow -->
+      <div aria-hidden class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.25),transparent_70%)]"></div>
+
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav aria-label="Breadcrumb" class="mb-6 flex items-center gap-2 text-xs font-medium text-slate-400">
+          <a href="/" class="hover:text-emerald-400 transition">Asri Digital</a>
+          <span class="text-slate-600">/</span>
+          <a href="/apps" class="hover:text-emerald-400 transition">Apps</a>
+          <span class="text-slate-600">/</span>
+          <span class="rounded-full bg-slate-800 border border-slate-700 px-2.5 py-0.5 font-semibold text-emerald-300">Japanese PDF to Word</span>
+        </nav>
+
+        <div class="grid items-center gap-12 lg:grid-cols-12">
+          <!-- Left Copy Column (7 cols) -->
+          <div class="lg:col-span-7 text-center lg:text-left">
+            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/70 px-3.5 py-1 text-xs font-semibold text-emerald-300 mb-5 backdrop-blur">
+              <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Versi 1.0.0 Resmi Dirilis di Google Play
+            </div>
+
+            <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-5xl xl:text-5xl leading-[1.15]">
+              Konversi PDF Bahasa Jepang ke Word <span class="bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">Tanpa Merusak Furigana</span>
+            </h1>
+
+            <p class="mt-5 max-w-2xl text-base text-slate-300 leading-relaxed sm:text-lg mx-auto lg:mx-0">
+              Ubah modul belajar, buku latihan JLPT (N5–N1), dan dokumen PDF bahasa Jepang menjadi file Microsoft Word (.docx) yang rapi secara <strong>100% offline</strong> langsung di smartphone Anda.
+            </p>
+
+            <!-- Key Metric Badges -->
+            <div class="mt-6 flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-medium text-slate-300">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Format Furigana Asli Word</span>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <span>100% Offline Lokal di HP</span>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                <span>Susunan Multi-Kolom Rapi</span>
+              </div>
+            </div>
+
+            <!-- CTA Area (Play Store Badge Only) -->
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-white text-slate-900 font-extrabold text-sm shadow-xl shadow-emerald-500/10 hover:bg-emerald-50 hover:shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5">
+                <img src="/images/google-play.svg" alt="Google Play" class="h-6 w-auto" />
+                <div class="text-left">
+                  <div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold leading-none">GET IT ON</div>
+                  <div class="text-sm font-black leading-tight text-slate-900">Google Play</div>
+                </div>
+              </a>
+
+              <a href="#fitur" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl border border-slate-700 bg-slate-800/60 text-slate-200 font-bold text-sm hover:bg-slate-800 hover:text-white transition">
+                <span>Pelajari Fitur Unggulan</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </a>
+            </div>
+
+            <p class="mt-4 text-xs text-slate-400 flex items-center justify-center lg:justify-start gap-2">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Kompatibel untuk Android 5.0 hingga Android 14+</span>
+            </p>
+          </div>
+
+          <!-- Right Phone Showcase (5 cols) -->
+          <div class="lg:col-span-5 flex justify-center">
+            <div class="relative w-full max-w-xs sm:max-w-sm">
+              <div class="rounded-3xl border border-slate-700/60 bg-slate-800/40 p-2 shadow-2xl backdrop-blur">
+                <img
+                  src="/images/apps/japanese-pdf-to-word/05-docx.png"
+                  alt="Tampilan hasil konversi Japanese PDF to Word dengan Furigana"
+                  class="w-full rounded-2xl shadow-inner object-cover"
+                  loading="eager"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROBLEM VS SOLUTION ============ -->
+    <section class="py-16 bg-white border-b border-slate-100">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Problem &amp; Solution</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Mengapa Aplikasi Ini Diciptakan?</h2>
+          <p class="text-slate-500 text-sm mt-3">Masalah umum yang dihadapi jutaan pembelajar dan pengajar bahasa Jepang saat mengolah materi dari PDF.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- Problem Box -->
+          <div class="p-8 rounded-3xl bg-rose-50/70 border border-rose-200">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-200/80 text-rose-800 text-xs font-bold mb-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              Kendala Salin-Tempel Biasa
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">Teks Furigana Hilang atau Terpisah Menjadi Tanda Kurung</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Saat Anda menyalin teks kanji ber-furigana dari PDF ke Microsoft Word, bacaan hiragana biasanya ikut tercampur di samping kanji atau lenyap sama sekali. Susunan tata letak 2 atau 3 kolom kosakata menjadi berantakan ke bawah dan memakan waktu berjam-jam untuk diperbaiki secara manual.
+            </p>
+          </div>
+
+          <!-- Solution Box -->
+          <div class="p-8 rounded-3xl bg-emerald-50/70 border border-emerald-200">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-800 text-xs font-bold mb-4">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              Solusi Japanese PDF to Word
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">Furigana Asli Bertengger Tepat di Atas Karakter Kanji</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Engine kami merekonstruksi dokumen ke struktur XML Word standar. Bacaan furigana otomatis disematkan tepat di atas kanji seperti buku aslinya, tabel latihan tersusun proporsional, dan file hasil konversi .docx dapat langsung diedit di Word Mobile maupun PC.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FITUR UTAMA ============ -->
+    <section id="fitur" class="py-20 bg-slate-50 border-b border-slate-100">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Fitur Utama</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Didesain untuk Kebutuhan Nyata Pembelajar Jepang</h2>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 font-black text-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-2">Furigana Asli Word</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Menghasilkan elemen Word resmi sehingga ukuran font dan posisi bacaan furigana selalu proporsional saat dicetak atau diubah ukuran teksnya.</p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 font-black text-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-2">Deteksi Multi-Kolom</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Mampu mengenali daftar kosakata vertikal dan tabel 2 atau 3 kolom khas modul latihan JLPT dari atas ke bawah tanpa saling menimpa.</p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 font-black text-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-2">100% Offline &amp; Aman</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Privasi terjamin penuh. Seluruh data diproses secara in-memory di smartphone tanpa koneksi internet. Dokumen Anda tidak pernah diunggah.</p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 font-black text-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <h3 class="font-bold text-slate-900 text-base mb-2">Freemium &amp; Beli Putus</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Gratis untuk 3 halaman pertama. Dukungan kuota reward iklan video, atau buka seluruh halaman dokumen tanpa batas selamanya dengan sekali bayar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GALLERY SCREENSHOT MOCKUP GOOGLE PLAY ============ -->
+    <section class="py-20 bg-white border-b border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Alur Penggunaan</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Tangkapan Layar Resmi Aplikasi</h2>
+          <p class="text-slate-500 text-sm mt-3">Geser untuk melihat antarmuka bilingual yang bersih dan modern.</p>
+        </div>
+
+        <!-- Horizontal Scrollable Screenshot Rail -->
+        <div class="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scrollbar-thin">
+          {screenshots.map((s) => (
+            <div class="flex-shrink-0 w-64 sm:w-72 snap-center">
+              <div class="rounded-3xl border border-slate-200 bg-slate-50 p-2.5 shadow-md hover:shadow-xl transition-all">
+                <img
+                  src={`/images/apps/japanese-pdf-to-word/${s.file}`}
+                  alt={s.title}
+                  class="w-full rounded-2xl shadow-inner aspect-[9/16] object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div class="mt-3 text-center px-2">
+                <h4 class="font-bold text-slate-900 text-sm">{s.title}</h4>
+                <p class="text-xs text-slate-500 mt-1">{s.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRICING TIERS ============ -->
+    <section class="py-20 bg-slate-50 border-b border-slate-100">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Skema Akses</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Pilihan Transparan Tanpa Langganan</h2>
+          <p class="text-slate-500 text-sm mt-3">Kami mendukung model beli putus sekali bayar tanpa tagihan bulanan.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- Tier 1 -->
+          <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-soft flex flex-col justify-between">
+            <div>
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Free Tier</div>
+              <div class="text-2xl font-black text-slate-900 mt-2">Gratis</div>
+              <p class="text-xs text-slate-500 mt-2">Uji coba langsung kualitas furigana pada dokumen Anda.</p>
+              <ul class="mt-6 space-y-3 text-xs text-slate-600">
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Hingga 3 halaman per file</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Ekspor .docx penuh</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 100% Offline tanpa internet</li>
+              </ul>
+            </div>
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" class="mt-8 block text-center py-3 rounded-xl border border-slate-300 font-bold text-xs text-slate-700 hover:bg-slate-50 transition">
+              Pasang di Google Play
+            </a>
+          </div>
+
+          <!-- Tier 2 -->
+          <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-soft flex flex-col justify-between">
+            <div>
+              <div class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Rewarded Access</div>
+              <div class="text-2xl font-black text-slate-900 mt-2">Iklan Reward</div>
+              <p class="text-xs text-slate-500 mt-2">Dapatkan kuota halaman ekstra cukup dengan menonton video singkat.</p>
+              <ul class="mt-6 space-y-3 text-xs text-slate-600">
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> +10 Halaman gratis per video</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Dukungan video AdMob 15-30s</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Cocok untuk tugas mingguan</li>
+              </ul>
+            </div>
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" class="mt-8 block text-center py-3 rounded-xl border border-emerald-300 bg-emerald-50 font-bold text-xs text-emerald-800 hover:bg-emerald-100 transition">
+              Coba Gratis di HP
+            </a>
+          </div>
+
+          <!-- Tier 3 (PRO Lifetime) -->
+          <div class="p-8 rounded-3xl bg-gradient-to-b from-slate-900 to-slate-800 text-white border border-slate-700 shadow-xl relative flex flex-col justify-between">
+            <div class="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-emerald-400 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider">
+              Best Value
+            </div>
+            <div>
+              <div class="text-xs font-bold text-emerald-300 uppercase tracking-wider">PRO Lifetime</div>
+              <div class="text-3xl font-black text-white mt-2">Rp 49.000</div>
+              <p class="text-xs text-slate-400 mt-2">Beli putus sekali untuk selamanya. Tanpa langganan.</p>
+              <ul class="mt-6 space-y-3 text-xs text-slate-300">
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <strong>Bebas batas halaman</strong> (280+ halaman sekaligus)</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 100% Bebas iklan selamanya</li>
+                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Pulihkan lisensi kapan saja saat ganti HP</li>
+              </ul>
+            </div>
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" class="mt-8 block text-center py-3.5 rounded-xl bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg hover:bg-emerald-300 transition">
+              Buka Versi PRO di Play Store
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA & LEGAL ============ -->
+    <section class="py-16 bg-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mulai Konversi Materi Bahasa Jepang Anda Sekarang</h2>
+        <p class="text-slate-500 text-sm mt-3 max-w-xl mx-auto">Unduh langsung dari Google Play Store dan permudah proses belajar kanji Anda.</p>
+
+        <div class="mt-8 flex justify-center">
+          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-900 text-white font-extrabold text-sm shadow-xl hover:bg-slate-800 transition">
+            <img src="/images/google-play.svg" alt="Google Play" class="h-6 w-auto" />
+            <div class="text-left">
+              <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold leading-none">GET IT ON</div>
+              <div class="text-base font-black leading-tight text-white">Google Play Store</div>
+            </div>
+          </a>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-slate-100 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-500">
+          <a href={PRIVACY_URL} class="hover:text-emerald-600 font-semibold underline underline-offset-2 transition">Kebijakan Privasi (Privacy Policy)</a>
+          <span>&bull;</span>
+          <a href="/terms" class="hover:text-emerald-600 font-medium transition">Syarat &amp; Ketentuan</a>
+          <span>&bull;</span>
+          <a href="/contact" class="hover:text-emerald-600 font-medium transition">Bantuan &amp; Kontak Pengembang</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
