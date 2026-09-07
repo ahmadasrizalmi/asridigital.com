@@ -99,8 +99,8 @@ const structuredData = {
       </div>
     </section>
 
-    <!-- ==================== 2. ABOUT & KEUNGGULAN SECTION ==================== -->
-    <!-- Background: Pure White with Corner Geometric Ornaments -->
+    <!-- ==================== 2. ABOUT ASRI DIGITAL SECTION ==================== -->
+    <!-- Background: Pure White with Subtle Corner Geometric Ornaments -->
     <section id="about" class="relative py-24 bg-white border-b border-slate-100 overflow-hidden">
       <!-- Corner Geometric Accents (SVG Vector Ornaments) -->
       <div aria-hidden class="pointer-events-none absolute top-0 left-0 w-32 h-32 opacity-10">
@@ -111,60 +111,96 @@ const structuredData = {
       </div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Prinsip Kerja Kami</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">
-            Kenapa Mempercayakan Proyek Anda pada Asri Digital?
-          </h2>
-          <p class="text-slate-500 text-base mt-4 leading-relaxed">
-            Kami tidak sekadar menulis baris kode, tapi memastikan teknologi yang dibangun benar-benar menyelesaikan masalah, mudah digunakan tim Anda, dan hemat biaya operasional.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <!-- Pillar 1 -->
-          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          <!-- Sisi Kiri: Foto Visual Studio / Tim -->
+          <div class="lg:col-span-6 relative">
+            <div class="relative rounded-3xl overflow-hidden border border-slate-200/90 shadow-card bg-slate-100">
+              <img
+                src="/images/about-asri-digital.webp"
+                alt="Tim Asri Digital Studio sedang berkolaborasi merancang perangkat lunak"
+                class="w-full aspect-[4/3] object-cover"
+                loading="lazy"
+              />
             </div>
-            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Bisa Jalan Tanpa Internet</h3>
-            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Aplikasi dirancang agar tetap bisa bekerja lancar meski sinyal mati atau tanpa kuota. Bebas biaya sewa server bulanan yang menguras kas.
-            </p>
+
+            <!-- Floating Badge Card: Studio Identity -->
+            <div class="absolute -bottom-6 -right-4 sm:right-6 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 p-4 shadow-xl max-w-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 font-bold">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-slate-900 text-xs sm:text-sm">Asri Digital Studio</h4>
+                  <p class="text-[11px] text-slate-500 font-medium">Software Engineering &bull; Mobile Labs</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating Badge: Local & Global -->
+            <div class="hidden sm:inline-flex items-center gap-2 absolute -top-4 -left-4 bg-slate-900/95 text-white text-[11px] font-semibold px-3.5 py-1.5 rounded-full border border-slate-700 shadow-lg backdrop-blur">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Berbasis di Indonesia &bull; Standar Global</span>
+            </div>
           </div>
 
-          <!-- Pillar 2 -->
-          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            </div>
-            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Enteng, Cepat &amp; Hemat Baterai</h3>
-            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Menggunakan arsitektur native yang efisien. Aplikasi tidak lemot saat dibuka, hemat penggunaan memori, dan nyaman dipakai berjam-jam.
+          <!-- Sisi Kanan: Penjelasan Lengkap Asri Digital -->
+          <div class="lg:col-span-6">
+            <span class="inline-block px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4">
+              Tentang Asri Digital
+            </span>
+
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              Membantu Bisnis dan Pengguna Berkembang Lewat Software yang Solutif
+            </h2>
+
+            <p class="mt-5 text-sm sm:text-base text-slate-600 leading-relaxed">
+              <strong>Asri Digital</strong> adalah studio pengembangan perangkat lunak mandiri asal Indonesia. Kami berfokus merancang, membangun, dan merawat aplikasi Android native, sistem platform web terintegrasi, serta otomasi digital yang praktis dan efisien.
             </p>
+
+            <p class="mt-3.5 text-sm sm:text-base text-slate-600 leading-relaxed">
+              Bagi kami, teknologi yang baik bukanlah yang paling rumit, melainkan yang paling bisa diandalkan. Setiap produk yang kami rilis—seperti <em>Masjid Display</em> dan <em>Japanese PDF to Word</em>—dibangun dengan prinsip kerja mandiri (offline-first), performa kencang, dan menghormati privasi penuh pengguna tanpa beban biaya langganan yang mencekik.
+            </p>
+
+            <!-- 3 Poin Keunggulan Utama -->
+            <div class="mt-6 space-y-3.5 pt-2">
+              <div class="flex items-start gap-3">
+                <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700 font-medium">
+                  <strong>Fokus pada Kebutuhan Nyata:</strong> Aplikasi dirancang langsung untuk memecahkan hambatan harian pengguna di lapangan.
+                </p>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700 font-medium">
+                  <strong>Bebas Biaya Tersembunyi:</strong> Mengutamakan efisiensi arsitektur mandiri sehingga operasional bisnis Anda bebas dari tagihan server berlebihan.
+                </p>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700 font-medium">
+                  <strong>Komunikasi Terbuka &amp; Responsif:</strong> Anda berdiskusi dan berkonsultasi langsung dengan tim teknis yang membangun aplikasi.
+                </p>
+              </div>
+            </div>
+
+            <!-- Tautan ke Halaman About Penuh -->
+            <div class="mt-8 pt-4">
+              <a href="/about" class="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 transition underline underline-offset-4">
+                <span>Pelajari Cerita Kami Selengkapnya</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </a>
+            </div>
           </div>
 
-          <!-- Pillar 3 -->
-          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            </div>
-            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Tampilan Rapi &amp; Gampang Dipakai</h3>
-            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Tata letak tombol dan navigasi diperhitungkan agar nyaman di jempol smartphone. Alurnya jelas dan tidak bikin pengguna bingung.
-            </p>
-          </div>
-
-          <!-- Pillar 4 -->
-          <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-6">
-              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-            </div>
-            <h3 class="font-extrabold text-slate-900 text-lg mb-2">Data Aman &amp; Privasi Terjaga</h3>
-            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Kepatuhan penuh terhadap standar privasi Google Play. Data bisnis maupun dokumen pengguna tetap terlindungi tanpa risiko kebocoran ke luar.
-            </p>
-          </div>
         </div>
       </div>
     </section>
