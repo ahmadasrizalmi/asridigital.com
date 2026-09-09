@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Header from '../../../components/layout/Header.astro';
+import Footer from '../../../components/layout/Footer.astro';
+
+const title = 'Kebijakan Privasi - CycleJournal | Asri Digital';
+const description = 'Kebijakan Privasi resmi aplikasi Android CycleJournal oleh Asri Digital. 100% offline-first dengan enkripsi zero-knowledge dan kedaulatan penuh atas data kesehatan reproduksi Anda.';
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+
+  <main class="flex-1 bg-slate-50 py-12 md:py-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <nav aria-label="Breadcrumb" class="mb-6 flex items-center gap-2 text-xs text-slate-500 font-medium">
+        <a href="/" class="hover:text-slate-900 transition">Asri Digital</a><span>/</span>
+        <a href="/apps" class="hover:text-slate-900 transition">Apps</a><span>/</span>
+        <a href="/apps/cyclejournal" class="hover:text-slate-900 transition">CycleJournal</a><span>/</span>
+        <span class="text-slate-900 font-semibold">Privacy Policy</span>
+      </nav>
+
+      <div class="bg-white rounded-3xl border border-slate-200/80 p-8 sm:p-12 shadow-card">
+        <div class="border-b border-slate-100 pb-6 mb-8">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-coral-50 text-coral-700 text-xs font-bold uppercase tracking-wider mb-4 border border-coral-200">
+            Official Play Store Legal Document
+          </span>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Kebijakan Privasi &bull; Privacy Policy
+          </h1>
+          <p class="text-sm text-slate-500 mt-2">
+            Aplikasi Android: <strong>CycleJournal &mdash; Kalender Haid &amp; Jurnal Kesuburan</strong><br />
+            ID Paket: <code class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-700 font-mono">com.app.cyclejournal</code><br />
+            Terakhir diperbarui: Januari 2026
+          </p>
+        </div>
+
+        <div class="prose prose-slate max-w-none text-slate-600 text-sm sm:text-base leading-relaxed space-y-6">
+
+          <div class="p-4 bg-coral-50/60 border border-coral-200/80 rounded-2xl text-coral-900 text-sm">
+            <strong>Ringkasan Jaminan Privasi (Zero-Knowledge):</strong> CycleJournal adalah aplikasi <strong>100% offline-first</strong>. Seluruh catatan kesehatan reproduksi Anda disimpan secara lokal, terenkripsi (SQLCipher), di perangkat Anda. Kami tidak pernah memiliki akses ke isi data kesehatan Anda. Cadangan cloud opsional bersifat <em>zero-knowledge</em>: data dienkripsi AES-256-GCM di sisi klien dan server hanya menyimpan ciphertext.
+          </div>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">1. Filosofi Zero-Knowledge (Zero-Cloud Plaintext)</h2>
+            <p>
+              Seluruh data medis Anda &mdash; tanggal siklus, suhu basal tubuh (BBT), lendir serviks, skala nyeri (VAS 0&ndash;10), intensitas pendarahan, obat yang dikonsumsi, dan catatan klinis &mdash; hanya tersimpan di basis data terenkripsi di perangkat Android Anda. Tidak ada data kesehatan yang dikirim dalam bentuk teks terbuka ke server mana pun.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">2. Izin Perangkat (Device Permissions)</h2>
+            <p>Aplikasi hanya meminta izin yang mutlak diperlukan:</p>
+            <ul class="list-disc pl-5 space-y-2">
+              <li><strong>Biometrik (Fingerprint / Face):</strong> Untuk membuka kunci aplikasi secara opsional.</li>
+              <li><strong>Notifikasi:</strong> Untuk pengingat pengukuran BBT dan peringatan siklus (H-2).</li>
+              <li><strong>Alarm &amp; Boot:</strong> Untuk menjadwalkan pengingat klinis secara akurat.</li>
+              <li><strong>Akses Internet:</strong> Hanya untuk cadangan cloud terenkripsi (opsional) dan verifikasi Google Play Billing.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">3. Cadangan Cloud Terenkripsi (Optional, Zero-Knowledge)</h2>
+            <p>
+              Jika Anda mengaktifkan sinkronisasi bulanan ke Cloudflare D1, data diekspor menjadi JSON lalu <strong>dienkripsi di sisi klien</strong> menggunakan <strong>AES-256-GCM</strong> dengan kunci yang diturunkan dari PIN/passphrase Anda (PBKDF2, 100.000 iterasi). Server hanya menyimpan <em>ciphertext</em> dan hash integritas. Kami tidak memiliki kunci untuk membaca isi data kesehatan pengguna.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">4. Identitas Anonim</h2>
+            <p>
+              Kami tidak meminta nama, email, atau nomor telepon. Aplikasi menghasilkan <strong>ID pasien anonim</strong> (format <code class="text-xs bg-slate-100 px-2 py-0.5 rounded font-mono">px-xxxxxxxxxxxx</code>) yang menjadi kunci penyimpanan di cloud tanpa mengungkap identitas Anda. Anda dapat 100% menggunakan seluruh fitur tanpa mendaftarkan akun.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">5. Layanan Pihak Ketiga</h2>
+            <div class="space-y-3">
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h3 class="text-base font-semibold text-slate-900">Google AdMob (Non-Personalized Ads)</h3>
+                <p class="text-sm text-slate-600 mt-1">
+                  Pada paket gratis, kami menampilkan iklan <strong>non-personalisasi</strong> (Non-Personalized Ads) dengan <em>npa: 1</em> sehingga GAID dan profil perilaku dinonaktifkan. Paket Pro menghilangkan seluruh komponen iklan. Lihat <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-coral-600 font-semibold underline">Kebijakan Privasi Google</a>.
+                </p>
+              </div>
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h3 class="text-base font-semibold text-slate-900">Google Play In-App Billing</h3>
+                <p class="text-sm text-slate-600 mt-1">
+                  Digunakan untuk pembelian lisensi Lifetime Pro (beli putus sekali). Semua transaksi keuangan diproses langsung oleh Google Play. Pengembang tidak pernah memiliki akses ke informasi keuangan Anda.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">6. Keamanan &amp; Kedaulatan Data (Data Security)</h2>
+            <p>
+              Basis data lokal dienkripsi dengan <strong>SQLCipher</strong> dan kunci master dilindungi oleh <strong>Android Keystore</strong> (envelope encryption). Karena data kesehatan tidak pernah disimpan dalam bentuk teks terbuka di server, tidak ada risiko kebocoran dari basis data terpusat. Keamanan data berada sepenuhnya dalam kendali Anda dan sistem keamanan perangkat fisik Anda.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">7. Hak Penghapusan Total (GDPR &amp; UU PDP)</h2>
+            <p>
+              Anda dapat menghapus seluruh data secara permanen dalam satu sentuhan (fitur <strong>&ldquo;Hapus Semua Data&rdquo;</strong>). Operasi ini akan: menghapus seluruh cadangan cloud di D1, membatalkan alarm &amp; pekerjaan latar, menghancurkan basis data lokal terenkripsi, menghapus kunci enkripsi di Android Keystore, dan mereset aplikasi ke tahap awal.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">8. Disclaimer Medis</h2>
+            <p>
+              CycleJournal adalah alat pencatatan klinis pribadi untuk referensi dokter kandungan (SpOG) dan <strong>bukan</strong> pengganti diagnosis medis profesional, bukan alat kontrasepsi, dan tidak boleh digunakan sebagai satu-satunya dasar keputusan kesehatan.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">9. Kontak Pengembang Resmi (Developer Contact)</h2>
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+              <p class="font-bold text-slate-900">Asri Digital</p>
+              <p class="text-slate-600">Email Privasi: <a href="mailto:privacy@asridigital.com" class="text-coral-600 underline font-medium">privacy@asridigital.com</a></p>
+              <p class="text-slate-600">Situs Resmi: <a href="https://asridigital.com" class="text-coral-600 underline font-medium">https://asridigital.com</a></p>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-slate-100 flex items-center justify-between">
+          <a href="/apps/cyclejournal" class="inline-flex items-center gap-2 text-sm font-semibold text-coral-600 hover:text-coral-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Kembali ke Halaman CycleJournal
+          </a>
+          <a href="/apps" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition">Lihat Semua Aplikasi</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
