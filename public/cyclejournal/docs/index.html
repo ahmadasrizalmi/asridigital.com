@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
   <script>
     tailwind.config = {
       theme: {
@@ -36,6 +37,8 @@
       border: 1px solid rgba(255,138,113,0.3);
       color: #FF5E7D;
     }
+    img { max-width: 100%; height: auto; }
+    header img { width: 24px !important; height: 24px !important; object-fit: contain; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-rose-100 selection:text-rose-700">
@@ -50,7 +53,7 @@
         </a>
         <span class="text-slate-300">/</span>
         <a href="/cyclejournal" class="flex items-center gap-2 font-bold text-slate-900 hover:text-coral-600 transition">
-          <img src="../assets/logo_nobg.png" alt="CycleJournal" class="w-6 h-6 object-contain">
+          <img src="../assets/logo_nobg.png" alt="CycleJournal" width="24" height="24" class="w-6 h-6 object-contain" style="width:24px;height:24px;">
           <span>CycleJournal</span>
         </a>
         <span class="rounded-full bg-rose-50 border border-rose-200/80 px-2.5 py-0.5 text-xs font-bold text-rose-600">Dokumentasi v1.1.2</span>
