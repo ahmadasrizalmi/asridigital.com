@@ -582,12 +582,15 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       const order = await env.DB.prepare(
-        'SELECT id, product_title, amount, status, paid_at, created_at, dompetx_id, payment_url FROM orders WHERE id = ?'
+        'SELECT id, product_title, amount, status, paid_at, created_at, dompetx_id, payment_url, payment_reference, payment_confirmed_at, user_name, user_email, payment_method FROM orders WHERE id = ?'
       ).bind(orderId).first();
 
       if (!order) {
         return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
       }
+
+      const isManual = order.status === 'PENDING' && !order.dompetx_id;
+      order.manual = isManual;
 
       // If order is still PENDING and has a DompetX checkout ID, poll for status
       if (order.status === 'PENDING' && order.dompetx_id) {
@@ -625,54 +628,11 @@ export async function onRequest(context: any): Promise<Response> {
                 "UPDATE orders SET status = 'PAID', paid_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
               ).bind(orderId).run();
 
-              // Auto-create user + magic link (same as webhook handler)
+              // Full fulfillment (same as webhook handler)
               const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
               if (paidOrder) {
-                let user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email).first();
-                let magicToken = '';
-                let newUserPassword = '';
-
-                if (!user) {
-                  const userId = generateId();
-                  newUserPassword = crypto.randomUUID().slice(0, 12);
-                  const passwordHash = await hashPassword(newUserPassword);
-                  try {
-                    await env.DB.prepare(
-                      'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
-                    ).bind(userId, paidOrder.user_email, paidOrder.user_name, passwordHash, paidOrder.product_id === 'ALL-ACCESS' ? 1 : 0).run();
-                    user = { id: userId };
-                  } catch (e) {
-                    user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(paidOrder.user_email.toLowerCase()).first();
-                  }
-                }
-
-                if (user && paidOrder.product_id === 'ALL-ACCESS') {
-                  await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
-                }
-
-                if (user) {
-                  await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(user.id, orderId).run();
-                  magicToken = await createJWT(
-                    { userId: user.id, email: paidOrder.user_email, type: 'magic_login' },
-                    env.JWT_SECRET,
-                    '720h'
-                  );
-                }
-
-                await sendOrderConfirmationEmail(env, paidOrder, magicToken, newUserPassword || undefined);
+                await fulfillPaidOrder(env, paidOrder);
               }
-
-              // Telegram notification for paid order
-              try {
-                await notifyTelegram(env,
-                  `💰 <b>Order DIBAYAR</b>\n\n` +
-                  `📦 Produk: ${paidOrder?.product_title || order.product_title}\n` +
-                  `👤 Customer: ${paidOrder?.user_name || order.user_name}\n` +
-                  `📧 Email: ${paidOrder?.user_email || order.user_email}\n` +
-                  `💰 Total: Rp ${(paidOrder?.amount || order.amount || 0).toLocaleString('id-ID')}\n` +
-                  `🔖 ID: ${orderId}`
-                );
-              } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
 
               order.status = 'PAID';
               order.paid_at = new Date().toISOString();
@@ -704,6 +664,69 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       return jsonResponse({ order: { ...order, dashboardUrl } });
+    }
+
+    // ==================== CONFIRM PAYMENT (MANUAL MODE) ====================
+    // Customer clicks "Saya sudah bayar" after transferring manually.
+    // Order id (UUID) acts as the bearer secret, same model as order status lookup.
+    if (route.startsWith('/orders/') && route.endsWith('/confirm-payment') && method === 'POST') {
+      const orderId = route.split('/')[2];
+      if (!orderId) {
+        return jsonResponse({ error: 'Order ID diperlukan' }, 400);
+      }
+
+      const order = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+      if (!order) {
+        return jsonResponse({ error: 'Pesanan tidak ditemukan' }, 404);
+      }
+
+      if (order.status !== 'PENDING') {
+        return jsonResponse({ error: 'Pesanan ini sudah diproses' }, 400);
+      }
+
+      // Prevent double-confirm spam (rate limit: only record first confirmation)
+      if (order.payment_confirmed_at) {
+        return jsonResponse({ success: true, alreadyConfirmed: true });
+      }
+
+      await env.DB.prepare(
+        "UPDATE orders SET payment_confirmed_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
+      ).bind(orderId).run();
+
+      // Notify admin via Telegram
+      try {
+        await notifyTelegram(env,
+          `💳 <b>KONFIRMASI PEMBAYARAN MANUAL</b>\n\n` +
+          `📦 Produk: ${order.product_title}\n` +
+          `👤 Customer: ${order.user_name}\n` +
+          `📧 Email: ${order.user_email}\n` +
+          `📱 WA: ${order.user_phone || '-'}\n` +
+          `💰 Total: Rp ${(order.amount || 0).toLocaleString('id-ID')}\n` +
+          `🔖 ID: ${orderId}\n\n` +
+          `Pelanggan mengklaim sudah membayar. Verifikasi di dashboard admin lalu tandai Lunas.`
+        );
+      } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
+
+      // Try to notify admin by email too
+      try {
+        if (env.RESEND_KEY || env.RESEND_API_KEY) {
+          const adminEmail = await env.DB.prepare("SELECT value FROM site_settings WHERE key = 'contact_email'").first();
+          if (adminEmail?.value) {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY || env.RESEND_API_KEY}` },
+              body: JSON.stringify({
+                from: 'Asri Digital <noreply@asridigital.com>',
+                to: adminEmail.value,
+                subject: '💳 Konfirmasi Pembayaran Manual: ' + order.product_title,
+                html: `<h2>Konfirmasi Pembayaran Manual</h2><p>Order <b>${orderId}</b> (${order.product_title}) untuk <b>${order.user_name}</b> (${order.user_email}) sebesar <b>Rp ${(order.amount || 0).toLocaleString('id-ID')}</b> dikonfirmasi pelanggan sudah membayar.</p><p>Verifikasi di <a href="${env.APP_URL}/admin/orders">dashboard admin</a> lalu tandai <b>Lunas</b> untuk mengirim akses produk otomatis.</p>`
+              })
+            });
+          }
+        }
+      } catch (e: any) { console.log('CONFIRM EMAIL: Error:', e.message); }
+
+      return jsonResponse({ success: true });
     }
 
     if (route === '/auth/register' && method === 'POST') {
@@ -1169,11 +1192,19 @@ export async function onRequest(context: any): Promise<Response> {
           .run();
       }
 
-      // Create DompetX checkout session - skip for free products
+      // Payment mode from site settings: 'auto' (payment gateway) or 'manual' (bank/QRIS manual confirmation)
+      let paymentMode = 'manual'; // default manual: DompetX is shutting down, don't depend on it
+      try {
+        const modeSetting = await env.DB.prepare("SELECT value FROM site_settings WHERE key = 'payment_mode'").first();
+        if (modeSetting && modeSetting.value === 'auto') paymentMode = 'auto';
+      } catch (e) { console.log('CHECKOUT: payment_mode setting read failed, default manual'); }
+
+      // Create payment session - skip for free products
       let paymentUrl = null;
       let paymentData = null;
+      let manualPayment = !isFree && finalAmount > 0 && paymentMode !== 'auto';
 
-      if (!isFree && finalAmount > 0) {
+      if (!isFree && finalAmount > 0 && paymentMode === 'auto') {
         try {
           const apiKey = env.DOMPETX_API_KEY || '';
           const baseUrl = env.DOMPETX_API_URL || 'https://api.dompetx.com/v1';
@@ -1224,7 +1255,7 @@ export async function onRequest(context: any): Promise<Response> {
           console.log('DOMPETX: Response', JSON.stringify(dompetxData));
 
           // DompetX returns payment_url
-          if (dompetxData.payment_url || dompetxData.id) {
+          if (dompetxResponse.ok && (dompetxData.payment_url || dompetxData.id)) {
             paymentUrl = dompetxData.payment_url;
             paymentData = dompetxData;
 
@@ -1236,10 +1267,16 @@ export async function onRequest(context: any): Promise<Response> {
               .run();
           } else {
             console.error('DOMPETX: Checkout failed', dompetxData);
+            // Gateway error - fall back to manual payment instructions
+            manualPayment = true;
           }
         } catch (error: any) {
           console.error('DOMPETX: Error', error.message);
+          // If the gateway is down/unreachable, fall back to manual payment instructions
+          manualPayment = true;
         }
+      } else if (!isFree && finalAmount > 0) {
+        console.log('CHECKOUT: Manual payment mode, skipping payment gateway');
       } else {
         console.log('CHECKOUT: Free product, skipping payment gateway');
       }
@@ -1282,14 +1319,19 @@ export async function onRequest(context: any): Promise<Response> {
         });
       }
 
-      // If DompetX fails, don't fake success - return error
-      if (!paymentUrl) {
+      // Manual payment mode (no gateway): return instructions page instead of payment URL
+      if (!isFree && finalAmount > 0 && !paymentUrl) {
+        // Try to keep the order's chosen method (qris/bank_transfer/ewallet) as-is
         return jsonResponse({
-          success: false,
-          error: 'Payment gateway sedang bermasalah. Silakan coba beberapa saat lagi atau hubungi support.',
+          success: true,
           orderId,
-          orderCode
-        }, 502);
+          orderCode,
+          manual: true,
+          manualFallback: paymentMode === 'auto',
+          paymentMethod,
+          amount: finalAmount,
+          discount: discountAmount
+        });
       }
 
       return jsonResponse({
@@ -1498,141 +1540,8 @@ export async function onRequest(context: any): Promise<Response> {
           .bind(webhookData.payment_method || order.payment_method, order.id)
           .run();
 
-        // Auto-create user account after payment (for ALL products)
-        let user = await env.DB.prepare(
-          'SELECT id FROM users WHERE email = ?'
-        )
-          .bind(order.user_email)
-          .first();
-
-        let magicToken = '';
-        let newUserPassword = '';
-        if (!user) {
-          // Create new user with random password
-          const userId = generateId();
-          newUserPassword = crypto.randomUUID().slice(0, 12);
-          const passwordHash = await hashPassword(newUserPassword);
-
-          try {
-            await env.DB.prepare(
-              'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
-            ).bind(userId, order.user_email, order.user_name, passwordHash, order.product_id === 'ALL-ACCESS' ? 1 : 0).run();
-
-            user = { id: userId };
-          } catch (e) {
-            // User might already exist with different casing
-            user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(order.user_email.toLowerCase()).first();
-          }
-        }
-
-        // Set all_access for ALL-ACCESS products
-        if (user && order.product_id === 'ALL-ACCESS') {
-          await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
-        }
-
-        // Generate magic login link (valid 30 days)
-        if (user) {
-          magicToken = await createJWT(
-            { userId: user.id, email: order.user_email, type: 'magic_login' },
-            env.JWT_SECRET,
-            '720h' // 30 days
-          );
-
-          // Store magic link in order for success page
-          await env.DB.prepare(
-            'UPDATE orders SET user_id = ? WHERE id = ?'
-          ).bind(user.id, order.id).run();
-        }
-
-        // Process affiliate commission if order has referral
-        if (order.referred_by) {
-          try {
-            // Get commission percent from settings (default 10%)
-            const settings = await env.DB.prepare(
-              "SELECT value FROM site_settings WHERE key = 'commission_percent'"
-            ).first();
-            const commissionPercent = settings ? parseInt(settings.value) : 10;
-            const commissionAmount = Math.round(order.amount * (commissionPercent / 100));
-            
-            // Calculate available date (7 days holding period)
-            const availableAt = new Date();
-            availableAt.setDate(availableAt.getDate() + 7);
-            
-            // Create affiliate transaction
-            await env.DB.prepare(
-              `INSERT INTO affiliate_transactions (id, order_id, referrer_user_id, referred_user_id, commission_amount, commission_percent, status, available_at, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, datetime('now'))`
-            ).bind(
-              generateId(),
-              order.id,
-              order.referred_by,
-              null, // Guest user, no user_id
-              commissionAmount,
-              commissionPercent,
-              availableAt.toISOString()
-            ).run();
-            
-            console.log(`Affiliate commission created: ${commissionAmount} IDR for referrer ${order.referred_by}`);
-          } catch (affiliateError) {
-            console.error('Affiliate commission error:', affiliateError);
-          }
-        }
-
-        // ==================== MASJID DISPLAY FULFILLMENT ====================
-        if (order.product_id === 'masjid-display' || order.product_code === 'MASJID') {
-          try {
-            // Check idempotency
-            const existingLicense = await env.DB.prepare('SELECT id FROM product_licenses WHERE order_id = ?').bind(order.id).first();
-            if (!existingLicense && env.ED25519_PRIVATE_KEY_BASE64) {
-              const license = await generateMasjidLicense(env.ED25519_PRIVATE_KEY_BASE64);
-              const licenseId = crypto.randomUUID();
-              const userEmail = order.user_email || order.customer_email || '';
-              const userName = order.user_name || order.customer_name || userEmail.split('@')[0] || 'Pelanggan';
-              const mosqueName = order.mosque_name || userName; // fallback if no mosque name
-              
-              await env.DB.prepare(`
-                INSERT INTO product_licenses (
-                  id, order_id, customer_email, customer_name, mosque_name,
-                  product_code, serial_id, license_key, status, issued_by, created_at
-                ) VALUES (?, ?, ?, ?, ?, 'MASJID', ?, ?, 'active', 'system', unixepoch())
-              `).bind(
-                licenseId, order.id, userEmail, userName, mosqueName,
-                license.serialId, license.serialKey
-              ).run();
-
-              if (env.RESEND_KEY || env.RESEND_API_KEY) {
-                const html = `
-                  <h2>Halo ${userName},</h2>
-                  <p>Pembayaran Anda untuk <b>Masjid Display</b> telah berhasil.</p>
-                  <div style="background:#f4f4f5; padding:15px; border-radius:8px; margin:20px 0;">
-                    <p><b>Serial ID:</b> ${license.serialId}</p>
-                    <p style="word-break: break-all;"><b>License Key:</b> ${license.serialKey}</p>
-                  </div>
-                  <p>Unduh APK TV dan APK Admin di <a href="https://asridigital.com/download/masjid-display">https://asridigital.com/download/masjid-display</a></p>
-                `;
-                await fetch('https://api.resend.com/emails', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY || env.RESEND_API_KEY}` },
-                  body: JSON.stringify({
-                    from: 'Asri Digital <noreply@asridigital.com>',
-                    to: userEmail,
-                    subject: 'Lisensi Masjid Display Anda',
-                    html
-                  })
-                });
-              }
-            }
-          } catch (licenseErr) {
-            console.error('Masjid Display Fulfillment Error:', licenseErr);
-          }
-        }
-
-        // Send confirmation email with magic link
-        try {
-          await sendOrderConfirmationEmail(env, order, magicToken, newUserPassword || undefined);
-        } catch (emailError) {
-          console.error('Email error:', emailError);
-        }
+        // Full fulfillment: user account, magic link email, license, affiliate commission
+        await fulfillPaidOrder(env, order);
 
       } else if (checkoutStatus === 'FAILED') {
         await env.DB.prepare(
@@ -1739,9 +1648,12 @@ export async function onRequest(context: any): Promise<Response> {
     // ==================== SETTINGS ====================
     if (route === '/settings' && method === 'GET') {
       const settings = await env.DB.prepare(
-        'SELECT * FROM site_settings WHERE key IN (?, ?, ?, ?, ?)'
+        'SELECT * FROM site_settings WHERE key IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       )
-        .bind('site_name', 'site_description', 'whatsapp_number', 'commission_percent', 'fomo_enabled')
+        .bind(
+          'site_name', 'site_description', 'whatsapp_number', 'commission_percent', 'fomo_enabled',
+          'payment_mode', 'bank_name', 'bank_account_number', 'bank_account_holder', 'qris_image_url', 'contact_email'
+        )
         .all();
 
       const settingsObj: any = {};
@@ -2651,14 +2563,11 @@ export async function onRequest(context: any): Promise<Response> {
         .bind(status, status, orderId)
         .run();
 
-      // If paid, check for all-access
+      // If paid, run full fulfillment (create user, send access email, license, commission)
       if (status === 'PAID') {
         const order = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
-        if (order && order.product_id === 'ALL-ACCESS') {
-          const user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(order.user_email).first();
-          if (user) {
-            await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
-          }
+        if (order) {
+          await fulfillPaidOrder(env, order);
         }
       }
 
@@ -2685,10 +2594,27 @@ export async function onRequest(context: any): Promise<Response> {
 
       if (updates.length === 0) return jsonResponse({ error: 'Tidak ada data yang diupdate' }, 400);
 
+      // If changing to PAID and it wasn't PAID before, fulfill after update
+      let needsFulfillment = false;
+      if (body.status === 'PAID') {
+        const prevOrder = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(orderId).first();
+        needsFulfillment = prevOrder && prevOrder.status !== 'PAID';
+      }
+
       updates.push("updated_at = datetime('now')");
       values.push(orderId);
 
       await env.DB.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+
+      if (needsFulfillment) {
+        try {
+          const paidOrder = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+          if (paidOrder) await fulfillPaidOrder(env, paidOrder);
+        } catch (fulfillErr: any) {
+          console.error('ADMIN EDIT ORDER: fulfillment error', fulfillErr.message);
+        }
+      }
+
       _currentCtx?.waitUntil?.(triggerDeploy(env));
       return jsonResponse({ success: true, deploy_triggered: true });
     }
@@ -3300,6 +3226,145 @@ function emailOrderRow(label: string, value: string, highlight = false) {
     <td style="color:${BRAND.textMuted};padding:8px 0;font-size:14px;border-bottom:1px solid ${BRAND.borderLight};">${label}</td>
     <td style="${valueStyle}text-align:right;padding:8px 0;font-size:14px;border-bottom:1px solid ${BRAND.borderLight};">${value}</td>
   </tr>`;
+}
+
+// ==================== ORDER FULFILLMENT (after payment confirmed) ====================
+// Used by webhook, status polling, and manual admin confirmation so all paths
+// deliver the same result: user account, magic link email, license, affiliate commission.
+async function fulfillPaidOrder(env: Env, order: any) {
+  if (!order) return;
+
+  // Auto-create user account after payment (for ALL products)
+  let user = await env.DB.prepare('SELECT id FROM users WHERE email = ?')
+    .bind(order.user_email)
+    .first();
+
+  let magicToken = '';
+  let newUserPassword = '';
+  if (!user) {
+    const userId = generateId();
+    newUserPassword = crypto.randomUUID().slice(0, 12);
+    const passwordHash = await hashPassword(newUserPassword);
+    try {
+      await env.DB.prepare(
+        'INSERT INTO users (id, email, name, password, is_all_access, role, created_at, updated_at) VALUES (?, ?, ?, ?, 0, ?, datetime("now"), datetime("now"))'
+      ).bind(userId, order.user_email, order.user_name, passwordHash, order.product_id === 'ALL-ACCESS' ? 1 : 0).run();
+      user = { id: userId };
+    } catch (e) {
+      user = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(order.user_email.toLowerCase()).first();
+    }
+  }
+
+  // Set all_access for ALL-ACCESS products
+  if (user && order.product_id === 'ALL-ACCESS') {
+    await env.DB.prepare('UPDATE users SET is_all_access = 1 WHERE id = ?').bind(user.id).run();
+  }
+
+  // Generate magic login link (valid 30 days) & link order to user
+  if (user) {
+    magicToken = await createJWT(
+      { userId: user.id, email: order.user_email, type: 'magic_login' },
+      env.JWT_SECRET,
+      '720h' // 30 days
+    );
+    await env.DB.prepare('UPDATE orders SET user_id = ? WHERE id = ?').bind(user.id, order.id).run();
+  }
+
+  // Process affiliate commission if order has referral
+  if (order.referred_by) {
+    try {
+      const settings = await env.DB.prepare(
+        "SELECT value FROM site_settings WHERE key = 'commission_percent'"
+      ).first();
+      const commissionPercent = settings ? parseInt(settings.value) : 10;
+      const commissionAmount = Math.round(order.amount * (commissionPercent / 100));
+
+      const availableAt = new Date();
+      availableAt.setDate(availableAt.getDate() + 7);
+
+      await env.DB.prepare(
+        `INSERT INTO affiliate_transactions (id, order_id, referrer_user_id, referred_user_id, commission_amount, commission_percent, status, available_at, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, datetime('now'))`
+      ).bind(
+        generateId(),
+        order.id,
+        order.referred_by,
+        null, // Guest user, no user_id
+        commissionAmount,
+        commissionPercent,
+        availableAt.toISOString()
+      ).run();
+    } catch (affiliateError) {
+      console.error('Affiliate commission error:', affiliateError);
+    }
+  }
+
+  // Masjid display license fulfillment
+  if (order.product_id === 'masjid-display' || order.product_code === 'MASJID') {
+    try {
+      const existingLicense = await env.DB.prepare('SELECT id FROM product_licenses WHERE order_id = ?').bind(order.id).first();
+      if (!existingLicense && env.ED25519_PRIVATE_KEY_BASE64) {
+        const license = await generateMasjidLicense(env.ED25519_PRIVATE_KEY_BASE64);
+        const licenseId = crypto.randomUUID();
+        const userEmail = order.user_email || '';
+        const userName = order.user_name || userEmail.split('@')[0] || 'Pelanggan';
+        const mosqueName = order.mosque_name || userName;
+
+        await env.DB.prepare(`
+          INSERT INTO product_licenses (
+            id, order_id, customer_email, customer_name, mosque_name,
+            product_code, serial_id, license_key, status, issued_by, created_at
+          ) VALUES (?, ?, ?, ?, ?, 'MASJID', ?, ?, 'active', 'system', unixepoch())
+        `).bind(
+          licenseId, order.id, userEmail, userName, mosqueName,
+          license.serialId, license.serialKey
+        ).run();
+
+        if (env.RESEND_KEY || env.RESEND_API_KEY) {
+          const html = `
+            <h2>Halo ${userName},</h2>
+            <p>Pembayaran Anda untuk <b>Masjid Display</b> telah berhasil.</p>
+            <div style="background:#f4f4f5; padding:15px; border-radius:8px; margin:20px 0;">
+              <p><b>Serial ID:</b> ${license.serialId}</p>
+              <p style="word-break: break-all;"><b>License Key:</b> ${license.serialKey}</p>
+            </div>
+            <p>Unduh APK TV dan APK Admin di <a href="https://asridigital.com/download/masjid-display">https://asridigital.com/download/masjid-display</a></p>
+          `;
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY || env.RESEND_API_KEY}` },
+            body: JSON.stringify({
+              from: 'Asri Digital <noreply@asridigital.com>',
+              to: userEmail,
+              subject: 'Lisensi Masjid Display Anda',
+              html
+            })
+          });
+        }
+      }
+    } catch (licenseErr) {
+      console.error('Masjid Display Fulfillment Error:', licenseErr);
+    }
+  }
+
+  // Send confirmation email with magic link
+  try {
+    await sendOrderConfirmationEmail(env, order, magicToken, newUserPassword || undefined);
+  } catch (emailError) {
+    console.error('Email error:', emailError);
+  }
+
+  // Telegram notification for paid order
+  try {
+    await notifyTelegram(env,
+      `💰 <b>Order DIBAYAR</b>\n\n` +
+      `📦 Produk: ${order.product_title}\n` +
+      `👤 Customer: ${order.user_name}\n` +
+      `📧 Email: ${order.user_email}\n` +
+      `💰 Total: Rp ${(order.amount || 0).toLocaleString('id-ID')}\n` +
+      `🔖 ID: ${order.id}`
+    );
+  } catch (e: any) { console.log('TELEGRAM: Error:', e.message); }
 }
 
 // Telegram notification helper

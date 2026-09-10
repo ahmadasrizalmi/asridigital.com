@@ -22,7 +22,8 @@ asri-digital/
 ├── migrations/
 │   ├── 0001_initial.sql
 │   ├── 0002_seed.sql
-│   └── 0003_add_reset_token.sql
+│   ├── 0003_add_reset_token.sql
+│   └── 0003_manual_payment.sql   # manual payment mode (PG fallback)
 ├── public/
 │   ├── _headers
 │   ├── _redirects
@@ -117,8 +118,8 @@ Configure in Cloudflare Pages Dashboard → Settings → Environment Variables:
 |----------|-------------|
 | `APP_URL` | https://asridigital.com |
 | `JWT_SECRET` | Strong secret for JWT tokens |
-| `DOMPETX_API_KEY` | DompetX payment API key |
-| `DOMPETX_WEBHOOK_SECRET` | DompetX webhook secret |
+| `DOMPETX_API_KEY` | DompetX payment API key (optional, only for `auto` mode) |
+| `DOMPETX_WEBHOOK_SECRET` | DompetX webhook secret (optional) |
 | `RESEND_API_KEY` | Resend email API key |
 
 ### D1 Database Binding
@@ -201,6 +202,29 @@ Configure in Cloudflare Pages Dashboard → Settings → Environment Variables:
 - `GET /api/recent-sales`
 - `GET /api/settings`
 - `POST /api/webhook/dompetx`
+
+## 💳 Payment System
+
+### Manual Payment Mode (default)
+DompetX (gateway lama) sudah ditutup. Checkout sekarang berjalan dalam **mode manual** tanpa gateway:
+1. Pelanggan checkout → diarahkan ke `/payment/:orderId` berisi instruksi transfer bank / QRIS.
+2. Pelanggan bayar → klik **"Ya, Saya Sudah Bayar"** → admin dapat notifikasi Telegram + email.
+3. Admin verifikasi di `/admin/orders` → klik **Lunas** → sistem otomatis kirim email akses produk (akun, magic link, lisensi Masjid Display, komisi afiliasi).
+
+Pengaturan (Admin → Settings → Pembayaran):
+- `payment_mode` = `manual` (default) atau `auto` (pakai gateway, fallback manual otomatis jika gateway gagal)
+- `bank_name`, `bank_account_number`, `bank_account_holder` — data transfer manual
+- `qris_image_url` — URL gambar QRIS static (jika diisi, pelanggan melihat QRIS)
+
+### API terkait pembayaran manual
+- `POST /api/orders/:id/confirm-payment` — pelanggan konfirmasi sudah bayar
+- `GET /api/payment/:id` — halaman instruksi pembayaran
+
+### Migrasi ke Payment Gateway baru (nanti)
+Saat PG baru (Midtrans/Tripay/Duitku/iPaymu/Xendit) sudah disetujui:
+1. Tambahkan kode provider di `functions/api/[[route]].ts` di bagian `Create payment session` (pola HMAC DompetX bisa diganti sesuai dokumentasi provider baru).
+2. Set `payment_mode = auto` di Admin → Settings.
+3. Ganti webhook endpoint sesuai provider.
 
 ## 🧪 Testing
 

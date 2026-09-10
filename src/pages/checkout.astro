@@ -471,6 +471,9 @@ const productSlug = 'loading';
       if (result.success) {
         if (result.paymentUrl) {
           window.location.href = result.paymentUrl;
+        } else if (result.manual) {
+          // Manual payment mode (bank transfer / QRIS) - show payment instructions
+          window.location.href = `/payment?order=${result.orderId}`;
         } else {
           window.location.href = `/success?order=${result.orderId}`;
         }

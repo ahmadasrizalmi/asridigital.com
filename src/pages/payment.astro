@@ -1,0 +1,331 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Icon from '../components/ui/Icon.astro';
+---
+
+<BaseLayout title="Instruksi Pembayaran - Asri Digital">
+  <Header />
+
+  <main class="flex-1 pt-20 pb-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-2 text-sm text-text-muted mb-6">
+        <a href="/" class="hover:text-primary transition-colors">Beranda</a>
+        <Icon name="chevron-right" size={14} />
+        <span>Instruksi Pembayaran</span>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading-state" class="card p-8 text-center">
+        <div class="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+        <p class="text-text-muted">Memuat detail pesanan...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error-state" class="card p-8 text-center hidden">
+        <Icon name="alert-circle" size={48} class="text-red-500 mx-auto mb-4" />
+        <h1 class="text-xl font-bold text-text-primary mb-2">Pesanan tidak ditemukan</h1>
+        <p class="text-text-muted mb-6">Silakan kembali ke katalog dan lakukan checkout ulang.</p>
+        <a href="/" class="btn-primary inline-flex items-center gap-2">
+          <Icon name="home" size={18} /> Kembali ke Beranda
+        </a>
+      </div>
+
+      <!-- Payment Instructions -->
+      <div id="payment-state" class="hidden">
+        <div class="card p-6 sm:p-8 mb-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <Icon name="clock" size={24} class="text-primary" />
+            </div>
+            <div>
+              <h1 class="text-xl sm:text-2xl font-bold text-text-primary">Menunggu Pembayaran</h1>
+              <p class="text-sm text-text-muted">Selesaikan pembayaran sesuai instruksi di bawah ini</p>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="bg-background rounded-xl border border-border p-4 sm:p-5 mb-6 space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-text-secondary">No. Invoice</span>
+              <span class="font-mono text-text-primary" id="order-id"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-text-secondary">Produk</span>
+              <span class="text-text-primary font-medium text-right" id="order-product"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-text-secondary">Nama Pembeli</span>
+              <span class="text-text-primary" id="order-name"></span>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-border">
+              <span class="font-semibold text-text-primary">Total Tagihan</span>
+              <span class="text-xl font-bold text-primary" id="order-amount"></span>
+            </div>
+          </div>
+
+          <!-- Instructions content injected here -->
+          <div id="instructions-content"></div>
+        </div>
+
+        <!-- Confirm Button -->
+        <div id="confirm-block" class="card p-6 sm:p-8 text-center mb-6">
+          <p class="text-sm text-text-muted mb-4">
+            Sudah melakukan transfer / pembayaran?
+          </p>
+          <button
+            id="confirm-btn"
+            class="btn-primary w-full py-3 sm:py-4 text-base inline-flex items-center justify-center gap-2"
+          >
+            <Icon name="check-circle" size={20} />
+            Ya, Saya Sudah Bayar
+          </button>
+          <p class="text-xs text-text-muted mt-3">
+            Setelah dikonfirmasi, admin akan memverifikasi pembayaran Anda. Akses produk dikirim otomatis ke email setelah pembayaran terverifikasi.
+          </p>
+        </div>
+
+        <!-- Confirmed state -->
+        <div id="confirmed-state" class="card p-6 sm:p-8 text-center mb-6 hidden">
+          <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Icon name="clock" size={32} class="text-amber-600" />
+          </div>
+          <h2 class="text-xl font-bold text-text-primary mb-2">Konfirmasi Terkirim!</h2>
+          <p class="text-text-muted mb-2">
+            Terima kasih! Kami akan memverifikasi pembayaran Anda segera.
+          </p>
+          <p class="text-sm text-text-muted" id="confirmed-note"></p>
+        </div>
+
+        <!-- Support -->
+        <div class="text-center">
+          <p class="text-sm text-text-muted mb-3">Butuh bantuan pembayaran?</p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a id="wa-link" href="#" target="_blank" rel="noopener" class="btn-secondary inline-flex items-center gap-2">
+              <Icon name="whatsapp" size={18} /> Chat WhatsApp
+            </a>
+            <a id="email-link" href="mailto:support@asridigital.com" class="text-primary hover:underline font-medium inline-flex items-center gap-2">
+              <Icon name="mail" size={16} /> support@asridigital.com
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  const orderId = new URLSearchParams(window.location.search).get('order') || '';
+  const loadingState = document.getElementById('loading-state') as HTMLElement;
+  const errorState = document.getElementById('error-state') as HTMLElement;
+  const paymentState = document.getElementById('payment-state') as HTMLElement;
+  const confirmedState = document.getElementById('confirmed-state') as HTMLElement;
+  const confirmBlock = document.getElementById('confirm-block') as HTMLElement;
+  const confirmBtn = document.getElementById('confirm-btn') as HTMLButtonElement;
+  const instructionsContent = document.getElementById('instructions-content') as HTMLElement;
+  const confirmedNote = document.getElementById('confirmed-note') as HTMLElement;
+
+  let order: any = null;
+  let settings: any = {};
+  let confirmed = false;
+
+  function formatIDR(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
+  }
+
+  function esc(s: string): string {
+    const div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+  }
+
+  function renderInstructions() {
+    const method = (order.payment_method || 'qris').toLowerCase();
+
+    let html = '';
+    if (method === 'qris' && settings.qris_image_url) {
+      html += `
+        <div class="text-center mb-6">
+          <h2 class="font-semibold text-text-primary mb-3 flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Scan QRIS
+          </h2>
+          <div class="inline-block bg-white p-4 rounded-2xl border-2 border-dashed border-primary/40">
+            <img src="${esc(settings.qris_image_url)}" alt="QRIS" class="w-56 h-56 object-contain" />
+          </div>
+          <p class="text-sm text-text-muted mt-3">Scan dengan aplikasi pembayaran apa pun (GoPay, OVO, DANA, ShopeePay, m-BCA, dll.)</p>
+        </div>
+      `;
+    } else {
+      const bankName = settings.bank_name || 'BCA';
+      const accNum = settings.bank_account_number || '-';
+      const accHolder = settings.bank_account_holder || 'Asri Digital';
+      html += `
+        <div class="rounded-xl border border-border p-5">
+          <h2 class="font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M21 4H3C1.89543 4 1 4.89543 1 6V18C1 19.1046 1.89543 20 3 20H21C22.1046 20 23 19.1046 23 18V6C23 4.89543 22.1046 4 21 4Z M1 10H23"/></svg>
+            Transfer ke Rekening
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-3 bg-background rounded-lg p-4">
+              <div>
+                <p class="text-xs text-text-muted">Bank</p>
+                <p class="font-semibold text-text-primary">${esc(bankName)}</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-3 bg-background rounded-lg p-4">
+              <div>
+                <p class="text-xs text-text-muted">No. Rekening</p>
+                <p class="font-mono font-semibold text-text-primary text-lg tracking-wider" id="acc-num">${esc(accNum)}</p>
+              </div>
+              <button type="button" onclick="window.copyAcc && window.copyAcc()" class="btn-tertiary px-3 py-2 text-sm shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Salin
+              </button>
+            </div>
+            <div class="flex items-center justify-between gap-3 bg-background rounded-lg p-4">
+              <div>
+                <p class="text-xs text-text-muted">Atas Nama</p>
+                <p class="font-semibold text-text-primary">${esc(accHolder)}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm text-text-main">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"/></svg>
+              Transfer <b class="text-primary">&nbsp;${formatIDR(order.amount)}&nbsp;</b> sesuai total tagihan, lalu klik "Ya, Saya Sudah Bayar".
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // WhatsApp link with prefilled message
+    const waMsg = encodeURIComponent(
+      `Halo, saya sudah melakukan pembayaran untuk pesanan ${orderId} (${order.product_title || ''}). Mohon diverifikasi.`
+    );
+    const waNumber = settings.whatsapp_number || '';
+    const waLink = document.getElementById('wa-link') as HTMLAnchorElement;
+    if (waLink) waLink.href = waNumber
+      ? `https://wa.me/${waNumber.replace(/[^0-9]/g, '')}?text=${waMsg}`
+      : '#';
+    const emailLink = document.getElementById('email-link') as HTMLAnchorElement;
+    if (emailLink) emailLink.href = `mailto:${settings.contact_email || 'support@asridigital.com'}?subject=${encodeURIComponent('Konfirmasi Pembayaran ' + orderId)}`;
+
+    instructionsContent.innerHTML = html;
+  }
+
+  (window as any).copyAcc = function() {
+    const el = document.getElementById('acc-num') as HTMLElement;
+    if (!el) return;
+    navigator.clipboard.writeText(el.textContent || '').then(() => {
+      const btn = document.querySelector('#acc-num + button') as HTMLButtonElement | null;
+      if (btn) { const old = btn.textContent; btn.textContent = '✓ Tersalin'; setTimeout(() => { btn.textContent = old; }, 1500); }
+    });
+  };
+
+  async function loadPage() {
+    if (!orderId) {
+      loadingState.classList.add('hidden');
+      errorState.classList.remove('hidden');
+      return;
+    }
+    try {
+      const [orderRes, settingsRes] = await Promise.all([
+        fetch('/api/orders/' + encodeURIComponent(orderId)),
+        fetch('/api/settings')
+      ]);
+
+      const orderData = await orderRes.json();
+      const settingsData = await settingsRes.json();
+
+      if (!orderData.order) throw new Error('not found');
+
+      order = orderData.order;
+      settings = settingsData.settings || {};
+
+      // Already paid -> go to success page
+      if (order.status === 'PAID') {
+        window.location.href = `/success?order=${orderId}`;
+        return;
+      }
+      if (order.status === 'FAILED' || order.status === 'CANCELLED') {
+        loadingState.classList.add('hidden');
+        errorState.classList.remove('hidden');
+        const h = errorState.querySelector('h1');
+        if (h) h.textContent = 'Pesanan ini dibatalkan atau gagal. Silakan checkout ulang.';
+        return;
+      }
+
+      loadingState.classList.add('hidden');
+      paymentState.classList.remove('hidden');
+
+      (document.getElementById('order-id') as HTMLElement).textContent = orderId;
+      (document.getElementById('order-product') as HTMLElement).textContent = order.product_title || '-';
+      (document.getElementById('order-name') as HTMLElement).textContent = order.user_name || '-';
+      (document.getElementById('order-amount') as HTMLElement).textContent = formatIDR(order.amount);
+
+      renderInstructions();
+
+      // If already confirmed (e.g. page reloaded), show confirmed state
+      if (order.payment_confirmed_at) {
+        confirmed = true;
+        showConfirmed();
+      }
+
+      startPolling();
+    } catch (e) {
+      loadingState.classList.add('hidden');
+      errorState.classList.remove('hidden');
+    }
+  }
+
+  function showConfirmed() {
+    confirmBlock.classList.add('hidden');
+    confirmedState.classList.remove('hidden');
+    confirmedNote.textContent = 'Pembayaran Anda sedang diverifikasi. Akses produk akan dikirim otomatis ke email ' + (order?.user_email || '') + ' setelah diverifikasi.';
+  }
+
+  // Confirm payment
+  confirmBtn?.addEventListener('click', async () => {
+    if (confirmed) return;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> Mengirim konfirmasi...';
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}/confirm-payment`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        confirmed = true;
+        showConfirmed();
+      } else {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Ya, Saya Sudah Bayar';
+        alert(data.error || 'Terjadi kesalahan. Coba lagi.');
+      }
+    } catch (e) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Ya, Saya Sudah Bayar';
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    }
+  });
+
+  // Poll order status; redirect to success when paid
+  let pollTimer: any = null;
+  function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(async () => {
+      try {
+        const res = await fetch('/api/orders/' + encodeURIComponent(orderId));
+        const data = await res.json();
+        if (data.order && data.order.status === 'PAID') {
+          clearInterval(pollTimer);
+          window.location.href = `/success?order=${orderId}`;
+        }
+      } catch (e) { /* keep polling */ }
+    }, 10000);
+  }
+
+  loadPage();
+</script>

@@ -299,6 +299,9 @@ import Icon from '../../components/ui/Icon.astro';
         getDetailRow('Produk', order.product_title || '-') +
         getDetailRow('Jumlah', formatIDR(order.amount)) +
         getDetailRow('Metode Pembayaran', (order.payment_method || 'qris').toUpperCase()) +
+        (order.payment_confirmed_at
+          ? getDetailRow('Konfirmasi Pelanggan', '<span class="badge-warning">✓ Pelanggan mengklaim sudah bayar</span>') + getDetailRow('Dikonfirmasi Pada', new Date(order.payment_confirmed_at).toLocaleString('id-ID'))
+          : '') +
         getDetailRow('Status', getStatusBadge(order.status)) +
         getDetailRow('Tanggal', new Date(order.created_at).toLocaleString('id-ID')) +
         (order.paid_at ? getDetailRow('Dibayar', new Date(order.paid_at).toLocaleString('id-ID')) : '') +

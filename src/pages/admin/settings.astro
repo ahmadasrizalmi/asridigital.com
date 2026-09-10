@@ -121,9 +121,41 @@ import Icon from '../../components/ui/Icon.astro';
           
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-text-main mb-2">DompetX API Key</label>
+              <label class="block text-sm font-medium text-text-main mb-2">Mode Pembayaran</label>
+              <select id="setting-payment-mode" class="input">
+                <option value="manual">Manual (Transfer Bank / QRIS, verifikasi admin)</option>
+                <option value="auto">Auto (Payment Gateway, fallback manual jika gagal)</option>
+              </select>
+              <p class="text-xs text-text-muted mt-1">
+                <b>Manual</b>: tanpa payment gateway — pelanggan transfer & admin verifikasi. <b>Auto</b>: pakai gateway (DompetX s/d tutup), otomatis fallback ke manual jika gateway gagal.
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Nama Bank (untuk instruksi manual)</label>
+              <input type="text" id="setting-bank-name" class="input" placeholder="BCA" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">No. Rekening</label>
+              <input type="text" id="setting-bank-account" class="input" placeholder="1234567890" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">Atas Nama Rekening</label>
+              <input type="text" id="setting-bank-holder" class="input" placeholder="Asri Digital" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">URL Gambar QRIS Static</label>
+              <input type="url" id="setting-qris-url" class="input" placeholder="https://example.com/qris.png" />
+              <p class="text-xs text-text-muted mt-1">Upload QRIS static dari bank/penyedia QRIS, tempel URL di sini. Jika kosong, pelanggan diarahkan ke transfer bank.</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">DompetX API Key (mode auto)</label>
               <input type="password" id="setting-dompetx-key" class="input" placeholder="Masukkan API Key" />
-              <p class="text-xs text-text-muted mt-1">Dapatkan dari dashboard DompetX</p>
+              <p class="text-xs text-text-muted mt-1">DompetX sudah ditutup — abaikan jika hanya memakai mode manual.</p>
             </div>
             
             <div>
@@ -295,6 +327,11 @@ import Icon from '../../components/ui/Icon.astro';
         setVal('setting-logo-url', s.logo_url);
         setVal('setting-whatsapp', s.whatsapp_number);
         setVal('setting-email', s.email);
+        setVal('setting-payment-mode', s.payment_mode);
+        setVal('setting-bank-name', s.bank_name);
+        setVal('setting-bank-account', s.bank_account_number);
+        setVal('setting-bank-holder', s.bank_account_holder);
+        setVal('setting-qris-url', s.qris_image_url);
         setVal('setting-dompetx-key', s.dompetx_api_key);
         setVal('setting-dompetx-webhook', s.dompetx_webhook_secret);
         setVal('setting-commission', s.commission_percent);
@@ -339,6 +376,11 @@ import Icon from '../../components/ui/Icon.astro';
       logo_url: document.getElementById('setting-logo-url').value,
       whatsapp_number: document.getElementById('setting-whatsapp').value,
       email: document.getElementById('setting-email').value,
+      payment_mode: document.getElementById('setting-payment-mode').value,
+      bank_name: document.getElementById('setting-bank-name').value,
+      bank_account_number: document.getElementById('setting-bank-account').value,
+      bank_account_holder: document.getElementById('setting-bank-holder').value,
+      qris_image_url: document.getElementById('setting-qris-url').value,
       dompetx_api_key: document.getElementById('setting-dompetx-key').value,
       dompetx_webhook_secret: document.getElementById('setting-dompetx-webhook').value,
       commission_percent: document.getElementById('setting-commission').value,

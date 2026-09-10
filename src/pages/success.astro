@@ -14,6 +14,39 @@ const isFree = url.searchParams.get('free') === 'true';
   
   <main class="flex-1 pt-20 pb-20">
     <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <!-- Waiting state (manual payment, not yet verified) -->
+      <div id="waiting-state" class="hidden">
+        <div class="w-24 h-24 mx-auto mb-8 bg-amber-100 rounded-full flex items-center justify-center">
+          <Icon name="clock" size={48} class="text-amber-600" />
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">Menunggu Verifikasi Pembayaran</h1>
+        <p class="text-lg text-text-secondary mb-8">
+          Konfirmasi pembayaran Anda sudah kami terima. Tim kami akan memverifikasi dan mengirim link akses produk ke email Anda.
+        </p>
+        <div class="card p-6 mb-8 text-left">
+          <h2 class="font-semibold text-text-primary mb-4">Detail Pesanan</h2>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-text-secondary">No. Invoice</span>
+              <span class="font-mono text-text-primary" id="waiting-order-id">{orderId}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-text-secondary">Status</span>
+              <span class="badge-warning">Menunggu Verifikasi</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-text-secondary">Estimasi Verifikasi</span>
+              <span class="text-text-primary">± 15 menit (jam kerja)</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="/" class="btn-primary w-full sm:w-auto">Kembali ke Beranda</a>
+        </div>
+      </div>
+
+      <!-- Success state -->
+      <div id="success-state">
       <!-- Success Icon -->
       <div class="w-24 h-24 mx-auto mb-8 bg-green-100 rounded-full flex items-center justify-center animate-fade-in">
         <Icon name="check-circle" size={48} class="text-green-600" />
@@ -110,6 +143,30 @@ const isFree = url.searchParams.get('free') === 'true';
           Hubungi Support
         </a>
       </div>
+      </div>
     </div>
   </main>
 </BaseLayout>
+
+<script>
+  // If order is still PENDING (manual payment not yet verified), show waiting state
+  const orderId = new URLSearchParams(window.location.search).get('order') || '';
+  const isFree = new URLSearchParams(window.location.search).get('free') === 'true';
+  if (orderId && !isFree) {
+    fetch('/api/orders/' + encodeURIComponent(orderId))
+      .then(r => r.json())
+      .then(data => {
+        const order = data && data.order;
+        if (order && order.status !== 'PAID') {
+          document.getElementById('success-state')?.classList.add('hidden');
+          const waiting = document.getElementById('waiting-state');
+          if (waiting) {
+            const idEl = document.getElementById('waiting-order-id');
+            if (idEl) idEl.textContent = orderId;
+            waiting.classList.remove('hidden');
+          }
+        }
+      })
+      .catch(() => {});
+  }
+</script>

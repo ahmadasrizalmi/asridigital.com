@@ -58,8 +58,20 @@ else
 fi
 echo ""
 
-# Step 4: Build project
-echo "🔨 Step 4: Building project..."
+# Step 4: Run manual payment migration
+# (adds payment_confirmed_at/payment_reference columns + manual payment settings)
+echo "📊 Step 4: Running migration 0003_manual_payment.sql..."
+npx wrangler d1 execute $DB_NAME --remote --file migrations/0003_manual_payment.sql 2>&1
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Migration 0003 completed${NC}"
+else
+    echo -e "${RED}❌ Migration 0003 failed${NC}"
+    exit 1
+fi
+echo ""
+
+# Step 5: Build project
+echo "🔨 Step 5: Building project..."
 npm run build 2>&1
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Build successful${NC}"
@@ -69,9 +81,9 @@ else
 fi
 echo ""
 
-# Step 5: Deploy to Cloudflare Pages
-echo "🚀 Step 5: Deploying to Cloudflare Pages..."
-npx wrangler pages deploy dist --project-name=asridigital-com --branch=main 2>&1
+# Step 6: Deploy to Cloudflare Pages
+echo "🚀 Step 6: Deploying to Cloudflare Pages..."
+npx wrangler pages deploy dist --project-name=asridigital --branch=main 2>&1
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Deployed successfully!${NC}"
 else

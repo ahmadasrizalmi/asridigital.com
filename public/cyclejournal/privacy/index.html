@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kebijakan Privasi CycleJournal | Asri Digital</title>
+  <meta name="description" content="Kebijakan privasi CycleJournal: aplikasi kalender haid dan jurnal kesuburan 100% offline dengan enkripsi zero-knowledge.">
+  <link rel="canonical" href="https://asridigital.com/cyclejournal/privacy/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+      colors: { coral: {400:'#FF8A71',500:'#FF6F61',600:'#FF5E7D',700:'#E64264'} } } } }
+  </script>
+</head>
+<body class="bg-white text-slate-800 font-sans antialiased">
+  <header class="border-b border-slate-100 bg-white/90 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 font-extrabold text-slate-900">
+        <span class="w-8 h-8 rounded-lg bg-gradient-to-tr from-coral-400 to-coral-600 flex items-center justify-center text-white">A</span>
+        Asri Digital
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+        <a href="/apps" class="hover:text-slate-900 transition">Aplikasi Android</a>
+        <a href="/products" class="hover:text-slate-900 transition">Produk Digital</a>
+        <a href="/blog" class="hover:text-slate-900 transition">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <nav class="mb-6 flex items-center gap-2 text-xs font-medium text-slate-400">
+      <a href="/" class="hover:text-coral-600 transition">Asri Digital</a><span>/</span>
+      <a href="/apps" class="hover:text-coral-600 transition">Apps</a><span>/</span>
+      <a href="/cyclejournal" class="hover:text-coral-600 transition">CycleJournal</a><span>/</span>
+      <span class="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 font-semibold text-slate-700">Privasi</span>
+    </nav>
+
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900">Kebijakan Privasi CycleJournal</h1>
+    <p class="text-slate-500 text-sm mt-2">Terakhir diperbarui: <span id="updated">Januari 2026</span></p>
+
+    <div class="prose prose-slate mt-8 space-y-6 text-sm text-slate-700 leading-relaxed">
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">1. Prinsip Zero-Knowledge</h2>
+        <p>CycleJournal adalah aplikasi kalender haid dan jurnal kesuburan yang <strong>100% offline-first</strong>. Seluruh catatan kesehatan reproduksi Anda disimpan secara lokal, terenkripsi, di perangkat Anda. Kami tidak pernah memiliki akses ke isi data kesehatan Anda.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">2. Data yang Disimpan di Perangkat</h2>
+        <p>Data berikut hanya tersimpan di perangkat Anda dalam basis data terenkripsi (SQLCipher): tanggal siklus menstruasi, suhu basal tubuh (BBT), lendir serviks, skala nyeri (VAS 0–10), intensitas pendarahan, obat yang dikonsumsi, dan catatan klinis pribadi Anda.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">3. Cadangan Cloud (Opsional, Terenkripsi)</h2>
+        <p>Jika Anda mengaktifkan sinkronisasi bulanan ke Cloudflare D1, data diekspor menjadi JSON lalu <strong>dienkripsi di sisi klien (client-side encryption)</strong> menggunakan AES-256-GCM dengan kunci yang diturunkan dari PIN/passphrase Anda. Server kami hanya menyimpan <em>ciphertext</em> (blob terenkripsi). Kami tidak memiliki kunci untuk membacanya.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">4. Identitas Anonim</h2>
+        <p>Kami tidak meminta nama, email, atau nomor telepon. Aplikasi menghasilkan <strong>ID pasien anonim</strong> (format <code>px-xxxxxxxxxxxx</code>) yang menjadi kunci penyimpanan di cloud tanpa mengungkap identitas Anda.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">5. Iklan Non-Personalisasi</h2>
+        <p>Pada paket gratis, kami menampilkan iklan non-personalisasi (Non-Personalized Ads) melalui Google AdMob tanpa pelacak perilaku (GAID dinonaktifkan). Paket Pro menghilangkan seluruh komponen iklan.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">6. Tidak Ada Berbagi ke Pihak Ketiga</h2>
+        <p>Kami tidak pernah menjual, menyewakan, atau membagikan data kesehatan Anda kepada pihak ketiga maupun data broker.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">7. Hak untuk Dihapus (Nuke / GDPR &amp; UU PDP)</h2>
+        <p>Anda dapat menghapus seluruh data secara permanen dalam satu sentuhan (fitur "Hapus Semua Data"). Ini akan: menghapus cadangan cloud di D1, membatalkan alarm &amp; pekerjaan latar, menghancurkan basis data lokal terenkripsi, menghapus kunci enkripsi di Android Keystore, dan mereset aplikasi ke tahap awal.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">8. Disclaimer Medis</h2>
+        <p>CycleJournal adalah alat pencatatan klinis pribadi untuk referensi dokter kandungan (SpOG) dan <strong>bukan</strong> pengganti diagnosis medis profesional maupun alat kontrasepsi.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-bold text-slate-900 mb-2">9. Kontak</h2>
+        <p>Pertanyaan seputar privasi: hubungi <a href="mailto:privacy@asridigital.com" class="text-coral-600 font-semibold hover:underline">privacy@asridigital.com</a>.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="bg-white pt-12 pb-8 border-t border-slate-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2 font-bold text-slate-900"><span class="w-6 h-6 rounded-md bg-gradient-to-tr from-coral-400 to-coral-600 flex items-center justify-center text-white text-[10px]">A</span> © 2026 Asri Digital</div>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/cyclejournal" class="hover:text-coral-600 transition font-semibold">Beranda Aplikasi</a>
+        <span>•</span>
+        <a href="/terms" class="hover:text-coral-600 transition">Syarat &amp; Ketentuan</a>
+        <span>•</span>
+        <a href="/contact" class="hover:text-coral-600 transition">Kontak</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
