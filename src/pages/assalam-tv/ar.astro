@@ -1,0 +1,264 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const title = "Assalam TV | نظام مواقيت الصلاة الرقمي للمساجد والسمات الفاخرة بدون إنترنت";
+const description = "شاشة عرض مواقيت الصلاة الرقمية الحديثة للمساجد على أجهزة أندرويد تي في. ١٨ سمة فاخرة، دعم الشاشات العمودية، تعمل ١٠٠٪ بدون إنترنت، وتحكم كامل عبر الهاتف.";
+const ogImage = "https://asridigital.com/images/assalam-tv/ar-h-andalusia.png";
+---
+
+<BaseLayout title={title} description={description} ogImage={ogImage} lang="ar" dir="rtl">
+  <style>
+    body {
+      font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+    .gold-gradient-bg {
+      background: linear-gradient(140deg, #E9CE95 0%, #C2953F 100%);
+    }
+    .gold-gradient-text {
+      background: linear-gradient(140deg, #F5E5C0 0%, #D9B26A 60%, #B88930 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-glow-1 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217, 178, 106, 0.12) 0%, rgba(10, 29, 49, 0) 70%);
+      top: -100px;
+      left: 10%;
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(27, 58, 107, 0.4) 0%, rgba(6, 20, 35, 0) 70%);
+      bottom: 50px;
+      right: -100px;
+      pointer-events: none;
+    }
+    .tv-frame-shadow {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px -10px rgba(217, 178, 106, 0.25);
+    }
+  </style>
+
+  <!-- NAVBAR ARABIC -->
+  <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0A1D31]/90 backdrop-blur-md border-b border-[#D9B26A]/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Brand -->
+        <a href="/assalam-tv/ar" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl gold-gradient-bg flex items-center justify-center text-[#0A1D31] shadow-md group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </div>
+          <div>
+            <div class="text-[#F5F2EA] font-extrabold text-lg sm:text-xl tracking-tight leading-none">Assalam TV</div>
+            <div class="text-[#D9B26A] text-[11px] font-medium tracking-wide mt-0.5">من Asri Digital</div>
+          </div>
+        </a>
+
+        <!-- Desktop Links -->
+        <nav class="hidden lg:flex items-center space-x-7 space-x-reverse text-sm font-bold text-[#B9C6D6]">
+          <a href="#themes" class="hover:text-[#D9B26A] transition-colors">السمات والألوان</a>
+          <a href="#vertical" class="hover:text-[#D9B26A] transition-colors">العرض العمودي</a>
+          <a href="#features" class="hover:text-[#D9B26A] transition-colors">التحكم من الهاتف</a>
+          <a href="#prayer-states" class="hover:text-[#D9B26A] transition-colors">حالات الصلاة</a>
+          <a href="#license" class="hover:text-[#D9B26A] transition-colors">الترخيص</a>
+        </nav>
+
+        <!-- Right Side: Lang Switcher & CTA -->
+        <div class="hidden sm:flex items-center gap-4">
+          <div class="flex items-center bg-white/10 rounded-full p-1 border border-white/15 text-xs font-bold">
+            <a href="/assalam-tv" class="px-3 py-1.5 rounded-full text-[#A7B4C6] hover:text-white transition">ID</a>
+            <a href="/assalam-tv/en" class="px-3 py-1.5 rounded-full text-[#A7B4C6] hover:text-white transition">EN</a>
+            <span class="px-3 py-1.5 rounded-full bg-[#D9B26A] text-[#0A1D31]">AR</span>
+          </div>
+
+          <a href="#download" class="gold-gradient-bg text-[#0A1D31] font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-lg hover:brightness-105 transition transform hover:-translate-y-0.5">
+            احصل عليه من Google Play
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="overflow-hidden">
+    <!-- HERO SECTION ARABIC -->
+    <section class="relative pt-32 pb-24 lg:pt-40 lg:pb-36 bg-gradient-to-b from-[#061423] via-[#0A1D31] to-[#0E2A47] text-white">
+      <div class="hero-glow-1"></div>
+      <div class="hero-glow-2"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold tracking-widest uppercase mb-6">
+          <span class="w-2 h-2 rounded-full bg-[#D9B26A] animate-pulse"></span>
+          ASSALAM TV &bull; شاشة مواقيت الصلاة للمساجد &bull; تعمل بدون إنترنت
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <!-- Text Right (in RTL) -->
+          <div class="lg:col-span-6 space-y-6 text-center lg:text-right">
+            <div class="text-[#D9B26A] font-extrabold text-xs sm:text-sm tracking-wider uppercase">
+              نظام مواقيت الصلاة الرقمي للمساجد
+            </div>
+
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-[#F5F2EA] tracking-tight leading-[1.25]">
+              مواقيت صلاة دقيقة و<span class="gold-gradient-text">سمات فاخرة</span>
+            </h1>
+
+            <p class="text-base sm:text-lg text-[#B9C6D6] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
+              تحكّم بمواقيت الصلاة وإعلانات المسجد وملصقات الدروس مباشرة من هاتف المشرف عبر الواي فاي المحلي. بدون إنترنت يومي، بدون ذاكرة فلاش، وبدون اشتراكات شهرية.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <a href="#download" class="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-full bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-xl hover:border-[#D9B26A] hover:bg-[#0E2A47] transition group w-full sm:w-auto">
+                <img src="/images/google-play-ar.png" alt="Google Play" class="h-6 w-auto" />
+                <span>تحميل تطبيق الشاشة مجاناً</span>
+              </a>
+
+              <a href="#license" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full gold-gradient-bg text-[#0A1D31] font-extrabold text-sm shadow-xl hover:brightness-105 transition transform hover:-translate-y-0.5 w-full sm:w-auto">
+                <span>شراء ترخيص المشرف</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Mockups -->
+          <div class="lg:col-span-6 relative flex justify-center items-center">
+            <div class="relative w-full max-w-lg lg:max-w-none">
+              <div class="relative rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-[#0E2A47] tv-frame-shadow bg-black aspect-video">
+                <img src="/images/assalam-tv/ar-h-obsidian.png" alt="Assalam TV Arabic Obsidian Theme" class="w-full h-full object-cover" />
+              </div>
+
+              <div class="absolute -bottom-6 -left-3 sm:-bottom-8 sm:-left-4 w-32 sm:w-44 md:w-52 aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-[#0A1D31] shadow-2xl bg-black">
+                <img src="/images/assalam-tv/ar-v-nila.png" alt="Assalam TV Vertical Arabic" class="w-full h-full object-cover" />
+              </div>
+
+              <div class="absolute -top-4 -right-2 sm:-top-5 sm:-right-4 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#0E2440]/90 backdrop-blur-md border border-[#D9B26A]/50 shadow-xl text-xs font-bold text-[#F5F2EA]">
+                <svg class="w-4 h-4 text-[#D9B26A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                <span>ترخيص مدى الحياة &bull; بدون اشتراك</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full text-[#F7F4EC] -mb-1 mt-12">
+        <svg viewBox="0 0 1440 80" fill="currentColor" preserveAspectRatio="none" class="w-full h-12 md:h-20 block">
+          <path d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
+        </svg>
+      </div>
+    </section>
+
+    <!-- CORE FEATURES ARABIC -->
+    <section id="features" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <div class="w-12 h-1.5 bg-[#D9B26A] rounded-full mx-auto mb-4"></div>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
+            كل ما يحتاجه القائم على المسجد في شاشة واحدة
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-[#5C6A7C]">
+            ثماني ميزات أساسية تجعل شاشة مسجدك مستقلة تماماً - تُدار بالكامل من الهاتف دون تطبيقات إضافية.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div class="lg:col-span-7">
+            <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-2xl bg-black aspect-video">
+              <img src="/images/assalam-tv/ar-kanan-nila.png" alt="Arabic Right Sidebar Layout" class="w-full h-full object-cover" loading="lazy" />
+            </div>
+            <p class="text-xs text-center text-[#5C6A7C] italic mt-2">تخطيط الشريط الجانبي الأيمن — سمة النيلة</p>
+          </div>
+
+          <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">التقويم الهجري والحسابات الفلكية الدقيقة</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">تنبيه المناسبات الإسلامية والأعياد</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">ساعة مواقيت صلاة دقيقة مع فارق الاحتياط</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">شريط الإعلانات المتحرك وتقارير التبرعات</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">العد التنازلي للأذان وتوقيت الإقامة</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">العد التنازلي لصلاة الضحى المباركة</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">دعم كامل للشاشات الأفقية والعمودية</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">إرسال الصور والفيديوهات مباشرة من هاتف المشرف</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THEMES ARABIC -->
+    <section id="themes" class="py-24 bg-[#0A1D31] text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1.5 rounded-full bg-[#D9B26A]/10 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold uppercase tracking-wider mb-4">
+          السمات والتخطيطات
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#F5F2EA] tracking-tight">
+          ١٨ سمة فاخرة و٣ خيارات لغة
+        </h2>
+        <p class="mt-4 text-base sm:text-lg text-[#A7B4C6] max-w-2xl mx-auto mb-10">
+          مصممة لتناسب مختلف العمارات الإسلامية، الرخام، الخشب الأندلسي، والشاشات العمودية.
+        </p>
+
+        <div class="aspect-video max-w-4xl mx-auto rounded-3xl overflow-hidden border-2 sm:border-4 border-[#0E2A47] tv-frame-shadow bg-black">
+          <img src="/images/assalam-tv/ar-h-andalusia.png" alt="Arabic Andalusia Theme" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- VERTICAL TOTEM ARABIC -->
+    <section id="vertical" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div class="lg:col-span-6 space-y-6">
+            <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider">
+              تعدد الاتجاهات
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-[#10233A]">
+              دعم كامل للشاشات العمودية (أعمدة وتوتيم رقمي)
+            </h2>
+            <p class="text-base text-[#5C6A7C] leading-relaxed">
+              تخطيط عمودي بنسبة ٩:١٦ حقيقي، مخصص لمداخل المساجد وممرات الوضوء وأعمدة القاعات.
+            </p>
+          </div>
+
+          <div class="lg:col-span-6 grid grid-cols-3 gap-4">
+            <img src="/images/assalam-tv/ar-v-zamrud.png" alt="Vertical Zamrud Arabic" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
+            <img src="/images/assalam-tv/ar-v-lazuardi.png" alt="Vertical Lazuardi Arabic" class="rounded-2xl shadow-2xl aspect-[9/16] object-cover transform -translate-y-4" />
+            <img src="/images/assalam-tv/ar-v-andalusia.png" alt="Vertical Andalusia Arabic" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD / FOOTER ARABIC -->
+    <section id="license" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center" id="download">
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">ابدأ استخدام Assalam TV لمسجدك</h2>
+        <p class="text-base text-[#5C6A7C] mb-8">
+          تطبيق الشاشة مجاني تماماً على متجر Google Play بعدد شاشات غير محدود. شراء لمرة واحدة لتطبيق هاتف المشرف.
+        </p>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="gold-gradient-bg text-[#0A1D31] font-extrabold py-4 px-8 rounded-full shadow-lg hover:brightness-105 transition">
+            تحميل تطبيق الشاشة من Google Play
+          </a>
+          <a href="https://wa.me/6281325063888?text=السلام%20عليكم%20،%20أريد%20الاستفسار%20عن%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="bg-[#0A1D31] text-white font-bold py-4 px-8 rounded-full hover:bg-[#0E2A47] transition">
+            تواصل معنا عبر واتساب
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-[#061423] text-white py-12 border-t border-white/10 text-center text-xs text-[#A7B4C6]">
+    <div class="max-w-7xl mx-auto px-4 space-y-4">
+      <div class="flex justify-center items-center gap-4 text-xs font-bold">
+        <a href="/assalam-tv" class="text-white hover:underline">Bahasa Indonesia</a>
+        <span>&bull;</span>
+        <a href="/assalam-tv/en" class="text-white hover:underline">English</a>
+        <span>&bull;</span>
+        <a href="/assalam-tv/ar" class="text-[#D9B26A] underline">العربية</a>
+      </div>
+      <p>&copy; ٢٠٢٦ Asri Digital. صُممت بأمانة لخدمة بيوت الله في شتى أنحاء العالم.</p>
+    </div>
+  </footer>
+</BaseLayout>

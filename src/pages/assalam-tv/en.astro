@@ -1,0 +1,314 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const title = "Assalam TV | Mosque Prayer-Time Digital System & Premium Themes 100% Offline";
+const description = "Next-generation digital prayer display for Android TV. 18 luxury themes, vertical standing totem support, zero internet needed, managed effortlessly from your phone.";
+const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
+---
+
+<BaseLayout title={title} description={description} ogImage={ogImage} lang="en" dir="ltr">
+  <style>
+    .gold-gradient-bg {
+      background: linear-gradient(140deg, #E9CE95 0%, #C2953F 100%);
+    }
+    .gold-gradient-text {
+      background: linear-gradient(140deg, #F5E5C0 0%, #D9B26A 60%, #B88930 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-glow-1 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217, 178, 106, 0.12) 0%, rgba(10, 29, 49, 0) 70%);
+      top: -100px;
+      right: 10%;
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(27, 58, 107, 0.4) 0%, rgba(6, 20, 35, 0) 70%);
+      bottom: 50px;
+      left: -100px;
+      pointer-events: none;
+    }
+    .tv-frame-shadow {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px -10px rgba(217, 178, 106, 0.25);
+    }
+  </style>
+
+  <!-- NAVBAR -->
+  <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-[#0A1D31]/90 backdrop-blur-md border-b border-[#D9B26A]/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <a href="/assalam-tv/en" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl gold-gradient-bg flex items-center justify-center text-[#0A1D31] shadow-md group-hover:scale-105 transition-transform">
+            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </div>
+          <div>
+            <div class="text-[#F5F2EA] font-extrabold text-lg sm:text-xl tracking-tight leading-none">Assalam TV</div>
+            <div class="text-[#D9B26A] text-[11px] font-medium tracking-wide mt-0.5">by Asri Digital</div>
+          </div>
+        </a>
+
+        <nav class="hidden lg:flex items-center space-x-7 text-sm font-medium text-[#B9C6D6]">
+          <a href="#themes" class="hover:text-[#D9B26A] transition-colors">Themes &amp; Colors</a>
+          <a href="#vertical" class="hover:text-[#D9B26A] transition-colors">Vertical Kiosk</a>
+          <a href="#features" class="hover:text-[#D9B26A] transition-colors">Mobile Control</a>
+          <a href="#prayer-states" class="hover:text-[#D9B26A] transition-colors">Prayer States</a>
+          <a href="#license" class="hover:text-[#D9B26A] transition-colors">Pricing</a>
+          <a href="/assalam-tv/tester" class="text-[#D9B26A] hover:underline font-semibold">Join Testing</a>
+        </nav>
+
+        <div class="hidden sm:flex items-center gap-4">
+          <div class="flex items-center bg-white/10 rounded-full p-1 border border-white/15 text-xs font-bold">
+            <a href="/assalam-tv" class="px-3 py-1.5 rounded-full text-[#A7B4C6] hover:text-white transition">ID</a>
+            <span class="px-3 py-1.5 rounded-full bg-[#D9B26A] text-[#0A1D31]">EN</span>
+            <a href="/assalam-tv/ar" class="px-3 py-1.5 rounded-full text-[#A7B4C6] hover:text-white transition">AR</a>
+          </div>
+
+          <a href="#download" class="gold-gradient-bg text-[#0A1D31] font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-lg hover:brightness-105 transition transform hover:-translate-y-0.5">
+            Get on Google Play
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="overflow-hidden">
+    <!-- HERO -->
+    <section class="relative pt-32 pb-24 lg:pt-40 lg:pb-36 bg-gradient-to-b from-[#061423] via-[#0A1D31] to-[#0E2A47] text-white">
+      <div class="hero-glow-1"></div>
+      <div class="hero-glow-2"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold tracking-widest uppercase mb-6">
+          <span class="w-2 h-2 rounded-full bg-[#D9B26A] animate-pulse"></span>
+          ASSALAM TV &bull; MOSQUE PRAYER DISPLAY &bull; 100% OFFLINE
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
+            <div class="text-[#D9B26A] font-extrabold text-xs sm:text-sm tracking-wider uppercase">
+              MOSQUE PRAYER-TIME DIGITAL SYSTEM
+            </div>
+
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-[#F5F2EA] tracking-tight leading-[1.15]">
+              Accurate Prayer Times &amp; <span class="gold-gradient-text">Premium Themes</span>
+            </h1>
+
+            <p class="text-base sm:text-lg text-[#B9C6D6] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
+              Manage prayer times, mosque announcements, and event posters straight from the Admin phone over local Wi-Fi. 100% offline, zero subscriptions.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <a href="#download" class="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-full bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-xl hover:border-[#D9B26A] hover:bg-[#0E2A47] transition group w-full sm:w-auto">
+                <img src="/images/google-play-en.png" alt="Google Play" class="h-6 w-auto" />
+                <span>Download Free TV App</span>
+              </a>
+
+              <a href="#license" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full gold-gradient-bg text-[#0A1D31] font-extrabold text-sm shadow-xl hover:brightness-105 transition transform hover:-translate-y-0.5 w-full sm:w-auto">
+                <span>Buy Admin License</span>
+              </a>
+            </div>
+
+            <p class="text-xs text-[#A7B4C6] pt-1">
+              Want a free Admin license? <a href="/assalam-tv/tester" class="text-[#D9B26A] font-bold underline">Join our closed testing program &rarr;</a>
+            </p>
+          </div>
+
+          <div class="lg:col-span-6 relative flex justify-center items-center">
+            <div class="relative w-full max-w-lg lg:max-w-none">
+              <div class="relative rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-[#0E2A47] tv-frame-shadow bg-black aspect-video">
+                <img src="/images/assalam-tv/en-h-obsidian.png" alt="Assalam TV English Obsidian Theme" class="w-full h-full object-cover" />
+              </div>
+
+              <div class="absolute -bottom-6 -right-3 sm:-bottom-8 sm:-right-4 w-32 sm:w-44 md:w-52 aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-[#0A1D31] shadow-2xl bg-black">
+                <img src="/images/assalam-tv/en-v-nila.png" alt="Assalam TV Vertical English" class="w-full h-full object-cover" />
+              </div>
+
+              <div class="absolute -top-4 -left-2 sm:-top-5 sm:-left-4 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#0E2440]/90 backdrop-blur-md border border-[#D9B26A]/50 shadow-xl text-xs font-bold text-[#F5F2EA]">
+                <svg class="w-4 h-4 text-[#D9B26A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                <span>Lifetime License &bull; No Subscription</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-16 pt-8 border-t border-white/10">
+          <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.07] border border-white/10 backdrop-blur-sm">
+            <span class="text-xs sm:text-sm font-bold text-[#F5F2EA]">100% Offline</span>
+          </div>
+          <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.07] border border-white/10 backdrop-blur-sm">
+            <span class="text-xs sm:text-sm font-bold text-[#F5F2EA]">6 Luxury Themes</span>
+          </div>
+          <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.07] border border-white/10 backdrop-blur-sm">
+            <span class="text-xs sm:text-sm font-bold text-[#F5F2EA]">Zero ShareIt</span>
+          </div>
+          <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.07] border border-white/10 backdrop-blur-sm">
+            <span class="text-xs sm:text-sm font-bold text-[#F5F2EA]">Vertical Totem Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full text-[#F7F4EC] -mb-1 mt-12">
+        <svg viewBox="0 0 1440 80" fill="currentColor" preserveAspectRatio="none" class="w-full h-12 md:h-20 block">
+          <path d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
+        </svg>
+      </div>
+    </section>
+
+    <!-- CORE FEATURES -->
+    <section id="features" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <div class="w-12 h-1.5 bg-[#D9B26A] rounded-full mx-auto mb-4"></div>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
+            Everything a Mosque Caretaker Needs, on One Screen
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-[#5C6A7C]">
+            Eight core features that make your mosque TV truly autonomous — fully controlled from a phone, with no extra apps.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div class="lg:col-span-7">
+            <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-2xl bg-black aspect-video">
+              <img src="/images/assalam-tv/en-sidebar-lazuardi.png" alt="English Left Sidebar Layout" class="w-full h-full object-cover" loading="lazy" />
+            </div>
+            <p class="text-xs text-center text-[#5C6A7C] italic mt-2">Left sidebar layout — Lazuardi theme</p>
+          </div>
+
+          <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Hijri Calendar &amp; Astronomical Calculations</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Muslim Event &amp; Holy Day Pop-ups</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Precision Prayer Times &amp; Ihtiyati Buffers</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Announcement Ticker &amp; Financial Reports</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Adhan Countdown &amp; Iqamah Timer</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Dhuha Prayer Window Countdown</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Orientation Ready: Landscape &amp; Portrait</div>
+            <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm font-bold text-sm text-[#10233A]">Instant Media Sync Direct from Phone Gallery</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THEMES SECTION -->
+    <section id="themes" class="py-24 bg-[#0A1D31] text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1.5 rounded-full bg-[#D9B26A]/10 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold uppercase tracking-wider mb-4">
+          LAYOUTS &amp; PALETTES
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#F5F2EA] tracking-tight">
+          18 Premium Themes &amp; 3 Language Options
+        </h2>
+        <p class="mt-4 text-base sm:text-lg text-[#A7B4C6] max-w-2xl mx-auto mb-10">
+          Designed to fit modern architecture, traditional domes, marble walls, and standing totems.
+        </p>
+
+        <div class="aspect-video max-w-4xl mx-auto rounded-3xl overflow-hidden border-2 sm:border-4 border-[#0E2A47] tv-frame-shadow bg-black">
+          <img src="/images/assalam-tv/en-h-andalusia.png" alt="English Andalusia Theme" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </section>
+
+    <!-- VERTICAL TOTEM -->
+    <section id="vertical" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div class="lg:col-span-6 space-y-6">
+            <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider">
+              MULTI-ORIENTATION
+            </span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-[#10233A]">
+              Full Support for Standing Totem &amp; Kiosk Displays
+            </h2>
+            <p class="text-base text-[#5C6A7C] leading-relaxed">
+              Native 9:16 portrait orientation designed specifically for entryways, wudhu corridors, and standing pillars.
+            </p>
+          </div>
+
+          <div class="lg:col-span-6 grid grid-cols-3 gap-4">
+            <img src="/images/assalam-tv/en-v-zamrud.png" alt="Vertical Zamrud" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
+            <img src="/images/assalam-tv/en-v-lazuardi.png" alt="Vertical Lazuardi" class="rounded-2xl shadow-2xl aspect-[9/16] object-cover transform -translate-y-4" />
+            <img src="/images/assalam-tv/en-v-andalusia.png" alt="Vertical Andalusia" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRAYER STATES -->
+    <section id="prayer-states" class="py-24 bg-[#0A1D31] text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1.5 rounded-full bg-[#D9B26A]/10 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold uppercase tracking-wider mb-4">
+          WORSHIP AUTOMATION
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-[#F5F2EA] tracking-tight">
+          Intelligent &amp; Reverent Prayer Transitions
+        </h2>
+        <p class="mt-4 text-base sm:text-lg text-[#A7B4C6] max-w-2xl mx-auto mb-12">
+          From Standby &rarr; Adhan &rarr; Iqamah Countdown &rarr; Automatic Screen Blanking during Congregation &rarr; Jumu'ah Mode.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+            <img src="/images/assalam-tv/en-state-standby-zamrud.png" alt="Standby State" class="rounded-xl aspect-video object-cover mb-3" />
+            <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 01</div>
+            <div class="font-bold text-white">Standby Display</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+            <img src="/images/assalam-tv/en-state-adzan-delima.png" alt="Adhan Notification" class="rounded-xl aspect-video object-cover mb-3" />
+            <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 02</div>
+            <div class="font-bold text-white">Adhan Notification</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+            <img src="/images/assalam-tv/en-state-iqamah-nila.png" alt="Iqamah Countdown" class="rounded-xl aspect-video object-cover mb-3" />
+            <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 03</div>
+            <div class="font-bold text-white">Iqamah Countdown</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+            <img src="/images/assalam-tv/en-state-sholat-obsidian.png" alt="Screen Blanking" class="rounded-xl aspect-video object-cover mb-3" />
+            <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 04</div>
+            <div class="font-bold text-white">Blank Screen During Prayer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LICENSE / PRICING -->
+    <section id="license" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center" id="download">
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">Get Started with Assalam TV</h2>
+        <p class="text-base text-[#5C6A7C] mb-8">
+          Free TV Display app on Google Play with unlimited units. One-time purchase for the Admin Mobile App ($35 / Rp 500.000).
+        </p>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="gold-gradient-bg text-[#0A1D31] font-extrabold py-4 px-8 rounded-full shadow-lg hover:brightness-105 transition">
+            Download TV App on Google Play
+          </a>
+          <a href="https://wa.me/6281325063888?text=Hello%20Asri%20Digital,%20I%20want%20to%20inquire%20about%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="bg-[#0A1D31] text-white font-bold py-4 px-8 rounded-full hover:bg-[#0E2A47] transition">
+            Chat with Us on WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-[#061423] text-white py-12 border-t border-white/10 text-center text-xs text-[#A7B4C6]">
+    <div class="max-w-7xl mx-auto px-4 space-y-4">
+      <div class="flex justify-center items-center gap-4 text-xs font-bold">
+        <a href="/assalam-tv" class="text-white hover:underline">Bahasa Indonesia</a>
+        <span>&bull;</span>
+        <a href="/assalam-tv/en" class="text-[#D9B26A] underline">English</a>
+        <span>&bull;</span>
+        <a href="/assalam-tv/ar" class="text-white hover:underline">العربية</a>
+      </div>
+      <p>&copy; 2026 Asri Digital. Dedicated to serving mosques worldwide.</p>
+    </div>
+  </footer>
+</BaseLayout>
