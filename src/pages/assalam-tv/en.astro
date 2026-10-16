@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const title = "Assalam TV | Mosque Prayer-Time Digital System & Premium Themes 100% Offline";
 const description = "Next-generation digital prayer display for Android TV. 18 luxury themes, vertical standing totem support, zero internet needed, managed effortlessly from your phone.";
-const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
+const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.webp";
 ---
 
 <BaseLayout title={title} description={description} ogImage={ogImage} lang="en" dir="ltr">
@@ -81,11 +81,11 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
 
   <main class="overflow-hidden">
     <!-- HERO -->
-    <section class="relative pt-32 pb-24 lg:pt-40 lg:pb-36 bg-gradient-to-b from-[#061423] via-[#0A1D31] to-[#0E2A47] text-white">
+    <section class="relative pt-32 lg:pt-40 pb-0 bg-gradient-to-b from-[#14395F] via-[#0A1D31] to-[#061423] text-white overflow-hidden">
       <div class="hero-glow-1"></div>
       <div class="hero-glow-2"></div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pb-12 sm:pb-16">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold tracking-widest uppercase mb-6">
           <span class="w-2 h-2 rounded-full bg-[#D9B26A] animate-pulse"></span>
           ASSALAM TV &bull; MOSQUE PRAYER DISPLAY &bull; 100% OFFLINE
@@ -107,11 +107,17 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
 
             <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <a href="#download" class="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-full bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-xl hover:border-[#D9B26A] hover:bg-[#0E2A47] transition group w-full sm:w-auto">
-                <img src="/images/google-play-en.png" alt="Google Play" class="h-6 w-auto" />
+                <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                  <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                  <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                  <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+                </svg>
                 <span>Download Free TV App</span>
               </a>
 
               <a href="#license" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full gold-gradient-bg text-[#0A1D31] font-extrabold text-sm shadow-xl hover:brightness-105 transition transform hover:-translate-y-0.5 w-full sm:w-auto">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3.8 6h16.4L18 3.5H6L3.8 6zM16 10a4 4 0 01-8 0"></path></svg>
                 <span>Buy Admin License</span>
               </a>
             </div>
@@ -124,11 +130,11 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
           <div class="lg:col-span-6 relative flex justify-center items-center">
             <div class="relative w-full max-w-lg lg:max-w-none">
               <div class="relative rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-[#0E2A47] tv-frame-shadow bg-black aspect-video">
-                <img src="/images/assalam-tv/en-h-obsidian.png" alt="Assalam TV English Obsidian Theme" class="w-full h-full object-cover" />
+                <img src="/images/assalam-tv/en-h-obsidian.webp" alt="Assalam TV English Obsidian Theme" class="w-full h-full object-cover" loading="eager" width="1280" height="720" />
               </div>
 
               <div class="absolute -bottom-6 -right-3 sm:-bottom-8 sm:-right-4 w-32 sm:w-44 md:w-52 aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-[#0A1D31] shadow-2xl bg-black">
-                <img src="/images/assalam-tv/en-v-nila.png" alt="Assalam TV Vertical English" class="w-full h-full object-cover" />
+                <img src="/images/assalam-tv/en-v-nila.webp" alt="Assalam TV Vertical English" class="w-full h-full object-cover" loading="eager" width="405" height="720" />
               </div>
 
               <div class="absolute -top-4 -left-2 sm:-top-5 sm:-left-4 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#0E2440]/90 backdrop-blur-md border border-[#D9B26A]/50 shadow-xl text-xs font-bold text-[#F5F2EA]">
@@ -155,9 +161,10 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
         </div>
       </div>
 
-      <div class="w-full text-[#F7F4EC] -mb-1 mt-12">
-        <svg viewBox="0 0 1440 80" fill="currentColor" preserveAspectRatio="none" class="w-full h-12 md:h-20 block">
-          <path d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
+      <!-- Wave Bottom Transition seamlessly merging into Ivory (#F7F4EC) -->
+      <div class="w-full text-[#F7F4EC] leading-none overflow-hidden -mb-px">
+        <svg viewBox="0 0 1440 100" fill="currentColor" preserveAspectRatio="none" class="w-full h-12 md:h-20 lg:h-24 block">
+          <path d="M0,32 C360,95 720,10 1080,65 C1260,90 1380,45 1440,32 L1440,100 L0,100 Z"></path>
         </svg>
       </div>
     </section>
@@ -178,7 +185,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div class="lg:col-span-7">
             <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-2xl bg-black aspect-video">
-              <img src="/images/assalam-tv/en-sidebar-lazuardi.png" alt="English Left Sidebar Layout" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/en-sidebar-lazuardi.webp" alt="English Left Sidebar Layout" class="w-full h-full object-cover" loading="lazy" />
             </div>
             <p class="text-xs text-center text-[#5C6A7C] italic mt-2">Left sidebar layout — Lazuardi theme</p>
           </div>
@@ -211,7 +218,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
         </p>
 
         <div class="aspect-video max-w-4xl mx-auto rounded-3xl overflow-hidden border-2 sm:border-4 border-[#0E2A47] tv-frame-shadow bg-black">
-          <img src="/images/assalam-tv/en-h-andalusia.png" alt="English Andalusia Theme" class="w-full h-full object-cover" />
+          <img src="/images/assalam-tv/en-h-andalusia.webp" alt="English Andalusia Theme" class="w-full h-full object-cover" />
         </div>
       </div>
     </section>
@@ -233,9 +240,9 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
           </div>
 
           <div class="lg:col-span-6 grid grid-cols-3 gap-4">
-            <img src="/images/assalam-tv/en-v-zamrud.png" alt="Vertical Zamrud" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
-            <img src="/images/assalam-tv/en-v-lazuardi.png" alt="Vertical Lazuardi" class="rounded-2xl shadow-2xl aspect-[9/16] object-cover transform -translate-y-4" />
-            <img src="/images/assalam-tv/en-v-andalusia.png" alt="Vertical Andalusia" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
+            <img src="/images/assalam-tv/en-v-zamrud.webp" alt="Vertical Zamrud" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
+            <img src="/images/assalam-tv/en-v-lazuardi.webp" alt="Vertical Lazuardi" class="rounded-2xl shadow-2xl aspect-[9/16] object-cover transform -translate-y-4" />
+            <img src="/images/assalam-tv/en-v-andalusia.webp" alt="Vertical Andalusia" class="rounded-2xl shadow-xl aspect-[9/16] object-cover" />
           </div>
         </div>
       </div>
@@ -256,22 +263,22 @@ const ogImage = "https://asridigital.com/images/assalam-tv/en-h-andalusia.png";
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
           <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <img src="/images/assalam-tv/en-state-standby-zamrud.png" alt="Standby State" class="rounded-xl aspect-video object-cover mb-3" />
+            <img src="/images/assalam-tv/en-state-standby-zamrud.webp" alt="Standby State" class="rounded-xl aspect-video object-cover mb-3" />
             <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 01</div>
             <div class="font-bold text-white">Standby Display</div>
           </div>
           <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <img src="/images/assalam-tv/en-state-adzan-delima.png" alt="Adhan Notification" class="rounded-xl aspect-video object-cover mb-3" />
+            <img src="/images/assalam-tv/en-state-adzan-delima.webp" alt="Adhan Notification" class="rounded-xl aspect-video object-cover mb-3" />
             <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 02</div>
             <div class="font-bold text-white">Adhan Notification</div>
           </div>
           <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <img src="/images/assalam-tv/en-state-iqamah-nila.png" alt="Iqamah Countdown" class="rounded-xl aspect-video object-cover mb-3" />
+            <img src="/images/assalam-tv/en-state-iqamah-nila.webp" alt="Iqamah Countdown" class="rounded-xl aspect-video object-cover mb-3" />
             <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 03</div>
             <div class="font-bold text-white">Iqamah Countdown</div>
           </div>
           <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <img src="/images/assalam-tv/en-state-sholat-obsidian.png" alt="Screen Blanking" class="rounded-xl aspect-video object-cover mb-3" />
+            <img src="/images/assalam-tv/en-state-sholat-obsidian.webp" alt="Screen Blanking" class="rounded-xl aspect-video object-cover mb-3" />
             <div class="text-[11px] font-bold text-[#D9B26A]">STAGE 04</div>
             <div class="font-bold text-white">Blank Screen During Prayer</div>
           </div>

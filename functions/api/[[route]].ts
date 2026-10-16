@@ -2952,6 +2952,118 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true, message: 'Pesan berhasil dikirim' });
     }
 
+    // ==================== ASSALAM TV: TESTER REGISTRATION ====================
+    if (route === '/assalam-tv/tester' && method === 'POST') {
+      const body = await request.json();
+      const { nama, email, whatsapp, device } = body;
+
+      if (!nama || !email || !whatsapp) {
+        return jsonResponse({ error: 'Nama/Masjid, email, dan nomor WhatsApp wajib diisi' }, 400);
+      }
+
+      const sanitizedNama = sanitizeInput(nama);
+      const sanitizedEmail = sanitizeInput(email).toLowerCase();
+      const sanitizedWA = sanitizeInput(whatsapp);
+      const sanitizedDevice = sanitizeInput(device || 'Smart TV Android / Google TV');
+
+      if (!isValidEmail(sanitizedEmail)) {
+        return jsonResponse({ error: 'Format email tidak valid' }, 400);
+      }
+
+      // Store in D1 Database
+      try {
+        await env.DB.prepare(
+          `INSERT INTO assalam_tv_testers (id, name, email, whatsapp, device, status, created_at)
+           VALUES (?, ?, ?, ?, ?, 'PENDING', datetime('now'))`
+        ).bind(generateId(), sanitizedNama, sanitizedEmail, sanitizedWA, sanitizedDevice).run();
+      } catch (dbErr) {
+        // Table might not exist yet, create it
+        try {
+          await env.DB.prepare(
+            `CREATE TABLE IF NOT EXISTS assalam_tv_testers (
+              id TEXT PRIMARY KEY,
+              name TEXT NOT NULL,
+              email TEXT NOT NULL,
+              whatsapp TEXT NOT NULL,
+              device TEXT,
+              status TEXT DEFAULT 'PENDING',
+              notes TEXT,
+              created_at TEXT
+            )`
+          ).run();
+          await env.DB.prepare(
+            `INSERT INTO assalam_tv_testers (id, name, email, whatsapp, device, status, created_at)
+             VALUES (?, ?, ?, ?, ?, 'PENDING', datetime('now'))`
+          ).bind(generateId(), sanitizedNama, sanitizedEmail, sanitizedWA, sanitizedDevice).run();
+        } catch (e) {
+          console.error('Assalam TV tester DB error:', e);
+        }
+      }
+
+      // Send Email notification to Admin via Resend
+      try {
+        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+            body: JSON.stringify({
+              from: 'Asri Digital <noreply@asridigital.com>',
+              to: 'ahmadasrizalmi@gmail.com',
+              subject: `[Tester Assalam TV] Pendaftaran Baru - ${sanitizedNama}`,
+              html: `
+                <div style="font-family:sans-serif;line-height:1.6;color:#10233A;">
+                  <h2 style="color:#0A1D31;border-bottom:2px solid #D9B26A;padding-bottom:8px;">Pendaftaran Tester Assalam TV Baru</h2>
+                  <p>Ada pendaftar closed testing baru untuk <strong>Assalam TV</strong>:</p>
+                  <ul>
+                    <li><strong>Nama & Masjid:</strong> ${sanitizedNama}</li>
+                    <li><strong>Email Google Play:</strong> <a href="mailto:${sanitizedEmail}">${sanitizedEmail}</a></li>
+                    <li><strong>WhatsApp:</strong> <a href="https://wa.me/${sanitizedWA.replace(/[^0-9]/g, '')}">${sanitizedWA}</a></li>
+                    <li><strong>Perangkat TV:</strong> ${sanitizedDevice}</li>
+                    <li><strong>Waktu Daftar:</strong> ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB</li>
+                  </ul>
+                  <p style="margin-top:20px;">Silakan tambahkan email tersebut ke Google Play Console Closed Testing track dan kirim voucher Lisensi Admin.</p>
+                </div>
+              `
+            })
+          });
+        }
+      } catch (emailErr) {
+        console.error('Assalam TV tester email error:', emailErr);
+      }
+
+      // Telegram notification
+      try {
+        await notifyTelegram(
+          env,
+          `📺 <b>Pendaftaran Tester Assalam TV</b>\n\n` +
+          `👤 <b>Nama/Masjid:</b> ${sanitizedNama}\n` +
+          `📧 <b>Email:</b> ${sanitizedEmail}\n` +
+          `📱 <b>WhatsApp:</b> ${sanitizedWA}\n` +
+          `🖥️ <b>Perangkat:</b> ${sanitizedDevice}\n\n` +
+          `Segera undang ke Google Play Console Closed Testing.`
+        );
+      } catch (tgErr) {
+        console.error('Telegram tester alert error:', tgErr);
+      }
+
+      return jsonResponse({
+        success: true,
+        message: 'Pendaftaran berhasil disimpan. Tim kami akan menghubungi Anda segera.'
+      });
+    }
+
+    // Admin endpoint to view testers
+    if (route === '/admin/assalam-tv-testers' && method === 'GET') {
+      try {
+        const testers = await env.DB.prepare(
+          'SELECT * FROM assalam_tv_testers ORDER BY created_at DESC LIMIT 200'
+        ).all();
+        return jsonResponse({ testers: testers.results || [] });
+      } catch (e) {
+        return jsonResponse({ testers: [] });
+      }
+    }
+
     // ==================== ADMIN: CONTACT MESSAGES ====================
     if (route === '/admin/contacts' && method === 'GET') {
       try {

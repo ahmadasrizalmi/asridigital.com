@@ -4,7 +4,7 @@ import Icon from '../components/ui/Icon.astro';
 
 const title = "Assalam TV | Jam Sholat Digital Masjid & Theme Premium 100% Offline";
 const description = "Aplikasi jadwal sholat digital TV masjid modern. 18 tema mewah, dukungan TV vertikal standing totem, kontrol penuh dari HP via Wi-Fi tanpa kuota & tanpa biaya bulanan.";
-const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
+const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
 ---
 
 <BaseLayout title={title} description={description} ogImage={ogImage} lang="id" dir="ltr">
@@ -155,14 +155,14 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
 
   <main class="overflow-hidden">
     <!-- ==================== 1. HERO SECTION ==================== -->
-    <section class="relative pt-32 pb-24 lg:pt-40 lg:pb-36 bg-gradient-to-b from-[#061423] via-[#0A1D31] to-[#0E2A47] text-white overflow-hidden">
+    <section class="relative pt-32 lg:pt-40 pb-0 bg-gradient-to-b from-[#14395F] via-[#0A1D31] to-[#061423] text-white overflow-hidden">
       <!-- Glows and Rings -->
       <div class="hero-glow-1"></div>
       <div class="hero-glow-2"></div>
       <div class="ring-decor w-[550px] h-[550px] -top-20 -right-20"></div>
       <div class="ring-decor w-[750px] h-[750px] -top-44 -right-44"></div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pb-12 sm:pb-16">
         <!-- Sub-label Top -->
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold tracking-widest uppercase mb-6">
           <span class="w-2 h-2 rounded-full bg-[#D9B26A] animate-pulse"></span>
@@ -187,7 +187,12 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <a href="#download" class="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-full bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-xl hover:border-[#D9B26A] hover:bg-[#0E2A47] transition group w-full sm:w-auto">
-                <img src="/images/google-play-id.png" alt="Google Play" class="h-6 w-auto" />
+                <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                  <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                  <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                  <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+                </svg>
                 <span>Unduh TV Gratis</span>
               </a>
 
@@ -210,18 +215,25 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
               <div class="relative rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-[#0E2A47] tv-frame-shadow bg-black aspect-video">
                 <img
                   id="hero-main-tv"
-                  src="/images/assalam-tv/id-h-obsidian.png"
+                  src="/images/assalam-tv/id-h-obsidian.webp"
                   alt="Tampilan TV Assalam TV Tema Obsidian"
                   class="w-full h-full object-cover transition-opacity duration-500"
+                  loading="eager"
+                  fetchpriority="high"
+                  width="1280"
+                  height="720"
                 />
               </div>
 
               <!-- Overlapping Vertical Kiosk Frame -->
               <div class="absolute -bottom-6 -right-3 sm:-bottom-8 sm:-right-4 w-32 sm:w-44 md:w-52 aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-[#0A1D31] shadow-2xl bg-black">
                 <img
-                  src="/images/assalam-tv/id-v-nila.png"
+                  src="/images/assalam-tv/id-v-nila.webp"
                   alt="Tampilan Vertikal Standing Totem Assalam TV"
                   class="w-full h-full object-cover"
+                  loading="eager"
+                  width="405"
+                  height="720"
                 />
               </div>
 
@@ -278,10 +290,10 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
         </div>
       </div>
 
-      <!-- Wave Bottom Transition into Ivory (#F7F4EC) -->
-      <div class="w-full text-[#F7F4EC] -mb-1 mt-12">
-        <svg viewBox="0 0 1440 80" fill="currentColor" preserveAspectRatio="none" class="w-full h-12 md:h-20 block">
-          <path d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,42.7C1120,32,1280,32,1360,32L1440,32L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
+      <!-- Wave Bottom Transition seamlessly merging into Ivory (#F7F4EC) -->
+      <div class="w-full text-[#F7F4EC] leading-none overflow-hidden -mb-px">
+        <svg viewBox="0 0 1440 100" fill="currentColor" preserveAspectRatio="none" class="w-full h-12 md:h-20 lg:h-24 block">
+          <path d="M0,32 C360,95 720,10 1080,65 C1260,90 1380,45 1440,32 L1440,100 L0,100 Z"></path>
         </svg>
       </div>
     </section>
@@ -305,7 +317,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <div class="lg:col-span-7 space-y-3">
             <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-2xl bg-black aspect-video">
               <img
-                src="/images/assalam-tv/id-sidebar-lazuardi.png"
+                src="/images/assalam-tv/id-sidebar-lazuardi.webp"
                 alt="Tampilan Sidebar Kiri Tema Lazuardi Assalam TV"
                 class="w-full h-full object-cover"
                 loading="lazy"
@@ -389,7 +401,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
     <!-- ==================== 3. SECTION/THEMES: CAROUSEL 8 SLIDE ==================== -->
     <section id="themes" class="py-24 bg-[#0A1D31] text-white relative overflow-hidden">
       <!-- Background World Dots Pattern Overlay -->
-      <div class="absolute inset-0 opacity-15 pointer-events-none mix-blend-screen bg-center bg-cover" style="background-image: url('/images/assalam-tv/world-dots.png');"></div>
+      <div class="absolute inset-0 opacity-15 pointer-events-none mix-blend-screen bg-center bg-cover" style="background-image: url('/images/assalam-tv/world-dots.webp');"></div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <!-- Section Header -->
@@ -421,7 +433,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <div class="aspect-video w-full rounded-2xl sm:rounded-3xl overflow-hidden border-2 sm:border-4 border-[#0E2A47] tv-frame-shadow bg-black relative">
             <img
               id="carousel-main-image"
-              src="/images/assalam-tv/id-h-andalusia.png"
+              src="/images/assalam-tv/id-h-andalusia.webp"
               alt="Assalam TV Carousel Display"
               class="w-full h-full object-cover transition-opacity duration-300"
             />
@@ -515,17 +527,17 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <div class="lg:col-span-6 grid grid-cols-3 gap-3 sm:gap-5 items-center justify-center">
             <!-- V Zamrud -->
             <div class="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl aspect-[9/16] bg-black transform hover:-translate-y-2 transition-transform duration-300">
-              <img src="/images/assalam-tv/id-v-zamrud.png" alt="Vertikal Zamrud" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/id-v-zamrud.webp" alt="Vertikal Zamrud" class="w-full h-full object-cover" loading="lazy" />
             </div>
 
             <!-- V Lazuardi (Elevated in Center) -->
             <div class="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#D9B26A] shadow-2xl aspect-[9/16] bg-black transform -translate-y-3 sm:-translate-y-5 hover:-translate-y-7 transition-transform duration-300">
-              <img src="/images/assalam-tv/id-v-lazuardi.png" alt="Vertikal Lazuardi" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/id-v-lazuardi.webp" alt="Vertikal Lazuardi" class="w-full h-full object-cover" loading="lazy" />
             </div>
 
             <!-- V Andalusia -->
             <div class="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl aspect-[9/16] bg-black transform hover:-translate-y-2 transition-transform duration-300">
-              <img src="/images/assalam-tv/id-v-andalusia.png" alt="Vertikal Andalusia" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/id-v-andalusia.webp" alt="Vertikal Andalusia" class="w-full h-full object-cover" loading="lazy" />
             </div>
           </div>
         </div>
@@ -553,7 +565,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 01 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-standby-zamrud.png" alt="Tahap Standby" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-standby-zamrud.webp" alt="Tahap Standby" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 01</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Standby</h3>
@@ -563,7 +575,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 02 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-menjelang-lazuardi.png" alt="Menjelang Sholat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-menjelang-lazuardi.webp" alt="Menjelang Sholat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 02</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Menjelang Sholat</h3>
@@ -573,7 +585,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 03 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-adzan-delima.png" alt="Notifikasi Adzan" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-adzan-delima.webp" alt="Notifikasi Adzan" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 03</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Notifikasi Adzan</h3>
@@ -583,7 +595,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 04 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-iqamah-nila.png" alt="Hitung Mundur Iqomah" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-iqamah-nila.webp" alt="Hitung Mundur Iqomah" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 04</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Hitung Mundur Iqomah</h3>
@@ -593,7 +605,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 05 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-sholat-obsidian.png" alt="Layar Padam Otomatis" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-sholat-obsidian.webp" alt="Layar Padam Otomatis" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 05</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Layar Padam Otomatis</h3>
@@ -603,7 +615,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 06 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-jumat-andalusia.png" alt="Mode Sholat Jumat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-jumat-andalusia.webp" alt="Mode Sholat Jumat" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 06</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Mode Sholat Jumat</h3>
@@ -613,7 +625,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Tahap 07 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
-              <img src="/images/assalam-tv/state-dhuha.png" alt="Countdown Dhuha" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+              <img src="/images/assalam-tv/state-dhuha.webp" alt="Countdown Dhuha" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
             </div>
             <div class="text-[11px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 07</div>
             <h3 class="text-base font-bold text-[#F5F2EA] mt-0.5">Countdown Dhuha</h3>
@@ -660,7 +672,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Card 1: ID -->
           <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
             <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
-              <img src="/images/assalam-tv/id-h-andalusia.png" alt="Bahasa Indonesia Display" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/id-h-andalusia.webp" alt="Bahasa Indonesia Display" class="w-full h-full object-cover" loading="lazy" />
             </div>
             <div class="flex items-center gap-2 mb-2">
               <span class="text-xl">🇮🇩</span>
@@ -678,7 +690,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Card 2: EN -->
           <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
             <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
-              <img src="/images/assalam-tv/en-h-andalusia.png" alt="English Display" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/en-h-andalusia.webp" alt="English Display" class="w-full h-full object-cover" loading="lazy" />
             </div>
             <div class="flex items-center gap-2 mb-2">
               <span class="text-xl">🇬🇧</span>
@@ -696,7 +708,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           <!-- Card 3: AR -->
           <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
             <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
-              <img src="/images/assalam-tv/ar-h-andalusia.png" alt="Arabic Display" class="w-full h-full object-cover" loading="lazy" />
+              <img src="/images/assalam-tv/ar-h-andalusia.webp" alt="Arabic Display" class="w-full h-full object-cover" loading="lazy" />
             </div>
             <div class="flex items-center gap-2 mb-2">
               <span class="text-xl">🇸🇦</span>
@@ -1042,13 +1054,18 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
               <div class="space-y-3 pt-6" id="download">
                 <!-- Button 1: Google Play -->
                 <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs sm:text-sm hover:bg-[#0E2A47] shadow transition">
-                  <img src="/images/google-play-id.png" alt="Google Play" class="h-5 w-auto" />
-                  <span>Unduh di Google Play</span>
+                  <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                    <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                    <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                    <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                    <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+                  </svg>
+                  <span>Unduh di Google Play &bull; Gratis</span>
                 </a>
 
                 <!-- Button 2: Beli Lisensi Admin -->
-                <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-[#0E2A47]/10 text-[#0A1D31] font-bold text-xs sm:text-sm hover:bg-[#0E2A47]/20 border border-[#0A1D31]/20 transition">
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5l-3 3-4-4-5.5 5.5a2.12 2.12 0 0 0 3 3L10.5 15l3 3 1.5-1.5M19 5l-2-2"/></svg>
+                <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20membeli%20Lisensi%20Admin%20Assalam%20TV%20untuk%20masjid" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-xs sm:text-sm hover:brightness-105 shadow transition">
+                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3.8 6h16.4L18 3.5H6L3.8 6zM16 10a4 4 0 01-8 0"></path></svg>
                   <span>Beli Lisensi Admin &bull; Rp 500.000</span>
                 </a>
 
@@ -1246,17 +1263,22 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
           </p>
 
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-            <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.admin" target="_blank" rel="noopener noreferrer" class="gold-gradient-bg text-[#0A1D31] font-extrabold text-sm px-8 py-4 rounded-full shadow-xl hover:brightness-105 transition flex items-center gap-2 transform hover:-translate-y-0.5 w-full sm:w-auto justify-center">
+            <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20membeli%20Lisensi%20Admin%20Assalam%20TV%20untuk%20masjid" target="_blank" rel="noopener noreferrer" class="gold-gradient-bg text-[#0A1D31] font-extrabold text-sm px-8 py-4 rounded-full shadow-xl hover:brightness-105 transition flex items-center gap-2.5 transform hover:-translate-y-0.5 w-full sm:w-auto justify-center">
               <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3.8 6h16.4L18 3.5H6L3.8 6zM16 10a4 4 0 01-8 0"></path></svg>
-              <span>Beli Lisensi di Google Play</span>
+              <span>Beli Lisensi Admin</span>
             </a>
 
-            <a href="#download" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm px-7 py-4 rounded-full transition flex items-center gap-2 w-full sm:w-auto justify-center">
-              <img src="/images/google-play-id.png" alt="Google Play" class="h-5 w-auto" />
-              <span>Unduh TV App</span>
+            <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="bg-[#0A1D31] hover:bg-[#0E2A47] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm px-7 py-4 rounded-full shadow-xl transition flex items-center gap-2.5 w-full sm:w-auto justify-center">
+              <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+              </svg>
+              <span>Unduh TV App Gratis</span>
             </a>
 
-            <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="border border-[#D9B26A] text-[#D9B26A] hover:bg-[#D9B26A]/10 font-bold text-sm px-6 py-4 rounded-full transition flex items-center gap-2 w-full sm:w-auto justify-center">
+            <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="border border-[#D9B26A] text-[#D9B26A] hover:bg-[#D9B26A]/10 font-bold text-sm px-7 py-4 rounded-full transition flex items-center gap-2 w-full sm:w-auto justify-center">
               <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
               <span>Konsultasi STB via WhatsApp</span>
             </a>
@@ -1356,42 +1378,42 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.png";
       {
         title: "01 \u2022 Bahasa Indonesia \u2022 Horizontal Classic",
         desc: "Tema Andalusia (emas terakota hangat) \u2022 id-h-andalusia.png",
-        img: "/images/assalam-tv/id-h-andalusia.png"
+        img: "/images/assalam-tv/id-h-andalusia.webp"
       },
       {
         title: "02 \u2022 English \u2022 Sidebar Kiri",
         desc: "Tema Lazuardi (biru safir damai) \u2022 en-sidebar-lazuardi.png",
-        img: "/images/assalam-tv/en-sidebar-lazuardi.png"
+        img: "/images/assalam-tv/en-sidebar-lazuardi.webp"
       },
       {
         title: "03 \u2022 \u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u2022 Sidebar Kanan",
         desc: "Tema Nila (ungu indigo berwibawa) \u2022 ar-kanan-nila.png",
-        img: "/images/assalam-tv/ar-kanan-nila.png"
+        img: "/images/assalam-tv/ar-kanan-nila.webp"
       },
       {
         title: "04 \u2022 Notifikasi Adzan \u2022 Horizontal",
         desc: "Tema Lazuardi (biru) \u2022 id-s-lazuardi-adzan.png",
-        img: "/images/assalam-tv/id-s-lazuardi-adzan.png"
+        img: "/images/assalam-tv/id-s-lazuardi-adzan.webp"
       },
       {
         title: "05 \u2022 Countdown Iqomah \u2022 Horizontal",
         desc: "Tema Andalusia (emas) \u2022 id-s-andalusia-iqamah.png",
-        img: "/images/assalam-tv/id-s-andalusia-iqamah.png"
+        img: "/images/assalam-tv/id-s-andalusia-iqamah.webp"
       },
       {
         title: "06 \u2022 Notifikasi Sholat Jumat \u2022 Horizontal",
         desc: "Tema Lazuardi (biru) \u2022 id-s-lazuardi-jumat.png",
-        img: "/images/assalam-tv/id-s-lazuardi-jumat.png"
+        img: "/images/assalam-tv/id-s-lazuardi-jumat.webp"
       },
       {
         title: "07 \u2022 Countdown Dhuha \u2022 Horizontal",
         desc: "Tema Andalusia (emas) \u2022 id-s-andalusia-dhuha.png",
-        img: "/images/assalam-tv/id-s-andalusia-dhuha.png"
+        img: "/images/assalam-tv/id-s-andalusia-dhuha.webp"
       },
       {
         title: "08 \u2022 Menjelang Sholat \u2022 Horizontal",
         desc: "Tema Lazuardi (biru) \u2022 id-s-lazuardi-menjelang.png",
-        img: "/images/assalam-tv/id-s-lazuardi-menjelang.png"
+        img: "/images/assalam-tv/id-s-lazuardi-menjelang.webp"
       }
     ];
 
