@@ -1,0 +1,898 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AdminSidebar from '../../components/layout/AdminSidebar.astro';
+import Icon from '../../components/ui/Icon.astro';
+---
+
+<BaseLayout title="Database Tester Aplikasi - Admin Asri Digital">
+  <div class="flex min-h-screen">
+    <AdminSidebar activePage="testers" />
+    
+    <main class="flex-1 bg-background min-w-0">
+      <!-- Top Bar -->
+      <header class="bg-surface border-b border-border px-4 md:px-6 py-4 sticky top-0 z-20 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg text-text-secondary" onclick="window.__openSidebar?.()">
+              <Icon name="menu" size={24} />
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl font-bold text-text-primary">Database Tester Aplikasi</h1>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-[#D9B26A]/20 text-[#9A7228] border border-[#D9B26A]/30">
+                  Closed Testing
+                </span>
+              </div>
+              <p class="text-xs text-text-muted mt-0.5">Kelola tester Google Play untuk Assalam TV dan aplikasi baru Asri Digital</p>
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              id="open-broadcast-btn"
+              onclick="openBroadcastModal()"
+              class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0A1D31] to-[#0E2A47] text-[#F5F2EA] border border-[#D9B26A]/40 font-bold text-xs sm:text-sm hover:brightness-110 transition flex items-center gap-2 shadow-sm"
+            >
+              <svg class="w-4 h-4 text-[#D9B26A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Broadcast Email</span>
+            </button>
+
+            <button
+              onclick="exportPlayConsoleCsv()"
+              class="px-3.5 py-2 rounded-xl bg-surface border border-border text-xs sm:text-sm font-semibold text-text-primary hover:bg-background transition flex items-center gap-1.5"
+              title="Format CSV standar Google Play Console (Email address)"
+            >
+              <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export Play Store CSV</span>
+            </button>
+
+            <button
+              onclick="exportFullCsv()"
+              class="px-3 py-2 rounded-xl bg-surface border border-border text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-background transition flex items-center gap-1.5"
+            >
+              <Icon name="download" size={16} />
+              <span>Export Lengkap</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="p-4 md:p-6 space-y-6">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+          <div class="bg-surface rounded-2xl border border-border p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-text-muted uppercase tracking-wider">Total Tester</span>
+              <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
+                <Icon name="users" size={18} />
+              </div>
+            </div>
+            <p class="text-2xl font-extrabold text-text-primary" id="stat-total">-</p>
+            <p class="text-[11px] text-text-muted mt-1">Semua pendaftar</p>
+          </div>
+
+          <div class="bg-surface rounded-2xl border border-border p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Pending</span>
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-extrabold text-amber-600" id="stat-pending">-</p>
+            <p class="text-[11px] text-text-muted mt-1">Belum dimasukkan Console</p>
+          </div>
+
+          <div class="bg-surface rounded-2xl border border-border p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Invited</span>
+              <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-extrabold text-blue-600" id="stat-invited">-</p>
+            <p class="text-[11px] text-text-muted mt-1">Undangan terkirim</p>
+          </div>
+
+          <div class="bg-surface rounded-2xl border border-border p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Active</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-extrabold text-emerald-600" id="stat-active">-</p>
+            <p class="text-[11px] text-text-muted mt-1">Sedang uji coba di TV</p>
+          </div>
+
+          <div class="col-span-2 lg:col-span-1 bg-surface rounded-2xl border border-border p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Completed</span>
+              <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+              </div>
+            </div>
+            <p class="text-2xl font-extrabold text-purple-600" id="stat-completed">-</p>
+            <p class="text-[11px] text-text-muted mt-1">Dapat Lisensi Admin</p>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="bg-surface rounded-2xl border border-border p-4 shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+            <div class="md:col-span-5">
+              <div class="relative">
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Cari nama, masjid, email, atau no WhatsApp..."
+                  class="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <div class="absolute left-3.5 top-3 text-text-muted pointer-events-none">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="md:col-span-3">
+              <select
+                id="app-filter"
+                class="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="all">Semua Aplikasi</option>
+                <option value="assalam-tv">Assalam TV (TV Masjid)</option>
+                <option value="cycle-journal">CycleJournal</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-2">
+              <select
+                id="status-filter"
+                class="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="all">Semua Status</option>
+                <option value="PENDING">PENDING</option>
+                <option value="INVITED">INVITED</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="COMPLETED">COMPLETED</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-2 flex items-center gap-2">
+              <button
+                onclick="loadTesters(1)"
+                class="w-full py-2.5 px-3 bg-background hover:bg-border/40 text-text-primary border border-border rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2"
+              >
+                <Icon name="refresh-cw" size={16} />
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Testers Table -->
+        <div class="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-border bg-background/60 text-xs font-bold text-text-muted uppercase tracking-wider">
+                  <th class="px-4 py-3.5">Nama &bull; Masjid</th>
+                  <th class="px-4 py-3.5">Email Akun Google</th>
+                  <th class="px-4 py-3.5">WhatsApp</th>
+                  <th class="px-4 py-3.5">Aplikasi</th>
+                  <th class="px-4 py-3.5">Perangkat</th>
+                  <th class="px-4 py-3.5">Multi-App</th>
+                  <th class="px-4 py-3.5">Status Pengujian</th>
+                  <th class="px-4 py-3.5">Tanggal</th>
+                  <th class="px-4 py-3.5 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="testers-table-body" class="divide-y divide-border text-sm">
+                <tr>
+                  <td colspan="9" class="text-center py-12 text-text-muted">
+                    <div class="flex flex-col items-center gap-2">
+                      <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <span class="text-xs">Memuat data pendaftar tester...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="border-t border-border px-4 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 bg-surface" id="pagination-wrapper">
+            <p class="text-xs text-text-muted" id="pagination-info">Menampilkan 0 dari 0 tester</p>
+            <div class="flex items-center gap-2" id="pagination-buttons"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Broadcast Email Modal -->
+  <div id="broadcast-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface border border-border rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative my-8">
+      <button onclick="closeBroadcastModal()" class="absolute top-5 right-5 p-2 rounded-xl hover:bg-background text-text-muted hover:text-text-primary transition">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0A1D31] to-[#0E2A47] text-[#D9B26A] flex items-center justify-center shadow">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-text-primary">Kirim Broadcast Email ke Tester</h2>
+          <p class="text-xs text-text-muted">Kirim undangan pengujian aplikasi baru ke tester yang sudah tersimpan</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-text-primary mb-1">Target Aplikasi</label>
+            <select id="broadcast-target-app" class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40">
+              <option value="all">Semua Tester yang Opt-in App Baru</option>
+              <option value="assalam-tv">Khusus Tester Assalam TV</option>
+              <option value="cycle-journal">Khusus Tester CycleJournal</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-primary mb-1">Target Status Tester</label>
+            <select id="broadcast-target-status" class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40">
+              <option value="all">Semua Status (Pending, Invited, Active, Completed)</option>
+              <option value="PENDING">Hanya Status PENDING</option>
+              <option value="INVITED">Hanya Status INVITED</option>
+              <option value="ACTIVE">Hanya Status ACTIVE</option>
+              <option value="COMPLETED">Hanya Status COMPLETED</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-text-primary mb-1">Subjek Email <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            id="broadcast-subject"
+            placeholder="Contoh: [Undangan Eksklusif] Coba Aplikasi Baru Asri Digital & Dapatkan Voucher Lisensi"
+            value="[Undangan Eksklusif] Uji Coba Aplikasi Baru Asri Digital di Google Play"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-text-primary mb-1">Judul Heading Email</label>
+          <input
+            type="text"
+            id="broadcast-heading"
+            placeholder="Contoh: Undangan Closed Testing Aplikasi Baru"
+            value="Undangan Eksklusif Closed Testing Google Play"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-text-primary mb-1">Isi Pesan Email <span class="text-red-500">*</span></label>
+          <textarea
+            id="broadcast-message"
+            rows="6"
+            placeholder="Tuliskan isi pesan pengumuman atau undangan aplikasi baru di sini..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40 font-sans"
+          >Terima kasih atas partisipasi aktif Anda dalam komunitas early access Asri Digital.
+
+Kami dengan senang hati mengundang Anda untuk menjadi penguji pertama (closed tester) aplikasi terbaru kami di Google Play Store.
+
+Sebagai bentuk apresiasi, tester terpilih yang berpartisipasi dan memberikan masukan akan mendapatkan voucher lisensi premium gratis saat aplikasi resmi dirilis publik.
+
+Silakan klik tautan di bawah ini untuk bergabung ke program closed testing melalui Google Play Store.</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-text-primary mb-1">Teks Tombol CTA</label>
+            <input
+              type="text"
+              id="broadcast-cta-label"
+              placeholder="Contoh: Buka di Google Play &rarr;"
+              value="Ikuti Uji Coba di Play Store &rarr;"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-text-primary mb-1">Link URL CTA (Play Store / Form)</label>
+            <input
+              type="url"
+              id="broadcast-cta-url"
+              placeholder="https://play.google.com/apps/testing/..."
+              value="https://play.google.com/apps/testing/com.asridigital.assalamtv"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-xs sm:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+          <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div>
+            Email dikirim menggunakan engine <strong>Resend</strong> dengan branding resmi Asri Digital (#0A1D31 Navy &amp; #D9B26A Gold). Email nama penerima akan dipersonalisasi secara otomatis.
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-border">
+          <button
+            onclick="closeBroadcastModal()"
+            type="button"
+            class="px-4 py-2.5 rounded-xl border border-border hover:bg-background text-xs font-semibold text-text-secondary transition"
+          >
+            Batal
+          </button>
+          <button
+            id="send-broadcast-btn"
+            onclick="sendBroadcast()"
+            type="button"
+            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#E9CE95] to-[#C2953F] text-[#0A1D31] font-extrabold text-xs sm:text-sm hover:brightness-105 transition shadow flex items-center gap-2"
+          >
+            <span>Kirim Broadcast Sekarang</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- Client Script -->
+  <script is:inline>
+    const API_BASE = '/api';
+    let currentPage = 1;
+    let currentApp = 'all';
+    let currentStatus = 'all';
+    let currentSearch = '';
+    let cachedTesters = [];
+
+    function getToken() {
+      return localStorage.getItem('admin_token') || '';
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold flex items-center gap-2.5 transition-all transform duration-300 translate-y-2 ${
+        type === 'success' 
+          ? 'bg-emerald-900 text-white border-emerald-700' 
+          : 'bg-rose-900 text-white border-rose-700'
+      }`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✓' : '✕'}</span>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    async function loadTesters(page = 1) {
+      currentPage = page;
+      const tbody = document.getElementById('testers-table-body');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="text-center py-12 text-text-muted">
+              <div class="flex flex-col items-center gap-2">
+                <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs">Memuat data...</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+        app: currentApp,
+        status: currentStatus,
+        search: currentSearch
+      });
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/testers?${params}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/admin/login';
+          return;
+        }
+
+        if (!res.ok) throw new Error('Gagal memuat data tester');
+        const data = await res.json();
+
+        cachedTesters = data.testers || [];
+        updateStats(data.stats);
+        renderTable(data.testers || []);
+        renderPagination(data);
+      } catch (err) {
+        console.error('Fetch testers error:', err);
+        if (tbody) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="text-center py-12 text-rose-500 font-medium">
+                Gagal memuat data tester. Silakan coba lagi.
+              </td>
+            </tr>
+          `;
+        }
+      }
+    }
+
+    function updateStats(stats) {
+      if (!stats) return;
+      document.getElementById('stat-total').textContent = stats.total ?? 0;
+      document.getElementById('stat-pending').textContent = stats.pending ?? 0;
+      document.getElementById('stat-invited').textContent = stats.invited ?? 0;
+      document.getElementById('stat-active').textContent = stats.active ?? 0;
+      document.getElementById('stat-completed').textContent = stats.completed ?? 0;
+    }
+
+    function getCleanPhone(phone) {
+      if (!phone) return '';
+      let clean = phone.replace(/[^0-9]/g, '');
+      if (clean.startsWith('0')) {
+        clean = '62' + clean.slice(1);
+      } else if (!clean.startsWith('62')) {
+        clean = '62' + clean;
+      }
+      return clean;
+    }
+
+    function renderTable(testers) {
+      const tbody = document.getElementById('testers-table-body');
+      if (!tbody) return;
+
+      if (!testers.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="text-center py-14 text-text-muted">
+              <div class="flex flex-col items-center gap-2">
+                <svg class="w-10 h-10 text-text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <p class="text-sm font-semibold">Belum ada data tester yang cocok</p>
+                <p class="text-xs text-text-muted">Coba ubah kata kunci pencarian atau filter status</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = testers.map(t => {
+        const cleanWa = getCleanPhone(t.whatsapp);
+        const waMsg = encodeURIComponent(`Halo ${t.name || 'Bapak/Ibu'}, terima kasih telah mendaftar sebagai Tester ${t.app_name || 'Assalam TV'}. Berikut informasi akses Google Play closed testing Anda...`);
+        const waLink = cleanWa ? `https://wa.me/${cleanWa}?text=${waMsg}` : '#';
+
+        const statusClasses = {
+          'PENDING': 'bg-amber-500/10 text-amber-600 border-amber-500/30',
+          'INVITED': 'bg-blue-500/10 text-blue-600 border-blue-500/30',
+          'ACTIVE': 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+          'COMPLETED': 'bg-purple-500/10 text-purple-600 border-purple-500/30'
+        }[t.status] || 'bg-gray-500/10 text-gray-600 border-gray-500/30';
+
+        const optInBadge = t.opt_in_other_apps === 1
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" title="Bersedia uji coba app baru lainnya">Multi-App</span>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-500/10 text-gray-500" title="Hanya app ini">App Ini Saja</span>`;
+
+        return `
+          <tr class="hover:bg-background/40 transition-colors">
+            <!-- Nama & Notes -->
+            <td class="px-4 py-3.5">
+              <div class="font-bold text-text-primary text-sm">${escapeHtml(t.name || '-')}</div>
+              ${t.notes ? `<div class="text-[11px] text-text-muted mt-0.5 italic max-w-xs truncate" title="${escapeHtml(t.notes)}">${escapeHtml(t.notes)}</div>` : ''}
+            </td>
+
+            <!-- Email with quick copy -->
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-1.5">
+                <span class="text-text-secondary font-mono text-xs select-all">${escapeHtml(t.email)}</span>
+                <button
+                  onclick="copyToClipboard('${escapeHtml(t.email)}')"
+                  title="Salin Email"
+                  class="p-1 rounded hover:bg-background text-text-muted hover:text-text-primary transition"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+
+            <!-- WhatsApp Link -->
+            <td class="px-4 py-3.5 whitespace-nowrap">
+              ${cleanWa ? `
+                <a
+                  href="${waLink}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 transition"
+                  title="Hubungi via WhatsApp"
+                >
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                  <span>${escapeHtml(t.whatsapp)}</span>
+                </a>
+              ` : `<span class="text-xs text-text-muted">-</span>`}
+            </td>
+
+            <!-- App Slug/Name -->
+            <td class="px-4 py-3.5 whitespace-nowrap">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                ${escapeHtml(t.app_name || t.app_slug || 'Assalam TV')}
+              </span>
+            </td>
+
+            <!-- Perangkat -->
+            <td class="px-4 py-3.5 text-xs text-text-secondary max-w-[140px] truncate" title="${escapeHtml(t.device || '-')}">
+              ${escapeHtml(t.device || '-')}
+            </td>
+
+            <!-- Opt-In Multi-App -->
+            <td class="px-4 py-3.5 whitespace-nowrap">
+              ${optInBadge}
+            </td>
+
+            <!-- Status Dropdown (Instant update) -->
+            <td class="px-4 py-3.5 whitespace-nowrap">
+              <select
+                onchange="updateStatus('${t.id}', this.value)"
+                class="px-2.5 py-1 text-xs font-bold rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer ${statusClasses}"
+              >
+                <option value="PENDING" ${t.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                <option value="INVITED" ${t.status === 'INVITED' ? 'selected' : ''}>INVITED</option>
+                <option value="ACTIVE" ${t.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+                <option value="COMPLETED" ${t.status === 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+              </select>
+            </td>
+
+            <!-- Tanggal -->
+            <td class="px-4 py-3.5 text-xs text-text-muted whitespace-nowrap">
+              ${formatDate(t.created_at)}
+            </td>
+
+            <!-- Aksi: Delete / Notes -->
+            <td class="px-4 py-3.5 text-right whitespace-nowrap">
+              <button
+                onclick="deleteTester('${t.id}', '${escapeHtml(t.name || t.email)}')"
+                class="p-1.5 rounded-lg hover:bg-rose-50 text-text-muted hover:text-rose-600 transition"
+                title="Hapus data tester"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPagination(data) {
+      const info = document.getElementById('pagination-info');
+      const buttons = document.getElementById('pagination-buttons');
+      if (!info || !buttons) return;
+
+      const total = data.total || 0;
+      const limit = data.limit || 20;
+      const page = data.page || 1;
+      const totalPages = data.totalPages || 1;
+
+      const start = total === 0 ? 0 : (page - 1) * limit + 1;
+      const end = Math.min(page * limit, total);
+      info.textContent = `Menampilkan ${start}-${end} dari ${total} tester`;
+
+      let html = '';
+      if (page > 1) {
+        html += `<button onclick="loadTesters(${page - 1})" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-surface hover:bg-background transition">Prev</button>`;
+      }
+      html += `<span class="px-3 py-1 text-xs text-text-secondary font-medium">Hal ${page} / ${totalPages}</span>`;
+      if (page < totalPages) {
+        html += `<button onclick="loadTesters(${page + 1})" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-surface hover:bg-background transition">Next</button>`;
+      }
+      buttons.innerHTML = html;
+    }
+
+    async function updateStatus(testerId, newStatus) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/testers/${testerId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(`Status tester berhasil diubah menjadi ${newStatus}`);
+          loadTesters(currentPage);
+        } else {
+          throw new Error(data.error || 'Gagal mengubah status');
+        }
+      } catch (err) {
+        console.error('Update status error:', err);
+        showToast('Gagal mengubah status tester', 'error');
+        loadTesters(currentPage);
+      }
+    }
+
+    async function deleteTester(testerId, label) {
+      if (!confirm(`Hapus data tester "${label}" secara permanen?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/testers/${testerId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('Data tester berhasil dihapus');
+          loadTesters(currentPage);
+        } else {
+          throw new Error(data.error || 'Gagal menghapus data');
+        }
+      } catch (err) {
+        console.error('Delete tester error:', err);
+        showToast('Gagal menghapus data tester', 'error');
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Email disalin: ${text}`);
+      }).catch(() => {
+        showToast('Gagal menyalin email', 'error');
+      });
+    }
+
+    // Export standard Play Console CSV format
+    // Google Play Console Closed Testing accepts:
+    // Email address
+    // user1@gmail.com
+    // user2@gmail.com
+    async function exportPlayConsoleCsv() {
+      try {
+        // Fetch all testers for current filter (up to 1000)
+        const params = new URLSearchParams({
+          page: '1',
+          limit: '1000',
+          app: currentApp,
+          status: currentStatus,
+          search: currentSearch
+        });
+        const res = await fetch(`${API_BASE}/admin/testers?${params}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const data = await res.json();
+        const list = data.testers || [];
+
+        if (!list.length) {
+          showToast('Tidak ada data tester untuk diekspor', 'error');
+          return;
+        }
+
+        const lines = ['Email address'];
+        list.forEach(t => {
+          if (t.email) lines.push(t.email.trim());
+        });
+
+        const csvContent = lines.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `google-play-testers-${currentApp}-${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast(`Berhasil mengekspor ${list.length} email format Google Play!`);
+      } catch (err) {
+        console.error('Export error:', err);
+        showToast('Gagal mengekspor CSV', 'error');
+      }
+    }
+
+    // Export Full Details CSV
+    async function exportFullCsv() {
+      try {
+        const params = new URLSearchParams({
+          page: '1',
+          limit: '1000',
+          app: currentApp,
+          status: currentStatus,
+          search: currentSearch
+        });
+        const res = await fetch(`${API_BASE}/admin/testers?${params}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const data = await res.json();
+        const list = data.testers || [];
+
+        if (!list.length) {
+          showToast('Tidak ada data tester untuk diekspor', 'error');
+          return;
+        }
+
+        const headers = ['ID', 'Nama', 'Email', 'WhatsApp', 'Aplikasi', 'Perangkat', 'Multi App Opt-In', 'Status', 'Catatan', 'Tanggal Daftar'];
+        const rows = list.map(t => [
+          `"${t.id || ''}"`,
+          `"${(t.name || '').replace(/"/g, '""')}"`,
+          `"${t.email || ''}"`,
+          `"${t.whatsapp || ''}"`,
+          `"${t.app_name || t.app_slug || ''}"`,
+          `"${(t.device || '').replace(/"/g, '""')}"`,
+          t.opt_in_other_apps === 1 ? 'YA' : 'TIDAK',
+          `"${t.status || ''}"`,
+          `"${(t.notes || '').replace(/"/g, '""')}"`,
+          `"${t.created_at || ''}"`
+        ]);
+
+        const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `asri-app-testers-full-${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast(`Berhasil mengekspor ${list.length} tester data lengkap!`);
+      } catch (err) {
+        console.error('Export full error:', err);
+        showToast('Gagal mengekspor data lengkap', 'error');
+      }
+    }
+
+    // Modal Broadcast
+    function openBroadcastModal() {
+      const modal = document.getElementById('broadcast-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeBroadcastModal() {
+      const modal = document.getElementById('broadcast-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function sendBroadcast() {
+      const targetApp = document.getElementById('broadcast-target-app')?.value;
+      const targetStatus = document.getElementById('broadcast-target-status')?.value;
+      const subject = document.getElementById('broadcast-subject')?.value?.trim();
+      const heading = document.getElementById('broadcast-heading')?.value?.trim();
+      const message = document.getElementById('broadcast-message')?.value?.trim();
+      const ctaLabel = document.getElementById('broadcast-cta-label')?.value?.trim();
+      const ctaUrl = document.getElementById('broadcast-cta-url')?.value?.trim();
+
+      if (!subject || !message) {
+        showToast('Subjek dan Isi Pesan wajib diisi', 'error');
+        return;
+      }
+
+      if (!confirm('Apakah Anda yakin ingin mengirim broadcast email ke tester yang dipilih?')) {
+        return;
+      }
+
+      const btn = document.getElementById('send-broadcast-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Mengirim email...';
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/testers/broadcast`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            target_app: targetApp,
+            target_status: targetStatus,
+            subject,
+            heading,
+            message,
+            cta_label: ctaLabel,
+            cta_url: ctaUrl
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(data.message || 'Broadcast email berhasil terkirim!');
+          closeBroadcastModal();
+        } else {
+          throw new Error(data.error || 'Gagal mengirim broadcast');
+        }
+      } catch (err) {
+        console.error('Send broadcast error:', err);
+        showToast(err.message || 'Terjadi kesalahan saat broadcast', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Kirim Broadcast Sekarang</span>';
+        }
+      }
+    }
+
+    // Search and filters listeners
+    let searchTimeout;
+    document.getElementById('search-input')?.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentSearch = e.target.value.trim();
+        loadTesters(1);
+      }, 350);
+    });
+
+    document.getElementById('app-filter')?.addEventListener('change', (e) => {
+      currentApp = e.target.value;
+      loadTesters(1);
+    });
+
+    document.getElementById('status-filter')?.addEventListener('change', (e) => {
+      currentStatus = e.target.value;
+      loadTesters(1);
+    });
+
+    // Global bindings
+    window.loadTesters = loadTesters;
+    window.updateStatus = updateStatus;
+    window.deleteTester = deleteTester;
+    window.copyToClipboard = copyToClipboard;
+    window.exportPlayConsoleCsv = exportPlayConsoleCsv;
+    window.exportFullCsv = exportFullCsv;
+    window.openBroadcastModal = openBroadcastModal;
+    window.closeBroadcastModal = closeBroadcastModal;
+    window.sendBroadcast = sendBroadcast;
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTesters(1);
+    });
+  </script>
+</BaseLayout>

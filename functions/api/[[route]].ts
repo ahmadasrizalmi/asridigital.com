@@ -2952,52 +2952,75 @@ export async function onRequest(context: any): Promise<Response> {
       return jsonResponse({ success: true, message: 'Pesan berhasil dikirim' });
     }
 
-    // ==================== ASSALAM TV: TESTER REGISTRATION ====================
-    if (route === '/assalam-tv/tester' && method === 'POST') {
-      const body = await request.json();
-      const { nama, email, whatsapp, device } = body;
+    // ==================== APP TESTERS: PUBLIC REGISTRATION ====================
+    if ((route === '/assalam-tv/tester' || route === '/testers') && method === 'POST') {
+      try {
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS app_testers (
+            id TEXT PRIMARY KEY,
+            app_slug TEXT NOT NULL DEFAULT 'assalam-tv',
+            app_name TEXT NOT NULL DEFAULT 'Assalam TV',
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            whatsapp TEXT NOT NULL,
+            device TEXT,
+            status TEXT DEFAULT 'PENDING',
+            opt_in_other_apps INTEGER DEFAULT 1,
+            notes TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        `).run();
+      } catch (e) {
+        console.error('Table app_testers creation check error:', e);
+      }
+
+      let body: any = {};
+      try {
+        body = await request.json();
+      } catch {
+        return jsonResponse({ error: 'Format data JSON tidak valid' }, 400);
+      }
+
+      const nama = body.nama || body.name;
+      const email = body.email;
+      const whatsapp = body.whatsapp || body.wa;
+      const device = body.device || 'Android';
+      const app_slug = sanitizeInput(body.app_slug || 'assalam-tv');
+      const app_name = sanitizeInput(body.app_name || 'Assalam TV');
+      const opt_in_other_apps = body.opt_in_other_apps === false ? 0 : 1;
 
       if (!nama || !email || !whatsapp) {
-        return jsonResponse({ error: 'Nama/Masjid, email, dan nomor WhatsApp wajib diisi' }, 400);
+        return jsonResponse({ error: 'Nama/Masjid, email Google Play, dan nomor WhatsApp wajib diisi' }, 400);
       }
 
       const sanitizedNama = sanitizeInput(nama);
       const sanitizedEmail = sanitizeInput(email).toLowerCase();
       const sanitizedWA = sanitizeInput(whatsapp);
-      const sanitizedDevice = sanitizeInput(device || 'Smart TV Android / Google TV');
+      const sanitizedDevice = sanitizeInput(device);
 
       if (!isValidEmail(sanitizedEmail)) {
         return jsonResponse({ error: 'Format email tidak valid' }, 400);
       }
 
-      // Store in D1 Database
-      try {
+      // Check if email already registered for this app
+      const existing = await env.DB.prepare(
+        'SELECT id FROM app_testers WHERE email = ? AND app_slug = ?'
+      ).bind(sanitizedEmail, app_slug).first();
+
+      const testerId = existing ? (existing.id as string) : generateId();
+
+      if (existing) {
         await env.DB.prepare(
-          `INSERT INTO assalam_tv_testers (id, name, email, whatsapp, device, status, created_at)
-           VALUES (?, ?, ?, ?, ?, 'PENDING', datetime('now'))`
-        ).bind(generateId(), sanitizedNama, sanitizedEmail, sanitizedWA, sanitizedDevice).run();
-      } catch (dbErr) {
-        // Table might not exist yet, create it
-        try {
-          await env.DB.prepare(
-            `CREATE TABLE IF NOT EXISTS assalam_tv_testers (
-              id TEXT PRIMARY KEY,
-              name TEXT NOT NULL,
-              email TEXT NOT NULL,
-              whatsapp TEXT NOT NULL,
-              device TEXT,
-              status TEXT DEFAULT 'PENDING',
-              notes TEXT,
-              created_at TEXT
-            )`
-          ).run();
-          await env.DB.prepare(
-            `INSERT INTO assalam_tv_testers (id, name, email, whatsapp, device, status, created_at)
-             VALUES (?, ?, ?, ?, ?, 'PENDING', datetime('now'))`
-          ).bind(generateId(), sanitizedNama, sanitizedEmail, sanitizedWA, sanitizedDevice).run();
-        } catch (e) {
-          console.error('Assalam TV tester DB error:', e);
-        }
+          `UPDATE app_testers 
+           SET name = ?, whatsapp = ?, device = ?, opt_in_other_apps = ?, updated_at = datetime('now')
+           WHERE id = ?`
+        ).bind(sanitizedNama, sanitizedWA, sanitizedDevice, opt_in_other_apps, testerId).run();
+      } else {
+        await env.DB.prepare(
+          `INSERT INTO app_testers (id, app_slug, app_name, name, email, whatsapp, device, status, opt_in_other_apps, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, datetime('now'), datetime('now'))`
+        ).bind(testerId, app_slug, app_name, sanitizedNama, sanitizedEmail, sanitizedWA, sanitizedDevice, opt_in_other_apps).run();
       }
 
       // Send Email notification to Admin via Resend
@@ -3009,37 +3032,40 @@ export async function onRequest(context: any): Promise<Response> {
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
               to: 'ahmadasrizalmi@gmail.com',
-              subject: `[Tester Assalam TV] Pendaftaran Baru - ${sanitizedNama}`,
+              subject: `[Tester ${app_name}] Pendaftaran Baru - ${sanitizedNama}`,
               html: `
                 <div style="font-family:sans-serif;line-height:1.6;color:#10233A;">
-                  <h2 style="color:#0A1D31;border-bottom:2px solid #D9B26A;padding-bottom:8px;">Pendaftaran Tester Assalam TV Baru</h2>
-                  <p>Ada pendaftar closed testing baru untuk <strong>Assalam TV</strong>:</p>
+                  <h2 style="color:#0A1D31;border-bottom:2px solid #D9B26A;padding-bottom:8px;">Pendaftaran Tester Baru: ${app_name}</h2>
+                  <p>Ada pendaftar closed testing baru:</p>
                   <ul>
-                    <li><strong>Nama & Masjid:</strong> ${sanitizedNama}</li>
+                    <li><strong>Aplikasi:</strong> ${app_name} (${app_slug})</li>
+                    <li><strong>Nama / Lembaga:</strong> ${sanitizedNama}</li>
                     <li><strong>Email Google Play:</strong> <a href="mailto:${sanitizedEmail}">${sanitizedEmail}</a></li>
                     <li><strong>WhatsApp:</strong> <a href="https://wa.me/${sanitizedWA.replace(/[^0-9]/g, '')}">${sanitizedWA}</a></li>
-                    <li><strong>Perangkat TV:</strong> ${sanitizedDevice}</li>
+                    <li><strong>Perangkat:</strong> ${sanitizedDevice}</li>
+                    <li><strong>Bersedia Tes Aplikasi Lain:</strong> ${opt_in_other_apps ? 'Ya' : 'Hanya aplikasi ini'}</li>
                     <li><strong>Waktu Daftar:</strong> ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB</li>
                   </ul>
-                  <p style="margin-top:20px;">Silakan tambahkan email tersebut ke Google Play Console Closed Testing track dan kirim voucher Lisensi Admin.</p>
+                  <p style="margin-top:20px;">Kelola pendaftar di <a href="https://asridigital.com/admin/testers">Dashboard Admin Testers</a>.</p>
                 </div>
               `
             })
           });
         }
       } catch (emailErr) {
-        console.error('Assalam TV tester email error:', emailErr);
+        console.error('Tester notification email error:', emailErr);
       }
 
       // Telegram notification
       try {
         await notifyTelegram(
           env,
-          `📺 <b>Pendaftaran Tester Assalam TV</b>\n\n` +
-          `👤 <b>Nama/Masjid:</b> ${sanitizedNama}\n` +
+          `📺 <b>Pendaftaran Tester Baru (${app_name})</b>\n\n` +
+          `👤 <b>Nama:</b> ${sanitizedNama}\n` +
           `📧 <b>Email:</b> ${sanitizedEmail}\n` +
           `📱 <b>WhatsApp:</b> ${sanitizedWA}\n` +
-          `🖥️ <b>Perangkat:</b> ${sanitizedDevice}\n\n` +
+          `🖥️ <b>Perangkat:</b> ${sanitizedDevice}\n` +
+          `🔄 <b>Multi-App:</b> ${opt_in_other_apps ? 'Ya' : 'Hanya ini'}\n\n` +
           `Segera undang ke Google Play Console Closed Testing.`
         );
       } catch (tgErr) {
@@ -3052,11 +3078,225 @@ export async function onRequest(context: any): Promise<Response> {
       });
     }
 
-    // Admin endpoint to view testers
+    // ==================== ADMIN: GET TESTERS ====================
+    if (route === '/admin/testers' && method === 'GET') {
+      try {
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS app_testers (
+            id TEXT PRIMARY KEY,
+            app_slug TEXT NOT NULL DEFAULT 'assalam-tv',
+            app_name TEXT NOT NULL DEFAULT 'Assalam TV',
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            whatsapp TEXT NOT NULL,
+            device TEXT,
+            status TEXT DEFAULT 'PENDING',
+            opt_in_other_apps INTEGER DEFAULT 1,
+            notes TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        `).run();
+      } catch {}
+
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '50');
+      const status = url.searchParams.get('status') || 'all';
+      const appFilter = url.searchParams.get('app') || 'all';
+      const search = url.searchParams.get('search') || '';
+      const offset = (page - 1) * limit;
+
+      let whereClause = '1=1';
+      const bindings: any[] = [];
+
+      if (status !== 'all') {
+        whereClause += ' AND status = ?';
+        bindings.push(status);
+      }
+      if (appFilter !== 'all') {
+        whereClause += ' AND app_slug = ?';
+        bindings.push(appFilter);
+      }
+      if (search) {
+        whereClause += ' AND (email LIKE ? OR name LIKE ? OR whatsapp LIKE ? OR device LIKE ?)';
+        bindings.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+      }
+
+      // Get list
+      const testers = await env.DB.prepare(
+        `SELECT * FROM app_testers WHERE ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      ).bind(...bindings, limit, offset).all();
+
+      const countResult = await env.DB.prepare(
+        `SELECT COUNT(*) as total FROM app_testers WHERE ${whereClause}`
+      ).bind(...bindings).first();
+
+      // Stats across all testers
+      const statsTotal = await env.DB.prepare('SELECT COUNT(*) as total FROM app_testers').first();
+      const statsPending = await env.DB.prepare("SELECT COUNT(*) as total FROM app_testers WHERE status = 'PENDING'").first();
+      const statsInvited = await env.DB.prepare("SELECT COUNT(*) as total FROM app_testers WHERE status = 'INVITED'").first();
+      const statsActive = await env.DB.prepare("SELECT COUNT(*) as total FROM app_testers WHERE status = 'ACTIVE'").first();
+      const statsCompleted = await env.DB.prepare("SELECT COUNT(*) as total FROM app_testers WHERE status = 'COMPLETED'").first();
+
+      const appBreakdown = await env.DB.prepare(
+        'SELECT app_slug, app_name, COUNT(*) as count FROM app_testers GROUP BY app_slug, app_name ORDER BY count DESC'
+      ).all();
+
+      return jsonResponse({
+        testers: testers.results || [],
+        total: countResult?.total || 0,
+        page,
+        limit,
+        totalPages: Math.ceil(((countResult?.total as number) || 0) / limit),
+        stats: {
+          total: statsTotal?.total || 0,
+          pending: statsPending?.total || 0,
+          invited: statsInvited?.total || 0,
+          active: statsActive?.total || 0,
+          completed: statsCompleted?.total || 0,
+          apps: appBreakdown.results || []
+        }
+      });
+    }
+
+    // ==================== ADMIN: UPDATE TESTER ====================
+    if (route.startsWith('/admin/testers/') && method === 'PATCH') {
+      const testerId = route.split('/')[3];
+      const body = await request.json();
+      const updates: string[] = [];
+      const vals: any[] = [];
+
+      if (body.status !== undefined) {
+        updates.push('status = ?');
+        vals.push(sanitizeInput(body.status));
+      }
+      if (body.notes !== undefined) {
+        updates.push('notes = ?');
+        vals.push(sanitizeInput(body.notes));
+      }
+      if (body.app_slug !== undefined) {
+        updates.push('app_slug = ?');
+        vals.push(sanitizeInput(body.app_slug));
+      }
+      if (body.app_name !== undefined) {
+        updates.push('app_name = ?');
+        vals.push(sanitizeInput(body.app_name));
+      }
+
+      if (updates.length > 0) {
+        updates.push("updated_at = datetime('now')");
+        vals.push(testerId);
+        await env.DB.prepare(`UPDATE app_testers SET ${updates.join(', ')} WHERE id = ?`).bind(...vals).run();
+      }
+
+      return jsonResponse({ success: true, message: 'Status tester berhasil diperbarui' });
+    }
+
+    // ==================== ADMIN: DELETE TESTER ====================
+    if (route.startsWith('/admin/testers/') && method === 'DELETE') {
+      const testerId = route.split('/')[3];
+      await env.DB.prepare('DELETE FROM app_testers WHERE id = ?').bind(testerId).run();
+      return jsonResponse({ success: true, message: 'Data tester berhasil dihapus' });
+    }
+
+    // ==================== ADMIN: BROADCAST EMAIL TO TESTERS ====================
+    if (route === '/admin/testers/broadcast' && method === 'POST') {
+      const body = await request.json();
+      const { target_app, target_status, subject, heading, message, cta_label, cta_url } = body;
+
+      if (!subject || !message) {
+        return jsonResponse({ error: 'Subjek dan isi pesan wajib diisi' }, 400);
+      }
+
+      let whereClause = '1=1';
+      const bindings: any[] = [];
+
+      if (target_app && target_app !== 'all') {
+        whereClause += ' AND (app_slug = ? OR opt_in_other_apps = 1)';
+        bindings.push(target_app);
+      }
+      if (target_status && target_status !== 'all') {
+        whereClause += ' AND status = ?';
+        bindings.push(target_status);
+      }
+
+      const testers = await env.DB.prepare(
+        `SELECT DISTINCT email, name, app_name FROM app_testers WHERE ${whereClause}`
+      ).bind(...bindings).all();
+
+      const list = (testers.results || []) as Array<{ email: string; name: string; app_name: string }>;
+
+      if (list.length === 0) {
+        return jsonResponse({ error: 'Tidak ada tester yang sesuai dengan kriteria target' }, 400);
+      }
+
+      let sentCount = 0;
+      let failedCount = 0;
+
+      if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+        for (const t of list) {
+          try {
+            const recipientName = t.name || 'Sahabat Asri Digital';
+            const emailHtml = `
+              <div style="font-family:'Plus Jakarta Sans',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #E7E0D2;border-radius:16px;overflow:hidden;color:#10233A;">
+                <div style="background:linear-gradient(140deg,#0A1D31 0%,#0E2A47 100%);padding:28px 24px;text-align:center;border-bottom:3px solid #D9B26A;">
+                  <h1 style="color:#F5F2EA;font-size:22px;margin:0 0 6px;font-weight:800;">${heading || 'Undangan Uji Coba Aplikasi Baru'}</h1>
+                  <p style="color:#D9B26A;font-size:12px;margin:0;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Asri Digital &bull; Early Access Community</p>
+                </div>
+                <div style="padding:28px 24px;">
+                  <p style="font-size:15px;margin:0 0 16px;color:#10233A;">Halo <strong>${recipientName}</strong>,</p>
+                  <div style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 24px;white-space:pre-line;">
+                    ${message}
+                  </div>
+                  ${cta_url ? `
+                    <div style="text-align:center;margin:32px 0;">
+                      <a href="${cta_url}" style="display:inline-block;background:linear-gradient(140deg,#E9CE95 0%,#C2953F 100%);color:#0A1D31;font-weight:800;font-size:14px;padding:14px 28px;border-radius:999px;text-decoration:none;box-shadow:0 4px 12px rgba(194,149,63,0.3);">
+                        ${cta_label || 'Ikuti Uji Coba Sekarang &rarr;'}
+                      </a>
+                    </div>
+                  ` : ''}
+                  <div style="background:#F7F4EC;border-left:4px solid #D9B26A;padding:12px 16px;border-radius:8px;font-size:12px;color:#5C6A7C;margin-top:24px;">
+                    Anda menerima email ini karena terdaftar sebagai tester aplikasi di Asri Digital. Masukan dan partisipasi Anda sangat berarti bagi kami.
+                  </div>
+                </div>
+                <div style="background:#F8FAFC;padding:16px 24px;text-align:center;font-size:11px;color:#94A3B8;border-top:1px solid #E2E8F0;">
+                  &copy; ${new Date().getFullYear()} Asri Digital &bull; <a href="https://asridigital.com" style="color:#64748B;">asridigital.com</a>
+                </div>
+              </div>
+            `;
+
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+              body: JSON.stringify({
+                from: 'Asri Digital <noreply@asridigital.com>',
+                to: t.email,
+                subject: subject,
+                html: emailHtml
+              })
+            });
+            sentCount++;
+          } catch (e) {
+            console.error(`Failed to send email to ${t.email}:`, e);
+            failedCount++;
+          }
+        }
+      }
+
+      return jsonResponse({
+        success: true,
+        sent: sentCount,
+        failed: failedCount,
+        total: list.length,
+        message: `Email berhasil dikirim ke ${sentCount} tester.`
+      });
+    }
+
+    // Backwards compatibility endpoint
     if (route === '/admin/assalam-tv-testers' && method === 'GET') {
       try {
         const testers = await env.DB.prepare(
-          'SELECT * FROM assalam_tv_testers ORDER BY created_at DESC LIMIT 200'
+          "SELECT * FROM app_testers WHERE app_slug = 'assalam-tv' ORDER BY created_at DESC LIMIT 200"
         ).all();
         return jsonResponse({ testers: testers.results || [] });
       } catch (e) {

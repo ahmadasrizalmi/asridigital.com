@@ -118,6 +118,19 @@ const description = "Daftar sebagai penguji awal (closed tester) aplikasi Assala
               </select>
             </div>
 
+            <div class="flex items-start gap-2.5 pt-1">
+              <input
+                type="checkbox"
+                id="opt_in_other"
+                name="opt_in_other"
+                checked
+                class="mt-1 w-4 h-4 rounded text-[#9A7228] focus:ring-[#9A7228] border-[#E7E0D2] cursor-pointer"
+              />
+              <label for="opt_in_other" class="text-xs text-[#5C6A7C] cursor-pointer leading-snug">
+                Saya bersedia menerima undangan uji coba aplikasi baru Asri Digital lainnya &amp; voucher gratis di masa mendatang.
+              </label>
+            </div>
+
             <p class="text-[11px] text-[#5C6A7C] leading-relaxed pt-1">
               Dengan mendaftar, Anda menyetujui <a href="/assalam-tv/terms" class="text-[#9A7228] underline">Syarat &amp; Ketentuan</a> serta <a href="/assalam-tv/privacy" class="text-[#9A7228] underline">Kebijakan Privasi</a> Assalam TV.
             </p>
@@ -245,6 +258,7 @@ const description = "Daftar sebagai penguji awal (closed tester) aplikasi Assala
       const email = document.getElementById('email')?.value?.trim();
       const whatsapp = document.getElementById('whatsapp')?.value?.trim();
       const device = document.getElementById('device')?.value;
+      const opt_in_other_apps = document.getElementById('opt_in_other')?.checked ? 1 : 0;
 
       if (!nama || !email || !whatsapp) return;
 
@@ -260,7 +274,7 @@ const description = "Daftar sebagai penguji awal (closed tester) aplikasi Assala
         const res = await fetch('/api/assalam-tv/tester', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nama, email, whatsapp, device })
+          body: JSON.stringify({ nama, email, whatsapp, device, opt_in_other_apps })
         });
         const data = await res.json();
 

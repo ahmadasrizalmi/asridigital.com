@@ -26,6 +26,27 @@ import Icon from '../../components/ui/Icon.astro';
       </header>
       
       <div class="p-4 md:p-6 max-w-4xl">
+        <!-- Tester Management Shortcut Card -->
+        <div class="card p-6 mb-6 border-l-4 border-l-[#D9B26A] bg-gradient-to-r from-surface to-primary/5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+                  Fitur Baru
+                </span>
+                <h2 class="text-lg font-bold text-text-primary">Database &amp; Program Tester Aplikasi</h2>
+              </div>
+              <p class="text-sm text-text-muted max-w-xl">
+                Kelola pendaftaran closed testing Google Play untuk Assalam TV dan aplikasi baru Asri Digital lainnya. Ekspor CSV ke Play Console atau kirim broadcast email undangan saat launching aplikasi baru.
+              </p>
+            </div>
+            <a href="/admin/testers" class="btn-primary shrink-0 inline-flex items-center gap-2">
+              <Icon name="users" size={18} />
+              <span>Buka Database Tester &rarr;</span>
+            </a>
+          </div>
+        </div>
+
         <!-- General Settings -->
         <div class="card p-6 mb-6">
           <h2 class="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
