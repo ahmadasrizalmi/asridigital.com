@@ -1,0 +1,353 @@
+---
+// Reusable Fullscreen Image Lightbox Component for Assalam TV
+---
+
+<!-- Lightbox Modal -->
+<div
+  id="image-lightbox-modal"
+  class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/95 backdrop-blur-md transition-opacity duration-300 opacity-0 select-none"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Pratinjau Foto Layar Penuh"
+>
+  <!-- Top Bar -->
+  <div class="absolute top-0 left-0 right-0 p-4 sm:p-6 flex items-center justify-between z-30 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+    <!-- Counter & Caption -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-white pr-4">
+      <span
+        id="lightbox-counter"
+        class="text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:py-1 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] border border-[#D9B26A]/40 w-fit"
+      >
+        Foto 1 / 1
+      </span>
+      <h3
+        id="lightbox-caption"
+        class="text-xs sm:text-sm font-semibold text-[#F5F2EA] truncate max-w-[220px] sm:max-w-md md:max-w-xl"
+      >
+      </h3>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <!-- Fullscreen / Zoom Toggle -->
+      <button
+        id="lightbox-zoom-btn"
+        class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition border border-white/20 active:scale-95"
+        title="Perbesar / Perkecil"
+        aria-label="Toggle Zoom"
+      >
+        <svg id="lightbox-zoom-icon-in" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+        </svg>
+        <svg id="lightbox-zoom-icon-out" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
+        </svg>
+      </button>
+
+      <!-- Close Button -->
+      <button
+        id="lightbox-close-btn"
+        class="w-10 h-10 rounded-full bg-white/15 hover:bg-[#D9B26A] hover:text-[#0A1D31] text-white flex items-center justify-center transition border border-white/25 active:scale-95"
+        title="Tutup (Esc)"
+        aria-label="Tutup"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Prev Button -->
+  <button
+    id="lightbox-prev-btn"
+    class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/60 hover:bg-[#D9B26A] text-white hover:text-[#0A1D31] border border-white/20 backdrop-blur-md flex items-center justify-center transition z-30 shadow-2xl active:scale-90"
+    aria-label="Foto Sebelumnya"
+  >
+    <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+    </svg>
+  </button>
+
+  <!-- Navigation Next Button -->
+  <button
+    id="lightbox-next-btn"
+    class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/60 hover:bg-[#D9B26A] text-white hover:text-[#0A1D31] border border-white/20 backdrop-blur-md flex items-center justify-center transition z-30 shadow-2xl active:scale-90"
+    aria-label="Foto Berikutnya"
+  >
+    <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+    </svg>
+  </button>
+
+  <!-- Image Stage -->
+  <div
+    id="lightbox-stage"
+    class="relative w-full h-full flex items-center justify-center p-3 sm:p-12 overflow-auto cursor-zoom-out"
+  >
+    <div class="relative max-w-full max-h-full flex items-center justify-center">
+      <img
+        id="lightbox-img"
+        src=""
+        alt=""
+        class="max-w-[94vw] max-h-[80vh] md:max-h-[85vh] object-contain rounded-xl shadow-2xl transition-transform duration-200 transform scale-95 opacity-0 cursor-default"
+      />
+    </div>
+  </div>
+
+  <!-- Bottom Hints -->
+  <div class="absolute bottom-3 left-0 right-0 text-center pointer-events-none z-30">
+    <p class="text-[11px] text-[#A7B4C6] bg-black/70 backdrop-blur-sm px-3.5 py-1 rounded-full inline-block border border-white/10">
+      &larr; &rarr; Navigasi &bull; Klik luar / Geser / Esc untuk menutup
+    </p>
+  </div>
+</div>
+
+<style is:global>
+  /* Indicator cursor for zoomable images */
+  .lightbox-enabled img[src*="/images/assalam-tv/"]:not([src*="world-dots"]) {
+    cursor: zoom-in;
+    transition: transform 0.25s ease, filter 0.25s ease;
+  }
+  .lightbox-enabled img[src*="/images/assalam-tv/"]:not([src*="world-dots"]):hover {
+    filter: brightness(1.05);
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const modal = document.getElementById('image-lightbox-modal');
+    if (!modal) return;
+
+    document.documentElement.classList.add('lightbox-enabled');
+
+    const stage = document.getElementById('lightbox-stage');
+    const imgEl = document.getElementById('lightbox-img');
+    const captionEl = document.getElementById('lightbox-caption');
+    const counterEl = document.getElementById('lightbox-counter');
+    const closeBtn = document.getElementById('lightbox-close-btn');
+    const prevBtn = document.getElementById('lightbox-prev-btn');
+    const nextBtn = document.getElementById('lightbox-next-btn');
+    const zoomBtn = document.getElementById('lightbox-zoom-btn');
+    const zoomInIcon = document.getElementById('lightbox-zoom-icon-in');
+    const zoomOutIcon = document.getElementById('lightbox-zoom-icon-out');
+
+    let gallery = [];
+    let currentIndex = 0;
+    let isZoomed = false;
+
+    // Scan all preview images on the page
+    function scanImages() {
+      const candidates = document.querySelectorAll('main img[src*="/images/assalam-tv/"]:not([src*="world-dots"])');
+      const uniqueMap = new Map();
+
+      candidates.forEach((img) => {
+        const src = img.getAttribute('src');
+        if (!src) return;
+
+        // Determine title
+        let title = img.getAttribute('alt') || '';
+        if (!title || title.length < 3) {
+          // Find closest heading or text
+          const card = img.closest('.rounded-2xl, .rounded-3xl, .snap-center');
+          if (card) {
+            const h = card.querySelector('h3, .font-bold');
+            if (h) title = h.textContent.trim();
+          }
+        }
+        if (!title) title = 'Tampilan Layar Assalam TV';
+
+        // Add click listener
+        img.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openLightboxBySrc(src);
+        });
+
+        // Store unique item for navigation
+        if (!uniqueMap.has(src)) {
+          uniqueMap.set(src, { src, title });
+        }
+      });
+
+      gallery = Array.from(uniqueMap.values());
+    }
+
+    function openLightboxBySrc(src) {
+      const idx = gallery.findIndex((item) => item.src === src);
+      if (idx !== -1) {
+        openLightbox(idx);
+      } else {
+        gallery.push({ src, title: 'Tampilan Layar Assalam TV' });
+        openLightbox(gallery.length - 1);
+      }
+    }
+
+    function openLightbox(index) {
+      currentIndex = index;
+      isZoomed = false;
+      resetZoom();
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+
+      updateLightboxContent();
+
+      requestAnimationFrame(() => {
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
+        imgEl.classList.remove('opacity-0', 'scale-95');
+        imgEl.classList.add('opacity-100', 'scale-100');
+      });
+    }
+
+    function closeLightbox() {
+      modal.classList.remove('opacity-100');
+      modal.classList.add('opacity-0');
+      imgEl.classList.add('scale-95', 'opacity-0');
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+        isZoomed = false;
+        resetZoom();
+      }, 250);
+    }
+
+    function updateLightboxContent() {
+      if (!gallery.length) return;
+      if (currentIndex < 0) currentIndex = gallery.length - 1;
+      if (currentIndex >= gallery.length) currentIndex = 0;
+
+      const item = gallery[currentIndex];
+      imgEl.src = item.src;
+      imgEl.alt = item.title;
+      captionEl.textContent = item.title;
+      counterEl.textContent = `Foto ${currentIndex + 1} / ${gallery.length}`;
+    }
+
+    function nextPhoto() {
+      imgEl.classList.add('scale-95', 'opacity-50');
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % gallery.length;
+        updateLightboxContent();
+        isZoomed = false;
+        resetZoom();
+        imgEl.classList.remove('scale-95', 'opacity-50');
+      }, 120);
+    }
+
+    function prevPhoto() {
+      imgEl.classList.add('scale-95', 'opacity-50');
+      setTimeout(() => {
+        currentIndex = (currentIndex - 1 + gallery.length) % gallery.length;
+        updateLightboxContent();
+        isZoomed = false;
+        resetZoom();
+        imgEl.classList.remove('scale-95', 'opacity-50');
+      }, 120);
+    }
+
+    function toggleZoom() {
+      isZoomed = !isZoomed;
+      if (isZoomed) {
+        imgEl.classList.remove('max-h-[80vh]', 'md:max-h-[85vh]');
+        imgEl.classList.add('max-w-none', 'scale-125', 'cursor-zoom-out');
+        zoomInIcon?.classList.add('hidden');
+        zoomOutIcon?.classList.remove('hidden');
+      } else {
+        resetZoom();
+      }
+    }
+
+    function resetZoom() {
+      imgEl.classList.add('max-h-[80vh]', 'md:max-h-[85vh]');
+      imgEl.classList.remove('max-w-none', 'scale-125', 'cursor-zoom-out');
+      zoomInIcon?.classList.remove('hidden');
+      zoomOutIcon?.classList.add('hidden');
+    }
+
+    // Event Listeners
+    closeBtn?.addEventListener('click', closeLightbox);
+    nextBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      nextPhoto();
+    });
+    prevBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      prevPhoto();
+    });
+    zoomBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleZoom();
+    });
+
+    // Close when clicking outside image
+    stage?.addEventListener('click', (e) => {
+      if (e.target === stage || e.target.parentElement === stage) {
+        closeLightbox();
+      }
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (modal.classList.contains('hidden')) return;
+
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowRight') {
+        nextPhoto();
+      } else if (e.key === 'ArrowLeft') {
+        prevPhoto();
+      } else if (e.key === ' ' || e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleZoom();
+      }
+    });
+
+    // Mobile touch gestures (swipe left/right/down)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    stage?.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    stage?.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      // Vertical swipe down to close
+      if (diffY > 80 && Math.abs(diffX) < 60) {
+        closeLightbox();
+        return;
+      }
+
+      // Horizontal swipe next/prev
+      if (Math.abs(diffX) > 45 && Math.abs(diffY) < 60) {
+        if (diffX < 0) {
+          nextPhoto();
+        } else {
+          prevPhoto();
+        }
+      }
+    }
+
+    // Initial scan and rescans
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', scanImages);
+    } else {
+      scanImages();
+    }
+  })();
+</script>
