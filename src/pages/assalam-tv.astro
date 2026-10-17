@@ -72,6 +72,14 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
     .tv-frame-shadow {
       box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px -10px rgba(217, 178, 106, 0.25);
     }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 
   <!-- ==================== 0. NAVBAR ==================== -->
@@ -169,24 +177,25 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           ASSALAM TV · MOSQUE PRAYER DISPLAY · 100% OFFLINE
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <!-- DESKTOP HERO (>= lg) -->
+        <div class="hidden lg:grid grid-cols-12 gap-8 items-center">
           <!-- Left Column Copy -->
-          <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
-            <div class="text-[#D9B26A] font-extrabold text-xs sm:text-sm tracking-wider uppercase">
+          <div class="col-span-6 space-y-6 text-left">
+            <div class="text-[#D9B26A] font-extrabold text-sm tracking-wider uppercase">
               APLIKASI JAM SHOLAT DIGITAL MASJID
             </div>
 
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-[#F5F2EA] tracking-tight leading-[1.15]">
+            <h1 class="text-5xl lg:text-6xl font-black text-[#F5F2EA] tracking-tight leading-[1.15]">
               Jadwal Sholat Digital Akurat &amp; <span class="gold-gradient-text">Theme Premium</span>
             </h1>
 
-            <p class="text-base sm:text-lg text-[#B9C6D6] leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
+            <p class="text-lg text-[#B9C6D6] leading-relaxed max-w-xl font-normal">
               Kelola jadwal sholat, pengumuman DKM, dan foto kajian langsung dari HP Admin lewat Wi-Fi lokal. Tanpa kuota internet harian, tanpa flashdisk, dan bebas biaya langganan bulanan.
             </p>
 
             <!-- CTA Buttons -->
-            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-              <a href="#download" class="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-full bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-xl hover:border-[#D9B26A] hover:bg-[#0E2A47] transition group w-full sm:w-auto">
+            <div class="flex items-center gap-4 pt-2">
+              <a href="#download" class="inline-flex items-center justify-center gap-3 px-7 py-4 rounded-full bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-xl hover:border-[#D9B26A] hover:bg-[#0E2A47] transition group">
                 <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
                   <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
                   <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
@@ -196,7 +205,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
                 <span>Unduh TV Gratis</span>
               </a>
 
-              <a href="#license" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full gold-gradient-bg text-[#0A1D31] font-extrabold text-sm shadow-xl hover:brightness-105 transition transform hover:-translate-y-0.5 w-full sm:w-auto">
+              <a href="#license" class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full gold-gradient-bg text-[#0A1D31] font-extrabold text-sm shadow-xl hover:brightness-105 transition transform hover:-translate-y-0.5">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5l-3 3-4-4-5.5 5.5a2.12 2.12 0 0 0 3 3L10.5 15l3 3 1.5-1.5M19 5l-2-2"/></svg>
                 <span>Beli Lisensi Admin</span>
               </a>
@@ -209,10 +218,10 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           </div>
 
           <!-- Right Column Visual: Overlapping Mockups -->
-          <div class="lg:col-span-6 relative flex justify-center items-center">
+          <div class="col-span-6 relative flex justify-center items-center">
             <div class="relative w-full max-w-lg lg:max-w-none">
               <!-- Horizontal TV Frame -->
-              <div class="relative rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-[#0E2A47] tv-frame-shadow bg-black aspect-video">
+              <div class="relative rounded-3xl overflow-hidden border-4 border-[#0E2A47] tv-frame-shadow bg-black aspect-video">
                 <img
                   id="hero-main-tv"
                   src="/images/assalam-tv/id-h-obsidian.webp"
@@ -226,7 +235,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
               </div>
 
               <!-- Overlapping Vertical Kiosk Frame -->
-              <div class="absolute -bottom-6 -right-3 sm:-bottom-8 sm:-right-4 w-32 sm:w-44 md:w-52 aspect-[9/16] rounded-xl sm:rounded-2xl overflow-hidden border-2 sm:border-4 border-[#0A1D31] shadow-2xl bg-black">
+              <div class="absolute -bottom-8 -right-4 w-52 aspect-[9/16] rounded-2xl overflow-hidden border-4 border-[#0A1D31] shadow-2xl bg-black">
                 <img
                   src="/images/assalam-tv/id-v-nila.webp"
                   alt="Tampilan Vertikal Standing Totem Assalam TV"
@@ -238,7 +247,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
               </div>
 
               <!-- Floating Trust Badge Chip -->
-              <div class="absolute -top-4 -left-2 sm:-top-5 sm:-left-4 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#0E2440]/90 backdrop-blur-md border border-[#D9B26A]/50 shadow-xl text-xs font-bold text-[#F5F2EA]">
+              <div class="absolute -top-5 -left-4 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#0E2440]/90 backdrop-blur-md border border-[#D9B26A]/50 shadow-xl text-xs font-bold text-[#F5F2EA]">
                 <svg class="w-4 h-4 text-[#D9B26A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                 <span>Lisensi Lifetime &bull; Tanpa Langganan</span>
               </div>
@@ -246,14 +255,14 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           </div>
         </div>
 
-        <!-- 4 Core Feature Strip at the Bottom of Hero -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-16 pt-8 border-t border-white/10">
+        <!-- 4 Core Feature Strip on Desktop -->
+        <div class="hidden lg:grid grid-cols-4 gap-4 mt-16 pt-8 border-t border-white/10">
           <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.07] border border-white/10 backdrop-blur-sm">
             <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20"></path></svg>
             </div>
             <div>
-              <div class="text-xs sm:text-sm font-bold text-[#F5F2EA]">100% Offline</div>
+              <div class="text-sm font-bold text-[#F5F2EA]">100% Offline</div>
               <div class="text-[11px] text-[#A7B4C6]">Bebas internet harian</div>
             </div>
           </div>
@@ -263,7 +272,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
             </div>
             <div>
-              <div class="text-xs sm:text-sm font-bold text-[#F5F2EA]">18 Tema Mewah</div>
+              <div class="text-sm font-bold text-[#F5F2EA]">18 Tema Mewah</div>
               <div class="text-[11px] text-[#A7B4C6]">Horizontal &amp; Sidebar</div>
             </div>
           </div>
@@ -273,7 +282,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </div>
             <div>
-              <div class="text-xs sm:text-sm font-bold text-[#F5F2EA]">Tanpa ShareIt</div>
+              <div class="text-sm font-bold text-[#F5F2EA]">Tanpa ShareIt</div>
               <div class="text-[11px] text-[#A7B4C6]">Kirim dari galeri HP</div>
             </div>
           </div>
@@ -283,11 +292,104 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"></rect><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"></line></svg>
             </div>
             <div>
-              <div class="text-xs sm:text-sm font-bold text-[#F5F2EA]">Siap Vertikal</div>
+              <div class="text-sm font-bold text-[#F5F2EA]">Siap Vertikal</div>
               <div class="text-[11px] text-[#A7B4C6]">Totem standing 9:16</div>
             </div>
           </div>
         </div>
+
+        <!-- MOBILE HERO (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-5 text-left">
+          <!-- Accent Bar -->
+          <div class="w-11 h-1 bg-[#D9B26A] rounded-full"></div>
+
+          <!-- Eyebrow -->
+          <div class="text-[#D9B26A] font-extrabold text-xs tracking-wider uppercase">
+            APLIKASI JAM SHOLAT DIGITAL MASJID
+          </div>
+
+          <!-- H1 -->
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-[#F5F2EA] tracking-tight leading-tight">
+            Jadwal Sholat Digital Akurat &amp; <span class="gold-gradient-text">Theme Premium</span>
+          </h1>
+
+          <!-- Sub -->
+          <p class="text-sm sm:text-base text-[#B9C6D6] leading-relaxed">
+            Kelola jadwal sholat, pengumuman DKM, dan foto kajian langsung dari HP Admin lewat Wi-Fi lokal.
+          </p>
+
+          <!-- Horizontal Screenshot Rail (w=300 h=169 in design) -->
+          <div class="pt-2">
+            <div class="flex gap-3 overflow-x-auto pb-3 pt-1 -mx-4 px-4 snap-x snap-mandatory no-scrollbar">
+              <div class="w-[280px] sm:w-[300px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl bg-black">
+                <img src="/images/assalam-tv/id-h-andalusia.webp" alt="Tema Andalusia" class="w-full h-full object-cover" />
+              </div>
+              <div class="w-[280px] sm:w-[300px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl bg-black">
+                <img src="/images/assalam-tv/id-sidebar-lazuardi.webp" alt="Sidebar Lazuardi" class="w-full h-full object-cover" />
+              </div>
+              <div class="w-[280px] sm:w-[300px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl bg-black">
+                <img src="/images/assalam-tv/id-kanan-nila.webp" alt="Sidebar Kanan Nila" class="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div class="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#A7B4C6]">
+              <span>&larr; Geser untuk melihat mockup layar &rarr;</span>
+            </div>
+          </div>
+
+          <!-- CTAs Vertical Stack (gap: 9) -->
+          <div class="flex flex-col gap-2.5 pt-2">
+            <a href="#download" class="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-[#0A1D31] border border-[#D9B26A]/40 text-[#F5F2EA] font-extrabold text-sm shadow-lg hover:bg-[#0E2A47] transition">
+              <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+              </svg>
+              <span>Unduh TV di Google Play</span>
+            </a>
+
+            <a href="#license" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-sm shadow-lg hover:brightness-105 transition">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5l-3 3-4-4-5.5 5.5a2.12 2.12 0 0 0 3 3L10.5 15l3 3 1.5-1.5M19 5l-2-2"/></svg>
+              <span>Beli Lisensi Admin</span>
+            </a>
+
+            <p class="text-xs text-center text-[#A7B4C6] pt-0.5">
+              Ingin Lisensi Admin gratis? <a href="/assalam-tv/tester" class="text-[#D9B26A] font-bold underline">Daftar jadi penguji awal &rarr;</a>
+            </p>
+          </div>
+
+          <!-- Feature Strip (2x2 grid in mobile design) -->
+          <div class="grid grid-cols-2 gap-2.5 pt-4">
+            <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.08] border border-white/10">
+              <div class="w-8 h-8 rounded-lg bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20"></path></svg>
+              </div>
+              <div class="text-xs font-bold text-[#F5F2EA]">100% Offline</div>
+            </div>
+
+            <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.08] border border-white/10">
+              <div class="w-8 h-8 rounded-lg bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+              </div>
+              <div class="text-xs font-bold text-[#F5F2EA]">6 Tema Mewah</div>
+            </div>
+
+            <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.08] border border-white/10">
+              <div class="w-8 h-8 rounded-lg bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              </div>
+              <div class="text-xs font-bold text-[#F5F2EA]">Tanpa ShareIt</div>
+            </div>
+
+            <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.08] border border-white/10">
+              <div class="w-8 h-8 rounded-lg bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"></rect><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"></line></svg>
+              </div>
+              <div class="text-xs font-bold text-[#F5F2EA]">Siap Vertikal</div>
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
 
       <!-- Wave Bottom Transition seamlessly merging into Ivory (#F7F4EC) -->
@@ -299,99 +401,206 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
     </section>
 
     <!-- ==================== 2. FITUR OPSI C: SCREENSHOT BESAR + GRID CHIP ==================== -->
-    <section id="features" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="features" class="py-16 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Section Header -->
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <div class="w-12 h-1.5 bg-[#D9B26A] rounded-full mx-auto mb-4"></div>
-          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight leading-tight">
-            Semua yang Dibutuhkan Pengurus DKM, dalam Satu Layar
-          </h2>
-          <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
-            Delapan fitur inti yang membuat TV masjid Anda benar-benar mandiri — dikendalikan penuh dari HP, tanpa aplikasi tambahan.
-          </p>
+        <!-- DESKTOP FEATURES (>= lg) -->
+        <div class="hidden lg:block">
+          <!-- Section Header -->
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <div class="w-12 h-1.5 bg-[#D9B26A] rounded-full mx-auto mb-4"></div>
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+              Semua yang Dibutuhkan Pengurus DKM, dalam Satu Layar
+            </h2>
+            <p class="mt-4 text-lg text-[#5C6A7C] leading-relaxed">
+              Sepuluh fitur inti yang membuat TV masjid Anda benar-benar mandiri — dikendalikan penuh dari HP, tanpa aplikasi tambahan.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-12 gap-10 items-center">
+            <!-- Left: Big Screenshot Showcase -->
+            <div class="col-span-7 space-y-3">
+              <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-2xl bg-black aspect-video">
+                <img
+                  src="/images/assalam-tv/id-sidebar-lazuardi.webp"
+                  alt="Tampilan Sidebar Kiri Tema Lazuardi Assalam TV"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <p class="text-sm text-center text-[#5C6A7C] italic">
+                Tampilan sidebar kiri — tema Lazuardi (biru safir damai)
+              </p>
+            </div>
+
+            <!-- Right: Grid of Feature Chips -->
+            <div class="col-span-5 grid grid-cols-1 gap-3">
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"></rect><line x1="16" y1="2" x2="16" y2="6" stroke-width="2"></line><line x1="8" y1="2" x2="8" y2="6" stroke-width="2"></line><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"></line></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Kalender Hijriyah</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Pop up event muslim</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><polyline points="12 6 12 12 16 14" stroke-width="2"></polyline></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Jam waktu sholat akurat</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Running text pengumuman DKM</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><polyline points="12 6 12 14 10" stroke-width="2"></polyline></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Countdown adzan &amp; iqomah</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0l-1.414-1.414M7.05 7.05L5.636 5.636M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Countdown dhuha</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Ready rotate screen TV</span>
+              </div>
+
+              <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
+                <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"></rect><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"></line></svg>
+                </div>
+                <span class="text-sm font-bold text-[#10233A]">Kirim gambar &amp; video ke TV</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <!-- Left: Big Screenshot Showcase -->
-          <div class="lg:col-span-7 space-y-3">
-            <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-2xl bg-black aspect-video">
+        <!-- MOBILE FEATURES (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-6">
+          <!-- Header -->
+          <div class="text-left space-y-2">
+            <div class="w-11 h-1 bg-[#D9B26A] rounded-full mb-3"></div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+              Semua yang Dibutuhkan Pengurus DKM, dalam Satu Layar
+            </h2>
+            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed">
+              Sepuluh fitur inti yang membuat TV masjid Anda benar-benar mandiri — dikendalikan penuh dari HP, tanpa aplikasi tambahan.
+            </p>
+          </div>
+
+          <!-- Screenshot Showcase (Shot w=fill_container h=197) -->
+          <div class="space-y-1.5">
+            <div class="rounded-2xl overflow-hidden border border-[#E7E0D2] shadow-lg bg-black aspect-video">
               <img
                 src="/images/assalam-tv/id-sidebar-lazuardi.webp"
-                alt="Tampilan Sidebar Kiri Tema Lazuardi Assalam TV"
+                alt="Tampilan sidebar kiri - tema Lazuardi"
                 class="w-full h-full object-cover"
                 loading="lazy"
               />
             </div>
-            <p class="text-xs sm:text-sm text-center text-[#5C6A7C] italic">
-              Tampilan sidebar kiri — tema Lazuardi (biru safir damai)
+            <p class="text-[11px] text-center text-[#5C6A7C]">
+              Tampilan sidebar kiri — tema Lazuardi
             </p>
           </div>
 
-          <!-- Right: Grid of 8 Feature Chips -->
-          <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
-            <!-- Chip 1 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"></rect><line x1="16" y1="2" x2="16" y2="6" stroke-width="2"></line><line x1="8" y1="2" x2="8" y2="6" stroke-width="2"></line><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"></line></svg>
+          <!-- 2-Column Grid of 10 Cards (5 Rows of 2) -->
+          <div class="grid grid-cols-2 gap-2.5 pt-2">
+            <!-- 1. Kalender Hijriyah -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"></rect><line x1="16" y1="2" x2="16" y2="6" stroke-width="2"></line><line x1="8" y1="2" x2="8" y2="6" stroke-width="2"></line><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"></line></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Kalender Hijriyah Astronomis</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Kalender Hijriyah</div>
             </div>
 
-            <!-- Chip 2 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <!-- 2. Pop up event muslim -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Pop up Event &amp; Peringatan Hari Besar</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Pop up event muslim</div>
             </div>
 
-            <!-- Chip 3 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><polyline points="12 6 12 12 16 14" stroke-width="2"></polyline></svg>
+            <!-- 3. Jam waktu sholat akurat -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><polyline points="12 6 12 12 16 14" stroke-width="2"></polyline></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Jam Waktu Sholat Presisi &amp; Ihtiyati</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Jam waktu sholat akurat</div>
             </div>
 
-            <!-- Chip 4 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <!-- 4. Running text pengumuman DKM -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Running Text Warta &amp; Laporan Kas DKM</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Running text pengumuman DKM</div>
             </div>
 
-            <!-- Chip 5 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><polyline points="12 6 12 12 14 10" stroke-width="2"></polyline></svg>
+            <!-- 5. Countdown adzan & iqomah -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><polyline points="12 6 12 14 10" stroke-width="2"></polyline></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Countdown Adzan &amp; Timer Iqomah</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Countdown adzan &amp; iqomah</div>
             </div>
 
-            <!-- Chip 6 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0l-1.414-1.414M7.05 7.05L5.636 5.636M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <!-- 6. Countdown dhuha -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0l-1.414-1.414M7.05 7.05L5.636 5.636M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Countdown Sholat Sunnah Dhuha</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Countdown dhuha</div>
             </div>
 
-            <!-- Chip 7 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <!-- 7. Ready rotate screen TV -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Ready Rotate Screen TV (Horizontal &amp; Vertikal)</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Ready rotate screen TV</div>
             </div>
 
-            <!-- Chip 8 -->
-            <div class="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm hover:shadow-md transition">
-              <div class="w-10 h-10 rounded-xl bg-[#D9B26A]/15 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"></rect><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"></line></svg>
+            <!-- 8. Kirim gambar & video ke TV -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="2"></rect><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2"></line></svg>
               </div>
-              <span class="text-sm font-bold text-[#10233A]">Kirim Foto &amp; Video Pengumuman Langsung dari HP</span>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Kirim gambar &amp; video ke TV</div>
+            </div>
+
+            <!-- 9. Full screen slideshow media -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Full screen slideshow media</div>
+            </div>
+
+            <!-- 10. Pengaturan sholat Jumat -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between h-[108px]">
+              <div class="w-8 h-8 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+              </div>
+              <div class="text-xs font-bold text-[#10233A] leading-snug">Pengaturan sholat Jumat</div>
             </div>
           </div>
         </div>
@@ -417,72 +626,136 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           </p>
         </div>
 
-        <!-- 6 Mood Theme Quick Filter Buttons -->
-        <div class="flex flex-wrap justify-center gap-2 mb-10">
-          <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-[#D9B26A] text-[#0A1D31] shadow transition" data-index="0">Andalusia (Emas)</button>
-          <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="1">Lazuardi (Biru)</button>
-          <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="2">Nila (Ungu)</button>
-          <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="3">Notif Adzan</button>
-          <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="4">Countdown Iqomah</button>
-          <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="5">Mode Jumat</button>
+        <!-- DESKTOP THEMES CAROUSEL (>= lg) -->
+        <div class="hidden lg:block">
+          <!-- 6 Mood Theme Quick Filter Buttons -->
+          <div class="flex flex-wrap justify-center gap-2 mb-10">
+            <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-[#D9B26A] text-[#0A1D31] shadow transition" data-index="0">Andalusia (Emas)</button>
+            <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="1">Lazuardi (Biru)</button>
+            <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="2">Nila (Ungu)</button>
+            <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="3">Notif Adzan</button>
+            <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="4">Countdown Iqomah</button>
+            <button class="theme-select-btn px-4 py-2 rounded-xl text-xs font-extrabold bg-white/10 text-white hover:bg-white/20 transition" data-index="5">Mode Jumat</button>
+          </div>
+
+          <!-- Carousel Stage -->
+          <div class="relative max-w-5xl mx-auto">
+            <!-- Main Display Frame -->
+            <div class="aspect-video w-full rounded-3xl overflow-hidden border-4 border-[#0E2A47] tv-frame-shadow bg-black relative">
+              <img
+                id="carousel-main-image"
+                src="/images/assalam-tv/id-h-andalusia.webp"
+                alt="Assalam TV Carousel Display"
+                class="w-full h-full object-cover transition-opacity duration-300"
+              />
+            </div>
+
+            <!-- Active Label Below Frame -->
+            <div class="mt-4 text-center">
+              <div id="carousel-active-title" class="text-xl font-bold text-[#F5F2EA]">
+                01 &bull; Bahasa Indonesia &bull; Horizontal Classic
+              </div>
+              <div id="carousel-active-desc" class="text-sm text-[#D9B26A] mt-0.5">
+                Tema Andalusia (emas terakota hangat)
+              </div>
+            </div>
+
+            <!-- Prev/Next Controls -->
+            <button id="carousel-prev" class="absolute -left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#0A1D31]/80 hover:bg-[#D9B26A] text-[#F5F2EA] hover:text-[#0A1D31] border border-white/20 backdrop-blur-md flex items-center justify-center transition shadow-2xl z-20" aria-label="Slide Sebelumnya">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="carousel-next" class="absolute -right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#0A1D31]/80 hover:bg-[#D9B26A] text-[#F5F2EA] hover:text-[#0A1D31] border border-white/20 backdrop-blur-md flex items-center justify-center transition shadow-2xl z-20" aria-label="Slide Berikutnya">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
+            <!-- 8 Dots Indicator -->
+            <div class="flex items-center justify-center gap-2 mt-6" id="carousel-dots">
+              <button class="dot-btn w-3 h-3 rounded-full bg-[#D9B26A] transition-all scale-125" data-dot="0"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="1"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="2"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="3"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="4"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="5"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="6"></button>
+              <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="7"></button>
+            </div>
+          </div>
         </div>
 
-        <!-- Carousel Stage -->
-        <div class="relative max-w-5xl mx-auto">
-          <!-- Main Display Frame -->
-          <div class="aspect-video w-full rounded-2xl sm:rounded-3xl overflow-hidden border-2 sm:border-4 border-[#0E2A47] tv-frame-shadow bg-black relative">
-            <img
-              id="carousel-main-image"
-              src="/images/assalam-tv/id-h-andalusia.webp"
-              alt="Assalam TV Carousel Display"
-              class="w-full h-full object-cover transition-opacity duration-300"
-            />
-          </div>
-
-          <!-- Active Label Below Frame -->
-          <div class="mt-4 text-center">
-            <div id="carousel-active-title" class="text-lg sm:text-xl font-bold text-[#F5F2EA]">
-              01 &bull; Bahasa Indonesia &bull; Horizontal Classic
+        <!-- MOBILE THEMES RAIL (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-4">
+          <!-- Horizontal Swipeable Rail of 5 theme cards -->
+          <div class="flex gap-3.5 overflow-x-auto pb-3 pt-1 -mx-4 px-4 snap-x snap-mandatory no-scrollbar" id="mobile-theme-rail">
+            <!-- Card 1 -->
+            <div class="w-[290px] sm:w-[320px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl relative bg-black">
+              <img src="/images/assalam-tv/id-h-andalusia.webp" alt="Andalusia Classic" class="w-full h-full object-cover" />
             </div>
-            <div id="carousel-active-desc" class="text-xs sm:text-sm text-[#D9B26A] mt-0.5">
-              Tema Andalusia (emas terakota hangat)
+
+            <!-- Card 2 with chip English -->
+            <div class="w-[290px] sm:w-[320px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl relative bg-black">
+              <img src="/images/assalam-tv/en-sidebar-lazuardi.webp" alt="English Sidebar Kiri" class="w-full h-full object-cover" />
+              <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-[#050D1A]/85 backdrop-blur-sm text-[11px] font-bold text-white border border-white/20">
+                English &bull; Sidebar Kiri
+              </div>
+            </div>
+
+            <!-- Card 3 with chip Arabic -->
+            <div class="w-[290px] sm:w-[320px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl relative bg-black">
+              <img src="/images/assalam-tv/ar-kanan-nila.webp" alt="Arabic Sidebar Kanan" class="w-full h-full object-cover" />
+              <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-[#050D1A]/85 backdrop-blur-sm text-[11px] font-bold text-white border border-white/20 font-cairo">
+                العربية &bull; Sidebar Kanan
+              </div>
+            </div>
+
+            <!-- Card 4 with chip Adzan -->
+            <div class="w-[290px] sm:w-[320px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl relative bg-black">
+              <img src="/images/assalam-tv/id-s-lazuardi-adzan.webp" alt="Notif Adzan" class="w-full h-full object-cover" />
+              <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-[#050D1A]/85 backdrop-blur-sm text-[11px] font-bold text-white border border-white/20">
+                Notif Adzan
+              </div>
+            </div>
+
+            <!-- Card 5 with chip Iqomah -->
+            <div class="w-[290px] sm:w-[320px] aspect-video flex-shrink-0 snap-center rounded-2xl overflow-hidden border-2 border-[#0E2A47] shadow-xl relative bg-black">
+              <img src="/images/assalam-tv/id-s-andalusia-iqamah.webp" alt="Countdown Iqomah" class="w-full h-full object-cover" />
+              <div class="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-[#050D1A]/85 backdrop-blur-sm text-[11px] font-bold text-white border border-white/20">
+                Countdown Iqomah
+              </div>
             </div>
           </div>
 
-          <!-- Prev/Next Controls -->
-          <button id="carousel-prev" class="absolute left-2 sm:-left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#0A1D31]/80 hover:bg-[#D9B26A] text-[#F5F2EA] hover:text-[#0A1D31] border border-white/20 backdrop-blur-md flex items-center justify-center transition shadow-2xl z-20" aria-label="Slide Sebelumnya">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
-          </button>
-          <button id="carousel-next" class="absolute right-2 sm:-right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#0A1D31]/80 hover:bg-[#D9B26A] text-[#F5F2EA] hover:text-[#0A1D31] border border-white/20 backdrop-blur-md flex items-center justify-center transition shadow-2xl z-20" aria-label="Slide Berikutnya">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-          </button>
-
-          <!-- 8 Dots Indicator -->
-          <div class="flex items-center justify-center gap-2 mt-6" id="carousel-dots">
-            <button class="dot-btn w-3 h-3 rounded-full bg-[#D9B26A] transition-all scale-125" data-dot="0"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="1"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="2"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="3"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="4"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="5"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="6"></button>
-            <button class="dot-btn w-2.5 h-2.5 rounded-full bg-white/30 hover:bg-white/50 transition-all" data-dot="7"></button>
+          <!-- Dots Indicator (first is wide 20px pill, others 6px circles) -->
+          <div class="flex items-center justify-center gap-1.5 pt-2">
+            <span class="w-5 h-1.5 rounded-full bg-[#D9B26A]"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/20"></span>
           </div>
+
+          <!-- Hint text from mobile design -->
+          <p class="text-xs text-center text-[#8FA0B4]">
+            geser untuk melihat tema &amp; tampilan lain
+          </p>
         </div>
       </div>
     </section>
 
     <!-- ==================== 4. SECTION/VERTICAL KIOSK ==================== -->
-    <section id="vertical" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="vertical" class="py-16 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- DESKTOP VERTICAL (>= lg) -->
+        <div class="hidden lg:grid grid-cols-12 gap-12 items-center">
           <!-- Left Column Copy -->
-          <div class="lg:col-span-6 space-y-6">
+          <div class="col-span-6 space-y-6">
             <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider">
               MULTI-ORIENTASI
             </span>
 
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight leading-tight">
               Dukungan Penuh untuk TV Berdiri (Standing Kiosk &amp; Totem Digital Masjid)
             </h2>
 
@@ -497,7 +770,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
                 </div>
                 <div>
                   <h3 class="font-bold text-base text-[#10233A]">Skalabilitas Asli 9:16</h3>
-                  <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">Desain tidak terpotong, font proporsional, dan kartu jadwal tersusun vertikal yang nyaman dibaca pejalan kaki.</p>
+                  <p class="text-sm text-[#5C6A7C] mt-1 leading-relaxed">Desain tidak terpotong, font proporsional, dan kartu jadwal tersusun vertikal yang nyaman dibaca pejalan kaki.</p>
                 </div>
               </div>
 
@@ -507,7 +780,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
                 </div>
                 <div>
                   <h3 class="font-bold text-base text-[#10233A]">Optimal untuk Selasar &amp; Pintu Utama</h3>
-                  <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">Efektif menyambut jamaah dengan waktu sholat, QRIS infaq digital, dan maklumat kajian harian.</p>
+                  <p class="text-sm text-[#5C6A7C] mt-1 leading-relaxed">Efektif menyambut jamaah dengan waktu sholat, QRIS infaq digital, dan maklumat kajian harian.</p>
                 </div>
               </div>
 
@@ -517,27 +790,96 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
                 </div>
                 <div>
                   <h3 class="font-bold text-base text-[#10233A]">6 Tema Warna Vertikal</h3>
-                  <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">Semua variasi warna tersedia lengkap dalam mode portrait tanpa kompromi.</p>
+                  <p class="text-sm text-[#5C6A7C] mt-1 leading-relaxed">Semua variasi warna tersedia lengkap dalam mode portrait tanpa kompromi.</p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Right Column Visual: 3 Vertical Shots -->
-          <div class="lg:col-span-6 grid grid-cols-3 gap-3 sm:gap-5 items-center justify-center">
+          <div class="col-span-6 grid grid-cols-3 gap-5 items-center justify-center">
             <!-- V Zamrud -->
-            <div class="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl aspect-[9/16] bg-black transform hover:-translate-y-2 transition-transform duration-300">
+            <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl aspect-[9/16] bg-black transform hover:-translate-y-2 transition-transform duration-300">
               <img src="/images/assalam-tv/id-v-zamrud.webp" alt="Vertikal Zamrud" class="w-full h-full object-cover" loading="lazy" />
             </div>
 
             <!-- V Lazuardi (Elevated in Center) -->
-            <div class="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#D9B26A] shadow-2xl aspect-[9/16] bg-black transform -translate-y-3 sm:-translate-y-5 hover:-translate-y-7 transition-transform duration-300">
+            <div class="rounded-3xl overflow-hidden border-2 border-[#D9B26A] shadow-2xl aspect-[9/16] bg-black transform -translate-y-5 hover:-translate-y-7 transition-transform duration-300">
               <img src="/images/assalam-tv/id-v-lazuardi.webp" alt="Vertikal Lazuardi" class="w-full h-full object-cover" loading="lazy" />
             </div>
 
             <!-- V Andalusia -->
-            <div class="rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl aspect-[9/16] bg-black transform hover:-translate-y-2 transition-transform duration-300">
+            <div class="rounded-3xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl aspect-[9/16] bg-black transform hover:-translate-y-2 transition-transform duration-300">
               <img src="/images/assalam-tv/id-v-andalusia.webp" alt="Vertikal Andalusia" class="w-full h-full object-cover" loading="lazy" />
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE VERTICAL (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-6 text-left">
+          <!-- Header -->
+          <div class="space-y-2">
+            <div class="w-11 h-1 bg-[#D9B26A] rounded-full mb-3"></div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+              Dukungan Penuh untuk TV Vertical (Standing Kiosk)
+            </h2>
+            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed">
+              Tata letak portrait yang proporsional untuk TV berdiri, totem digital, dan papan informasi di selasar masjid.
+            </p>
+          </div>
+
+          <!-- Horizontal Rail of 3 Vertical Screens (w=160 h=284 each) -->
+          <div>
+            <div class="flex gap-3 overflow-x-auto pb-3 pt-1 -mx-4 px-4 snap-x snap-mandatory no-scrollbar">
+              <!-- Zamrud -->
+              <div class="w-[155px] sm:w-[170px] flex-shrink-0 snap-center space-y-2">
+                <div class="aspect-[9/16] rounded-2xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl bg-black">
+                  <img src="/images/assalam-tv/id-v-zamrud.webp" alt="Zamrud" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-xs text-center font-bold text-[#5C6A7C]">Zamrud</p>
+              </div>
+
+              <!-- Lazuardi -->
+              <div class="w-[155px] sm:w-[170px] flex-shrink-0 snap-center space-y-2">
+                <div class="aspect-[9/16] rounded-2xl overflow-hidden border-2 border-[#D9B26A] shadow-xl bg-black">
+                  <img src="/images/assalam-tv/id-v-lazuardi.webp" alt="Lazuardi" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-xs text-center font-bold text-[#9A7228]">Lazuardi</p>
+              </div>
+
+              <!-- Andalusia -->
+              <div class="w-[155px] sm:w-[170px] flex-shrink-0 snap-center space-y-2">
+                <div class="aspect-[9/16] rounded-2xl overflow-hidden border-2 border-[#E7E0D2] shadow-xl bg-black">
+                  <img src="/images/assalam-tv/id-v-andalusia.webp" alt="Andalusia" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-xs text-center font-bold text-[#5C6A7C]">Andalusia</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#A7B4C6]">
+              <span>&larr; Geser untuk melihat tema standing totem lainnya &rarr;</span>
+            </div>
+          </div>
+
+          <!-- 2 Mobile Points from design -->
+          <div class="space-y-3 pt-2">
+            <div class="flex items-start gap-3 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7l4-4m0 0l4 4m-4-4v18m-4-4l4 4m0 0l4-4"></path></svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-[#10233A]">Skalabilitas Asli 9:16</h3>
+                <p class="text-xs text-[#5C6A7C] mt-0.5 leading-relaxed">Desain tidak terpotong dan nyaman dibaca pejalan kaki.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-[#10233A]">Optimal untuk Pintu Utama</h3>
+                <p class="text-xs text-[#5C6A7C] mt-0.5 leading-relaxed">Menyambut jamaah dengan waktu sholat dan maklumat kajian.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -560,8 +902,8 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           </p>
         </div>
 
-        <!-- 7 Stages Grid + Summary Card -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- DESKTOP 7 STAGES GRID (>= lg) -->
+        <div class="hidden lg:grid grid-cols-4 gap-6">
           <!-- Tahap 01 -->
           <div class="rounded-2xl p-4 bg-white/5 border border-white/10 hover:border-[#D9B26A]/40 transition group">
             <div class="aspect-video rounded-xl overflow-hidden mb-3 border border-white/10 bg-black">
@@ -648,241 +990,523 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
             </div>
           </div>
         </div>
+
+        <!-- MOBILE 7 STAGES STACK (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-3">
+          <!-- State 1 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-standby-zamrud.webp" alt="Standby" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 01</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Standby</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Jam presisi, 5 waktu, Hijriyah &amp; running text.</p>
+            </div>
+          </div>
+
+          <!-- State 2 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-menjelang-lazuardi.webp" alt="Menjelang Sholat" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 02</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Menjelang Sholat</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Pengingat merapikan shaf dan meluruskan niat.</p>
+            </div>
+          </div>
+
+          <!-- State 3 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-adzan-delima.webp" alt="Notifikasi Adzan" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 03</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Notifikasi Adzan</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Penanda megah saat waktu sholat telah masuk.</p>
+            </div>
+          </div>
+
+          <!-- State 4 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-iqamah-nila.webp" alt="Hitung Mundur Iqomah" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 04</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Hitung Mundur Iqomah</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Timer akurat detik demi detik menuju iqomah.</p>
+            </div>
+          </div>
+
+          <!-- State 5 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-sholat-obsidian.webp" alt="Sholat Berlangsung" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 05</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Sholat Berlangsung</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Pengingat menyenyapkan ponsel dan merapikan shaf saat sholat berjamaah.</p>
+            </div>
+          </div>
+
+          <!-- State 6 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-jumat-andalusia.webp" alt="Mode Sholat Jumat" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 06</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Mode Sholat Jumat</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Tata tertib dan pengingat khutbah Jumat.</p>
+            </div>
+          </div>
+
+          <!-- State 7 -->
+          <div class="flex items-center gap-3.5 p-2.5 sm:p-3 rounded-2xl bg-white/[0.07] border border-white/10 shadow-sm">
+            <div class="w-28 sm:w-32 aspect-video rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-black">
+              <img src="/images/assalam-tv/state-dhuha.webp" alt="Countdown Dhuha" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] font-extrabold text-[#D9B26A] uppercase tracking-wider">TAHAP 07</span>
+              <h3 class="text-sm font-bold text-[#F5F2EA] mt-0.5">Countdown Dhuha</h3>
+              <p class="text-xs text-[#9FB0C4] mt-0.5 leading-snug line-clamp-2">Penanda waktu sholat sunnah Dhuha.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- ==================== 6. SECTION/MULTI LANGUAGE ==================== -->
-    <section id="languages" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="languages" class="py-16 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Section Header -->
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
-            DUKUNGAN INTERNASIONAL
-          </span>
-          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
-            Cocok untuk Masjid Lokal, Masjid Raya, hingga Komunitas Internasional
-          </h2>
-          <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
-            Antarmuka TV maupun HP Admin dapat diatur ke dalam tiga bahasa besar dunia dengan tipografi dan penanggalan yang proporsional.
-          </p>
+        <!-- DESKTOP MULTI LANGUAGE (>= lg) -->
+        <div class="hidden lg:block">
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
+              DUKUNGAN INTERNASIONAL
+            </span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
+              Cocok untuk Masjid Lokal, Masjid Raya, hingga Komunitas Internasional
+            </h2>
+            <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
+              Antarmuka TV maupun HP Admin dapat diatur ke dalam tiga bahasa besar dunia dengan tipografi dan penanggalan yang proporsional.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Card 1: ID -->
+            <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
+              <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
+                <img src="/images/assalam-tv/id-h-andalusia.webp" alt="Bahasa Indonesia Display" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">🇮🇩</span>
+                <h3 class="text-lg font-extrabold text-[#10233A]">Bahasa Indonesia</h3>
+              </div>
+              <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed mb-4">
+                Sempurna untuk ribuan masjid di seluruh pelosok Indonesia, dengan nama sholat baku Kemenag dan format warta DKM lokal.
+              </p>
+              <a href="/assalam-tv" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7228] hover:underline">
+                <span>Halaman Utama (Aktif)</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </a>
+            </div>
+
+            <!-- Card 2: EN -->
+            <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
+              <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
+                <img src="/images/assalam-tv/en-h-andalusia.webp" alt="English Display" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">🇬🇧</span>
+                <h3 class="text-lg font-extrabold text-[#10233A]">English</h3>
+              </div>
+              <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed mb-4">
+                Ideal untuk masjid kota wisata, kawasan diplomatik, bandara internasional, hotel, dan komunitas muslim di luar negeri.
+              </p>
+              <a href="/assalam-tv/en" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7228] hover:underline">
+                <span>Buka Landing Page English</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </a>
+            </div>
+
+            <!-- Card 3: AR -->
+            <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
+              <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
+                <img src="/images/assalam-tv/ar-h-andalusia.webp" alt="Arabic Display" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">🇸🇦</span>
+                <h3 class="text-lg font-extrabold text-[#10233A] font-cairo">العربية (Arabic)</h3>
+              </div>
+              <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed mb-4">
+                Dirancang dengan tipografi Arab yang anggun dan penanggalan Hijriyah akurat untuk masjid di Timur Tengah dan pesantren.
+              </p>
+              <a href="/assalam-tv/ar" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7228] hover:underline font-cairo">
+                <span>صفحة الهبوط باللغة العربية &larr;</span>
+              </a>
+            </div>
+          </div>
         </div>
 
-        <!-- 3 Language Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <!-- Card 1: ID -->
-          <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
-            <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
-              <img src="/images/assalam-tv/id-h-andalusia.webp" alt="Bahasa Indonesia Display" class="w-full h-full object-cover" loading="lazy" />
-            </div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">🇮🇩</span>
-              <h3 class="text-lg font-extrabold text-[#10233A]">Bahasa Indonesia</h3>
-            </div>
-            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed mb-4">
-              Sempurna untuk ribuan masjid di seluruh pelosok Indonesia, dengan nama sholat baku Kemenag dan format warta DKM lokal.
+        <!-- MOBILE MULTI LANGUAGE (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-6">
+          <div class="text-left space-y-2">
+            <div class="w-11 h-1 bg-[#D9B26A] rounded-full mb-3"></div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+              Siap untuk Masjid Lokal hingga Internasional
+            </h2>
+            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed">
+              Tiga bahasa asli dengan tipografi dan penanggalan yang proporsional.
             </p>
-            <a href="/assalam-tv" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7228] hover:underline">
-              <span>Halaman Utama (Aktif)</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </a>
           </div>
 
-          <!-- Card 2: EN -->
-          <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
-            <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
-              <img src="/images/assalam-tv/en-h-andalusia.webp" alt="English Display" class="w-full h-full object-cover" loading="lazy" />
+          <div class="space-y-4">
+            <!-- ID Card -->
+            <div class="rounded-2xl overflow-hidden bg-white border border-[#E7E0D2] shadow-sm">
+              <div class="aspect-video w-full bg-black">
+                <img src="/images/assalam-tv/id-h-andalusia.webp" alt="Bahasa Indonesia" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="p-4 space-y-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🇮🇩</span>
+                  <h3 class="font-extrabold text-[#10233A] text-sm sm:text-base">Bahasa Indonesia</h3>
+                </div>
+                <p class="text-xs text-[#5C6A7C] leading-relaxed">
+                  Sempurna untuk ribuan masjid di seluruh pelosok Indonesia.
+                </p>
+              </div>
             </div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">🇬🇧</span>
-              <h3 class="text-lg font-extrabold text-[#10233A]">English</h3>
-            </div>
-            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed mb-4">
-              Ideal untuk masjid kota wisata, kawasan diplomatik, bandara internasional, hotel, dan komunitas muslim di luar negeri.
-            </p>
-            <a href="/assalam-tv/en" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7228] hover:underline">
-              <span>Buka Landing Page English</span>
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </a>
-          </div>
 
-          <!-- Card 3: AR -->
-          <div class="rounded-3xl p-5 bg-white border border-[#E7E0D2] shadow-sm hover:shadow-xl transition-all">
-            <div class="aspect-video rounded-2xl overflow-hidden mb-4 border border-[#E7E0D2] bg-black">
-              <img src="/images/assalam-tv/ar-h-andalusia.webp" alt="Arabic Display" class="w-full h-full object-cover" loading="lazy" />
+            <!-- EN Card -->
+            <div class="rounded-2xl overflow-hidden bg-white border border-[#E7E0D2] shadow-sm">
+              <div class="aspect-video w-full bg-black">
+                <img src="/images/assalam-tv/en-h-andalusia.webp" alt="English" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="p-4 space-y-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🇬🇧</span>
+                  <h3 class="font-extrabold text-[#10233A] text-sm sm:text-base">English</h3>
+                </div>
+                <p class="text-xs text-[#5C6A7C] leading-relaxed">
+                  Ideal untuk masjid kota wisata, bandara, hotel, dan komunitas muslim luar negeri.
+                </p>
+              </div>
             </div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xl">🇸🇦</span>
-              <h3 class="text-lg font-extrabold text-[#10233A] font-cairo">العربية (Arabic)</h3>
+
+            <!-- AR Card -->
+            <div class="rounded-2xl overflow-hidden bg-white border border-[#E7E0D2] shadow-sm">
+              <div class="aspect-video w-full bg-black">
+                <img src="/images/assalam-tv/ar-h-andalusia.webp" alt="العربية" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div class="p-4 space-y-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🇸🇦</span>
+                  <h3 class="font-extrabold text-[#10233A] text-sm sm:text-base font-cairo">العربية (Arabic)</h3>
+                </div>
+                <p class="text-xs text-[#5C6A7C] leading-relaxed">
+                  Tipografi Arab yang anggun dan penanggalan Hijriyah yang akurat.
+                </p>
+              </div>
             </div>
-            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed mb-4">
-              Dirancang dengan tipografi Arab yang anggun dan penanggalan Hijriyah akurat untuk masjid di Timur Tengah dan pesantren.
-            </p>
-            <a href="/assalam-tv/ar" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7228] hover:underline font-cairo">
-              <span>صفحة الهبوط باللغة العربية &larr;</span>
-            </a>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ==================== 7. SECTION/DUA APLIKASI: MODEL BISNIS ==================== -->
-    <section id="dua-aplikasi" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="dua-aplikasi" class="py-16 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Section Header -->
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
-            DUA APLIKASI &bull; SATU SISTEM
-          </span>
-          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
-            Aplikasi TV Gratis, Aplikasi Admin Berbayar
-          </h2>
-          <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
-            Aplikasi TV adalah pintu masuknya: unduh gratis di Google Play, buka mode preview untuk mencoba semua tema dan fitur, lalu di akhir preview tersedia tautan untuk mengunduh aplikasi Admin.
-          </p>
-        </div>
+        <!-- DESKTOP DUA APLIKASI (>= lg) -->
+        <div class="hidden lg:block">
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
+              DUA APLIKASI &bull; SATU SISTEM
+            </span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
+              Aplikasi TV Gratis, Aplikasi Admin Berbayar
+            </h2>
+            <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
+              Aplikasi TV adalah pintu masuknya: unduh gratis di Google Play, buka mode preview untuk mencoba semua tema dan fitur, lalu di akhir preview tersedia tautan untuk mengunduh aplikasi Admin.
+            </p>
+          </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
-          <!-- Card Free (Assalam TV) -->
-          <div class="p-8 sm:p-10 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="px-3.5 py-1 rounded-full bg-[#0A1D31] text-[#D9B26A] text-xs font-extrabold tracking-wider">
-                  GRATIS
-                </span>
-                <span class="text-xs font-semibold text-[#5C6A7C]">Aplikasi Layar TV</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
+            <!-- Card Free (Assalam TV) -->
+            <div class="p-8 sm:p-10 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <span class="px-3.5 py-1 rounded-full bg-[#0A1D31] text-[#D9B26A] text-xs font-extrabold tracking-wider">
+                    GRATIS
+                  </span>
+                  <span class="text-xs font-semibold text-[#5C6A7C]">Aplikasi Layar TV</span>
+                </div>
+
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-[#10233A]">Assalam TV</h3>
+                <p class="text-sm font-bold text-[#9A7228] mt-1 mb-6">
+                  Unduh gratis sebagai lead magnet — coba dulu tanpa biaya sepeser pun.
+                </p>
+
+                <ul class="space-y-3.5 text-xs sm:text-sm text-[#5C6A7C] mb-8">
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Unduh gratis di Google Play, tanpa batas jumlah unit TV</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Mode preview aktif: semua tema, mode sholat &amp; tampilan vertikal terbuka</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>100% offline — tanpa registrasi akun, tanpa kuota internet</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Di akhir mode preview tersedia tautan untuk mengunduh aplikasi Admin</span>
+                  </li>
+                </ul>
               </div>
 
-              <h3 class="text-2xl sm:text-3xl font-extrabold text-[#10233A]">Assalam TV</h3>
-              <p class="text-sm font-bold text-[#9A7228] mt-1 mb-6">
-                Unduh gratis sebagai lead magnet — coba dulu tanpa biaya sepeser pun.
-              </p>
-
-              <ul class="space-y-3.5 text-xs sm:text-sm text-[#5C6A7C] mb-8">
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Unduh gratis di Google Play, tanpa batas jumlah unit TV</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Mode preview aktif: semua tema, mode sholat &amp; tampilan vertikal terbuka</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>100% offline — tanpa registrasi akun, tanpa kuota internet</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Di akhir mode preview tersedia tautan untuk mengunduh aplikasi Admin</span>
-                </li>
-              </ul>
+              <div class="pt-6 border-t border-[#E7E0D2] space-y-3">
+                <a href="#download" class="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs sm:text-sm hover:bg-[#0E2A47] shadow transition">
+                  <img src="/images/google-play-id.png" alt="Google Play" class="h-5 w-auto" />
+                  <span>Unduh TV di Google Play</span>
+                </a>
+                <p class="text-[11px] text-center text-[#5C6A7C]">Gratis &bull; tanpa langganan &bull; tanpa batas unit</p>
+              </div>
             </div>
 
-            <div class="pt-6 border-t border-[#E7E0D2] space-y-3">
-              <a href="#download" class="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs sm:text-sm hover:bg-[#0E2A47] shadow transition">
-                <img src="/images/google-play-id.png" alt="Google Play" class="h-5 w-auto" />
+            <!-- Card Paid (Assalam TV Admin) -->
+            <div class="p-8 sm:p-10 rounded-3xl bg-[#0E2A47] text-white border-2 border-[#D9B26A] shadow-2xl flex flex-col justify-between relative overflow-hidden">
+              <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#D9B26A]/10 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <span class="px-3.5 py-1 rounded-full gold-gradient-bg text-[#0A1D31] text-xs font-black tracking-wider">
+                    BERBAYAR SEKALI
+                  </span>
+                  <span class="text-xs font-semibold text-[#A7B4C6]">Aplikasi Remote HP</span>
+                </div>
+
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-[#F5F2EA]">Assalam TV Admin</h3>
+                <p class="text-sm font-bold text-[#D9B26A] mt-1 mb-6">
+                  Rp 500.000 sekali bayar — kontrol penuh dari HP pengurus.
+                </p>
+
+                <ul class="space-y-3.5 text-xs sm:text-sm text-[#B9C6D6] mb-8">
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Kelola jadwal sholat, pengumuman DKM, dan galeri kajian dari HP</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Kirim data ke TV lewat Wi-Fi lokal — tanpa ShareIt dan tanpa USB flashdisk</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>1 lisensi untuk 1 perangkat pengelola, kendalikan unit TV tanpa batas</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Sekali bayar, tanpa iuran bulanan — aktif selamanya</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span>Termasuk pembaruan tema &amp; perbaikan fitur tanpa biaya ekstra</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="pt-6 border-t border-white/10 space-y-3">
+                <a href="#license" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-xs sm:text-sm hover:brightness-105 shadow transition">
+                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5l-3 3-4-4-5.5 5.5a2.12 2.12 0 0 0 3 3L10.5 15l3 3 1.5-1.5M19 5l-2-2"/></svg>
+                  <span>Beli Lisensi Admin &bull; Rp 500.000</span>
+                </a>
+                <p class="text-[11px] text-center text-[#A7B4C6]">
+                  Atau <a href="/assalam-tv/tester" class="text-[#D9B26A] underline font-bold">dapatkan gratis</a> dengan ikut uji coba terbatas (closed testing).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 Step Flow Card -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-base">
+                  1
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-[#10233A]">
+                  Unduh aplikasi TV gratis di Google Play
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-base">
+                  2
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-[#10233A]">
+                  Buka mode preview — coba semua tema &amp; fitur
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-base">
+                  3
+                </div>
+                <div class="text-xs sm:text-sm font-bold text-[#10233A]">
+                  Di akhir preview, unduh aplikasi Admin &amp; aktifkan lisensi
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE DUA APLIKASI (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-5">
+          <!-- Header -->
+          <div class="text-left space-y-2">
+            <span class="inline-block px-3 py-1 rounded-full bg-[#D9B26A]/20 text-[#9A7228] text-[11px] font-extrabold uppercase tracking-wider">
+              DUA APLIKASI &bull; SATU SISTEM
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+              Aplikasi TV Gratis, Admin Berbayar
+            </h2>
+            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed">
+              Aplikasi TV adalah pintu masuknya: unduh gratis di Google Play, buka mode preview untuk mencoba semua tema, lalu di akhir preview ada tautan untuk mengunduh aplikasi Admin.
+            </p>
+          </div>
+
+          <!-- Card Free (Assalam TV) -->
+          <div class="p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm space-y-3">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full gold-gradient-bg text-[#0A1D31] text-[11px] font-black">
+              <span>GRATIS</span>
+              <span class="text-[#0A1D31]/70 font-semibold">&bull; Aplikasi TV</span>
+            </div>
+
+            <h3 class="text-xl font-black text-[#10233A]">Assalam TV</h3>
+            <p class="text-xs font-bold text-[#9A7228]">
+              Unduh gratis — coba dulu tanpa biaya.
+            </p>
+
+            <div class="space-y-2.5 text-xs text-[#5C6A7C] pt-1">
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Unduh gratis di Google Play, unit TV tanpa batas</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Mode preview: semua tema, mode sholat &amp; tampilan vertikal terbuka</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Di akhir mode preview ada tautan untuk mengunduh aplikasi Admin</span>
+              </div>
+            </div>
+
+            <div class="pt-3">
+              <a href="#download" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs shadow">
+                <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                  <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                  <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                  <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+                </svg>
                 <span>Unduh TV di Google Play</span>
               </a>
-              <p class="text-[11px] text-center text-[#5C6A7C]">Gratis &bull; tanpa langganan &bull; tanpa batas unit</p>
+              <p class="text-[10px] text-center text-[#5C6A7C] mt-2">Gratis &bull; tanpa langganan &bull; tanpa batas unit</p>
             </div>
           </div>
 
           <!-- Card Paid (Assalam TV Admin) -->
-          <div class="p-8 sm:p-10 rounded-3xl bg-[#0E2A47] text-white border-2 border-[#D9B26A] shadow-2xl flex flex-col justify-between relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#D9B26A]/10 rounded-full blur-2xl pointer-events-none"></div>
-
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="px-3.5 py-1 rounded-full gold-gradient-bg text-[#0A1D31] text-xs font-black tracking-wider">
-                  BERBAYAR SEKALI
-                </span>
-                <span class="text-xs font-semibold text-[#A7B4C6]">Aplikasi Remote HP</span>
-              </div>
-
-              <h3 class="text-2xl sm:text-3xl font-extrabold text-[#F5F2EA]">Assalam TV Admin</h3>
-              <p class="text-sm font-bold text-[#D9B26A] mt-1 mb-6">
-                Rp 500.000 sekali bayar — kontrol penuh dari HP pengurus.
-              </p>
-
-              <ul class="space-y-3.5 text-xs sm:text-sm text-[#B9C6D6] mb-8">
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Kelola jadwal sholat, pengumuman DKM, dan galeri kajian dari HP</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Kirim data ke TV lewat Wi-Fi lokal — tanpa ShareIt dan tanpa USB flashdisk</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>1 lisensi untuk 1 perangkat pengelola, kendalikan unit TV tanpa batas</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Sekali bayar, tanpa iuran bulanan — aktif selamanya</span>
-                </li>
-                <li class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span>Termasuk pembaruan tema &amp; perbaikan fitur tanpa biaya ekstra</span>
-                </li>
-              </ul>
+          <div class="p-5 rounded-3xl bg-[#0E2A47] text-white border-2 border-[#D9B26A]/50 shadow-xl space-y-3">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] text-[11px] font-black border border-[#D9B26A]/30">
+              <span>BERBAYAR</span>
+              <span class="text-[#A7B4C6] font-semibold">&bull; Aplikasi Admin</span>
             </div>
 
-            <div class="pt-6 border-t border-white/10 space-y-3">
-              <a href="#license" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-xs sm:text-sm hover:brightness-105 shadow transition">
+            <h3 class="text-xl font-black text-[#F5F2EA]">Assalam TV Admin</h3>
+            <p class="text-xs font-bold text-[#D9B26A]">
+              Rp 500.000 sekali bayar — kontrol penuh dari HP pengurus.
+            </p>
+
+            <div class="space-y-2.5 text-xs text-[#B9C6D6] pt-1">
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#D9B26A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Kelola jadwal sholat, pengumuman &amp; galeri dari HP</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#D9B26A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Kirim data ke TV lewat Wi-Fi lokal — tanpa ShareIt</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#D9B26A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>1 lisensi untuk 1 HP pengelola, unit TV tanpa batas</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#D9B26A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Sekali bayar, tanpa iuran bulanan — aktif selamanya</span>
+              </div>
+            </div>
+
+            <div class="pt-3">
+              <a href="#license" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-xs shadow hover:brightness-105">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5l-3 3-4-4-5.5 5.5a2.12 2.12 0 0 0 3 3L10.5 15l3 3 1.5-1.5M19 5l-2-2"/></svg>
                 <span>Beli Lisensi Admin &bull; Rp 500.000</span>
               </a>
-              <p class="text-[11px] text-center text-[#A7B4C6]">
-                Atau <a href="/assalam-tv/tester" class="text-[#D9B26A] underline font-bold">dapatkan gratis</a> dengan ikut uji coba terbatas (closed testing).
+              <p class="text-[10px] text-center text-[#A7B4C6] mt-2">
+                Atau <a href="/assalam-tv/tester" class="text-[#D9B26A] font-bold underline">dapat gratis</a> dengan ikut uji coba terbatas
               </p>
             </div>
           </div>
-        </div>
 
-        <!-- 3 Step Flow Card -->
-        <div class="p-6 sm:p-8 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm max-w-4xl mx-auto">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-base">
+          <!-- FlowCard 1, 2, 3 -->
+          <div class="p-4 rounded-2xl bg-white border border-[#E7E0D2] shadow-sm space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-xs">
                 1
               </div>
-              <div class="text-xs sm:text-sm font-bold text-[#10233A]">
+              <div class="text-xs font-bold text-[#10233A]">
                 Unduh aplikasi TV gratis di Google Play
               </div>
             </div>
 
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-base">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-xs">
                 2
               </div>
-              <div class="text-xs sm:text-sm font-bold text-[#10233A]">
+              <div class="text-xs font-bold text-[#10233A]">
                 Buka mode preview — coba semua tema &amp; fitur
               </div>
             </div>
 
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-base">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-full bg-[#D9B26A]/20 text-[#9A7228] font-black flex items-center justify-center flex-shrink-0 text-xs">
                 3
               </div>
-              <div class="text-xs sm:text-sm font-bold text-[#10233A]">
+              <div class="text-xs font-bold text-[#10233A]">
                 Di akhir preview, unduh aplikasi Admin &amp; aktifkan lisensi
               </div>
             </div>
@@ -892,7 +1516,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
     </section>
 
     <!-- ==================== 8. SECTION/PERANGKAT ==================== -->
-    <section id="perangkat" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="perangkat" class="hidden lg:block py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Section Header -->
         <div class="text-center max-w-3xl mx-auto mb-16">
@@ -963,9 +1587,10 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
     </section>
 
     <!-- ==================== 9. SECTION/LICENSE ==================== -->
-    <section id="license" class="py-24 bg-[#0A1D31] text-white">
+    <section id="license" class="py-16 lg:py-24 bg-[#0A1D31] text-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- DESKTOP LICENSE (>= lg) -->
+        <div class="hidden lg:grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <!-- Left Column Copy -->
           <div class="lg:col-span-7 space-y-6">
             <span class="inline-block px-4 py-1.5 rounded-full bg-[#D9B26A]/10 border border-[#D9B26A]/30 text-[#D9B26A] text-xs font-bold uppercase tracking-wider">
@@ -1051,7 +1676,7 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
                 </div>
               </div>
 
-              <div class="space-y-3 pt-6" id="download">
+              <div class="space-y-3 pt-6">
                 <!-- Button 1: Google Play -->
                 <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs sm:text-sm hover:bg-[#0E2A47] shadow transition">
                   <svg class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
@@ -1082,104 +1707,296 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
             </div>
           </div>
         </div>
+
+        <!-- MOBILE LICENSE (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-5">
+          <!-- Header -->
+          <div class="text-left space-y-2">
+            <span class="inline-block px-3 py-1 rounded-full bg-[#D9B26A]/20 text-[#D9B26A] text-[11px] font-extrabold uppercase tracking-wider">
+              COBA DULU &bull; GRATIS
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#F5F2EA] tracking-tight leading-tight">
+              Lihat Dulu Tampilannya di TV Masjid Anda, Baru Putuskan
+            </h2>
+            <p class="text-xs sm:text-sm text-[#B9C6D6] leading-relaxed">
+              Pasang aplikasi TV-nya gratis dan aktifkan mode preview untuk melihat sendiri seluruh tampilan, tema, dan fiturnya. Cocok? Aktifkan lisensi Admin sekali bayar untuk kontrol penuh dari HP — tanpa iuran bulanan.
+            </p>
+          </div>
+
+          <!-- ActionCard (white) -->
+          <div class="p-5 rounded-3xl bg-white text-[#10233A] shadow-xl border border-[#E7E0D2] space-y-4">
+            <div class="space-y-1.5">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D9B26A]/15 text-[#9A7228] text-[11px] font-extrabold uppercase tracking-wider">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                MULAI GRATIS
+              </div>
+              <h3 class="text-xl font-black text-[#10233A]">Unduh aplikasi TV-nya gratis</h3>
+              <p class="text-xs text-[#5C6A7C] leading-relaxed">
+                Pasang di TV/STB, aktifkan mode preview, dan lihat sendiri tampilannya sebelum memutuskan.
+              </p>
+            </div>
+
+            <div class="w-full h-px bg-[#E7E0D2]"></div>
+
+            <div class="space-y-2.5 text-xs text-[#10233A] font-medium">
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Aplikasi TV gratis, tanpa batas unit di semua TV/STB berbasis Android</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Mode preview untuk mencoba seluruh tema &amp; fitur</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <span>Tanpa server lisensi &amp; tanpa iuran bulanan</span>
+              </div>
+            </div>
+
+            <div class="pt-2 space-y-2.5">
+              <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs shadow hover:bg-[#0E2A47]">
+                <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                  <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                  <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                  <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                  <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+                </svg>
+                <span>Unduh di Google Play</span>
+              </a>
+
+              <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20membeli%20Lisensi%20Admin%20Assalam%20TV%20untuk%20masjid" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0E2A47]/10 text-[#0A1D31] font-extrabold text-xs hover:bg-[#0E2A47]/20">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3.8 6h16.4L18 3.5H6L3.8 6zM16 10a4 4 0 01-8 0"></path></svg>
+                <span>Beli Lisensi di Google Play</span>
+              </a>
+
+              <p class="text-[10px] text-center text-[#5C6A7C] pt-0.5">
+                Pembelian lisensi diproses aman melalui Google Play &bull; sekali bayar, tanpa iuran bulanan.
+              </p>
+            </div>
+          </div>
+
+          <!-- FeatCard (white with 4 green ticks) -->
+          <div class="p-4 rounded-2xl bg-white text-[#10233A] border border-[#E7E0D2] shadow-sm space-y-2.5">
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-lg bg-[#EAF6EF] text-[#1F7A4D] flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <span class="text-xs font-bold text-[#10233A]">Mode Preview Aktif</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-lg bg-[#EAF6EF] text-[#1F7A4D] flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <span class="text-xs font-bold text-[#10233A]">Aplikasi TV 100% Gratis</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-lg bg-[#EAF6EF] text-[#1F7A4D] flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <span class="text-xs font-bold text-[#10233A]">Validasi Offline Mandiri</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded-lg bg-[#EAF6EF] text-[#1F7A4D] flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <span class="text-xs font-bold text-[#10233A]">Bebas Kuota &amp; Tagihan</span>
+            </div>
+          </div>
+
+          <!-- Notice Non Android (glass/dark card) -->
+          <div class="p-4 rounded-2xl bg-white/[0.08] border border-white/10 space-y-2.5">
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 text-[#D9B26A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><line x1="12" y1="16" x2="12" y2="12" stroke-width="2"></line><line x1="12" y1="8" x2="12.01" y2="8" stroke-width="2"></line></svg>
+              <h4 class="text-xs font-bold text-[#F5F2EA]">STB non-Android belum didukung</h4>
+            </div>
+            <p class="text-xs text-[#B9C6D6] leading-relaxed">
+              STB satelit/DVB dan Smart TV non-Android belum didukung resmi. Tanya dulu via WhatsApp sebelum membeli lisensi.
+            </p>
+            <div class="pt-1">
+              <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20mau%20konsultasi%20kompatibilitas%20perangkat%20untuk%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl gold-gradient-bg text-[#0A1D31] font-bold text-xs shadow hover:brightness-105">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                <span>Tanya via WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- ==================== 10. SECTION/CLOSED TEST ==================== -->
-    <section id="tester-cta" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="tester-cta" class="py-16 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Section Header -->
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
-            UJI COBA TERBATAS &bull; CLOSED TESTING
-          </span>
-          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
-            Daftar Jadi Penguji Awal, Dapat Lisensi Admin Gratis
-          </h2>
-          <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
-            Assalam TV sedang memasuki tahap uji coba terbatas di Google Play. Ikut jadi tester, bantu kami menyempurnakan aplikasinya, dan terima voucher Lisensi Admin gratis untuk masjid Anda.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
-          <!-- Benefits (Left 7 col) -->
-          <div class="lg:col-span-7 space-y-5">
-            <div class="flex items-start gap-4 p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm">
-              <div class="w-12 h-12 rounded-2xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
-              </div>
-              <div>
-                <h3 class="text-base font-bold text-[#10233A]">Voucher Lisensi Admin Gratis</h3>
-                <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">
-                  Senilai Rp 500.000, tanpa iuran bulanan, dan aktif selamanya di 1 perangkat pengelola.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-start gap-4 p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm">
-              <div class="w-12 h-12 rounded-2xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-              </div>
-              <div>
-                <h3 class="text-base font-bold text-[#10233A]">Akses Lebih Awal</h3>
-                <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">
-                  Coba semua tema, mode sholat, dan tampilan vertikal sebelum rilis publik resmi.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-start gap-4 p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm">
-              <div class="w-12 h-12 rounded-2xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-              </div>
-              <div>
-                <h3 class="text-base font-bold text-[#10233A]">Masukan Anda Diprioritaskan</h3>
-                <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">
-                  Saran serta temuan kendala Anda ikut menentukan perbaikan fitur pada rilis final.
-                </p>
-              </div>
-            </div>
-
-            <!-- Callout -->
-            <div class="p-4 rounded-2xl bg-[#D9B26A]/15 border border-[#D9B26A]/30 text-xs sm:text-sm text-[#10233A] flex items-start gap-3">
-              <svg class="w-5 h-5 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><line x1="12" y1="16" x2="12" y2="12" stroke-width="2"></line><line x1="12" y1="8" x2="12.01" y2="8" stroke-width="2"></line></svg>
-              <span>Voucher dikirim via email/WhatsApp setelah Anda menyelesaikan masa uji coba. Kuota tester terbatas setiap periode.</span>
-            </div>
+        <!-- DESKTOP CLOSED TEST (>= lg) -->
+        <div class="hidden lg:block">
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
+              UJI COBA TERBATAS &bull; CLOSED TESTING
+            </span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233A] tracking-tight">
+              Daftar Jadi Penguji Awal, Dapat Lisensi Admin Gratis
+            </h2>
+            <p class="mt-4 text-base sm:text-lg text-[#5C6A7C] leading-relaxed">
+              Assalam TV sedang memasuki tahap uji coba terbatas di Google Play. Ikut jadi tester, bantu kami menyempurnakan aplikasinya, dan terima voucher Lisensi Admin gratis untuk masjid Anda.
+            </p>
           </div>
 
-          <!-- Voucher Card (Right 5 col) -->
-          <div class="lg:col-span-5">
-            <div class="rounded-3xl bg-white border-2 border-[#D9B26A] shadow-2xl overflow-hidden text-[#10233A]">
-              <!-- Voucher Header Band -->
-              <div class="gold-gradient-bg px-6 py-3 flex items-center justify-between text-[#0A1D31] font-black text-xs uppercase tracking-wider">
-                <span>VOUCHER LISENSI ADMIN</span>
-                <span class="px-2.5 py-0.5 rounded-full bg-[#0A1D31] text-[#D9B26A] text-[10px]">GRATIS</span>
+          <div class="grid grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
+            <!-- Benefits (Left 7 col) -->
+            <div class="col-span-7 space-y-5">
+              <div class="flex items-start gap-4 p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm">
+                <div class="w-12 h-12 rounded-2xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-[#10233A]">Voucher Lisensi Admin Gratis</h3>
+                  <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">
+                    Senilai Rp 500.000, tanpa iuran bulanan, dan aktif selamanya di 1 perangkat pengelola.
+                  </p>
+                </div>
               </div>
 
-              <div class="p-8 text-center space-y-4">
-                <div class="text-xs font-bold uppercase tracking-wider text-[#5C6A7C]">Lisensi Admin Assalam TV</div>
-                <div class="flex items-center justify-center gap-3">
-                  <span class="text-lg line-through text-[#5C6A7C]">Rp 500.000</span>
-                  <span class="text-4xl font-black text-[#9A7228]">Rp 0</span>
+              <div class="flex items-start gap-4 p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm">
+                <div class="w-12 h-12 rounded-2xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 </div>
-                <p class="text-xs text-[#5C6A7C]">
-                  1 voucher per masjid &bull; aktif selamanya &bull; tanpa iuran bulanan
-                </p>
+                <div>
+                  <h3 class="text-base font-bold text-[#10233A]">Akses Lebih Awal</h3>
+                  <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">
+                    Coba semua tema, mode sholat, dan tampilan vertikal sebelum rilis publik resmi.
+                  </p>
+                </div>
+              </div>
 
-                <div class="w-full border-t border-dashed border-[#E7E0D2] my-4"></div>
+              <div class="flex items-start gap-4 p-5 rounded-3xl bg-white border border-[#E7E0D2] shadow-sm">
+                <div class="w-12 h-12 rounded-2xl bg-[#D9B26A]/20 text-[#9A7228] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-[#10233A]">Masukan Anda Diprioritaskan</h3>
+                  <p class="text-xs sm:text-sm text-[#5C6A7C] mt-1 leading-relaxed">
+                    Saran serta temuan kendala Anda ikut menentukan perbaikan fitur pada rilis final.
+                  </p>
+                </div>
+              </div>
 
-                <a href="/assalam-tv/tester" class="w-full flex items-center justify-center gap-2 py-4 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-sm hover:brightness-105 shadow transition transform hover:-translate-y-0.5">
+              <div class="p-4 rounded-2xl bg-[#D9B26A]/15 border border-[#D9B26A]/30 text-xs sm:text-sm text-[#10233A] flex items-start gap-3">
+                <svg class="w-5 h-5 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"></circle><line x1="12" y1="16" x2="12" y2="12" stroke-width="2"></line><line x1="12" y1="8" x2="12.01" y2="8" stroke-width="2"></line></svg>
+                <span>Voucher dikirim via email/WhatsApp setelah Anda menyelesaikan masa uji coba. Kuota tester terbatas setiap periode.</span>
+              </div>
+            </div>
+
+            <!-- Voucher Card (Right 5 col) -->
+            <div class="col-span-5">
+              <div class="rounded-3xl bg-white border-2 border-[#D9B26A] shadow-2xl overflow-hidden text-[#10233A]">
+                <div class="gold-gradient-bg px-6 py-3 flex items-center justify-between text-[#0A1D31] font-black text-xs uppercase tracking-wider">
+                  <span>VOUCHER LISENSI ADMIN</span>
+                  <span class="px-2.5 py-0.5 rounded-full bg-[#0A1D31] text-[#D9B26A] text-[10px]">GRATIS</span>
+                </div>
+
+                <div class="p-8 text-center space-y-4">
+                  <div class="text-xs font-bold uppercase tracking-wider text-[#5C6A7C]">Lisensi Admin Assalam TV</div>
+                  <div class="flex items-center justify-center gap-3">
+                    <span class="text-lg line-through text-[#5C6A7C]">Rp 500.000</span>
+                    <span class="text-4xl font-black text-[#9A7228]">Rp 0</span>
+                  </div>
+                  <p class="text-xs text-[#5C6A7C]">
+                    1 voucher per masjid &bull; aktif selamanya &bull; tanpa iuran bulanan
+                  </p>
+
+                  <div class="w-full border-t border-dashed border-[#E7E0D2] my-4"></div>
+
+                  <a href="/assalam-tv/tester" class="w-full flex items-center justify-center gap-2 py-4 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-sm hover:brightness-105 shadow transition transform hover:-translate-y-0.5">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <span>Daftar Jadi Tester Sekarang</span>
+                  </a>
+
+                  <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20tertarik%20daftar%20tester%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0E2A47]/10 text-[#0A1D31] font-bold text-xs hover:bg-[#0E2A47]/20 transition">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                    <span>Tanya via WhatsApp</span>
+                  </a>
+
+                  <p class="text-[11px] text-[#5C6A7C] pt-2">
+                    Kuota terbatas &bull; khusus pengguna Android TV / Android TV Box
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE CLOSED TEST (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden space-y-5">
+          <!-- Header -->
+          <div class="text-left space-y-2">
+            <span class="inline-block px-3 py-1 rounded-full bg-[#D9B26A]/20 text-[#9A7228] text-[11px] font-extrabold uppercase tracking-wider">
+              UJI COBA TERBATAS
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+              Daftar Jadi Penguji Awal, Dapat Lisensi Admin Gratis
+            </h2>
+            <p class="text-xs sm:text-sm text-[#5C6A7C] leading-relaxed">
+              Ikut uji coba terbatas Assalam TV di Google Play dan terima voucher Lisensi Admin gratis untuk masjid Anda.
+            </p>
+          </div>
+
+          <!-- VoucherCard -->
+          <div class="rounded-3xl bg-white border-2 border-[#D9B26A] shadow-xl overflow-hidden text-[#10233A]">
+            <!-- Top Band -->
+            <div class="gold-gradient-bg px-5 py-3 flex items-center justify-between text-[#0A1D31] font-black text-xs uppercase tracking-wider">
+              <span>VOUCHER LISENSI ADMIN</span>
+              <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0A1D31] text-[#D9B26A] text-[10px]">
+                <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>GRATIS</span>
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 space-y-3.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#10233A]">Lisensi Admin</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs line-through text-[#5C6A7C]">Rp 500.000</span>
+                  <span class="text-lg font-black text-[#9A7228]">Rp 0</span>
+                </div>
+              </div>
+
+              <p class="text-[11px] text-[#5C6A7C]">
+                1 voucher per masjid &bull; aktif selamanya &bull; tanpa iuran bulanan
+              </p>
+
+              <div class="w-full h-px border-t border-dashed border-[#E7E0D2]"></div>
+
+              <div class="space-y-2.5 text-xs text-[#10233A]">
+                <div class="flex items-start gap-2.5">
+                  <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                  <span>Voucher Lisensi Admin gratis senilai Rp 500.000</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                  <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                  <span>Akses lebih awal ke semua tema &amp; fitur</span>
+                </div>
+                <div class="flex items-start gap-2.5">
+                  <svg class="w-4 h-4 text-[#9A7228] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                  <span>Masukan Anda menentukan fitur versi final</span>
+                </div>
+              </div>
+
+              <div class="pt-2 space-y-2.5">
+                <a href="/assalam-tv/tester" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-xs shadow hover:brightness-105">
                   <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                  <span>Daftar Jadi Tester Sekarang</span>
+                  <span>Daftar Jadi Tester</span>
                 </a>
 
-                <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20tertarik%20daftar%20tester%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0E2A47]/10 text-[#0A1D31] font-bold text-xs hover:bg-[#0E2A47]/20 transition">
+                <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20tertarik%20daftar%20tester%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0E2A47]/10 text-[#0A1D31] font-extrabold text-xs hover:bg-[#0E2A47]/20">
                   <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                   <span>Tanya via WhatsApp</span>
                 </a>
 
-                <p class="text-[11px] text-[#5C6A7C] pt-2">
-                  Kuota terbatas &bull; khusus pengguna Android TV / Android TV Box
+                <p class="text-[10px] text-center text-[#5C6A7C] pt-0.5">
+                  Kuota terbatas &bull; khusus Android TV / Android Box
                 </p>
               </div>
             </div>
@@ -1189,10 +2006,10 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
     </section>
 
     <!-- ==================== 11. SECTION/FAQ & FINAL CTA ==================== -->
-    <section id="faq" class="py-20 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
+    <section id="faq" class="py-16 lg:py-28 bg-[#F7F4EC] text-[#10233A]">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Section Header -->
-        <div class="text-center mb-12">
+        <!-- DESKTOP HEADER (>= lg) -->
+        <div class="hidden lg:block text-center mb-12">
           <span class="inline-block px-3.5 py-1.5 rounded-full bg-[#D9B26A]/20 border border-[#D9B26A]/40 text-[#9A7228] text-xs font-bold uppercase tracking-wider mb-4">
             TANYA JAWAB
           </span>
@@ -1204,55 +2021,63 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           </p>
         </div>
 
+        <!-- MOBILE HEADER (< lg) -->
+        <div class="lg:hidden text-left mb-6 space-y-2">
+          <div class="w-11 h-1 bg-[#D9B26A] rounded-full mb-3"></div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#10233A] tracking-tight leading-tight">
+            Pertanyaan yang Sering Diajukan
+          </h2>
+        </div>
+
         <!-- Accordion FAQ Items -->
-        <div class="space-y-4 mb-20">
+        <div class="space-y-3 sm:space-y-4 mb-16 lg:mb-20">
           <!-- Item 1 -->
           <div class="faq-item rounded-2xl bg-white border border-[#E7E0D2] overflow-hidden transition-shadow shadow-sm">
-            <button class="faq-toggle w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-bold text-base text-[#10233A]">
-              <span>Apakah TV masjid butuh koneksi internet setiap hari?</span>
+            <button class="faq-toggle w-full text-left px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#10233A]">
+              <span>Apakah TV butuh internet setiap hari?</span>
               <span class="faq-icon text-[#9A7228] text-xl font-bold flex-shrink-0">&plus;</span>
             </button>
-            <div class="faq-content hidden px-6 pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-4">
-              Tidak sama sekali. TV hanya butuh jaringan Wi-Fi lokal saat Anda ingin mengubah data atau foto dari HP Admin. Setelah itu TV berjalan mandiri tanpa internet selamanya.
+            <div class="faq-content hidden px-5 sm:px-6 pb-4 sm:pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-3 sm:pt-4">
+              Tidak. TV hanya butuh Wi-Fi lokal saat Anda mengubah data dari HP. Setelah itu jalan mandiri tanpa internet selamanya.
             </div>
           </div>
 
           <!-- Item 2 -->
           <div class="faq-item rounded-2xl bg-white border border-[#E7E0D2] overflow-hidden transition-shadow shadow-sm">
-            <button class="faq-toggle w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-bold text-base text-[#10233A]">
-              <span>Perangkat apa saja yang bisa digunakan?</span>
+            <button class="faq-toggle w-full text-left px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#10233A]">
+              <span>Perangkat apa saja yang bisa dipakai?</span>
               <span class="faq-icon text-[#9A7228] text-xl font-bold flex-shrink-0">&plus;</span>
             </button>
-            <div class="faq-content hidden px-6 pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-4">
-              Aplikasi TV berjalan di Android TV, Android TV Box, dan STB berbasis Android. Smart TV non-Android (Tizen/webOS) serta STB satelit/DVB belum didukung resmi — silakan tanya dulu via WhatsApp agar kami cek kompatibilitasnya sebelum Anda membeli lisensi.
+            <div class="faq-content hidden px-5 sm:px-6 pb-4 sm:pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-3 sm:pt-4">
+              Android TV, Android TV Box, dan STB berbasis Android. Perangkat non-Android (STB satelit/DVB, Tizen, webOS) belum didukung resmi — tanya dulu via WhatsApp.
             </div>
           </div>
 
           <!-- Item 3 -->
           <div class="faq-item rounded-2xl bg-white border border-[#E7E0D2] overflow-hidden transition-shadow shadow-sm">
-            <button class="faq-toggle w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-bold text-base text-[#10233A]">
-              <span>Bagaimana jika HP pengurus berganti orang?</span>
+            <button class="faq-toggle w-full text-left px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#10233A]">
+              <span>Bagaimana kalau HP pengurus berganti?</span>
               <span class="faq-icon text-[#9A7228] text-xl font-bold flex-shrink-0">&plus;</span>
             </button>
-            <div class="faq-content hidden px-6 pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-4">
+            <div class="faq-content hidden px-5 sm:px-6 pb-4 sm:pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-3 sm:pt-4">
               Lisensi dapat dipindahkan ke HP baru tanpa biaya tambahan jika HP pengurus lama rusak, hilang, atau terjadi pergantian takmir masjid. Cukup hubungi tim support kami dengan menyertakan bukti pembelian atau email terdaftar.
             </div>
           </div>
 
           <!-- Item 4 -->
           <div class="faq-item rounded-2xl bg-white border border-[#E7E0D2] overflow-hidden transition-shadow shadow-sm">
-            <button class="faq-toggle w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-bold text-base text-[#10233A]">
-              <span>Apakah foto pengumuman bisa lebih dari satu?</span>
+            <button class="faq-toggle w-full text-left px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#10233A]">
+              <span>Bisakah menampilkan lebih dari satu pengumuman?</span>
               <span class="faq-icon text-[#9A7228] text-xl font-bold flex-shrink-0">&plus;</span>
             </button>
-            <div class="faq-content hidden px-6 pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-4">
+            <div class="faq-content hidden px-5 sm:px-6 pb-4 sm:pb-5 text-xs sm:text-sm text-[#5C6A7C] leading-relaxed border-t border-[#E7E0D2]/50 pt-3 sm:pt-4">
               Ya, aplikasi Admin mendukung unggah banyak foto pengumuman dan poster kajian. Seluruh gambar akan otomatis tayang bergantian dalam format slideshow layar penuh atau sidebar dengan durasi yang dapat diatur.
             </div>
           </div>
         </div>
 
-        <!-- Final CTA Card -->
-        <div class="rounded-3xl bg-gradient-to-br from-[#061423] via-[#0A1D31] to-[#0E2A47] text-white p-8 sm:p-12 shadow-2xl border border-[#D9B26A]/30 text-center relative overflow-hidden">
+        <!-- DESKTOP FINAL CTA (>= lg) -->
+        <div class="hidden lg:block rounded-3xl bg-gradient-to-br from-[#061423] via-[#0A1D31] to-[#0E2A47] text-white p-8 sm:p-12 shadow-2xl border border-[#D9B26A]/30 text-center relative overflow-hidden">
           <div class="absolute -top-20 -left-20 w-60 h-60 bg-[#D9B26A]/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <h2 class="text-3xl sm:text-4xl font-black text-[#F5F2EA] tracking-tight leading-tight mb-4">
@@ -1287,6 +2112,38 @@ const ogImage = "https://asridigital.com/images/assalam-tv/id-h-andalusia.webp";
           <a href="/assalam-tv/tester" class="text-xs text-[#D9B26A] hover:underline font-bold">
             Belum siap beli? Daftar jadi tester &amp; dapat Lisensi Admin gratis &rarr;
           </a>
+        </div>
+
+        <!-- MOBILE FINAL CTA (< lg) — EXACT Assalam TV — Mobile (ID) DESIGN -->
+        <div class="lg:hidden rounded-3xl bg-gradient-to-br from-[#123457] to-[#061423] text-white p-6 shadow-xl border border-[#D9B26A]/30 text-left space-y-4">
+          <div class="space-y-1">
+            <h3 class="text-xl font-black text-[#F5F2EA] leading-snug">
+              Hadirkan Keindahan &amp; Kemudahan di Masjid Anda Hari Ini
+            </h3>
+            <p class="text-xs text-[#B9C6D6]">
+              Sekali beli, aktif selamanya.
+            </p>
+          </div>
+
+          <div class="space-y-2.5 pt-1">
+            <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20membeli%20Lisensi%20Admin%20Assalam%20TV%20untuk%20masjid" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient-bg text-[#0A1D31] font-extrabold text-xs shadow hover:brightness-105">
+              <span>Beli Lisensi di Google Play</span>
+            </a>
+
+            <a href="https://play.google.com/store/apps/details?id=com.asridigital.masjiddisplay.tv" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#0A1D31] text-white font-extrabold text-xs shadow hover:bg-[#0E2A47]">
+              <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186c-.234-.23-.37-.549-.37-.899V2.713c0-.35.136-.669.37-.899z" fill="#00E676"/>
+                <path d="M17.18 8.613L4.852 1.501c-.382-.22-.843-.205-1.243.037L13.792 12l3.388-3.387z" fill="#FFD54F"/>
+                <path d="M13.792 12l-10.183 10.462c.4.242.861.257 1.243.037l12.328-7.112L13.792 12z" fill="#FF3D00"/>
+                <path d="M20.573 10.57l-3.393-1.957L13.792 12l3.388 3.387 3.393-1.958c.758-.438 1.227-1.242 1.227-2.116s-.469-1.678-1.227-2.116z" fill="#40C4FF"/>
+              </svg>
+              <span>Unduh TV App Gratis</span>
+            </a>
+
+            <a href="https://wa.me/6281325063888?text=Halo%20Asri%20Digital,%20saya%20ingin%20konsultasi%20Assalam%20TV" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/10 text-[#F5F2EA] font-bold text-xs hover:bg-white/15">
+              <span>Konsultasi STB via WhatsApp</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
