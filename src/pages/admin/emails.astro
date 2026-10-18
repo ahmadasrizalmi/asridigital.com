@@ -1,0 +1,921 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AdminSidebar from '../../components/layout/AdminSidebar.astro';
+import Icon from '../../components/ui/Icon.astro';
+---
+
+<BaseLayout title="Email Inbox (@asridigital.com) - Admin Asri Digital">
+  <div class="flex min-h-screen bg-slate-50">
+    <AdminSidebar activePage="emails" />
+
+    <main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <!-- Top Navigation Header -->
+      <header class="bg-surface border-b border-border px-4 md:px-6 py-3.5 sticky top-0 z-20 shadow-sm shrink-0">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 hover:bg-background rounded-lg text-text-secondary" onclick="window.__openSidebar?.()">
+              <Icon name="menu" size={24} />
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-lg md:text-xl font-bold text-text-primary">Email Domain</h1>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                  @asridigital.com
+                </span>
+                <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#0A1D31] text-[#D9B26A] border border-[#D9B26A]/30">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Anti-Judol Shield Aktif
+                </span>
+              </div>
+              <p class="text-xs text-text-muted mt-0.5">Kelola komunikasi resmi, kirim dan terima email dengan aman</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              onclick="loadEmailList()"
+              class="p-2 rounded-xl bg-surface border border-border text-text-secondary hover:text-text-primary hover:bg-background transition text-xs font-medium flex items-center gap-1.5"
+              title="Refresh Pesan"
+            >
+              <svg id="refresh-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span class="hidden sm:inline">Refresh</span>
+            </button>
+
+            <button
+              onclick="openComposeModal()"
+              class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0A1D31] to-[#0E2A47] text-[#F5F2EA] border border-[#D9B26A]/40 font-bold text-xs sm:text-sm hover:brightness-110 transition flex items-center gap-2 shadow-sm"
+            >
+              <svg class="w-4 h-4 text-[#D9B26A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Tulis Email</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Layout Body (3 Columns on Desktop) -->
+      <div class="flex-1 flex min-h-0 relative overflow-hidden">
+        
+        <!-- Column 1: Sidebar Folders & Filters (Hidden on small mobile when email selected) -->
+        <aside class="w-56 lg:w-64 border-r border-border bg-white flex flex-col shrink-0 overflow-y-auto hidden md:flex">
+          <div class="p-3 space-y-1">
+            <button
+              onclick="switchFolder('inbox')"
+              id="folder-btn-inbox"
+              class="folder-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-primary/10 text-primary transition"
+            >
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <span>Kotak Masuk</span>
+              </div>
+              <span id="badge-count-inbox" class="px-2 py-0.5 rounded-full text-[10px] bg-primary text-white font-bold hidden">0</span>
+            </button>
+
+            <button
+              onclick="switchFolder('starred')"
+              id="folder-btn-starred"
+              class="folder-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-text-secondary hover:bg-slate-50 transition"
+            >
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span>Berbintang</span>
+              </div>
+              <span id="badge-count-starred" class="text-[11px] text-text-muted"></span>
+            </button>
+
+            <button
+              onclick="switchFolder('sent')"
+              id="folder-btn-sent"
+              class="folder-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-text-secondary hover:bg-slate-50 transition"
+            >
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                <span>Terkirim</span>
+              </div>
+              <span id="badge-count-sent" class="text-[11px] text-text-muted"></span>
+            </button>
+
+            <button
+              onclick="switchFolder('spam')"
+              id="folder-btn-spam"
+              class="folder-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-text-secondary hover:bg-slate-50 transition"
+            >
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                <span>Spam & Judol</span>
+              </div>
+              <span id="badge-count-spam" class="px-2 py-0.5 rounded-full text-[10px] bg-rose-100 text-rose-700 font-bold hidden">0</span>
+            </button>
+
+            <button
+              onclick="switchFolder('trash')"
+              id="folder-btn-trash"
+              class="folder-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-text-secondary hover:bg-slate-50 transition"
+            >
+              <div class="flex items-center gap-2.5">
+                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>Kotak Sampah</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Security Status Filter Group -->
+          <div class="mt-4 px-3 pt-3 border-t border-border">
+            <h3 class="text-[10px] font-bold text-text-muted uppercase tracking-wider px-2 mb-2">Filter Keamanan</h3>
+            <div class="space-y-1">
+              <button onclick="setSecurityFilter('all')" class="sec-filter-btn active w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-primary hover:bg-slate-100 transition flex items-center justify-between" data-sec="all">
+                <span>Semua Status</span>
+              </button>
+              <button onclick="setSecurityFilter('VERIFIED')" class="sec-filter-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-emerald-700 hover:bg-emerald-50 transition flex items-center gap-2" data-sec="VERIFIED">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Terverifikasi (SPF/DKIM)</span>
+              </button>
+              <button onclick="setSecurityFilter('SUSPICIOUS')" class="sec-filter-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-amber-700 hover:bg-amber-50 transition flex items-center gap-2" data-sec="SUSPICIOUS">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Mencurigakan</span>
+              </button>
+              <button onclick="setSecurityFilter('SPAM')" class="sec-filter-btn w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-rose-700 hover:bg-rose-50 transition flex items-center gap-2" data-sec="SPAM">
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                <span>Spam / Bot Judol</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Security Status Monitor Card -->
+          <div class="mt-auto p-3 m-3 rounded-2xl bg-gradient-to-br from-[#0A1D31]/5 to-[#0E2A47]/10 border border-[#0A1D31]/10 text-xs">
+            <div class="flex items-center gap-2 text-[#0A1D31] font-bold">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span>Proteksi Asri Shield</span>
+            </div>
+            <ul class="mt-2 space-y-1 text-[11px] text-text-muted">
+              <li>✓ Filter Judol & Slot Gacor</li>
+              <li>✓ XSS Sanitizer Anti-Script</li>
+              <li>✓ Rate-Limit 15 Email/Jam</li>
+              <li>✓ Cloudflare Email Routing</li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- Column 2: Email List Pane -->
+        <section id="list-pane" class="w-full md:w-80 lg:w-96 border-r border-border bg-white flex flex-col shrink-0 h-full overflow-hidden">
+          <!-- Search & Filter Bar -->
+          <div class="p-3 border-b border-border bg-slate-50/50 shrink-0">
+            <div class="relative">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Cari pengirim, subjek..."
+                onkeyup="debounceSearch()"
+                class="w-full pl-9 pr-4 py-2 bg-white border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              />
+              <svg class="w-4 h-4 text-text-muted absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Email Items List -->
+          <div id="email-items-container" class="flex-1 overflow-y-auto divide-y divide-border">
+            <!-- Loading Skeleton -->
+            <div class="p-4 space-y-3">
+              <div class="animate-pulse flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-200"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-3.5 bg-slate-200 rounded w-1/3"></div>
+                  <div class="h-3 bg-slate-200 rounded w-2/3"></div>
+                  <div class="h-2.5 bg-slate-100 rounded w-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Column 3: Email Reader Pane -->
+        <section id="reader-pane" class="flex-1 bg-white flex flex-col min-w-0 h-full overflow-hidden hidden md:flex">
+          <!-- Empty State -->
+          <div id="reader-empty" class="flex-1 flex flex-col items-center justify-center p-8 text-center text-text-muted">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
+              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="font-bold text-text-primary text-base">Tidak ada email yang dipilih</h3>
+            <p class="text-xs text-text-muted mt-1 max-w-sm">Pilih salah satu pesan dari daftar di sebelah kiri untuk membaca dan membalas.</p>
+          </div>
+
+          <!-- Active Email Viewer -->
+          <div id="reader-content" class="flex-1 flex flex-col min-h-0 hidden">
+            <!-- Reader Action Bar -->
+            <div class="p-3 border-b border-border flex items-center justify-between bg-slate-50/50 shrink-0">
+              <div class="flex items-center gap-1.5">
+                <button onclick="closeMobileReader()" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200 text-text-secondary mr-1">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button onclick="toggleStarCurrent()" id="btn-reader-star" class="p-2 rounded-xl border border-border bg-white hover:bg-slate-50 transition" title="Tandai Bintang">
+                  <svg id="star-icon" class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                </button>
+                <button onclick="toggleSpamCurrent()" id="btn-reader-spam" class="px-3 py-1.5 rounded-xl border border-border bg-white hover:bg-rose-50 text-xs font-semibold text-text-secondary hover:text-rose-700 transition flex items-center gap-1.5" title="Tandai Spam / Pindahkan">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                  <span id="label-reader-spam">Tandai Spam</span>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button onclick="deleteCurrentEmail()" class="p-2 rounded-xl border border-border bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition" title="Hapus Email">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Email Body Container -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+              <!-- Security Banner (Spam, Judol, or Verified) -->
+              <div id="reader-security-banner"></div>
+
+              <!-- Header Info -->
+              <div class="border-b border-border pb-4">
+                <h2 id="reader-subject" class="text-lg md:text-xl font-bold text-text-primary leading-snug"></h2>
+                
+                <div class="mt-3 flex items-start justify-between gap-4">
+                  <div class="flex items-center gap-3">
+                    <div id="reader-avatar" class="w-10 h-10 rounded-full bg-[#0A1D31] text-[#D9B26A] font-bold text-sm flex items-center justify-center shrink-0">
+                      A
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span id="reader-from-name" class="font-bold text-sm text-text-primary"></span>
+                        <span id="reader-security-pill" class="inline-flex"></span>
+                      </div>
+                      <div class="text-xs text-text-muted mt-0.5">
+                        <span id="reader-from-email"></span> &bull; Kepada: <span id="reader-to-email"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="reader-date" class="text-xs text-text-muted shrink-0 text-right"></div>
+                </div>
+              </div>
+
+              <!-- Message Content Box -->
+              <div class="prose max-w-none text-text-primary text-sm leading-relaxed overflow-x-auto" id="reader-body">
+                <!-- Sanitized HTML rendered safely here -->
+              </div>
+
+              <!-- Reply Box Area -->
+              <div class="pt-6 border-t border-border mt-8">
+                <div class="p-4 rounded-2xl bg-slate-50 border border-border">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-text-primary flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      <span>Balas Pesan Cepat</span>
+                    </span>
+                    <span class="text-[11px] text-text-muted">Dari: <strong>halo@asridigital.com</strong></span>
+                  </div>
+                  <textarea
+                    id="quick-reply-text"
+                    rows="4"
+                    placeholder="Tulis balasan Anda..."
+                    class="w-full p-3 bg-white border border-border rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  ></textarea>
+                  <div class="mt-3 flex items-center justify-between">
+                    <p class="text-[11px] text-text-muted flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      Terkirim resmi dengan autentikasi domain
+                    </p>
+                    <button
+                      onclick="sendQuickReply()"
+                      id="btn-send-reply"
+                      class="px-4 py-2 rounded-xl bg-primary text-white font-bold text-xs hover:brightness-110 transition flex items-center gap-1.5 shadow-sm"
+                    >
+                      <span>Kirim Balasan</span>
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Compose Modal (Tulis Email Baru) -->
+  <div id="compose-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeComposeModal()"></div>
+    
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-border p-6 overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-border">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#0A1D31] text-[#D9B26A] flex items-center justify-center font-bold">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-text-primary">Tulis Email Baru</h2>
+              <p class="text-xs text-text-muted">Kirim pesan menggunakan domain resmi @asridigital.com</p>
+            </div>
+          </div>
+          <button onclick="closeComposeModal()" class="p-1.5 rounded-xl hover:bg-slate-100 text-text-muted">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <div class="mt-4 space-y-3.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-text-primary mb-1">Dari Alamat Domain</label>
+              <select id="compose-from" class="w-full px-3 py-2 bg-slate-50 border border-border rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary/20">
+                <option value="halo@asridigital.com">Ahmad Asrizalmi &lt;halo@asridigital.com&gt;</option>
+                <option value="admin@asridigital.com">Admin Asri Digital &lt;admin@asridigital.com&gt;</option>
+                <option value="support@asridigital.com">Bantuan &lt;support@asridigital.com&gt;</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-primary mb-1">Kepada (Penerima) *</label>
+              <input
+                type="email"
+                id="compose-to"
+                placeholder="email@penerima.com"
+                class="w-full px-3 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:ring-2 focus:ring-primary/20"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-text-primary mb-1">Subjek Email *</label>
+            <input
+              type="text"
+              id="compose-subject"
+              placeholder="Contoh: Informasi Lisensi Assalam TV / Update Aplikasi"
+              class="w-full px-3 py-2 bg-slate-50 border border-border rounded-xl text-xs focus:ring-2 focus:ring-primary/20"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-text-primary mb-1">Isi Pesan *</label>
+            <textarea
+              id="compose-body"
+              rows="7"
+              placeholder="Tulis pesan lengkap di sini..."
+              class="w-full p-3 bg-slate-50 border border-border rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-primary/20"
+              required
+            ></textarea>
+          </div>
+
+          <div class="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-2 text-blue-800 text-xs">
+            <svg class="w-4 h-4 shrink-0 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Email akan terkirim dengan SPF, DKIM, dan DMARC terautentikasi sehingga aman dari folder spam penerima.</span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 pt-4 border-t border-border flex items-center justify-end gap-2.5">
+          <button
+            onclick="closeComposeModal()"
+            class="px-4 py-2 rounded-xl border border-border bg-white text-xs font-semibold text-text-secondary hover:bg-slate-50"
+          >
+            Batal
+          </button>
+          <button
+            onclick="submitComposeEmail()"
+            id="btn-submit-compose"
+            class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0A1D31] to-[#0E2A47] text-[#F5F2EA] border border-[#D9B26A]/40 font-bold text-xs hover:brightness-110 flex items-center gap-2 shadow-sm"
+          >
+            <span>Kirim Email</span>
+            <svg class="w-3.5 h-3.5 text-[#D9B26A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  let currentFolder = 'inbox';
+  let currentSecFilter = 'all';
+  let currentEmailId = null;
+  let currentEmailData = null;
+  let emailsCache = [];
+  let searchDebounceTimeout = null;
+
+  function getToken() {
+    return localStorage.getItem('admin_token');
+  }
+
+  function checkAuth() {
+    const token = getToken();
+    if (!token) {
+      window.location.href = '/admin/login';
+      return false;
+    }
+    return true;
+  }
+
+  async function loadEmailList() {
+    if (!checkAuth()) return;
+    const container = document.getElementById('email-items-container');
+    const refreshIcon = document.getElementById('refresh-icon');
+    refreshIcon?.classList.add('animate-spin');
+
+    const search = document.getElementById('search-input')?.value || '';
+    const url = `/api/admin/emails?folder=${currentFolder}&status=${currentSecFilter}&search=${encodeURIComponent(search)}`;
+
+    try {
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('admin_token');
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      const data = await res.json();
+      emailsCache = data.emails || [];
+
+      // Update counters
+      updateBadges(data.stats);
+
+      // Render emails
+      renderEmailList(emailsCache);
+
+    } catch (err) {
+      console.error('Error loading emails:', err);
+      container.innerHTML = `
+        <div class="p-6 text-center text-xs text-rose-600">
+          Gagal memuat pesan. Silakan coba lagi.
+        </div>
+      `;
+    } finally {
+      refreshIcon?.classList.remove('animate-spin');
+    }
+  }
+
+  function updateBadges(stats) {
+    if (!stats) return;
+    const inboxBadge = document.getElementById('badge-count-inbox');
+    const spamBadge = document.getElementById('badge-count-spam');
+
+    if (inboxBadge) {
+      if (stats.inbox_unread > 0) {
+        inboxBadge.textContent = stats.inbox_unread;
+        inboxBadge.classList.remove('hidden');
+      } else {
+        inboxBadge.classList.add('hidden');
+      }
+    }
+
+    if (spamBadge) {
+      if (stats.spam_count > 0) {
+        spamBadge.textContent = stats.spam_count;
+        spamBadge.classList.remove('hidden');
+      } else {
+        spamBadge.classList.add('hidden');
+      }
+    }
+  }
+
+  function renderEmailList(list) {
+    const container = document.getElementById('email-items-container');
+    if (!container) return;
+
+    if (!list || list.length === 0) {
+      container.innerHTML = `
+        <div class="p-8 text-center text-xs text-text-muted">
+          <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          Tidak ada email di folder ini
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = list.map(item => {
+      const isUnread = !item.is_read;
+      const isStarred = !!item.is_starred;
+      const initial = (item.from_name || item.from_email || 'U').charAt(0).toUpperCase();
+      const isActive = item.id === currentEmailId;
+
+      let badgeHtml = '';
+      if (item.security_status === 'SPAM') {
+        badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200">🚨 SPAM JUDOL</span>`;
+      } else if (item.security_status === 'SUSPICIOUS') {
+        badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200">⚠️ WASPADA</span>`;
+      } else if (item.security_status === 'VERIFIED') {
+        badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">🛡️ Lolos SPF/DKIM</span>`;
+      }
+
+      const formattedDate = new Date(item.created_at).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short'
+      });
+
+      return `
+        <div
+          onclick="openEmailDetail('${item.id}')"
+          class="p-3.5 cursor-pointer transition hover:bg-slate-50 flex items-start gap-3 ${isActive ? 'bg-primary/5 border-l-4 border-primary' : ''} ${isUnread ? 'bg-white font-semibold' : 'bg-slate-50/40 text-text-secondary'}"
+        >
+          <div class="w-8 h-8 rounded-full bg-[#0A1D31]/10 text-[#0A1D31] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+            ${initial}
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1 mb-0.5">
+              <span class="text-xs truncate ${isUnread ? 'font-bold text-text-primary' : 'font-medium text-text-secondary'}">
+                ${escapeHtml(item.from_name || item.from_email)}
+              </span>
+              <span class="text-[10px] text-text-muted shrink-0">${formattedDate}</span>
+            </div>
+
+            <div class="text-xs ${isUnread ? 'font-bold text-text-primary' : 'font-medium text-slate-700'} truncate">
+              ${escapeHtml(item.subject || '(Tanpa Subjek)')}
+            </div>
+
+            <p class="text-[11px] text-text-muted line-clamp-1 mt-0.5 font-normal">
+              ${escapeHtml(item.snippet || '')}
+            </p>
+
+            <div class="mt-2 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1">
+                ${badgeHtml}
+              </div>
+              ${isStarred ? '<span class="text-amber-500 text-xs">★</span>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function openEmailDetail(emailId) {
+    currentEmailId = emailId;
+    const readerPane = document.getElementById('reader-pane');
+    const emptyState = document.getElementById('reader-empty');
+    const contentState = document.getElementById('reader-content');
+
+    // On mobile, show reader pane full width
+    readerPane?.classList.remove('hidden');
+    document.getElementById('list-pane')?.classList.add('hidden', 'md:flex');
+
+    try {
+      const res = await fetch(`/api/admin/emails/${emailId}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      if (!data.success || !data.email) return;
+
+      currentEmailData = data.email;
+      emptyState?.classList.add('hidden');
+      contentState?.classList.remove('hidden');
+
+      // Populate data
+      document.getElementById('reader-subject').textContent = currentEmailData.subject || '(Tanpa Subjek)';
+      document.getElementById('reader-from-name').textContent = currentEmailData.from_name || currentEmailData.from_email;
+      document.getElementById('reader-from-email').textContent = currentEmailData.from_email;
+      document.getElementById('reader-to-email').textContent = currentEmailData.to_email;
+      document.getElementById('reader-avatar').textContent = (currentEmailData.from_name || currentEmailData.from_email).charAt(0).toUpperCase();
+      document.getElementById('reader-date').textContent = new Date(currentEmailData.created_at).toLocaleString('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+
+      // Star Icon status
+      updateStarButtonState(!!currentEmailData.is_starred);
+
+      // Spam toggle label
+      const spamLabel = document.getElementById('label-reader-spam');
+      if (spamLabel) {
+        spamLabel.textContent = currentEmailData.folder === 'spam' ? 'Bukan Spam (Pindahkan ke Inbox)' : 'Tandai Spam';
+      }
+
+      // Render Security Banner & Badge
+      renderSecurityDetails(currentEmailData);
+
+      // Render Body Content safely
+      const bodyEl = document.getElementById('reader-body');
+      if (bodyEl) {
+        if (currentEmailData.body_html) {
+          bodyEl.innerHTML = currentEmailData.body_html;
+        } else {
+          bodyEl.innerHTML = `<pre class="whitespace-pre-wrap font-sans text-xs sm:text-sm text-text-primary leading-relaxed">${escapeHtml(currentEmailData.body_text || '')}</pre>`;
+        }
+      }
+
+      // Re-render list to reflect read state
+      renderEmailList(emailsCache.map(e => e.id === emailId ? { ...e, is_read: 1 } : e));
+
+    } catch (e) {
+      console.error('Failed to load email detail:', e);
+    }
+  }
+
+  function closeMobileReader() {
+    document.getElementById('reader-pane')?.classList.add('hidden', 'md:flex');
+    document.getElementById('list-pane')?.classList.remove('hidden');
+  }
+
+  function renderSecurityDetails(email) {
+    const bannerEl = document.getElementById('reader-security-banner');
+    const pillEl = document.getElementById('reader-security-pill');
+    if (!bannerEl || !pillEl) return;
+
+    if (email.security_status === 'SPAM') {
+      pillEl.innerHTML = `<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">🚨 SPAM JUDOL / BOT</span>`;
+      let reasonsText = '';
+      try {
+        const parsed = JSON.parse(email.spam_reasons || '[]');
+        if (parsed.length > 0) reasonsText = `Terdeteksi indikator: <strong>${parsed.join(', ')}</strong>`;
+      } catch {}
+
+      bannerEl.innerHTML = `
+        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-start gap-3">
+          <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <strong class="block font-bold text-sm">Peringatan: Pesan Terindikasi Spam / Judi Online / Bot!</strong>
+            <p class="mt-0.5 text-rose-800">${reasonsText || 'Email ini otomatis dikarantina oleh Asri Shield untuk melindungi sistem dari serangan injeksi dan promosi judi.'}</p>
+            <p class="mt-1 text-[11px] text-rose-700">Skor Risiko: <strong>${email.spam_score}/100</strong> &bull; Seluruh script dan tautan berbahaya telah diamankan.</p>
+          </div>
+        </div>
+      `;
+    } else if (email.security_status === 'SUSPICIOUS') {
+      pillEl.innerHTML = `<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">⚠️ Perhatian</span>`;
+      bannerEl.innerHTML = `
+        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+          <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <strong>Pesan Memiliki Indikator Mencurigakan (Skor ${email.spam_score}/100)</strong>
+            <p class="mt-0.5">Waspadai link atau permintaan data sensitif di dalam email ini.</p>
+          </div>
+        </div>
+      `;
+    } else if (email.security_status === 'VERIFIED') {
+      pillEl.innerHTML = `<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">🛡️ Terverifikasi</span>`;
+      bannerEl.innerHTML = `
+        <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Pengirim Terautentikasi Resmi (SPF: <strong>${email.spf_status || 'pass'}</strong>, DKIM: <strong>${email.dkim_status || 'pass'}</strong>)</span>
+          </div>
+          <span class="text-[11px] text-emerald-700 font-semibold">Aman</span>
+        </div>
+      `;
+    } else {
+      pillEl.innerHTML = `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">Standar</span>`;
+      bannerEl.innerHTML = '';
+    }
+  }
+
+  function updateStarButtonState(isStarred) {
+    const starIcon = document.getElementById('star-icon');
+    if (starIcon) {
+      if (isStarred) {
+        starIcon.setAttribute('fill', 'currentColor');
+        starIcon.classList.add('text-amber-500');
+        starIcon.classList.remove('text-slate-400');
+      } else {
+        starIcon.setAttribute('fill', 'none');
+        starIcon.classList.remove('text-amber-500');
+        starIcon.classList.add('text-slate-400');
+      }
+    }
+  }
+
+  async function toggleStarCurrent() {
+    if (!currentEmailData) return;
+    const newStar = currentEmailData.is_starred ? 0 : 1;
+    currentEmailData.is_starred = newStar;
+    updateStarButtonState(!!newStar);
+
+    await fetch(`/api/admin/emails/${currentEmailData.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ is_starred: newStar })
+    });
+  }
+
+  async function toggleSpamCurrent() {
+    if (!currentEmailData) return;
+    const newFolder = currentEmailData.folder === 'spam' ? 'inbox' : 'spam';
+    
+    await fetch(`/api/admin/emails/${currentEmailData.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ folder: newFolder })
+    });
+
+    alert(newFolder === 'spam' ? 'Email dipindahkan ke folder Spam & Judol.' : 'Email dipindahkan ke Kotak Masuk.');
+    loadEmailList();
+    closeMobileReader();
+  }
+
+  async function deleteCurrentEmail() {
+    if (!currentEmailData) return;
+    if (!confirm('Pindahkan email ini ke kotak sampah?')) return;
+
+    await fetch(`/api/admin/emails/${currentEmailData.id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    loadEmailList();
+    closeMobileReader();
+    document.getElementById('reader-empty')?.classList.remove('hidden');
+    document.getElementById('reader-content')?.classList.add('hidden');
+  }
+
+  async function sendQuickReply() {
+    if (!currentEmailData) return;
+    const replyText = document.getElementById('quick-reply-text')?.value.trim();
+    if (!replyText) {
+      alert('Isi pesan balasan tidak boleh kosong!');
+      return;
+    }
+
+    const btn = document.getElementById('btn-send-reply');
+    btn.disabled = true;
+    btn.innerHTML = 'Mengirim...';
+
+    try {
+      const res = await fetch('/api/admin/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          to: currentEmailData.from_email,
+          from: 'halo@asridigital.com',
+          from_name: 'Ahmad Asrizalmi',
+          subject: currentEmailData.subject.startsWith('Re:') ? currentEmailData.subject : `Re: ${currentEmailData.subject}`,
+          body: replyText,
+          in_reply_to: currentEmailData.message_id || currentEmailData.id,
+          thread_id: currentEmailData.thread_id || currentEmailData.id,
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim email');
+
+      alert('Balasan berhasil terkirim!');
+      document.getElementById('quick-reply-text').value = '';
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<span>Kirim Balasan</span><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>`;
+    }
+  }
+
+  function switchFolder(folder) {
+    currentFolder = folder;
+    document.querySelectorAll('.folder-btn').forEach(btn => {
+      btn.classList.remove('bg-primary/10', 'text-primary', 'font-semibold');
+      btn.classList.add('text-text-secondary', 'font-medium');
+    });
+
+    const activeBtn = document.getElementById(`folder-btn-${folder}`);
+    activeBtn?.classList.remove('text-text-secondary', 'font-medium');
+    activeBtn?.classList.add('bg-primary/10', 'text-primary', 'font-semibold');
+
+    loadEmailList();
+  }
+
+  function setSecurityFilter(secStatus) {
+    currentSecFilter = secStatus;
+    document.querySelectorAll('.sec-filter-btn').forEach(btn => {
+      if (btn.getAttribute('data-sec') === secStatus) {
+        btn.classList.add('font-bold', 'bg-slate-100');
+      } else {
+        btn.classList.remove('font-bold', 'bg-slate-100');
+      }
+    });
+    loadEmailList();
+  }
+
+  function debounceSearch() {
+    clearTimeout(searchDebounceTimeout);
+    searchDebounceTimeout = setTimeout(() => {
+      loadEmailList();
+    }, 350);
+  }
+
+  // Compose Modal Controls
+  function openComposeModal() {
+    document.getElementById('compose-modal')?.classList.remove('hidden');
+  }
+
+  function closeComposeModal() {
+    document.getElementById('compose-modal')?.classList.add('hidden');
+  }
+
+  async function submitComposeEmail() {
+    const from = document.getElementById('compose-from')?.value;
+    const to = document.getElementById('compose-to')?.value.trim();
+    const subject = document.getElementById('compose-subject')?.value.trim();
+    const body = document.getElementById('compose-body')?.value.trim();
+
+    if (!to || !to.includes('@')) {
+      alert('Alamat email penerima tidak valid!');
+      return;
+    }
+    if (!subject) {
+      alert('Subjek email wajib diisi!');
+      return;
+    }
+    if (!body) {
+      alert('Isi pesan tidak boleh kosong!');
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit-compose');
+    btn.disabled = true;
+    btn.innerHTML = 'Mengirim email...';
+
+    try {
+      const res = await fetch('/api/admin/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ from, to, subject, body, from_name: 'Asri Digital' })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim email');
+
+      alert(`Email berhasil terkirim ke ${to}!`);
+      closeComposeModal();
+      document.getElementById('compose-to').value = '';
+      document.getElementById('compose-subject').value = '';
+      document.getElementById('compose-body').value = '';
+      loadEmailList();
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<span>Kirim Email</span><svg class="w-3.5 h-3.5 text-[#D9B26A]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>`;
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadEmailList();
+  });
+</script>

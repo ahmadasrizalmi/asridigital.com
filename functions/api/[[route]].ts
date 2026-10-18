@@ -1,4 +1,10 @@
 import { generateMasjidLicense } from '../lib/license-crypto';
+import {
+  assessEmailSecurity,
+  sanitizeEmailHtml,
+  sanitizeEmailText,
+  checkSenderRateLimit,
+} from '../lib/email-security';
 // Cloudflare Pages Functions - API Handler
 // This handles all /api/* routes
 
@@ -14,6 +20,7 @@ interface Env {
   TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_CHAT_ID: string;
   ED25519_PRIVATE_KEY_BASE64: string;
+  EMAIL_WEBHOOK_SECRET?: string;
 }
 
 // Rate limiting store (in-memory for simplicity, use KV in production)
@@ -381,6 +388,44 @@ async function triggerDeploy(env: Env): Promise<void> {
     console.log('No deploy_hook_url or cf_api_token configured - skipping deploy trigger');
   } catch (e) {
     console.error('Deploy trigger error:', e);
+  }
+}
+
+async function ensureEmailsTable(db: D1Database) {
+  try {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS emails (
+        id TEXT PRIMARY KEY,
+        thread_id TEXT,
+        message_id TEXT,
+        in_reply_to TEXT,
+        direction TEXT NOT NULL DEFAULT 'INBOUND',
+        folder TEXT NOT NULL DEFAULT 'inbox',
+        from_name TEXT,
+        from_email TEXT NOT NULL,
+        to_email TEXT NOT NULL,
+        reply_to TEXT,
+        subject TEXT NOT NULL,
+        body_text TEXT,
+        body_html TEXT,
+        is_read INTEGER DEFAULT 0,
+        is_starred INTEGER DEFAULT 0,
+        security_status TEXT DEFAULT 'VERIFIED',
+        spam_score INTEGER DEFAULT 0,
+        spam_reasons TEXT,
+        spf_status TEXT DEFAULT 'none',
+        dkim_status TEXT DEFAULT 'none',
+        dmarc_status TEXT DEFAULT 'none',
+        attachments_meta TEXT,
+        raw_headers TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_emails_folder_created ON emails (folder, created_at DESC)`).run();
+    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_emails_thread ON emails (thread_id)`).run();
+  } catch (e) {
+    console.error('ensureEmailsTable error:', e);
   }
 }
 
@@ -3491,6 +3536,390 @@ export async function onRequest(context: any): Promise<Response> {
         total: subscribers.results.length,
         message: `Notifikasi terkirim ke ${sentCount} subscriber${sentCount !== 1 ? 's' : ''}`
       });
+    }
+
+    // ==================== PUBLIC: INBOUND EMAIL WEBHOOK (Cloudflare Email Routing / Postal-Mime) ====================
+    if (route === '/emails/inbound' && method === 'POST') {
+      await ensureEmailsTable(env.DB);
+
+      // Verify webhook secret if configured in Cloudflare environment
+      const secretHeader = request.headers.get('X-Email-Webhook-Secret') || request.headers.get('Authorization');
+      if (env.EMAIL_WEBHOOK_SECRET && secretHeader !== `Bearer ${env.EMAIL_WEBHOOK_SECRET}` && secretHeader !== env.EMAIL_WEBHOOK_SECRET) {
+        return jsonResponse({ error: 'Unauthorized webhook secret' }, 401);
+      }
+
+      // Check Content-Length to prevent DoS / memory blowup (max 2.5 MB)
+      const contentLength = parseInt(request.headers.get('content-length') || '0');
+      if (contentLength > 2.5 * 1024 * 1024) {
+        return jsonResponse({ error: 'Payload too large (max 2.5MB)' }, 413);
+      }
+
+      const body = await request.json().catch(() => null);
+      if (!body) return jsonResponse({ error: 'Invalid JSON payload' }, 400);
+
+      const from = (body.from || body.from_email || '').trim();
+      const to = (body.to || body.to_email || 'halo@asridigital.com').trim();
+      const subject = (body.subject || '(Tanpa Subjek)').trim();
+      const bodyText = body.text || body.body_text || '';
+      const bodyHtml = body.html || body.body_html || '';
+      const headers = body.headers || {};
+      const clientIp = request.headers.get('cf-connecting-ip') || '';
+
+      // 1. Inbound Rate Limiting (Anti-bot flood)
+      if (!checkSenderRateLimit(from, 15)) {
+        console.warn(`[SECURITY] Blocked high-frequency email flood from ${from}`);
+        return jsonResponse({ error: 'Rate limit exceeded. Too many emails sent.' }, 429);
+      }
+
+      // 2. Comprehensive Security, Judol & Anti-Spam Assessment
+      const assessment = assessEmailSecurity({
+        from,
+        to,
+        subject,
+        bodyText,
+        bodyHtml,
+        headers,
+        senderIp: clientIp,
+      });
+
+      const emailId = crypto.randomUUID();
+      const threadId = body.thread_id || body.in_reply_to || emailId;
+      const folder = assessment.isSpam ? 'spam' : 'inbox';
+
+      await env.DB.prepare(`
+        INSERT INTO emails (
+          id, thread_id, message_id, in_reply_to, direction, folder,
+          from_name, from_email, to_email, reply_to, subject,
+          body_text, body_html, is_read, is_starred,
+          security_status, spam_score, spam_reasons,
+          spf_status, dkim_status, dmarc_status,
+          attachments_meta, raw_headers, created_at, updated_at
+        ) VALUES (
+          ?, ?, ?, ?, 'INBOUND', ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, 0, 0,
+          ?, ?, ?,
+          ?, ?, ?,
+          ?, ?, datetime('now'), datetime('now')
+        )
+      `).bind(
+        emailId,
+        threadId,
+        body.message_id || null,
+        body.in_reply_to || null,
+        folder,
+        body.from_name || from.split('@')[0] || 'Unknown',
+        from,
+        to,
+        body.reply_to || from,
+        subject,
+        assessment.sanitizedText,
+        assessment.sanitizedHtml,
+        assessment.status,
+        assessment.score,
+        JSON.stringify(assessment.reasons),
+        assessment.spf,
+        assessment.dkim,
+        assessment.dmarc,
+        body.attachments ? JSON.stringify(body.attachments) : null,
+        JSON.stringify(headers)
+      ).run();
+
+      console.log(`[EMAIL INBOUND] id: ${emailId}, from: ${from}, folder: ${folder}, status: ${assessment.status}, score: ${assessment.score}`);
+
+      return jsonResponse({
+        success: true,
+        id: emailId,
+        folder,
+        security_status: assessment.status,
+        spam_score: assessment.score,
+        is_spam: assessment.isSpam,
+      });
+    }
+
+    // ==================== ADMIN: GET EMAILS LIST ====================
+    if (route === '/admin/emails' && method === 'GET') {
+      await ensureEmailsTable(env.DB);
+      const url = new URL(request.url);
+      const folder = url.searchParams.get('folder') || 'inbox';
+      const statusFilter = url.searchParams.get('status') || 'all';
+      const search = (url.searchParams.get('search') || '').trim();
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
+      const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '30')));
+      const offset = (page - 1) * limit;
+
+      let whereClause = '1=1';
+      const bindings: any[] = [];
+
+      if (folder === 'starred') {
+        whereClause += ' AND is_starred = 1 AND folder != "trash"';
+      } else if (folder !== 'all') {
+        whereClause += ' AND folder = ?';
+        bindings.push(folder);
+      }
+
+      if (statusFilter !== 'all') {
+        whereClause += ' AND security_status = ?';
+        bindings.push(statusFilter);
+      }
+
+      if (search) {
+        whereClause += ' AND (subject LIKE ? OR from_email LIKE ? OR from_name LIKE ? OR body_text LIKE ?)';
+        const term = `%${search}%`;
+        bindings.push(term, term, term, term);
+      }
+
+      // Query emails list
+      const query = `
+        SELECT id, thread_id, message_id, direction, folder, from_name, from_email, to_email,
+               subject, SUBSTR(body_text, 1, 150) as snippet, is_read, is_starred,
+               security_status, spam_score, spam_reasons, spf_status, dkim_status,
+               created_at
+        FROM emails
+        WHERE ${whereClause}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
+      `;
+
+      const emailsResult = await env.DB.prepare(query).bind(...bindings, limit, offset).all();
+      const countResult = await env.DB.prepare(`SELECT COUNT(*) as total FROM emails WHERE ${whereClause}`).bind(...bindings).first<{ total: number }>();
+
+      // Summary counts for folders
+      const unreadInbox = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE folder = 'inbox' AND is_read = 0`).first<{ count: number }>();
+      const countSpam = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE folder = 'spam'`).first<{ count: number }>();
+      const countSent = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE folder = 'sent'`).first<{ count: number }>();
+      const countTrash = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE folder = 'trash'`).first<{ count: number }>();
+      const countStarred = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE is_starred = 1 AND folder != 'trash'`).first<{ count: number }>();
+
+      return jsonResponse({
+        success: true,
+        emails: emailsResult.results || [],
+        total: countResult?.total || 0,
+        page,
+        limit,
+        stats: {
+          inbox_unread: unreadInbox?.count || 0,
+          spam_count: countSpam?.count || 0,
+          sent_count: countSent?.count || 0,
+          trash_count: countTrash?.count || 0,
+          starred_count: countStarred?.count || 0,
+        }
+      });
+    }
+
+    // ==================== ADMIN: GET EMAIL STATS (For badges) ====================
+    if (route === '/admin/emails/stats' && method === 'GET') {
+      await ensureEmailsTable(env.DB);
+      const unreadInbox = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE folder = 'inbox' AND is_read = 0`).first<{ count: number }>();
+      const countSpam = await env.DB.prepare(`SELECT COUNT(*) as count FROM emails WHERE folder = 'spam'`).first<{ count: number }>();
+      return jsonResponse({
+        unread: unreadInbox?.count || 0,
+        spam: countSpam?.count || 0,
+      });
+    }
+
+    // ==================== ADMIN: GET SINGLE EMAIL ====================
+    if (route.startsWith('/admin/emails/') && method === 'GET') {
+      await ensureEmailsTable(env.DB);
+      const emailId = route.replace('/admin/emails/', '').trim();
+      const email = await env.DB.prepare('SELECT * FROM emails WHERE id = ?').bind(emailId).first<any>();
+      if (!email) {
+        return jsonResponse({ error: 'Email tidak ditemukan' }, 404);
+      }
+
+      // Automatically mark as read
+      if (!email.is_read) {
+        await env.DB.prepare('UPDATE emails SET is_read = 1, updated_at = datetime("now") WHERE id = ?').bind(emailId).run();
+        email.is_read = 1;
+      }
+
+      // Fetch related thread messages if available
+      let threadMessages: any[] = [];
+      if (email.thread_id) {
+        const threadRes = await env.DB.prepare(
+          'SELECT id, direction, from_name, from_email, to_email, subject, body_text, body_html, created_at FROM emails WHERE thread_id = ? AND id != ? ORDER BY created_at ASC'
+        ).bind(email.thread_id, email.id).all();
+        threadMessages = threadRes.results || [];
+      }
+
+      return jsonResponse({
+        success: true,
+        email,
+        thread: threadMessages,
+      });
+    }
+
+    // ==================== ADMIN: SEND EMAIL ====================
+    if (route === '/admin/emails/send' && method === 'POST') {
+      await ensureEmailsTable(env.DB);
+      const body = await request.json().catch(() => null);
+      if (!body) return jsonResponse({ error: 'Invalid JSON payload' }, 400);
+
+      const to = (body.to || '').trim().toLowerCase();
+      const fromAddress = (body.from || 'halo@asridigital.com').trim();
+      const fromName = (body.from_name || 'Asri Digital').trim();
+      const subject = (body.subject || '').trim();
+      const content = (body.body || body.content || '').trim();
+      const inReplyTo = body.in_reply_to || null;
+      const threadId = body.thread_id || null;
+
+      if (!to || !to.includes('@')) {
+        return jsonResponse({ error: 'Alamat email penerima (To) tidak valid' }, 400);
+      }
+      if (!subject) {
+        return jsonResponse({ error: 'Subjek email tidak boleh kosong' }, 400);
+      }
+      if (!content) {
+        return jsonResponse({ error: 'Isi pesan email tidak boleh kosong' }, 400);
+      }
+
+      const resendKey = env.RESEND_KEY || env.RESEND_API_KEY;
+      if (!resendKey || resendKey.startsWith('re_your_')) {
+        return jsonResponse({ error: 'RESEND_API_KEY belum dikonfigurasi di Cloudflare' }, 500);
+      }
+
+      // Prepare HTML content
+      const htmlBody = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+          <div style="padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
+            <strong style="color: #0A1D31; font-size: 18px; letter-spacing: -0.02em;">Asri Digital</strong>
+          </div>
+          <div style="font-size: 15px; color: #334155; white-space: pre-wrap;">${content}</div>
+          <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8;">
+            <p style="margin: 0;">Dikirim dari domain resmi <strong>asridigital.com</strong></p>
+          </div>
+        </div>
+      `;
+
+      // Call Resend API
+      const resendPayload: any = {
+        from: `${fromName} <${fromAddress}>`,
+        to: [to],
+        subject,
+        html: htmlBody,
+        text: content,
+      };
+
+      if (inReplyTo) {
+        resendPayload.headers = {
+          'In-Reply-To': inReplyTo,
+          'References': inReplyTo,
+        };
+      }
+
+      const resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${resendKey}`,
+        },
+        body: JSON.stringify(resendPayload),
+      });
+
+      const resendData: any = await resendRes.json();
+      if (!resendRes.ok) {
+        console.error('RESEND ERROR:', resendRes.status, resendData);
+        return jsonResponse({
+          error: resendData?.message || 'Gagal mengirim email melalui Resend',
+          details: resendData,
+        }, 500);
+      }
+
+      // Save to D1 database
+      const emailId = crypto.randomUUID();
+      const currentThread = threadId || emailId;
+
+      await env.DB.prepare(`
+        INSERT INTO emails (
+          id, thread_id, message_id, in_reply_to, direction, folder,
+          from_name, from_email, to_email, reply_to, subject,
+          body_text, body_html, is_read, is_starred,
+          security_status, spam_score, created_at, updated_at
+        ) VALUES (
+          ?, ?, ?, ?, 'OUTBOUND', 'sent',
+          ?, ?, ?, ?, ?,
+          ?, ?, 1, 0,
+          'VERIFIED', 0, datetime('now'), datetime('now')
+        )
+      `).bind(
+        emailId,
+        currentThread,
+        resendData?.id || null,
+        inReplyTo,
+        fromName,
+        fromAddress,
+        to,
+        fromAddress,
+        subject,
+        content,
+        htmlBody
+      ).run();
+
+      return jsonResponse({
+        success: true,
+        id: emailId,
+        resend_id: resendData?.id,
+        message: 'Email berhasil dikirim ke ' + to,
+      });
+    }
+
+    // ==================== ADMIN: UPDATE EMAIL STATUS (Read/Starred/Folder) ====================
+    if (route.startsWith('/admin/emails/') && method === 'PATCH') {
+      await ensureEmailsTable(env.DB);
+      const emailId = route.replace('/admin/emails/', '').trim();
+      const body = await request.json().catch(() => null);
+      if (!body) return jsonResponse({ error: 'Invalid JSON' }, 400);
+
+      const updates: string[] = [];
+      const bindings: any[] = [];
+
+      if (body.is_read !== undefined) {
+        updates.push('is_read = ?');
+        bindings.push(body.is_read ? 1 : 0);
+      }
+      if (body.is_starred !== undefined) {
+        updates.push('is_starred = ?');
+        bindings.push(body.is_starred ? 1 : 0);
+      }
+      if (body.folder) {
+        const allowed = ['inbox', 'sent', 'spam', 'trash', 'archive'];
+        if (allowed.includes(body.folder)) {
+          updates.push('folder = ?');
+          bindings.push(body.folder);
+        }
+      }
+
+      if (updates.length === 0) {
+        return jsonResponse({ error: 'Tidak ada data untuk diupdate' }, 400);
+      }
+
+      updates.push('updated_at = datetime("now")');
+      bindings.push(emailId);
+
+      await env.DB.prepare(`UPDATE emails SET ${updates.join(', ')} WHERE id = ?`).bind(...bindings).run();
+
+      return jsonResponse({ success: true, message: 'Status email berhasil diperbarui' });
+    }
+
+    // ==================== ADMIN: DELETE EMAIL ====================
+    if (route.startsWith('/admin/emails/') && method === 'DELETE') {
+      await ensureEmailsTable(env.DB);
+      const emailId = route.replace('/admin/emails/', '').trim();
+      const email = await env.DB.prepare('SELECT folder FROM emails WHERE id = ?').bind(emailId).first<{ folder: string }>();
+
+      if (!email) {
+        return jsonResponse({ error: 'Email tidak ditemukan' }, 404);
+      }
+
+      if (email.folder === 'trash') {
+        // Permanently delete
+        await env.DB.prepare('DELETE FROM emails WHERE id = ?').bind(emailId).run();
+        return jsonResponse({ success: true, message: 'Email berhasil dihapus permanen' });
+      } else {
+        // Move to trash
+        await env.DB.prepare('UPDATE emails SET folder = "trash", updated_at = datetime("now") WHERE id = ?').bind(emailId).run();
+        return jsonResponse({ success: true, message: 'Email dipindahkan ke kotak sampah' });
+      }
     }
 
     // ==================== DEFAULT 404 ====================

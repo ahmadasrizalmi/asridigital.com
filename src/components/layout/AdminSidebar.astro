@@ -39,6 +39,12 @@ const menuItems = [
     ],
   },
   {
+    id: 'emails',
+    label: 'Email Inbox',
+    href: '/admin/emails',
+    icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`,
+  },
+  {
     id: 'coupons',
     label: 'Kupon',
     href: '/admin/coupons',
@@ -152,6 +158,9 @@ function isParentActive(item: any): boolean {
         >
           <Fragment set:html={item.icon} />
           <span class="flex-1">{item.label}</span>
+          {item.id === 'emails' && (
+            <span id="sidebar-email-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D9B26A]/20 text-[#9A7228] border border-[#D9B26A]/30"></span>
+          )}
           {activePage === item.id && (
             <div class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></div>
           )}
@@ -230,5 +239,22 @@ function isParentActive(item: any): boolean {
       localStorage.removeItem('admin_token');
       window.location.href = '/admin/login';
     });
+
+    // Fetch email unread badge
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      fetch('/api/admin/emails/stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const badge = document.getElementById('sidebar-email-badge');
+        if (badge && data && data.unread > 0) {
+          badge.textContent = data.unread > 99 ? '99+' : data.unread;
+          badge.classList.remove('hidden');
+        }
+      })
+      .catch(() => {});
+    }
   });
 </script>
