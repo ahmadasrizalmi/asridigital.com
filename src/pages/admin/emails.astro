@@ -58,6 +58,36 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
       </header>
 
+      <!-- API Key Status / Setup Banner (Shown if API Key not valid) -->
+      <div id="resend-api-banner" class="hidden bg-amber-50 border-b border-amber-200 px-4 md:px-6 py-3 transition-all">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <span class="font-bold text-xs text-amber-900" id="resend-banner-title">Resend API Key Belum Aktif / Invalid</span>
+              <p class="text-[11px] text-amber-800 mt-0.5" id="resend-banner-desc">Masukkan API Key Anda dari <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com/api-keys</a> (format: <code>re_xxxx</code>):</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <input
+              type="password"
+              id="quick-resend-key-input"
+              placeholder="re_xxxxxxxxxxxx"
+              class="px-3 py-1.5 bg-white border border-amber-300 rounded-xl text-xs w-48 sm:w-60 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            />
+            <button
+              onclick="saveResendKeyDirect()"
+              id="btn-save-resend-key"
+              class="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition whitespace-nowrap"
+            >
+              Simpan &amp; Verifikasi
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Main Layout Body (3 Columns on Desktop) -->
       <div class="flex-1 flex min-h-0 relative overflow-hidden">
         
@@ -915,7 +945,60 @@ import Icon from '../../components/ui/Icon.astro';
       .replace(/'/g, '&#039;');
   }
 
+  async function checkEmailConfig() {
+    try {
+      const res = await fetch('/api/admin/emails/config', {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      const banner = document.getElementById('resend-api-banner');
+      if (!banner) return;
+
+      if (!data.configured || !data.is_valid) {
+        banner.classList.remove('hidden');
+        if (data.configured && !data.is_valid) {
+          document.getElementById('resend-banner-title').textContent = 'Resend API Key Tidak Valid (' + (data.error || 'Ditolak oleh Resend') + ')';
+        }
+      } else {
+        banner.classList.add('hidden');
+      }
+    } catch {}
+  }
+
+  async function saveResendKeyDirect() {
+    const input = document.getElementById('quick-resend-key-input');
+    const newKey = input ? input.value.trim() : '';
+    if (!newKey || !newKey.startsWith('re_')) {
+      alert('Harap masukkan format Resend API Key yang valid (diawali "re_")!');
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-resend-key');
+    btn.disabled = true;
+    btn.textContent = 'Memverifikasi...';
+
+    try {
+      const res = await fetch('/api/admin/emails/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ resend_api_key: newKey })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan API Key');
+
+      alert('Berhasil! Resend API Key Anda valid dan telah tersimpan di sistem.');
+      document.getElementById('resend-api-banner')?.classList.add('hidden');
+      input.value = '';
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Simpan & Verifikasi';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     loadEmailList();
+    checkEmailConfig();
   });
 </script>

@@ -429,6 +429,28 @@ async function ensureEmailsTable(db: D1Database) {
   }
 }
 
+async function getResendApiKey(env: Env): Promise<string | null> {
+  // 1. Check D1 database site_settings first (saved via Admin > Settings)
+  try {
+    const setting = await env.DB.prepare(
+      "SELECT value FROM site_settings WHERE key = 'resend_api_key' OR key = 'resend_key'"
+    ).first<{ value: string }>();
+    if (setting?.value && !setting.value.startsWith('re_your_') && setting.value.trim().length > 10) {
+      return setting.value.trim();
+    }
+  } catch (e) {
+    console.error('Error fetching resend_api_key from site_settings:', e);
+  }
+
+  // 2. Fallback to Cloudflare environment variables
+  const envKey = env.RESEND_KEY || env.RESEND_API_KEY;
+  if (envKey && !envKey.startsWith('re_your_') && envKey.trim().length > 10) {
+    return envKey.trim();
+  }
+
+  return null;
+}
+
 // Main request handler
 export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
@@ -3766,6 +3788,86 @@ export async function onRequest(context: any): Promise<Response> {
       if (!to || !to.includes('@')) {
         return jsonResponse({ error: 'Alamat email penerima (To) tidak valid' }, 400);
       }
+    // ==================== ADMIN: GET EMAIL SERVICE CONFIG & STATUS ====================
+    if (route === '/admin/emails/config' && method === 'GET') {
+      const resendKey = await getResendApiKey(env);
+      let isValid = false;
+      let resendError: string | null = null;
+
+      if (resendKey) {
+        try {
+          const testRes = await fetch('https://api.resend.com/api-keys', {
+            headers: { 'Authorization': `Bearer ${resendKey}` }
+          });
+          isValid = testRes.ok;
+          if (!testRes.ok) {
+            const errData: any = await testRes.json().catch(() => ({}));
+            resendError = errData?.message || 'API Key tidak valid menurut server Resend';
+          }
+        } catch (e: any) {
+          resendError = e.message;
+        }
+      }
+
+      return jsonResponse({
+        configured: !!resendKey,
+        is_valid: isValid,
+        key_masked: resendKey ? `${resendKey.substring(0, 6)}...${resendKey.substring(resendKey.length - 4)}` : '',
+        error: resendError,
+      });
+    }
+
+    // ==================== ADMIN: QUICK UPDATE RESEND API KEY ====================
+    if (route === '/admin/emails/config' && method === 'POST') {
+      const body = await request.json().catch(() => null);
+      const newKey = (body?.resend_api_key || body?.api_key || '').trim();
+
+      if (!newKey || !newKey.startsWith('re_')) {
+        return jsonResponse({ error: 'Format Resend API Key harus diawali dengan "re_"' }, 400);
+      }
+
+      // Test key against Resend API before saving
+      const testRes = await fetch('https://api.resend.com/api-keys', {
+        headers: { 'Authorization': `Bearer ${newKey}` }
+      });
+
+      if (!testRes.ok) {
+        const errData: any = await testRes.json().catch(() => ({}));
+        return jsonResponse({
+          error: `Resend menolak API Key ini (${errData?.message || 'Invalid API key'}). Pastikan Anda copy API Key yang benar dari resend.com > API Keys.`
+        }, 400);
+      }
+
+      // Save to D1 database site_settings
+      await env.DB.prepare(`
+        INSERT INTO site_settings (key, value, updated_at) 
+        VALUES ('resend_api_key', ?, datetime('now'))
+        ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')
+      `).bind(newKey, newKey).run();
+
+      return jsonResponse({
+        success: true,
+        message: 'Resend API Key berhasil diverifikasi & disimpan! Sekarang Anda bisa langsung kirim email.',
+      });
+    }
+
+    // ==================== ADMIN: SEND EMAIL ====================
+    if (route === '/admin/emails/send' && method === 'POST') {
+      await ensureEmailsTable(env.DB);
+      const body = await request.json().catch(() => null);
+      if (!body) return jsonResponse({ error: 'Invalid JSON payload' }, 400);
+
+      const to = (body.to || '').trim().toLowerCase();
+      const fromAddress = (body.from || 'halo@asridigital.com').trim();
+      const fromName = (body.from_name || 'Asri Digital').trim();
+      const subject = (body.subject || '').trim();
+      const content = (body.body || body.content || '').trim();
+      const inReplyTo = body.in_reply_to || null;
+      const threadId = body.thread_id || null;
+
+      if (!to || !to.includes('@')) {
+        return jsonResponse({ error: 'Alamat email penerima (To) tidak valid' }, 400);
+      }
       if (!subject) {
         return jsonResponse({ error: 'Subjek email tidak boleh kosong' }, 400);
       }
@@ -3773,9 +3875,11 @@ export async function onRequest(context: any): Promise<Response> {
         return jsonResponse({ error: 'Isi pesan email tidak boleh kosong' }, 400);
       }
 
-      const resendKey = env.RESEND_KEY || env.RESEND_API_KEY;
-      if (!resendKey || resendKey.startsWith('re_your_')) {
-        return jsonResponse({ error: 'RESEND_API_KEY belum dikonfigurasi di Cloudflare' }, 500);
+      const resendKey = await getResendApiKey(env);
+      if (!resendKey) {
+        return jsonResponse({
+          error: 'Resend API Key belum diisi atau tidak valid. Silakan masukkan API Key di menu Pengaturan > Email atau pada kartu pengaturan di atas.'
+        }, 500);
       }
 
       // Prepare HTML content
