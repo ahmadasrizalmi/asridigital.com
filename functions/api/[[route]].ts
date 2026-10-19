@@ -3771,23 +3771,6 @@ export async function onRequest(context: any): Promise<Response> {
       });
     }
 
-    // ==================== ADMIN: SEND EMAIL ====================
-    if (route === '/admin/emails/send' && method === 'POST') {
-      await ensureEmailsTable(env.DB);
-      const body = await request.json().catch(() => null);
-      if (!body) return jsonResponse({ error: 'Invalid JSON payload' }, 400);
-
-      const to = (body.to || '').trim().toLowerCase();
-      const fromAddress = (body.from || 'halo@asridigital.com').trim();
-      const fromName = (body.from_name || 'Asri Digital').trim();
-      const subject = (body.subject || '').trim();
-      const content = (body.body || body.content || '').trim();
-      const inReplyTo = body.in_reply_to || null;
-      const threadId = body.thread_id || null;
-
-      if (!to || !to.includes('@')) {
-        return jsonResponse({ error: 'Alamat email penerima (To) tidak valid' }, 400);
-      }
     // ==================== ADMIN: GET EMAIL SERVICE CONFIG & STATUS ====================
     if (route === '/admin/emails/config' && method === 'GET') {
       const resendKey = await getResendApiKey(env);
