@@ -435,17 +435,23 @@ async function getResendApiKey(env: Env): Promise<string | null> {
     const setting = await env.DB.prepare(
       "SELECT value FROM site_settings WHERE key = 'resend_api_key' OR key = 'resend_key'"
     ).first<{ value: string }>();
-    if (setting?.value && !setting.value.startsWith('re_your_') && setting.value.trim().length > 10) {
-      return setting.value.trim();
+    if (setting?.value) {
+      const clean = setting.value.replace(/^["']|["']$/g, '').trim();
+      if (!clean.startsWith('re_your_') && clean.length > 10) {
+        return clean;
+      }
     }
   } catch (e) {
     console.error('Error fetching resend_api_key from site_settings:', e);
   }
 
-  // 2. Fallback to Cloudflare environment variables
+  // 2. Fallback to Cloudflare Pages environment variables
   const envKey = env.RESEND_KEY || env.RESEND_API_KEY;
-  if (envKey && !envKey.startsWith('re_your_') && envKey.trim().length > 10) {
-    return envKey.trim();
+  if (envKey) {
+    const clean = String(envKey).replace(/^["']|["']$/g, '').trim();
+    if (!clean.startsWith('re_your_') && clean.length > 10) {
+      return clean;
+    }
   }
 
   return null;
@@ -952,14 +958,15 @@ export async function onRequest(context: any): Promise<Response> {
       // Send reset email
       let emailSendResult = 'skipped';
       try {
-        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+        const resendKey = await getResendApiKey(env);
+        if (resendKey) {
           const resetUrl = `${env.APP_URL}/reset-password?token=${resetToken}`;
           
           const emailResponse = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${env.RESEND_KEY}`
+              'Authorization': `Bearer ${resendKey}`
             },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
@@ -3000,10 +3007,11 @@ export async function onRequest(context: any): Promise<Response> {
 
       // Send email notification
       try {
-        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+        const resendKey = await getResendApiKey(env);
+        if (resendKey) {
           await fetch('https://api.resend.com/emails', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
               to: 'ahmadasrizalmi@gmail.com',
@@ -3092,10 +3100,11 @@ export async function onRequest(context: any): Promise<Response> {
 
       // Send Email notification to Admin via Resend
       try {
-        if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+        const resendKey = await getResendApiKey(env);
+        if (resendKey) {
           await fetch('https://api.resend.com/emails', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
             body: JSON.stringify({
               from: 'Asri Digital <noreply@asridigital.com>',
               to: 'ahmadasrizalmi@gmail.com',
@@ -3300,7 +3309,8 @@ export async function onRequest(context: any): Promise<Response> {
       let sentCount = 0;
       let failedCount = 0;
 
-      if (env.RESEND_KEY && !env.RESEND_KEY.startsWith('re_your_')) {
+      const resendKey = await getResendApiKey(env);
+      if (resendKey) {
         for (const t of list) {
           try {
             const recipientName = t.name || 'Sahabat Asri Digital';
@@ -3334,7 +3344,7 @@ export async function onRequest(context: any): Promise<Response> {
 
             await fetch('https://api.resend.com/emails', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
               body: JSON.stringify({
                 from: 'Asri Digital <noreply@asridigital.com>',
                 to: t.email,
@@ -3785,16 +3795,24 @@ export async function onRequest(context: any): Promise<Response> {
           isValid = testRes.ok;
           if (!testRes.ok) {
             const errData: any = await testRes.json().catch(() => ({}));
-            resendError = errData?.message || 'API Key tidak valid menurut server Resend';
+            // If key has sending-only permission, Resend returns 403 restricted_api_key, which is valid for sending emails
+            if (testRes.status === 403 && (errData?.name === 'restricted_api_key' || errData?.message?.toLowerCase().includes('permission') || errData?.message?.toLowerCase().includes('send'))) {
+              isValid = true;
+            } else {
+              resendError = errData?.message || 'API Key tidak valid menurut server Resend';
+            }
           }
         } catch (e: any) {
           resendError = e.message;
         }
       }
 
+      const dbKey = await env.DB?.prepare("SELECT value FROM site_settings WHERE key = 'resend_api_key' OR key = 'resend_key'").first<{ value: string }>();
+
       return jsonResponse({
         configured: !!resendKey,
         is_valid: isValid,
+        source: dbKey?.value ? 'database' : (env.RESEND_API_KEY || env.RESEND_KEY ? 'environment' : 'none'),
         key_masked: resendKey ? `${resendKey.substring(0, 6)}...${resendKey.substring(resendKey.length - 4)}` : '',
         error: resendError,
       });
@@ -3814,8 +3832,10 @@ export async function onRequest(context: any): Promise<Response> {
         headers: { 'Authorization': `Bearer ${newKey}` }
       });
 
-      if (!testRes.ok) {
-        const errData: any = await testRes.json().catch(() => ({}));
+      const errData: any = testRes.ok ? null : await testRes.json().catch(() => ({}));
+      const isValid = testRes.ok || (testRes.status === 403 && (errData?.name === 'restricted_api_key' || errData?.message?.toLowerCase().includes('permission') || errData?.message?.toLowerCase().includes('send')));
+
+      if (!isValid) {
         return jsonResponse({
           error: `Resend menolak API Key ini (${errData?.message || 'Invalid API key'}). Pastikan Anda copy API Key yang benar dari resend.com > API Keys.`
         }, 400);
@@ -4258,8 +4278,9 @@ async function notifyTelegram(env: Env, message: string) {
 
 // Email helper function
 async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: string, userPassword?: string) {
-  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) {
-    console.log('RESEND: Key not configured. RESEND_KEY exists:', !!env.RESEND_KEY, 'value:', env.RESEND_KEY ? env.RESEND_KEY.substring(0, 10) + '...' : 'undefined');
+  const resendKey = await getResendApiKey(env);
+  if (!resendKey) {
+    console.log('RESEND: Key not configured in site_settings or env vars');
     return;
   }
 
@@ -4344,7 +4365,7 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.RESEND_KEY}`
+      'Authorization': `Bearer ${resendKey}`
     },
     body: JSON.stringify({
       from: fromAddress,
@@ -4382,7 +4403,8 @@ async function sendOrderConfirmationEmail(env: Env, order: any, magicToken?: str
 
 // Email helper function for free products
 async function sendFreeProductEmail(env: Env, order: any) {
-  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) return;
+  const resendKey = await getResendApiKey(env);
+  if (!resendKey) return;
   const subject = `Produk Gratis Anda - ${order.product_title}`;
   const downloadLink = order.download_url || `${env.APP_URL}/dashboard`;
   const html = emailLayout('Produk Gratis', `
@@ -4400,7 +4422,7 @@ async function sendFreeProductEmail(env: Env, order: any) {
     <p style="color:${BRAND.textLight};font-size:14px;text-align:center;margin:32px 0 0;line-height:1.6;">Anda akan mendapat notifikasi saat ada update atau produk baru dirilis.</p>
   `);
   const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.RESEND_KEY}` },
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
     body: JSON.stringify({ from: 'Asri Digital <noreply@asridigital.com>', to: order.user_email, subject, html })
   });
   const result = await response.json() as any;
@@ -4419,7 +4441,8 @@ async function sendSubscriberNewProductEmail(env: Env, data: {
   product_url: string;
   product_category: string;
 }) {
-  if (!env.RESEND_KEY || env.RESEND_KEY.startsWith('re_your_')) return;
+  const resendKey = await getResendApiKey(env);
+  if (!resendKey) return;
 
   const priceDisplay = data.product_price === 0 ? 'GRATIS' : `Rp ${Number(data.product_price).toLocaleString('id-ID')}`;
   const subject = `Produk Baru: ${data.product_title}`;
@@ -4452,7 +4475,7 @@ async function sendSubscriberNewProductEmail(env: Env, data: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.RESEND_KEY}`
+      'Authorization': `Bearer ${resendKey}`
     },
     body: JSON.stringify({
       from: 'Asri Digital <noreply@asridigital.com>',

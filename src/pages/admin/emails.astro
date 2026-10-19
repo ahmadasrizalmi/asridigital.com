@@ -957,7 +957,8 @@ import Icon from '../../components/ui/Icon.astro';
       if (!data.configured || !data.is_valid) {
         banner.classList.remove('hidden');
         if (data.configured && !data.is_valid) {
-          document.getElementById('resend-banner-title').textContent = 'Resend API Key Tidak Valid (' + (data.error || 'Ditolak oleh Resend') + ')';
+          document.getElementById('resend-banner-title').textContent = 'Resend API Key Ditolak (' + (data.error || 'Invalid API key') + ')';
+          document.getElementById('resend-banner-desc').innerHTML = 'API Key yang tersimpan di Cloudflare Environment saat ini tidak dikenali oleh Resend. Anda bisa perbarui di Cloudflare Pages atau tempel API Key aktif dari <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com</a> di sini:';
         }
       } else {
         banner.classList.add('hidden');
