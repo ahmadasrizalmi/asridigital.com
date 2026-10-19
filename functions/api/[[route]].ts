@@ -430,7 +430,16 @@ async function ensureEmailsTable(db: D1Database) {
 }
 
 async function getResendApiKey(env: Env): Promise<string | null> {
-  // 1. Check D1 database site_settings first (saved via Admin > Settings)
+  // 1. Check Cloudflare Pages environment variables first (authoritative & verified)
+  const envKey = env.RESEND_API_KEY || env.RESEND_KEY;
+  if (envKey) {
+    const clean = String(envKey).replace(/^["']|["']$/g, '').trim();
+    if (!clean.startsWith('re_your_') && clean.length > 10) {
+      return clean;
+    }
+  }
+
+  // 2. Fallback to D1 database site_settings
   try {
     const setting = await env.DB.prepare(
       "SELECT value FROM site_settings WHERE key = 'resend_api_key' OR key = 'resend_key'"
@@ -443,15 +452,6 @@ async function getResendApiKey(env: Env): Promise<string | null> {
     }
   } catch (e) {
     console.error('Error fetching resend_api_key from site_settings:', e);
-  }
-
-  // 2. Fallback to Cloudflare Pages environment variables
-  const envKey = env.RESEND_KEY || env.RESEND_API_KEY;
-  if (envKey) {
-    const clean = String(envKey).replace(/^["']|["']$/g, '').trim();
-    if (!clean.startsWith('re_your_') && clean.length > 10) {
-      return clean;
-    }
   }
 
   return null;
@@ -487,7 +487,19 @@ export async function onRequest(context: any): Promise<Response> {
   _currentCtx = context;
 
   // Env var compatibility: RESEND_API_KEY (wrangler.toml/dashboard) → RESEND_KEY (code)
-  if (!env.RESEND_KEY && env.RESEND_API_KEY) env.RESEND_KEY = env.RESEND_API_KEY;
+  if (env.RESEND_API_KEY) {
+    env.RESEND_KEY = env.RESEND_API_KEY;
+    if (env.DB && env.RESEND_API_KEY.startsWith('re_')) {
+      const cleanKey = env.RESEND_API_KEY.replace(/^["']|["']$/g, '').trim();
+      context.waitUntil?.(
+        env.DB.prepare(`
+          INSERT INTO site_settings (key, value, updated_at) 
+          VALUES ('resend_api_key', ?, datetime('now'))
+          ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')
+        `).bind(cleanKey, cleanKey).run().catch(() => {})
+      );
+    }
+  }
 
   // Require JWT_SECRET to be configured
   if (!env.JWT_SECRET) {
