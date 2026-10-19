@@ -457,6 +457,29 @@ async function getResendApiKey(env: Env): Promise<string | null> {
   return null;
 }
 
+async function testResendApiKeyDirect(key: string): Promise<{ valid: boolean; error?: string }> {
+  if (!key) return { valid: false, error: 'API Key belum disetel' };
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({})
+    });
+    // Resend returns 401 only if Bearer token is invalid/rejected
+    if (res.status === 401) {
+      const data: any = await res.json().catch(() => ({}));
+      return { valid: false, error: data?.message || 'API Key tidak valid menurut server Resend' };
+    }
+    // Any status other than 401 (e.g. 422 missing payload, 400, 200) means authentication is successful
+    return { valid: true };
+  } catch (e: any) {
+    return { valid: false, error: e.message };
+  }
+}
+
 // Main request handler
 export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
@@ -3783,38 +3806,47 @@ export async function onRequest(context: any): Promise<Response> {
 
     // ==================== ADMIN: GET EMAIL SERVICE CONFIG & STATUS ====================
     if (route === '/admin/emails/config' && method === 'GET') {
-      const resendKey = await getResendApiKey(env);
-      let isValid = false;
-      let resendError: string | null = null;
+      let dbKey: string | null = null;
+      try {
+        const setting = await env.DB?.prepare(
+          "SELECT value FROM site_settings WHERE key = 'resend_api_key' OR key = 'resend_key'"
+        ).first<{ value: string }>();
+        if (setting?.value) {
+          const clean = setting.value.replace(/^["']|["']$/g, '').trim();
+          if (!clean.startsWith('re_your_') && clean.length > 10) dbKey = clean;
+        }
+      } catch (e) {}
 
-      if (resendKey) {
-        try {
-          const testRes = await fetch('https://api.resend.com/api-keys', {
-            headers: { 'Authorization': `Bearer ${resendKey}` }
-          });
-          isValid = testRes.ok;
-          if (!testRes.ok) {
-            const errData: any = await testRes.json().catch(() => ({}));
-            // If key has sending-only permission, Resend returns 403 restricted_api_key, which is valid for sending emails
-            if (testRes.status === 403 && (errData?.name === 'restricted_api_key' || errData?.message?.toLowerCase().includes('permission') || errData?.message?.toLowerCase().includes('send'))) {
-              isValid = true;
-            } else {
-              resendError = errData?.message || 'API Key tidak valid menurut server Resend';
-            }
-          }
-        } catch (e: any) {
-          resendError = e.message;
+      let envKey: string | null = null;
+      const rawEnv = env.RESEND_KEY || env.RESEND_API_KEY;
+      if (rawEnv) {
+        const clean = String(rawEnv).replace(/^["']|["']$/g, '').trim();
+        if (!clean.startsWith('re_your_') && clean.length > 10) envKey = clean;
+      }
+
+      // Priority: DB key first, fallback to Cloudflare ENV key
+      let activeKey = dbKey || envKey;
+      let activeSource = dbKey ? 'database' : (envKey ? 'environment' : 'none');
+      let testResult = activeKey ? await testResendApiKeyDirect(activeKey) : { valid: false, error: 'Belum ada API Key' };
+
+      // If DB key failed but ENV key exists, test ENV key!
+      if (!testResult.valid && dbKey && envKey) {
+        const envTest = await testResendApiKeyDirect(envKey);
+        if (envTest.valid) {
+          activeKey = envKey;
+          activeSource = 'environment';
+          testResult = envTest;
         }
       }
 
-      const dbKey = await env.DB?.prepare("SELECT value FROM site_settings WHERE key = 'resend_api_key' OR key = 'resend_key'").first<{ value: string }>();
-
       return jsonResponse({
-        configured: !!resendKey,
-        is_valid: isValid,
-        source: dbKey?.value ? 'database' : (env.RESEND_API_KEY || env.RESEND_KEY ? 'environment' : 'none'),
-        key_masked: resendKey ? `${resendKey.substring(0, 6)}...${resendKey.substring(resendKey.length - 4)}` : '',
-        error: resendError,
+        configured: !!activeKey,
+        is_valid: testResult.valid,
+        source: activeSource,
+        has_db_key: !!dbKey,
+        has_env_key: !!envKey,
+        key_masked: activeKey ? `${activeKey.substring(0, 6)}...${activeKey.substring(activeKey.length - 4)}` : '',
+        error: testResult.valid ? null : testResult.error,
       });
     }
 
@@ -3828,16 +3860,10 @@ export async function onRequest(context: any): Promise<Response> {
       }
 
       // Test key against Resend API before saving
-      const testRes = await fetch('https://api.resend.com/api-keys', {
-        headers: { 'Authorization': `Bearer ${newKey}` }
-      });
-
-      const errData: any = testRes.ok ? null : await testRes.json().catch(() => ({}));
-      const isValid = testRes.ok || (testRes.status === 403 && (errData?.name === 'restricted_api_key' || errData?.message?.toLowerCase().includes('permission') || errData?.message?.toLowerCase().includes('send')));
-
-      if (!isValid) {
+      const testResult = await testResendApiKeyDirect(newKey);
+      if (!testResult.valid) {
         return jsonResponse({
-          error: `Resend menolak API Key ini (${errData?.message || 'Invalid API key'}). Pastikan Anda copy API Key yang benar dari resend.com > API Keys.`
+          error: `Resend menolak API Key ini (${testResult.error || 'Invalid API key'}). Pastikan Anda copy API Key yang benar dari resend.com > API Keys.`
         }, 400);
       }
 

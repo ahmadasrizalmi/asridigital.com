@@ -58,7 +58,7 @@ import Icon from '../../components/ui/Icon.astro';
         </div>
       </header>
 
-      <!-- API Key Status / Setup Banner (Shown if API Key not valid) -->
+      <!-- API Key Status / Setup Banner (Shown only if API Key not valid) -->
       <div id="resend-api-banner" class="hidden bg-amber-50 border-b border-amber-200 px-4 md:px-6 py-3 transition-all">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex items-start gap-2.5">
@@ -66,8 +66,8 @@ import Icon from '../../components/ui/Icon.astro';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <div>
-              <span class="font-bold text-xs text-amber-900" id="resend-banner-title">Resend API Key Belum Aktif / Invalid</span>
-              <p class="text-[11px] text-amber-800 mt-0.5" id="resend-banner-desc">Masukkan API Key Anda dari <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com/api-keys</a> (format: <code>re_xxxx</code>):</p>
+              <span class="font-bold text-xs text-amber-900" id="resend-banner-title">Resend API Key Belum Terhubung</span>
+              <p class="text-[11px] text-amber-800 mt-0.5" id="resend-banner-desc">Variabel <code>RESEND_API_KEY</code> belum terdeteksi. Masukkan API Key dari <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com/api-keys</a> (format: <code>re_xxxx</code>):</p>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
@@ -83,6 +83,15 @@ import Icon from '../../components/ui/Icon.astro';
               class="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition whitespace-nowrap"
             >
               Simpan &amp; Verifikasi
+            </button>
+            <button
+              onclick="dismissEmailBanner()"
+              class="p-1 text-amber-700 hover:text-amber-950 rounded-lg hover:bg-amber-200/50 transition ml-1"
+              title="Tutup Notifikasi"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
@@ -945,23 +954,34 @@ import Icon from '../../components/ui/Icon.astro';
       .replace(/'/g, '&#039;');
   }
 
+  function dismissEmailBanner() {
+    sessionStorage.setItem('dismiss_resend_banner', 'true');
+    document.getElementById('resend-api-banner')?.classList.add('hidden');
+  }
+
   async function checkEmailConfig() {
+    if (sessionStorage.getItem('dismiss_resend_banner') === 'true') return;
     try {
       const res = await fetch('/api/admin/emails/config', {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
+      if (!res.ok) return; // Ignore on auth issues
       const data = await res.json();
       const banner = document.getElementById('resend-api-banner');
       if (!banner) return;
 
-      if (!data.configured || !data.is_valid) {
-        banner.classList.remove('hidden');
-        if (data.configured && !data.is_valid) {
-          document.getElementById('resend-banner-title').textContent = 'Resend API Key Ditolak (' + (data.error || 'Invalid API key') + ')';
-          document.getElementById('resend-banner-desc').innerHTML = 'API Key yang tersimpan di Cloudflare Environment saat ini tidak dikenali oleh Resend. Anda bisa perbarui di Cloudflare Pages atau tempel API Key aktif dari <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com</a> di sini:';
-        }
-      } else {
+      if (data.configured && data.is_valid) {
         banner.classList.add('hidden');
+        return;
+      }
+
+      banner.classList.remove('hidden');
+      if (data.configured && !data.is_valid) {
+        document.getElementById('resend-banner-title').textContent = 'Resend API Key Ditolak (' + (data.error || 'Invalid API key') + ')';
+        document.getElementById('resend-banner-desc').innerHTML = `Key di ${data.source === 'environment' ? 'Cloudflare Pages' : 'Database'} (${data.key_masked}) tidak diterima Resend. Periksa di <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com</a> atau masukkan key baru:`;
+      } else {
+        document.getElementById('resend-banner-title').textContent = 'Resend API Key Belum Ditemukan';
+        document.getElementById('resend-banner-desc').innerHTML = 'Variabel <code>RESEND_API_KEY</code> belum aktif di sistem. Masukkan API Key aktif dari <a href="https://resend.com/api-keys" target="_blank" class="underline font-bold">resend.com</a>:';
       }
     } catch {}
   }
