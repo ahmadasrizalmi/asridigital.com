@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.app.cyclejournal",
+      "sha256_cert_fingerprints": [
+        "A9:A6:64:37:D7:86:73:A3:A5:F0:12:DE:9E:6F:86:C7:7B:A4:04:8D:92:13:35:9F:13:86:7D:FA:7C:CD:A3:99"
+      ]
+    }
+  }
+]

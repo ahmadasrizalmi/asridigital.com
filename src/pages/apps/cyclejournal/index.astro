@@ -6,13 +6,13 @@ import Footer from '../../../components/layout/Footer.astro';
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.app.cyclejournal';
 const PRIVACY_URL = '/apps/cyclejournal/privacy';
 
-const title = 'CycleJournal: Kalender Haid & Laporan SpOG | Asri Digital Apps';
-const description = 'Aplikasi kalender haid dan jurnal kesuburan 100% offline-first dengan enkripsi zero-knowledge, deteksi anomali FIGO, dan laporan PDF siap dokter SpOG.';
+const title = 'CycleJournal: Kalender Haid & Jurnal Siklus | Asri Digital Apps';
+const description = 'Aplikasi kalender haid dan jurnal kesuburan 100% offline-first dengan enkripsi zero-knowledge, analisis ritme siklus, dan laporan ringkasan PDF.';
 
 const screenshots = [
   { file: '01-dashboard.png', title: 'Dasbor Siklus', sub: 'Fase hormonal, hari ke-siklus, dan tren BBT.' },
   { file: '02-daily-log.png', title: 'Jurnal Gejala', sub: 'Catat BBT, lendir serviks, dan skala nyeri VAS 0–10.' },
-  { file: '03-medical-report.png', title: 'Laporan Medis', sub: 'PDF A4 dengan metrik FIGO & red flags klinis.' },
+  { file: '03-medical-report.png', title: 'Laporan Siklus', sub: 'PDF A4 dengan ringkasan & catatan siklus.' },
   { file: '04-privacy-security.png', title: 'Privasi & Keamanan', sub: 'Kunci PIN, biometrik, dan enkripsi SQLCipher.' },
   { file: '05-data-portability.png', title: 'Kedaulatan Data', sub: 'CSV Excel-ready & hapus total data dalam satu sentuhan.' },
 ];
@@ -37,7 +37,7 @@ const screenshots = [
           <div class="lg:col-span-7 text-center lg:text-left">
             <div class="inline-flex items-center gap-2 rounded-full border border-coral-500/30 bg-coral-950/70 px-3.5 py-1 text-xs font-semibold text-coral-300 mb-5 backdrop-blur">
               <span class="h-2 w-2 rounded-full bg-coral-400 animate-pulse"></span>
-              Kalender Haid &amp; Jurnal Kesuburan Medis
+              Kalender Haid &amp; Jurnal Kebugaran Mandiri
             </div>
 
             <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-5xl xl:text-5xl leading-[1.15]">
@@ -45,12 +45,12 @@ const screenshots = [
             </h1>
 
             <p class="mt-5 max-w-2xl text-base text-slate-300 leading-relaxed sm:text-lg mx-auto lg:mx-0">
-              Kalender haid, masa subur, dan jurnal biomedis berstandar <strong class="text-white">FIGO</strong> dengan enkripsi <strong class="text-white">SQLCipher</strong> di perangkat. Cadangan cloud opsional dienkripsi <strong class="text-white">AES-256 di sisi klien</strong> — server tak pernah melihat isi data Anda.
+              Kalender haid, masa subur, dan jurnal siklus dengan enkripsi <strong class="text-white">SQLCipher</strong> di perangkat. Cadangan cloud opsional dienkripsi <strong class="text-white">AES-256 di sisi klien</strong> — server tak pernah melihat isi data Anda.
             </p>
 
             <div class="mt-6 flex flex-wrap justify-center lg:justify-start gap-4 text-xs font-medium text-slate-300">
               <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
-                <svg class="w-4 h-4 text-coral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>FIGO Standard</span>
+                <svg class="w-4 h-4 text-coral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Analisis Ritme Siklus</span>
               </div>
               <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
                 <svg class="w-4 h-4 text-coral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg><span>100% Offline &amp; Zero-Knowledge</span>
@@ -112,8 +112,8 @@ const screenshots = [
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-200/80 text-emerald-800 text-xs font-bold mb-4">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Solusi
             </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-3">CycleJournal: medical-grade &amp; privacy-first</h3>
-            <p class="text-sm text-slate-600 leading-relaxed">100% offline-first dengan enkripsi SQLCipher di perangkat, laporan PDF A4 siap dokter SpOG, dan beli putus sekali tanpa tagihan bulanan.</p>
+            <h3 class="text-lg font-bold text-slate-900 mb-3">CycleJournal: akurat, aman &amp; privacy-first</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">100% offline-first dengan enkripsi SQLCipher di perangkat, laporan PDF A4 ringkas siap cetak, dan beli putus sekali tanpa tagihan bulanan.</p>
           </div>
         </div>
       </div>
@@ -125,34 +125,34 @@ const screenshots = [
         <div class="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-rose-50/80 via-white to-coral-50/60 border border-rose-200/90 shadow-sm">
           <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold mb-5 border border-rose-200">
             <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            Standar Medis Dokter Kandungan Dunia
+            Referensi Keteraturan Siklus
           </div>
           <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Apa itu Standar FIGO &amp; Mengapa Krusial untuk Kesehatan Anda?
+            Memahami Ritme &amp; Pola Siklus Menstruasi Alami Anda
           </h2>
           <p class="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed">
-            <strong>FIGO (International Federation of Gynecology and Obstetrics)</strong> adalah federasi dokter spesialis obstetri dan ginekologi tingkat dunia yang menetapkan standar emas medis tentang bagaimana siklus menstruasi yang sehat didefinisikan.
+            CycleJournal menggunakan acuan keteraturan siklus yang diadaptasi dari literatur ginekologi internasional (FIGO) untuk membantu Anda mengenali pola tubuh sehari-hari secara mandiri.
           </p>
           <div class="grid md:grid-cols-3 gap-4 mt-8">
             <div class="p-5 rounded-2xl bg-white border border-rose-100 shadow-sm">
               <div class="text-xs font-bold text-rose-600 uppercase tracking-wider">Panjang Siklus</div>
               <div class="text-xl font-black text-slate-900 mt-1">24 &ndash; 38 Hari</div>
-              <p class="text-xs text-slate-500 mt-1">Di luar rentang ini diklasifikasikan sebagai oligomenorea atau polimenorea.</p>
+              <p class="text-xs text-slate-500 mt-1">Rentang variasi alami yang umum ditemukan pada siklus wanita dewasa.</p>
             </div>
             <div class="p-5 rounded-2xl bg-white border border-rose-100 shadow-sm">
               <div class="text-xs font-bold text-rose-600 uppercase tracking-wider">Durasi Haid Normal</div>
               <div class="text-xl font-black text-slate-900 mt-1">&le; 8 Hari</div>
-              <p class="text-xs text-slate-500 mt-1">Perdarahan berturut-turut lebih dari 8 hari disaring sebagai red flag.</p>
+              <p class="text-xs text-slate-500 mt-1">Lama hari keluarnya darah menstruasi aktif yang dipantau.</p>
             </div>
             <div class="p-5 rounded-2xl bg-white border border-rose-100 shadow-sm">
               <div class="text-xs font-bold text-rose-600 uppercase tracking-wider">Variasi Antar-Siklus</div>
               <div class="text-xl font-black text-slate-900 mt-1">&lt; 8 Hari</div>
-              <p class="text-xs text-slate-500 mt-1">Mendeteksi risiko dini ketidakteraturan hormonal atau PCOS.</p>
+              <p class="text-xs text-slate-500 mt-1">Membantu mengevaluasi stabilitas dan ritme hormonal Anda.</p>
             </div>
           </div>
           <div class="mt-6 p-4 rounded-2xl bg-rose-100/60 border border-rose-200 text-xs text-rose-900 leading-relaxed flex items-start gap-3">
             <svg class="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span><strong>Skrining 7 Red Flags Otomatis:</strong> CycleJournal menyaring tanda bahaya siklus seperti dismenore berat (nyeri skala VAS &ge; 7), perdarahan tengah siklus, dan fase luteal pendek untuk bahan evaluasi bersama dokter SpOG Anda.</span>
+            <span><strong>Pemantauan Variasi Siklus:</strong> CycleJournal membantu Anda mencatat dan memantau variasi panjang siklus, jarak menstruasi, dan catatan harian untuk evaluasi mandiri atau referensi saat berkonsultasi.</span>
           </div>
         </div>
       </div>
@@ -163,13 +163,13 @@ const screenshots = [
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-14">
           <span class="text-xs font-bold uppercase tracking-wider text-coral-600">Fitur Utama</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Didesain untuk Kebutuhan Medis Nyata</h2>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Didesain untuk Pelacakan Siklus yang Nyata &amp; Akurat</h2>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
             <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4 font-black text-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg></div>
-            <h3 class="font-bold text-slate-900 text-base mb-2">Laporan PDF Siap SpOG</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">Ekspor ringkasan klinis A4 1-halaman dengan metrik FIGO, red flags anomali, tabel riwayat siklus, dan kotak tanda tangan dokter.</p>
+            <h3 class="font-bold text-slate-900 text-base mb-2">Laporan Ringkasan PDF</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Ekspor ringkasan A4 1-halaman dengan grafik pola siklus, riwayat catatan, dan rangkuman berkala yang terstruktur rapi.</p>
           </div>
           <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
             <div class="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center mb-4 font-black text-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
@@ -178,8 +178,8 @@ const screenshots = [
           </div>
           <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
             <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-4 font-black text-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
-            <h3 class="font-bold text-slate-900 text-base mb-2">Deteksi Anomali FIGO</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">Screening otomatis untuk oligomenorea, polimenorea, siklus tak teratur, perdarahan memanjang, spotting, fase luteal pendek, dan dismenore berat.</p>
+            <h3 class="font-bold text-slate-900 text-base mb-2">Analisis Keteraturan Siklus</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Pemantauan pola variasi panjang siklus, jarak menstruasi, catatan spotting, dan tren gejala harian secara mandiri.</p>
           </div>
           <div class="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-soft">
             <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center mb-4 font-black text-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg></div>
@@ -268,7 +268,7 @@ const screenshots = [
           <a href="/contact" class="hover:text-coral-600 font-medium transition">Kontak Pengembang</a>
         </div>
         <p class="mt-8 text-[11px] text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          <strong>Disclaimer Medis:</strong> CycleJournal adalah alat pencatatan klinis pribadi untuk referensi dokter kandungan dan bukan pengganti diagnosis medis profesional, bukan alat kontrasepsi, dan tidak boleh digunakan sebagai satu-satunya dasar keputusan kesehatan.
+          <strong>Catatan Penting:</strong> CycleJournal adalah aplikasi pencatatan mandiri untuk membantu Anda memantau ritme tubuh dan gaya hidup sehat. Aplikasi ini bukan perangkat medis, bukan alat diagnosis klinis, dan bukan alat kontrasepsi. Untuk keluhan kesehatan, konsultasikan selalu dengan dokter atau tenaga medis berwenang.
         </p>
       </div>
     </section>

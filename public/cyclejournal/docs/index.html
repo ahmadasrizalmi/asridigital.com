@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dokumentasi Resmi & Spesifikasi Klinis CycleJournal | Asri Digital</title>
-  <meta name="description" content="Dokumentasi resmi CycleJournal: spesifikasi klinis berstandar FIGO & ACOG, mekanisme prediksi dinamis, arsitektur offline-first zero-knowledge, dan panduan fitur.">
+  <title>Dokumentasi Resmi & Panduan Fitur CycleJournal | Asri Digital</title>
+  <meta name="description" content="Dokumentasi resmi CycleJournal: algoritma perhitungan siklus, metodologi sintotermal, arsitektur offline-first zero-knowledge, dan panduan fitur.">
   <link rel="canonical" href="https://asridigital.com/cyclejournal/docs/">
   <link rel="icon" type="image/png" href="../assets/logo_nobg.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,15 +73,15 @@
   <section class="gradient-hero text-white py-14 lg:py-20 border-b border-slate-800">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="inline-flex items-center gap-2 badge-coral px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase mb-4">
-        <span>Kepatuhan Medis FIGO & ACOG</span>
+        <span>Metodologi Siklus (FIGO & ACOG)</span>
         <span>•</span>
         <span>Offline-First & Zero-Knowledge</span>
       </div>
       <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-        Spesifikasi Sistem & Dokumentasi Klinis Resmi
+        Spesifikasi Sistem & Panduan Fitur Resmi
       </h1>
       <p class="mt-4 text-slate-300 text-base sm:text-lg max-w-3xl leading-relaxed">
-        Panduan mendalam mengenai algoritma perhitungan prediksi siklus, konfirmasi ovulasi sintotermal, klasifikasi anomali obstetri & ginekologi (SpOG), arsitektur enkripsi, dan prosedur operasional CycleJournal.
+        Panduan mendalam mengenai algoritma perhitungan prediksi siklus, konfirmasi ovulasi sintotermal, pemantauan variasi keteraturan siklus, arsitektur enkripsi, dan prosedur operasional CycleJournal.
       </p>
       <div class="mt-6 flex flex-wrap items-center gap-3 text-xs text-slate-400 font-mono">
         <span class="bg-slate-800/80 px-3 py-1.5 rounded-md border border-slate-700">Versi Rilis: v1.1.2</span>
@@ -103,7 +103,7 @@
             <a href="#filosofi" class="block hover:text-coral-600 transition">1. Filosofi & Privasi</a>
             <a href="#mekanisme-prediksi" class="block hover:text-coral-600 transition">2. Mekanisme Prediksi Dinamis</a>
             <a href="#tingkatan-kalkulasi" class="block hover:text-coral-600 transition">3. Tier 1 & Tier 2 Ovulasi</a>
-            <a href="#standar-figo" class="block hover:text-coral-600 transition">4. Skrining Anomali Medis</a>
+            <a href="#standar-figo" class="block hover:text-coral-600 transition">4. Skrining Variasi Siklus</a>
             <a href="#state-machine" class="block hover:text-coral-600 transition">5. State Machine Siklus</a>
             <a href="#tampilan-layar" class="block hover:text-coral-600 transition">6. Panduan Layar Aplikasi</a>
             <a href="#faq" class="block hover:text-coral-600 transition">7. Tanya Jawab (FAQ)</a>
@@ -225,9 +225,9 @@
             <span class="w-2 h-2 rounded-full bg-rose-500"></span>
             Bagian 4
           </div>
-          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Standar Medis FIGO: Sistem Skrining Anomali (Red Flags)</h2>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Referensi FIGO: Sistem Pemantauan Variasi Siklus (Pola Keteraturan)</h2>
           <p class="mt-3 text-sm text-slate-600 leading-relaxed">
-            Standar FIGO dalam CycleJournal digunakan sebagai sistem deteksi dini klinis (*early warning system*) yang langsung dievaluasi pada tab Laporan Medis SpOG:
+            Panduan FIGO dalam CycleJournal digunakan sebagai referensi pola keteraturan siklus yang dirangkum pada tab Ringkasan Siklus:
           </p>
 
           <div class="mt-6 overflow-x-auto">
@@ -339,12 +339,12 @@
             </div>
 
             <div class="border-l-4 border-rose-500 pl-4">
-              <h3 class="font-bold text-slate-900">C. Tab Laporan Medis SpOG</h3>
+              <h3 class="font-bold text-slate-900">C. Tab Ringkasan Siklus</h3>
               <p class="text-xs text-slate-600 mt-1">
-                Memuat kotak parameter FIGO (Rata-rata, Variasi, Lama Haid), pola temperatur BBT, kotak status skrining FIGO, tabel riwayat siklus (menampilkan siklus aktif berjalan dan siklus lampau), serta tabel 5 log harian terakhir lengkap dengan flow, suhu, dan nyeri VAS.
+                Memuat kotak parameter siklus (Rata-rata, Variasi, Lama Haid), pola temperatur BBT, kotak status keteraturan siklus, tabel riwayat siklus (menampilkan siklus aktif berjalan dan siklus lampau), serta tabel 5 log harian terakhir lengkap dengan flow, suhu, dan catatan rasa nyaman.
               </p>
               <p class="text-xs text-slate-500 mt-1">
-                Dilengkapi tombol <strong>Unduh PDF Medis</strong> (lembar rekam medis A4 berstandar dokter kandungan) dan <strong>Ekspor CSV Mentah</strong> (spreadsheet Excel/Sheets).
+                Dilengkapi tombol <strong>Unduh PDF Ringkasan</strong> (lembar ringkasan A4 siap cetak) dan <strong>Ekspor CSV Mentah</strong> (spreadsheet Excel/Sheets).
               </p>
             </div>
 

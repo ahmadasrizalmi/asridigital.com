@@ -1,4 +1,7 @@
 https://www.asridigital.com/* https://asridigital.com/:splat 301
+/apps/cyclejournal /cyclejournal 301
+/apps/cyclejournal/* /cyclejournal/:splat 301
 /masjid-display /assalam-tv 301
 /admin /admin 200
 /api /api 200
+
